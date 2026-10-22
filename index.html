@@ -189,5 +189,57 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Replace this with your actual Render backend URL if different
+        const SERVER_URL = "https://kiza-brain.onrender.com";
+
+        async function submitCommand() {
+            let inputField = document.getElementById('textInput');
+            let text = inputField.value.trim();
+            if (!text) return;
+
+            logAction(`[USER]: ${text}`, "#00ffcc");
+            inputField.value = "";
+            document.getElementById('uiStatus').innerText = "KIZA PROCESSING...";
+
+            try {
+                let response = await fetch(`${SERVER_URL}/api/chat`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user: "Sir", command: text })
+                });
+
+                if (!response.ok) throw new Error("Cloud connection failed.");
+                
+                let data = await response.json();
+                
+                logAction(`[KIZA]: ${data.reply}`, "#e085ff");
+                document.getElementById('uiStatus').innerText = "KIZA AWAITING INPUT...";
+
+                if (data.audio_base64) {
+                    let snd = new Audio("data:audio/mp3;base64," + data.audio_base64);
+                    snd.play();
+                }
+
+            } catch (error) {
+                logAction(`[SYSTEM ERROR]: ${error.message}`, "#ff0055");
+                document.getElementById('uiStatus').innerText = "CONNECTION FAILED.";
+            }
+        }
+
+        function logAction(message, color) {
+            let logBox = document.getElementById('actionLog');
+            let newEntry = document.createElement('div');
+            newEntry.style.color = color;
+            newEntry.innerText = `> ${message}`;
+            logBox.appendChild(newEntry);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        document.getElementById('textInput').addEventListener("keypress", function(event) {
+            if (event.key === "Enter") submitCommand();
+        });
+    </script>
 </body>
 </html>
