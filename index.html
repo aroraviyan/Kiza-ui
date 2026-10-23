@@ -171,10 +171,11 @@
                 <button class="chip-btn" onclick="sendQuickCmd('/commands')">🛡️ /cmds</button>
             </div>
 
-            <!-- CHAT INPUT (FILE UPLOADS REMOVED, CAMERA ALWAYS SEES) -->
+            <!-- CHAT INPUT WITH MICROPHONE VOICE BUTTON -->
             <div class="input-container">
                 <div class="input-row">
-                    <input type="text" id="textInput" placeholder="Ask for homework help or type command...">
+                    <button class="chip-btn" id="micBtn" style="padding: 6px; font-size: 16px;" onclick="toggleSpeechRecognition()" title="Voice Input">🎤</button>
+                    <input type="text" id="textInput" placeholder="Speak or type a command...">
                     <button class="send-btn" onclick="submitCommand()">TRANSMIT</button>
                 </div>
             </div>
@@ -183,7 +184,7 @@
         <div class="side-panel right-panel">
             <div class="section-title">LIVE ACTION FEED</div>
             <div id="actionLog" class="log-box">
-                <div>> [KIZA SYSTEM]: Continuous vision online. Awaiting message...</div>
+                <div>> [KIZA SYSTEM]: Voice & continuous vision online...</div>
             </div>
         </div>
     </div>
@@ -198,6 +199,9 @@
         let videoDevices = [];
         let currentCamIndex = 0;
         let activeStream = null;
+
+        let recognition = null;
+        let isRecording = false;
 
         async function initCamera(deviceId = null) {
             try {
@@ -233,6 +237,77 @@
             logAction(`[SYSTEM]: Switching lens feed...`, "#00ffcc");
         }
 
+        // SPEECH RECOGNITION (MICROPHONE)
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                logAction("[SYSTEM]: Speech recognition not supported in this browser.", "#ff0055");
+                return null;
+            }
+            
+            const rec = new SpeechRecognition();
+            rec.continuous = false;
+            rec.interimResults = false;
+            rec.lang = 'en-GB';
+
+            rec.onstart = function() {
+                isRecording = true;
+                const micBtn = document.getElementById('micBtn');
+                micBtn.style.borderColor = "#ff0055";
+                micBtn.style.color = "#ff0055";
+                document.getElementById('uiStatus').innerText = "LISTENING...";
+                logAction("[SYSTEM]: Voice recording active...", "#00ffcc");
+            };
+
+            rec.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('textInput').value = transcript;
+                logAction(`[VOICE INPUT]: ${transcript}`, "#00ffcc");
+                submitCommand();
+            };
+
+            rec.onerror = function(event) {
+                logAction(`[VOICE ERROR]: ${event.error}`, "#ff0055");
+                resetMicState();
+            };
+
+            rec.onend = function() {
+                resetMicState();
+            };
+
+            return rec;
+        }
+
+        function toggleSpeechRecognition() {
+            if (!recognition) {
+                recognition = initSpeechRecognition();
+            }
+            if (!recognition) {
+                alert("Speech recognition is not available in your browser.");
+                return;
+            }
+
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                try {
+                    recognition.start();
+                } catch (e) {
+                    recognition.stop();
+                    recognition.start();
+                }
+            }
+        }
+
+        function resetMicState() {
+            isRecording = false;
+            const micBtn = document.getElementById('micBtn');
+            if (micBtn) {
+                micBtn.style.borderColor = "#00ffcc";
+                micBtn.style.color = "#00ffcc";
+            }
+        }
+
         function switchAuthMode(mode) {
             authMode = mode;
             document.getElementById('loginTab').classList.toggle('active', mode === 'login');
@@ -248,7 +323,6 @@
             return canvas.toDataURL('image/jpeg', 0.6);
         }
 
-        // Automatically snap a frame from the live camera for vision analysis when messaging
         function captureLiveVisionFrame() {
             if (!cameraReady) return null;
             try {
@@ -339,7 +413,6 @@
             inputField.value = "";
             document.getElementById('uiStatus').innerText = "KIZA ANALYZING...";
 
-            // Automatically capture what the camera sees right now so Kiza can look at your workspace/homework
             let liveVisionFrame = captureLiveVisionFrame();
 
             try {
