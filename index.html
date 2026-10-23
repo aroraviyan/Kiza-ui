@@ -118,7 +118,7 @@
             <div class="section-title">KIZA // IDENTITY GATE</div>
             <div class="auth-tabs">
                 <button id="loginTab" class="tab-btn active" onclick="switchAuthMode('login')">LOGIN</button>
-                <button id="signupTab" class="tab-btn" onclick="switchAuthMode('signup')">SIGN UP</button>
+                <button id="signupTab" class="tab-btn" onclick="switchAuthMode('signup')">SIGN UP / RESET</button>
             </div>
             <input type="text" id="authUser" placeholder="Enter Identity Name..." autocomplete="off">
             <input type="password" id="authPass" placeholder="Enter Security Passcode...">
@@ -184,7 +184,7 @@
         <div class="side-panel right-panel">
             <div class="section-title">LIVE ACTION FEED</div>
             <div id="actionLog" class="log-box">
-                <div>> [KIZA SYSTEM]: Voice & continuous vision online...</div>
+                <div>> [KIZA SYSTEM]: HUD online. Awaiting authentication...</div>
             </div>
         </div>
     </div>
@@ -404,6 +404,13 @@
 
         function sendQuickCmd(cmd) { document.getElementById('textInput').value = cmd; submitCommand(); }
 
+        // Clean up markdown asterisks for pristine chat HUD output
+        function formatKizaText(rawText) {
+            let clean = rawText.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #fff;">$1</strong>');
+            clean = clean.replace(/\*/g, '');
+            return clean;
+        }
+
         async function submitCommand() {
             let inputField = document.getElementById('textInput');
             let text = inputField.value.trim();
@@ -428,7 +435,8 @@
                 if (!response.ok) throw new Error("Cloud connection failed.");
                 let data = await response.json();
                 
-                logAction(`[KIZA]: ${data.reply}`, "#e085ff");
+                let formattedReply = formatKizaText(data.reply);
+                logAction(`[KIZA]: ${formattedReply}`, "#e085ff", true);
                 document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
                 if (data.audio_base64) new Audio("data:audio/mp3;base64," + data.audio_base64).play();
             } catch (error) {
@@ -437,11 +445,17 @@
             }
         }
 
-        function logAction(message, color) {
+        function logAction(message, color, isHtml = false) {
             let logBox = document.getElementById('actionLog');
             let newEntry = document.createElement('div');
-            newEntry.style.color = color; newEntry.innerText = `> ${message}`;
-            logBox.appendChild(newEntry); logBox.scrollTop = logBox.scrollHeight;
+            newEntry.style.color = color;
+            if (isHtml) {
+                newEntry.innerHTML = `> ${message}`;
+            } else {
+                newEntry.innerText = `> ${message}`;
+            }
+            logBox.appendChild(newEntry);
+            logBox.scrollTop = logBox.scrollHeight;
         }
 
         document.getElementById('textInput').addEventListener("keypress", function(event) { if (event.key === "Enter") submitCommand(); });
