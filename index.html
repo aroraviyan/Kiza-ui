@@ -34,33 +34,33 @@
         .telemetry-val.master { color: #ff0055; text-shadow: 0 0 8px rgba(255, 0, 85, 0.8); }
         
         .camera-box { 
-            width: 100%; height: 150px; background: #000; border: 1px solid rgba(170, 0, 255, 0.5); 
+            width: 100%; height: 140px; background: #000; border: 1px solid rgba(170, 0, 255, 0.5); 
             border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;
         }
         .face-id-box {
             display: flex; align-items: center; gap: 10px; background: rgba(0, 0, 0, 0.4);
             border: 1px dashed rgba(0, 255, 204, 0.4); padding: 8px; border-radius: 4px; font-size: 11px;
         }
-        .face-thumb { width: 48px; height: 48px; border-radius: 4px; border: 1px solid #00ffcc; object-fit: cover; display: none; }
+        .face-thumb { width: 42px; height: 42px; border-radius: 4px; border: 1px solid #00ffcc; object-fit: cover; display: none; }
         
-        .center-panel { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
-        .core-assembly { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; }
+        .center-panel { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+        .core-assembly { position: relative; width: 160px; height: 160px; display: flex; align-items: center; justify-content: center; }
         .core-orb { 
-            width: 110px; height: 110px; background: radial-gradient(circle, #e085ff 0%, #aa00ff 40%, #2a0044 80%, #000 100%); 
-            border-radius: 50%; box-shadow: 0 0 60px rgba(170, 0, 255, 0.8); animation: pulseOrb 2.5s infinite alternate; z-index: 2;
+            width: 90px; height: 90px; background: radial-gradient(circle, #e085ff 0%, #aa00ff 40%, #2a0044 80%, #000 100%); 
+            border-radius: 50%; box-shadow: 0 0 50px rgba(170, 0, 255, 0.8); animation: pulseOrb 2.5s infinite alternate; z-index: 2;
         }
         .core-ring { position: absolute; border-radius: 50%; border: 1px dashed rgba(170, 0, 255, 0.6); z-index: 1; }
-        .ring-1 { width: 145px; height: 145px; border-top: 2px solid #00ffcc; animation: spinRight 8s linear infinite; }
-        .ring-2 { width: 175px; height: 175px; border-bottom: 2px dashed #ff0055; animation: spinLeft 12s linear infinite; }
-        .ring-3 { width: 200px; height: 200px; border-right: 2px solid #aa00ff; animation: spinRight 15s linear infinite; }
+        .ring-1 { width: 120px; height: 120px; border-top: 2px solid #00ffcc; animation: spinRight 8s linear infinite; }
+        .ring-2 { width: 140px; height: 140px; border-bottom: 2px dashed #ff0055; animation: spinLeft 12s linear infinite; }
+        .ring-3 { width: 160px; height: 160px; border-right: 2px solid #aa00ff; animation: spinRight 15s linear infinite; }
         
         @keyframes pulseOrb { 0% { transform: scale(0.95); filter: hue-rotate(0deg); } 100% { transform: scale(1.05); filter: hue-rotate(15deg); } }
         @keyframes spinRight { 100% { transform: rotate(360deg); } }
         @keyframes spinLeft { 100% { transform: rotate(-360deg); } }
         
-        .status-text { font-size: 16px; letter-spacing: 4px; color: #fff; text-align: center; text-shadow: 0 0 10px #aa00ff; }
+        .status-text { font-size: 14px; letter-spacing: 3px; color: #fff; text-align: center; text-shadow: 0 0 10px #aa00ff; }
         
-        .quick-cmds { display: none; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .quick-cmds { display: none; gap: 8px; flex-wrap: wrap; justify-content: center; }
         .chip-btn {
             background: rgba(0, 255, 204, 0.1); border: 1px solid #00ffcc; color: #00ffcc;
             padding: 6px 12px; font-family: inherit; font-size: 11px; border-radius: 4px; cursor: pointer; text-transform: uppercase;
@@ -68,46 +68,64 @@
         .chip-btn:active { background: rgba(0, 255, 204, 0.3); }
 
         .input-container { 
-            display: flex; flex-direction: column; width: 95%; max-width: 650px; gap: 10px; 
-            background: rgba(0,0,0,0.6); padding: 12px; border: 1px solid rgba(170, 0, 255, 0.4); border-radius: 6px;
+            display: flex; flex-direction: column; width: 100%; max-width: 600px; gap: 8px; 
+            background: rgba(0,0,0,0.8); padding: 10px; border: 1px solid rgba(170, 0, 255, 0.4); border-radius: 6px;
         }
         .input-row { display: flex; gap: 8px; width: 100%; align-items: center; }
         input[type="text"], input[type="password"] { 
             flex: 1; background: transparent; border: none; border-bottom: 1px solid #aa00ff; 
-            padding: 8px 12px; color: #00ffcc; font-size: 14px; font-family: inherit; outline: none; 
+            padding: 8px 10px; color: #00ffcc; font-size: 14px; font-family: inherit; outline: none; width: 100%;
         }
         button.send-btn { 
-            background: rgba(170, 0, 255, 0.15); border: 1px solid #aa00ff; color: #e085ff; 
-            padding: 8px 18px; cursor: pointer; font-family: inherit; font-weight: bold; border-radius: 4px;
+            background: rgba(170, 0, 255, 0.2); border: 1px solid #aa00ff; color: #e085ff; 
+            padding: 8px 14px; cursor: pointer; font-family: inherit; font-weight: bold; border-radius: 4px; white-space: nowrap;
         }
         
-        .log-box { flex: 1; overflow-y: auto; font-size: 12px; color: #999; display: flex; flex-direction: column; gap: 10px; line-height: 1.4; }
+        .log-box { flex: 1; overflow-y: auto; font-size: 11px; color: #999; display: flex; flex-direction: column; gap: 8px; line-height: 1.4; max-height: 100%; }
 
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 0, 8, 0.92); backdrop-filter: blur(10px);
-            display: flex; align-items: center; justify-content: center; z-index: 500; padding: 20px;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 0, 8, 0.95); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center; z-index: 500; padding: 15px;
         }
         .auth-card {
-            background: rgba(15, 5, 30, 0.9); border: 1px solid #aa00ff; box-shadow: 0 0 35px rgba(170, 0, 255, 0.4);
-            border-radius: 8px; padding: 25px; width: 100%; max-width: 390px; display: flex; flex-direction: column; gap: 15px;
+            background: rgba(15, 5, 30, 0.95); border: 1px solid #aa00ff; box-shadow: 0 0 35px rgba(170, 0, 255, 0.4);
+            border-radius: 8px; padding: 20px; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 12px;
         }
         .auth-tabs { display: flex; gap: 10px; }
         .tab-btn { flex: 1; padding: 8px; background: transparent; border: 1px solid rgba(170, 0, 255, 0.4); color: #888; font-family: inherit; cursor: pointer; }
         .tab-btn.active { border-color: #00ffcc; color: #00ffcc; background: rgba(0, 255, 204, 0.1); }
 
+        /* MOBILE RESPONSIVE OPTIMIZATIONS */
         @media (max-width: 900px) {
-            body { height: auto; min-height: 100dvh; overflow-y: auto; }
-            .container { flex-direction: column; padding: 12px; gap: 15px; height: auto; }
-            .left-panel, .right-panel, .center-panel { width: 100%; }
-            .center-panel { order: 1; padding: 15px 0; gap: 20px; }
-            .right-panel { order: 2; height: 260px; }
-            .left-panel { order: 3; }
-            .core-assembly { width: 140px; height: 140px; }
-            .core-orb { width: 75px; height: 75px; }
-            .ring-1 { width: 100px; height: 100px; }
-            .ring-2 { width: 120px; height: 120px; }
-            .ring-3 { width: 140px; height: 140px; }
-            .status-text { font-size: 13px; letter-spacing: 2px; }
+            body { height: 100dvh; overflow: hidden; }
+            .container { 
+                flex-direction: column; 
+                padding: 10px; 
+                gap: 10px; 
+                height: 100dvh; 
+                max-height: 100dvh;
+            }
+            .left-panel { display: none; } /* Hide heavy telemetry on mobile to save space */
+            .center-panel { order: 1; flex: 0 0 auto; gap: 10px; padding: 5px 0; }
+            .core-assembly { width: 90px; height: 90px; }
+            .core-orb { width: 50px; height: 50px; box-shadow: 0 0 25px rgba(170, 0, 255, 0.8); }
+            .ring-1 { width: 70px; height: 70px; }
+            .ring-2 { width: 80px; height: 80px; }
+            .ring-3 { width: 90px; height: 90px; }
+            .status-text { font-size: 11px; letter-spacing: 1px; }
+            
+            .right-panel { 
+                order: 2; 
+                flex: 1; 
+                width: 100%; 
+                min-height: 0; 
+                margin-bottom: 5px;
+            }
+            .center-panel .input-container {
+                order: 3;
+                width: 100%;
+                margin-bottom: 5px;
+            }
         }
     </style>
 </head>
@@ -131,6 +149,7 @@
     </div>
 
     <div class="container">
+        <!-- LEFT PANEL (Hidden on Mobile to save screen space, fully visible on PC) -->
         <div class="side-panel left-panel">
             <div class="section-title">SYSTEM TELEMETRY</div>
             <div class="telemetry-row"><span>PROTOCOL</span><span class="telemetry-val">ACTIVE</span></div>
@@ -171,11 +190,11 @@
                 <button class="chip-btn" onclick="sendQuickCmd('/commands')">🛡️ /cmds</button>
             </div>
 
-            <!-- CHAT INPUT WITH MICROPHONE VOICE BUTTON -->
+            <!-- CHAT INPUT CONTAINER -->
             <div class="input-container">
                 <div class="input-row">
                     <button class="chip-btn" id="micBtn" style="padding: 6px; font-size: 16px;" onclick="toggleSpeechRecognition()" title="Voice Input">🎤</button>
-                    <input type="text" id="textInput" placeholder="Speak or type a command...">
+                    <input type="text" id="textInput" placeholder="Speak or type command...">
                     <button class="send-btn" onclick="submitCommand()">TRANSMIT</button>
                 </div>
             </div>
@@ -218,11 +237,10 @@
 
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 videoDevices = devices.filter(d => d.kind === 'videoinput');
-                logAction(`[SYSTEM]: Continuous optical feed active (${videoDevices.length} lens(es)).`, "#00ffcc");
+                logAction(`[SYSTEM]: Optical feed active (${videoDevices.length} lens).`, "#00ffcc");
             } catch (error) {
-                document.getElementById('camStatus').innerText = "CAMERA BUSY / OFFLINE";
+                document.getElementById('camStatus').innerText = "CAMERA OFFLINE";
                 document.getElementById('camStatus').style.color = "#ff0055";
-                logAction("[WARNING]: Camera unavailable.", "#ff0055");
             }
         }
         window.onload = () => initCamera();
@@ -237,11 +255,10 @@
             logAction(`[SYSTEM]: Switching lens feed...`, "#00ffcc");
         }
 
-        // SPEECH RECOGNITION (MICROPHONE)
         function initSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
-                logAction("[SYSTEM]: Speech recognition not supported in this browser.", "#ff0055");
+                logAction("[SYSTEM]: Speech recognition not supported.", "#ff0055");
                 return null;
             }
             
@@ -256,7 +273,6 @@
                 micBtn.style.borderColor = "#ff0055";
                 micBtn.style.color = "#ff0055";
                 document.getElementById('uiStatus').innerText = "LISTENING...";
-                logAction("[SYSTEM]: Voice recording active...", "#00ffcc");
             };
 
             rec.onresult = function(event) {
@@ -267,7 +283,6 @@
             };
 
             rec.onerror = function(event) {
-                logAction(`[VOICE ERROR]: ${event.error}`, "#ff0055");
                 resetMicState();
             };
 
@@ -279,23 +294,13 @@
         }
 
         function toggleSpeechRecognition() {
-            if (!recognition) {
-                recognition = initSpeechRecognition();
-            }
-            if (!recognition) {
-                alert("Speech recognition is not available in your browser.");
-                return;
-            }
+            if (!recognition) recognition = initSpeechRecognition();
+            if (!recognition) return;
 
             if (isRecording) {
                 recognition.stop();
             } else {
-                try {
-                    recognition.start();
-                } catch (e) {
-                    recognition.stop();
-                    recognition.start();
-                }
+                try { recognition.start(); } catch (e) { recognition.stop(); recognition.start(); }
             }
         }
 
@@ -331,17 +336,14 @@
                 canvas.width = 640; canvas.height = 480;
                 canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
                 return canvas.toDataURL('image/jpeg', 0.7);
-            } catch(e) {
-                return null;
-            }
+            } catch(e) { return null; }
         }
 
         async function updateFaceID() {
             if (currentUser === "Guest") return;
             let faceData = captureFaceSnapshot();
-            if (!faceData) { logAction("[ERROR]: Camera offline. Cannot rescan face.", "#ff0055"); return; }
+            if (!faceData) { logAction("[ERROR]: Camera offline.", "#ff0055"); return; }
             
-            logAction("[SYSTEM]: Updating Biometric Scan...", "#00ffcc");
             try {
                 let res = await fetch(`${SERVER_URL}/api/update_face`, {
                     method: "POST", headers: { "Content-Type": "application/json" },
@@ -351,8 +353,8 @@
                 if (data.success) {
                     document.getElementById('savedFaceImg').src = faceData;
                     document.getElementById('savedFaceImg').style.display = "block";
-                    document.getElementById('faceIdStatus').innerText = "BIOMETRICS UPDATED";
-                    logAction("[SYSTEM]: " + data.message, "#00ffcc");
+                    document.getElementById('faceIdStatus').innerText = "UPDATED";
+                    logAction("[SYSTEM]: Face ID synchronized.", "#00ffcc");
                 }
             } catch (err) { logAction("[ERROR]: Update failed.", "#ff0055"); }
         }
@@ -387,7 +389,7 @@
 
                 if (data.face_id) {
                     const img = document.getElementById('savedFaceImg'); img.src = data.face_id; img.style.display = "block";
-                    document.getElementById('faceIdStatus').innerText = "BIOMETRICS LOCKED"; document.getElementById('faceIdStatus').style.color = "#00ffcc";
+                    document.getElementById('faceIdStatus').innerText = "LOCKED"; document.getElementById('faceIdStatus').style.color = "#00ffcc";
                 }
 
                 document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
@@ -404,7 +406,6 @@
 
         function sendQuickCmd(cmd) { document.getElementById('textInput').value = cmd; submitCommand(); }
 
-        // Clean up markdown asterisks for pristine chat HUD output
         function formatKizaText(rawText) {
             let clean = rawText.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #fff;">$1</strong>');
             clean = clean.replace(/\*/g, '');
