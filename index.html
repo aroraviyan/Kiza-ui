@@ -145,7 +145,6 @@
             <button class="chip-btn" onclick="switchCamera()" style="border-color: #aa00ff; color: #e085ff;">🔄 FLIP CAMERA</button>
             <button class="chip-btn" onclick="initCamera()" style="border-color: #00ffcc; color: #00ffcc; font-size: 10px;">RETRY CAMERA FEED</button>
 
-            <!-- VOICE MUTE / UNMUTE BUTTON -->
             <button class="chip-btn" id="voiceToggleBtn" onclick="toggleVoiceMute()" style="border-color: #00ffcc; color: #00ffcc; margin-top: 5px;">🔊 VOICE: ON</button>
 
             <div class="face-id-box" style="margin-top: 5px;">
@@ -176,7 +175,6 @@
 
             <div class="input-container">
                 <div class="input-row">
-                    <!-- Voice Mute Button for Mobile view -->
                     <button class="chip-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Voice" style="padding: 6px; font-size: 14px;">🔊</button>
                     <button class="chip-btn" id="micBtn" style="padding: 6px; font-size: 16px;" onclick="toggleSpeechRecognition()" title="Voice Input">🎤</button>
                     <input type="text" id="textInput" placeholder="Speak or type command...">
@@ -188,7 +186,7 @@
         <div class="side-panel right-panel">
             <div class="section-title">LIVE ACTION FEED</div>
             <div id="actionLog" class="log-box">
-                <div>> [KIZA SYSTEM]: HUD online. Awaiting authentication...</div>
+                <div>> [KIZA SYSTEM]: HUD online. Checking persistent session...</div>
             </div>
         </div>
     </div>
@@ -207,7 +205,6 @@
         let recognition = null;
         let isRecording = false;
 
-        // VOICE MUTE STATE & ACTIVE AUDIO CONTROLLER
         let voiceEnabled = true;
         let currentAudio = null;
 
@@ -229,7 +226,6 @@
 
         function playKizaAudio(base64Data) {
             if (!voiceEnabled || !base64Data) return;
-            // Stop any currently playing audio so new responses don't overlap with old ones
             if (currentAudio) {
                 currentAudio.pause();
                 currentAudio.currentTime = 0;
@@ -258,7 +254,42 @@
                 document.getElementById('camStatus').style.color = "#ff0055";
             }
         }
-        window.onload = () => initCamera();
+
+        // CHECK PERSISTENT SESSION ON PAGE LOAD
+        window.onload = () => {
+            initCamera();
+            const savedUser = localStorage.getItem('kiza_user');
+            const savedRole = localStorage.getItem('kiza_role');
+            const savedFace = localStorage.getItem('kiza_face');
+
+            if (savedUser && savedRole) {
+                currentUser = savedUser;
+                currentRole = savedRole;
+                document.getElementById('authModal').style.display = "none";
+                document.getElementById('idVal').innerText = currentUser.toUpperCase();
+                
+                const roleEl = document.getElementById('roleVal');
+                roleEl.innerText = currentRole;
+                if (currentRole.includes("OWNER")) {
+                    roleEl.classList.add("master");
+                    document.getElementById('masterCmds').style.display = "flex";
+                } else {
+                    roleEl.classList.remove("master");
+                    document.getElementById('masterCmds').style.display = "none";
+                }
+
+                if (savedFace) {
+                    const img = document.getElementById('savedFaceImg');
+                    img.src = savedFace;
+                    img.style.display = "block";
+                    document.getElementById('faceIdStatus').innerText = "RESTORED";
+                    document.getElementById('faceIdStatus').style.color = "#00ffcc";
+                }
+
+                document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
+                logAction(`[SYSTEM]: Persistent session restored for ${currentUser}.`, "#00ffcc");
+            }
+        };
 
         async function switchCamera() {
             if (videoDevices.length <= 1) { logAction("[SYSTEM]: Only 1 lens detected.", "#ff0055"); return; }
@@ -352,6 +383,7 @@
                     document.getElementById('savedFaceImg').src = faceData;
                     document.getElementById('savedFaceImg').style.display = "block";
                     document.getElementById('faceIdStatus').innerText = "UPDATED";
+                    localStorage.setItem('kiza_face', faceData);
                     logAction("[SYSTEM]: Face ID synchronized.", "#00ffcc");
                 }
             } catch (err) { logAction("[ERROR]: Update failed.", "#ff0055"); }
@@ -376,7 +408,16 @@
 
                 if (!data.success) { errBox.style.color = "#ff0055"; errBox.innerText = data.message; return; }
 
-                currentUser = data.username; currentRole = data.role;
+                currentUser = data.username; 
+                currentRole = data.role;
+
+                // SAVE SESSION TO LOCALSTORAGE FOR ACROSS-SESSION / MULTI-PC RECOGNITION ON THIS BROWSER
+                localStorage.setItem('kiza_user', currentUser);
+                localStorage.setItem('kiza_role', currentRole);
+                if (data.face_id) {
+                    localStorage.setItem('kiza_face', data.face_id);
+                }
+
                 document.getElementById('authModal').style.display = "none";
                 document.getElementById('idVal').innerText = currentUser.toUpperCase();
                 
@@ -397,6 +438,9 @@
         }
 
         function logoutUser() {
+            localStorage.removeItem('kiza_user');
+            localStorage.removeItem('kiza_role');
+            localStorage.removeItem('kiza_face');
             document.getElementById('authModal').style.display = "flex";
             document.getElementById('authUser').value = ""; document.getElementById('authPass').value = ""; document.getElementById('authError').innerText = "";
             document.getElementById('masterCmds').style.display = "none";
