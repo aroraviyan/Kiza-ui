@@ -95,12 +95,6 @@
         .tab-btn { flex: 1; padding: 8px; background: transparent; border: 1px solid rgba(170, 0, 255, 0.4); color: #888; font-family: inherit; cursor: pointer; }
         .tab-btn.active { border-color: #00ffcc; color: #00ffcc; background: rgba(0, 255, 204, 0.1); }
 
-        #filePreviewBox {
-            display: none; align-items: center; justify-content: space-between; margin-bottom: 5px; padding-bottom: 8px; border-bottom: 1px dashed rgba(170,0,255,0.3);
-            font-size: 12px; color: #00ffcc;
-        }
-        .del-file-btn { background: #ff0055; border: none; color: white; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-weight: bold; }
-
         @media (max-width: 900px) {
             body { height: auto; min-height: 100dvh; overflow-y: auto; }
             .container { flex-direction: column; padding: 12px; gap: 15px; height: auto; }
@@ -177,19 +171,10 @@
                 <button class="chip-btn" onclick="sendQuickCmd('/commands')">🛡️ /cmds</button>
             </div>
 
-            <!-- ENHANCED INPUT WITH MULTI-FORMAT FILE UPLOAD & CAMERA SNAP -->
+            <!-- CHAT INPUT (FILE UPLOADS REMOVED, CAMERA ALWAYS SEES) -->
             <div class="input-container">
-                <div id="filePreviewBox">
-                    <span id="filePreviewName">📁 Attached file ready</span>
-                    <button class="del-file-btn" onclick="clearAttachedFile()">REMOVE</button>
-                </div>
-                
                 <div class="input-row">
-                    <!-- Accepts Images, PDFs, text, word docs, code files -->
-                    <button class="chip-btn" style="padding: 6px; font-size: 16px;" onclick="document.getElementById('fileUpload').click()" title="Attach Document or Image">📁</button>
-                    <button class="chip-btn" style="padding: 6px; font-size: 16px;" onclick="snapVisionCam()" title="Snap Photo from Video">📸</button>
-                    <input type="file" id="fileUpload" accept="image/*,.pdf,.txt,.doc,.docx,.js,.py,.html,.css" style="display: none;" onchange="handleFileUpload(event)">
-                    <input type="text" id="textInput" placeholder="Ask for homework help or attach docs...">
+                    <input type="text" id="textInput" placeholder="Ask for homework help or type command...">
                     <button class="send-btn" onclick="submitCommand()">TRANSMIT</button>
                 </div>
             </div>
@@ -198,7 +183,7 @@
         <div class="side-panel right-panel">
             <div class="section-title">LIVE ACTION FEED</div>
             <div id="actionLog" class="log-box">
-                <div>> [KIZA SYSTEM]: Multimodal document & vision UI online...</div>
+                <div>> [KIZA SYSTEM]: Continuous vision online. Awaiting message...</div>
             </div>
         </div>
     </div>
@@ -213,9 +198,6 @@
         let videoDevices = [];
         let currentCamIndex = 0;
         let activeStream = null;
-        
-        let attachedImageBase64 = null;
-        let attachedDocText = null;
 
         async function initCamera(deviceId = null) {
             try {
@@ -232,11 +214,11 @@
 
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 videoDevices = devices.filter(d => d.kind === 'videoinput');
-                logAction(`[SYSTEM]: Optical feed online (${videoDevices.length} lens(es)).`, "#00ffcc");
+                logAction(`[SYSTEM]: Continuous optical feed active (${videoDevices.length} lens(es)).`, "#00ffcc");
             } catch (error) {
                 document.getElementById('camStatus').innerText = "CAMERA BUSY / OFFLINE";
                 document.getElementById('camStatus').style.color = "#ff0055";
-                logAction("[WARNING]: Camera unavailable. Close other apps using camera.", "#ff0055");
+                logAction("[WARNING]: Camera unavailable.", "#ff0055");
             }
         }
         window.onload = () => initCamera();
@@ -249,61 +231,6 @@
             currentCamIndex = (currentCamIndex + 1) % videoDevices.length;
             await initCamera(videoDevices[currentCamIndex].deviceId);
             logAction(`[SYSTEM]: Switching lens feed...`, "#00ffcc");
-        }
-
-        function clearAttachedFile() {
-            attachedImageBase64 = null;
-            attachedDocText = null;
-            document.getElementById('filePreviewBox').style.display = "none";
-            document.getElementById('fileUpload').value = "";
-        }
-
-        function snapVisionCam() {
-            if (!cameraReady) { logAction("[ERROR]: Camera offline. Cannot snap.", "#ff0055"); return; }
-            const video = document.getElementById('webcamVideo');
-            const cvs = document.createElement('canvas');
-            cvs.width = 640; cvs.height = 480; 
-            cvs.getContext('2d').drawImage(video, 0, 0, cvs.width, cvs.height);
-            attachedImageBase64 = cvs.toDataURL('image/jpeg', 0.8);
-            
-            document.getElementById('filePreviewName').innerText = "📸 Attached Camera Snapshot";
-            document.getElementById('filePreviewBox').style.display = "flex";
-            logAction("[SYSTEM]: Optical frame captured for homework analysis.", "#e085ff");
-        }
-
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            if (file.type.startsWith('image/')) {
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const cvs = document.createElement('canvas');
-                        const MAX_WIDTH = 800;
-                        const scale = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1;
-                        cvs.width = img.width * scale; cvs.height = img.height * scale;
-                        cvs.getContext('2d').drawImage(img, 0, 0, cvs.width, cvs.height);
-                        attachedImageBase64 = cvs.toDataURL('image/jpeg', 0.8);
-                        
-                        document.getElementById('filePreviewName').innerText = `📁 ${file.name}`;
-                        document.getElementById('filePreviewBox').style.display = "flex";
-                        logAction(`[SYSTEM]: Image file '${file.name}' attached.`, "#e085ff");
-                    }
-                    img.src = e.target.result;
-                }
-                reader.readAsDataURL(file);
-            } else {
-                // Handle text files, code files, and documents
-                reader.onload = function(e) {
-                    attachedDocText = e.target.result;
-                    document.getElementById('filePreviewName').innerText = `📄 ${file.name}`;
-                    document.getElementById('filePreviewBox').style.display = "flex";
-                    logAction(`[SYSTEM]: Document content loaded from '${file.name}'.`, "#e085ff");
-                }
-                reader.readAsText(file);
-            }
         }
 
         function switchAuthMode(mode) {
@@ -319,6 +246,20 @@
             const canvas = document.getElementById('faceCanvas');
             canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
             return canvas.toDataURL('image/jpeg', 0.6);
+        }
+
+        // Automatically snap a frame from the live camera for vision analysis when messaging
+        function captureLiveVisionFrame() {
+            if (!cameraReady) return null;
+            try {
+                const video = document.getElementById('webcamVideo');
+                const canvas = document.createElement('canvas');
+                canvas.width = 640; canvas.height = 480;
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                return canvas.toDataURL('image/jpeg', 0.7);
+            } catch(e) {
+                return null;
+            }
         }
 
         async function updateFaceID() {
@@ -384,7 +325,7 @@
         function logoutUser() {
             document.getElementById('authModal').style.display = "flex";
             document.getElementById('authUser').value = ""; document.getElementById('authPass').value = ""; document.getElementById('authError').innerText = "";
-            document.getElementById('masterCmds').style.display = "none"; clearAttachedFile();
+            document.getElementById('masterCmds').style.display = "none";
         }
 
         function sendQuickCmd(cmd) { document.getElementById('textInput').value = cmd; submitCommand(); }
@@ -392,20 +333,22 @@
         async function submitCommand() {
             let inputField = document.getElementById('textInput');
             let text = inputField.value.trim();
-            if (!text && !attachedImageBase64 && !attachedDocText) return;
+            if (!text) return;
 
-            logAction(`[${currentUser.toUpperCase()}]: ${text || "[Attachment Transmitted]"}`, "#00ffcc");
+            logAction(`[${currentUser.toUpperCase()}]: ${text}`, "#00ffcc");
             inputField.value = "";
             document.getElementById('uiStatus').innerText = "KIZA ANALYZING...";
+
+            // Automatically capture what the camera sees right now so Kiza can look at your workspace/homework
+            let liveVisionFrame = captureLiveVisionFrame();
 
             try {
                 let response = await fetch(`${SERVER_URL}/api/chat`, {
                     method: "POST", headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
                         user: currentUser, 
-                        command: text || "Analyze this homework assignment or document.", 
-                        image_base64: attachedImageBase64,
-                        document_text: attachedDocText
+                        command: text, 
+                        image_base64: liveVisionFrame
                     })
                 });
 
@@ -415,7 +358,6 @@
                 logAction(`[KIZA]: ${data.reply}`, "#e085ff");
                 document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
                 if (data.audio_base64) new Audio("data:audio/mp3;base64," + data.audio_base64).play();
-                clearAttachedFile(); 
             } catch (error) {
                 logAction(`[SYSTEM ERROR]: ${error.message}`, "#ff0055");
                 document.getElementById('uiStatus').innerText = "CONNECTION FAILED.";
