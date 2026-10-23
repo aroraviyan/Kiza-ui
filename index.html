@@ -8,283 +8,129 @@
         * { box-sizing: border-box; }
         body { 
             background-color: #030008; 
-            background-image: 
-                linear-gradient(rgba(170, 0, 255, 0.07) 1px, transparent 1px), 
-                linear-gradient(90deg, rgba(170, 0, 255, 0.07) 1px, transparent 1px);
+            background-image: linear-gradient(rgba(170, 0, 255, 0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(170, 0, 255, 0.07) 1px, transparent 1px);
             background-size: 40px 40px;
             color: #a3a3a3; 
             font-family: 'Courier New', Courier, monospace; 
-            margin: 0; 
-            padding: 0; 
-            display: flex; 
-            height: 100dvh; 
-            overflow: hidden; 
+            margin: 0; padding: 0; display: flex; height: 100dvh; overflow: hidden; 
         }
         body::after {
-            content: " ";
-            display: block;
-            position: fixed;
-            top: 0; left: 0; bottom: 0; right: 0;
+            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-            background-size: 100% 4px;
-            z-index: 999;
-            pointer-events: none;
+            background-size: 100% 4px; z-index: 999; pointer-events: none;
         }
-        .container { 
-            display: flex; 
-            width: 100%; 
-            height: 100%; 
-            padding: 25px; 
-            gap: 25px; 
-            z-index: 10;
-        }
+        .container { display: flex; width: 100%; height: 100%; padding: 25px; gap: 25px; z-index: 10; }
         .side-panel { 
-            background: rgba(12, 5, 25, 0.75); 
-            backdrop-filter: blur(8px);
+            background: rgba(12, 5, 25, 0.75); backdrop-filter: blur(8px);
             border: 1px solid rgba(170, 0, 255, 0.4); 
             box-shadow: 0 0 20px rgba(170, 0, 255, 0.15), inset 0 0 15px rgba(170, 0, 255, 0.1);
-            border-radius: 8px; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
+            border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 12px; 
         }
         .left-panel, .right-panel { width: 320px; flex-shrink: 0; }
         .section-title { 
-            font-size: 12px; 
-            color: #aa00ff; 
-            letter-spacing: 3px; 
-            text-transform: uppercase; 
-            border-bottom: 1px solid rgba(170, 0, 255, 0.3);
-            padding-bottom: 5px;
-            text-shadow: 0 0 5px rgba(170, 0, 255, 0.5);
+            font-size: 12px; color: #aa00ff; letter-spacing: 3px; text-transform: uppercase; 
+            border-bottom: 1px solid rgba(170, 0, 255, 0.3); padding-bottom: 5px; text-shadow: 0 0 5px rgba(170, 0, 255, 0.5);
         }
         .telemetry-row { display: flex; justify-content: space-between; font-size: 12px; }
         .telemetry-val { font-weight: bold; color: #00ffcc; text-shadow: 0 0 8px rgba(0, 255, 204, 0.6); }
         .telemetry-val.master { color: #ff0055; text-shadow: 0 0 8px rgba(255, 0, 85, 0.8); }
+        
         .camera-box { 
-            width: 100%; 
-            height: 150px; 
-            background: #000; 
-            border: 1px solid rgba(170, 0, 255, 0.5); 
-            border-radius: 4px; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            position: relative;
+            width: 100%; height: 150px; background: #000; border: 1px solid rgba(170, 0, 255, 0.5); 
+            border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;
         }
         .face-id-box {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px dashed rgba(0, 255, 204, 0.4);
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 11px;
+            display: flex; align-items: center; gap: 10px; background: rgba(0, 0, 0, 0.4);
+            border: 1px dashed rgba(0, 255, 204, 0.4); padding: 8px; border-radius: 4px; font-size: 11px;
         }
-        .face-thumb {
-            width: 48px;
-            height: 48px;
-            border-radius: 4px;
-            border: 1px solid #00ffcc;
-            object-fit: cover;
-            display: none;
-        }
-        .center-panel { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 30px; 
-        }
-        .core-assembly {
-            position: relative;
-            width: 200px;
-            height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .face-thumb { width: 48px; height: 48px; border-radius: 4px; border: 1px solid #00ffcc; object-fit: cover; display: none; }
+        
+        .center-panel { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+        .core-assembly { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; }
         .core-orb { 
-            width: 110px; 
-            height: 110px; 
-            background: radial-gradient(circle, #e085ff 0%, #aa00ff 40%, #2a0044 80%, #000 100%); 
-            border-radius: 50%; 
-            box-shadow: 0 0 60px rgba(170, 0, 255, 0.8); 
-            animation: pulseOrb 2.5s infinite alternate; 
-            z-index: 2;
+            width: 110px; height: 110px; background: radial-gradient(circle, #e085ff 0%, #aa00ff 40%, #2a0044 80%, #000 100%); 
+            border-radius: 50%; box-shadow: 0 0 60px rgba(170, 0, 255, 0.8); animation: pulseOrb 2.5s infinite alternate; z-index: 2;
         }
-        .core-ring {
-            position: absolute;
-            border-radius: 50%;
-            border: 1px dashed rgba(170, 0, 255, 0.6);
-            z-index: 1;
-        }
+        .core-ring { position: absolute; border-radius: 50%; border: 1px dashed rgba(170, 0, 255, 0.6); z-index: 1; }
         .ring-1 { width: 145px; height: 145px; border-top: 2px solid #00ffcc; animation: spinRight 8s linear infinite; }
         .ring-2 { width: 175px; height: 175px; border-bottom: 2px dashed #ff0055; animation: spinLeft 12s linear infinite; }
         .ring-3 { width: 200px; height: 200px; border-right: 2px solid #aa00ff; animation: spinRight 15s linear infinite; }
-        @keyframes pulseOrb { 
-            0% { transform: scale(0.95); filter: hue-rotate(0deg); } 
-            100% { transform: scale(1.05); filter: hue-rotate(15deg); } 
-        }
+        
+        @keyframes pulseOrb { 0% { transform: scale(0.95); filter: hue-rotate(0deg); } 100% { transform: scale(1.05); filter: hue-rotate(15deg); } }
         @keyframes spinRight { 100% { transform: rotate(360deg); } }
         @keyframes spinLeft { 100% { transform: rotate(-360deg); } }
-        .status-text { 
-            font-size: 16px; 
-            letter-spacing: 4px; 
-            color: #fff; 
-            text-align: center; 
-            text-shadow: 0 0 10px #aa00ff;
-        }
-        .quick-cmds {
-            display: none;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
+        
+        .status-text { font-size: 16px; letter-spacing: 4px; color: #fff; text-align: center; text-shadow: 0 0 10px #aa00ff; }
+        
+        .quick-cmds { display: none; gap: 10px; flex-wrap: wrap; justify-content: center; }
         .chip-btn {
-            background: rgba(0, 255, 204, 0.1);
-            border: 1px solid #00ffcc;
-            color: #00ffcc;
-            padding: 6px 12px;
-            font-family: inherit;
-            font-size: 11px;
-            border-radius: 4px;
-            cursor: pointer;
+            background: rgba(0, 255, 204, 0.1); border: 1px solid #00ffcc; color: #00ffcc;
+            padding: 6px 12px; font-family: inherit; font-size: 11px; border-radius: 4px; cursor: pointer; text-transform: uppercase;
         }
+        .chip-btn:active { background: rgba(0, 255, 204, 0.3); }
+
         .input-container { 
-            display: flex; 
-            width: 90%; 
-            max-width: 600px; 
-            gap: 10px; 
-            background: rgba(0,0,0,0.6);
-            padding: 10px;
-            border: 1px solid rgba(170, 0, 255, 0.4);
-            border-radius: 4px;
+            display: flex; flex-direction: column; width: 95%; max-width: 650px; gap: 10px; 
+            background: rgba(0,0,0,0.6); padding: 12px; border: 1px solid rgba(170, 0, 255, 0.4); border-radius: 6px;
         }
+        .input-row { display: flex; gap: 8px; width: 100%; align-items: center; }
         input[type="text"], input[type="password"] { 
-            flex: 1; 
-            background: transparent; 
-            border: none; 
-            border-bottom: 1px solid #aa00ff; 
-            padding: 8px 12px; 
-            color: #00ffcc; 
-            font-size: 14px;
-            font-family: inherit; 
-            outline: none; 
+            flex: 1; background: transparent; border: none; border-bottom: 1px solid #aa00ff; 
+            padding: 8px 12px; color: #00ffcc; font-size: 14px; font-family: inherit; outline: none; 
         }
         button.send-btn { 
-            background: rgba(170, 0, 255, 0.15); 
-            border: 1px solid #aa00ff; 
-            color: #e085ff; 
-            padding: 8px 18px; 
-            cursor: pointer; 
-            font-family: inherit;
-            font-weight: bold; 
-            border-radius: 4px;
+            background: rgba(170, 0, 255, 0.15); border: 1px solid #aa00ff; color: #e085ff; 
+            padding: 8px 18px; cursor: pointer; font-family: inherit; font-weight: bold; border-radius: 4px;
         }
-        .log-box { 
-            flex: 1; 
-            overflow-y: auto; 
-            font-size: 12px; 
-            color: #999; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 10px; 
-            line-height: 1.4;
-        }
+        
+        .log-box { flex: 1; overflow-y: auto; font-size: 12px; color: #999; display: flex; flex-direction: column; gap: 10px; line-height: 1.4; }
 
-        /* AUTH MODAL OVERLAY */
+        /* AUTH MODAL */
         .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(3, 0, 8, 0.92);
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 500;
-            padding: 20px;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 0, 8, 0.92); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center; z-index: 500; padding: 20px;
         }
         .auth-card {
-            background: rgba(15, 5, 30, 0.9);
-            border: 1px solid #aa00ff;
-            box-shadow: 0 0 35px rgba(170, 0, 255, 0.4);
-            border-radius: 8px;
-            padding: 25px;
-            width: 100%;
-            max-width: 390px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            background: rgba(15, 5, 30, 0.9); border: 1px solid #aa00ff; box-shadow: 0 0 35px rgba(170, 0, 255, 0.4);
+            border-radius: 8px; padding: 25px; width: 100%; max-width: 390px; display: flex; flex-direction: column; gap: 15px;
         }
         .auth-tabs { display: flex; gap: 10px; }
-        .tab-btn {
-            flex: 1;
-            padding: 8px;
-            background: transparent;
-            border: 1px solid rgba(170, 0, 255, 0.4);
-            color: #888;
-            font-family: inherit;
-            cursor: pointer;
+        .tab-btn { flex: 1; padding: 8px; background: transparent; border: 1px solid rgba(170, 0, 255, 0.4); color: #888; font-family: inherit; cursor: pointer; }
+        .tab-btn.active { border-color: #00ffcc; color: #00ffcc; background: rgba(0, 255, 204, 0.1); }
+
+        /* IMAGE PREVIEW BOX */
+        #imgPreviewBox {
+            display: none; align-items: flex-start; margin-bottom: 5px; padding-bottom: 10px; border-bottom: 1px dashed rgba(170,0,255,0.3);
         }
-        .tab-btn.active {
-            border-color: #00ffcc;
-            color: #00ffcc;
-            background: rgba(0, 255, 204, 0.1);
+        .preview-wrapper { position: relative; width: 70px; height: 70px; }
+        #imgPreview { width: 100%; height: 100%; object-fit: cover; border: 1px solid #00ffcc; border-radius: 4px; }
+        .del-img-btn { 
+            position: absolute; top: -8px; right: -8px; background: #ff0055; border: none; color: white; 
+            border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 12px; font-weight: bold; 
         }
 
-        /* RESPONSIVE PHONE / TABLET LAYOUT */
         @media (max-width: 900px) {
-            body {
-                height: auto;
-                min-height: 100dvh;
-                overflow-y: auto;
-            }
-            .container {
-                flex-direction: column;
-                padding: 12px;
-                gap: 15px;
-                height: auto;
-            }
-            .left-panel, .right-panel, .center-panel {
-                width: 100%;
-            }
-            .center-panel {
-                order: 1;
-                padding: 15px 0;
-                gap: 20px;
-            }
-            .right-panel {
-                order: 2;
-                height: 260px;
-            }
-            .left-panel {
-                order: 3;
-            }
-            .core-assembly {
-                width: 140px;
-                height: 140px;
-            }
+            body { height: auto; min-height: 100dvh; overflow-y: auto; }
+            .container { flex-direction: column; padding: 12px; gap: 15px; height: auto; }
+            .left-panel, .right-panel, .center-panel { width: 100%; }
+            .center-panel { order: 1; padding: 15px 0; gap: 20px; }
+            .right-panel { order: 2; height: 260px; }
+            .left-panel { order: 3; }
+            .core-assembly { width: 140px; height: 140px; }
             .core-orb { width: 75px; height: 75px; }
             .ring-1 { width: 100px; height: 100px; }
             .ring-2 { width: 120px; height: 120px; }
             .ring-3 { width: 140px; height: 140px; }
             .status-text { font-size: 13px; letter-spacing: 2px; }
-            .input-container { width: 100%; }
         }
     </style>
 </head>
 <body>
 
-    <!-- IDENTITY VERIFICATION MODAL (NO PRE-FILLED NAME) -->
+    <!-- AUTH MODAL -->
     <div id="authModal" class="modal-overlay">
         <div class="auth-card">
-            <div class="section-title">KIZA // IDENTITY VERIFICATION</div>
-            <div style="font-size: 11px; color: #00ffcc;">State your identity to access KIZA. Owner clearance unlocks system overrides & biometric lock.</div>
+            <div class="section-title">KIZA // IDENTITY GATE</div>
             <div class="auth-tabs">
                 <button id="loginTab" class="tab-btn active" onclick="switchAuthMode('login')">LOGIN</button>
                 <button id="signupTab" class="tab-btn" onclick="switchAuthMode('signup')">SIGN UP</button>
@@ -292,19 +138,18 @@
             <input type="text" id="authUser" placeholder="Enter Identity Name..." autocomplete="off">
             <input type="password" id="authPass" placeholder="Enter Security Passcode...">
             <label style="font-size: 11px; color: #ccc; display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                <input type="checkbox" id="captureFaceCheck" checked>
-                Scan & Lock Biometric Face ID
+                <input type="checkbox" id="captureFaceCheck" checked> Scan & Lock Biometric Face ID
             </label>
             <div id="authError" style="color: #ff0055; font-size: 11px; min-height: 14px;"></div>
             <button class="send-btn" onclick="performAuth()" style="width: 100%; padding: 12px;">VERIFY IDENTITY</button>
         </div>
     </div>
 
-    <!-- MAIN HUD -->
     <div class="container">
+        <!-- LEFT PANEL -->
         <div class="side-panel left-panel">
             <div class="section-title">SYSTEM TELEMETRY</div>
-            <div class="telemetry-row"><span>CORE PROTOCOL</span><span class="telemetry-val">ACTIVE</span></div>
+            <div class="telemetry-row"><span>PROTOCOL</span><span class="telemetry-val">ACTIVE</span></div>
             <div class="telemetry-row"><span>IDENTITY</span><span id="idVal" class="telemetry-val">UNVERIFIED</span></div>
             <div class="telemetry-row"><span>CLEARANCE</span><span id="roleVal" class="telemetry-val">LOCKED</span></div>
             
@@ -313,17 +158,20 @@
                 <canvas id="faceCanvas" width="160" height="120" style="display:none;"></canvas>
                 <span id="camStatus" style="color:#553377; position: absolute;">Awaiting Signal...</span>
             </div>
+            <button class="chip-btn" onclick="switchCamera()" style="border-color: #aa00ff; color: #e085ff;">🔄 FLIP CAMERA</button>
 
             <div class="face-id-box">
                 <img id="savedFaceImg" class="face-thumb" alt="Biometric Face ID">
                 <div>
-                    <div style="color: #aa00ff; font-weight: bold;">BIOMETRIC FACE ID</div>
+                    <div style="color: #aa00ff; font-weight: bold;">BIOMETRIC ID</div>
                     <div id="faceIdStatus" style="color: #888;">Awaiting Scan...</div>
                 </div>
             </div>
+            <button class="chip-btn" onclick="updateFaceID()" style="border-color: #00ffcc; color: #00ffcc;">🧬 RE-SCAN FACE ID</button>
             <button class="chip-btn" onclick="logoutUser()" style="margin-top: auto; border-color: #ff0055; color: #ff0055;">SWITCH IDENTITY</button>
         </div>
 
+        <!-- CENTER PANEL -->
         <div class="center-panel">
             <div class="core-assembly">
                 <div class="core-ring ring-1"></div>
@@ -333,23 +181,37 @@
             </div>
             <div id="uiStatus" class="status-text">AWAITING IDENTITY...</div>
             
-            <!-- OWNER QUICK COMMANDS (HIDDEN UNTIL VIYAN ARORA LOGS IN) -->
             <div id="masterCmds" class="quick-cmds">
                 <button class="chip-btn" onclick="sendQuickCmd('/health')">⚡ /health</button>
                 <button class="chip-btn" onclick="sendQuickCmd('/purge')" style="border-color:#ff0055; color:#ff0055;">🗑️ /purge</button>
-                <button class="chip-btn" onclick="sendQuickCmd('/commands')">🛡️ /commands</button>
+                <button class="chip-btn" onclick="sendQuickCmd('/commands')">🛡️ /cmds</button>
             </div>
 
+            <!-- ENHANCED INPUT WITH VISION (CAMERA & UPLOAD) -->
             <div class="input-container">
-                <input type="text" id="textInput" placeholder="Awaiting command...">
-                <button class="send-btn" onclick="submitCommand()">TRANSMIT</button>
+                <div id="imgPreviewBox">
+                    <div class="preview-wrapper">
+                        <img id="imgPreview">
+                        <button class="del-img-btn" onclick="clearImage()">X</button>
+                    </div>
+                    <div style="font-size: 11px; color:#00ffcc; padding-left: 10px; padding-top: 25px;">Visual data attached. Ready for analysis.</div>
+                </div>
+                
+                <div class="input-row">
+                    <button class="chip-btn" style="padding: 6px; font-size: 16px;" onclick="document.getElementById('fileUpload').click()" title="Upload File">📁</button>
+                    <button class="chip-btn" style="padding: 6px; font-size: 16px;" onclick="snapVisionCam()" title="Snap Photo from Video">📸</button>
+                    <input type="file" id="fileUpload" accept="image/*" style="display: none;" onchange="handleFileUpload(event)">
+                    <input type="text" id="textInput" placeholder="Ask for help or analyze an image...">
+                    <button class="send-btn" onclick="submitCommand()">TRANSMIT</button>
+                </div>
             </div>
         </div>
 
+        <!-- RIGHT PANEL -->
         <div class="side-panel right-panel">
             <div class="section-title">LIVE ACTION FEED</div>
             <div id="actionLog" class="log-box">
-                <div>> [KIZA SYSTEM]: Neural UI initialized. Awaiting user authentication...</div>
+                <div>> [KIZA SYSTEM]: Multimodal Vision UI active...</div>
             </div>
         </div>
     </div>
@@ -359,26 +221,94 @@
         let currentUser = "Guest";
         let currentRole = "LOCKED";
         let authMode = "login";
+        
         let cameraReady = false;
+        let videoDevices = [];
+        let currentCamIndex = 0;
+        let activeStream = null;
+        let attachedImageBase64 = null;
 
-        async function initCamera() {
+        // MULTI-CAMERA INIT
+        async function initCamera(deviceId = null) {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                if (activeStream) activeStream.getTracks().forEach(track => track.stop());
+                
+                const constraints = deviceId ? { video: { deviceId: { exact: deviceId } } } : { video: { facingMode: "user" } };
+                activeStream = await navigator.mediaDevices.getUserMedia(constraints);
+                
                 const videoElement = document.getElementById('webcamVideo');
-                videoElement.srcObject = stream;
+                videoElement.srcObject = activeStream;
                 videoElement.style.display = "block";
                 document.getElementById('camStatus').style.display = "none";
                 cameraReady = true;
-                logAction("[SYSTEM]: Biometric optical feed online.", "#00ffcc");
+
+                // Load available lenses
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                videoDevices = devices.filter(d => d.kind === 'videoinput');
+                logAction(`[SYSTEM]: Optical feed online (${videoDevices.length} lens(es) detected).`, "#00ffcc");
             } catch (error) {
                 document.getElementById('camStatus').innerText = "CAMERA OFFLINE";
                 document.getElementById('camStatus').style.color = "#ff0055";
-                logAction("[SYSTEM WARNING]: Camera access denied.", "#ff0055");
+                logAction("[WARNING]: Camera access denied. Face ID and Snap feature disabled.", "#ff0055");
             }
         }
-
         window.onload = initCamera;
 
+        // FLIP CAMERA
+        async function switchCamera() {
+            if (videoDevices.length <= 1) {
+                logAction("[SYSTEM]: Only 1 lens detected on this device.", "#ff0055");
+                return;
+            }
+            currentCamIndex = (currentCamIndex + 1) % videoDevices.length;
+            await initCamera(videoDevices[currentCamIndex].deviceId);
+            logAction(`[SYSTEM]: Switching lens feed...`, "#00ffcc");
+        }
+
+        // VISION CAPABILITIES (SNAP & UPLOAD)
+        function setPreviewImage(b64) {
+            attachedImageBase64 = b64;
+            document.getElementById('imgPreview').src = b64;
+            document.getElementById('imgPreviewBox').style.display = "flex";
+        }
+        
+        function clearImage() {
+            attachedImageBase64 = null;
+            document.getElementById('imgPreviewBox').style.display = "none";
+            document.getElementById('fileUpload').value = "";
+        }
+
+        function snapVisionCam() {
+            if (!cameraReady) { logAction("[ERROR]: Cannot snap. Camera offline.", "#ff0055"); return; }
+            const video = document.getElementById('webcamVideo');
+            const cvs = document.createElement('canvas');
+            cvs.width = 640; cvs.height = 480; 
+            cvs.getContext('2d').drawImage(video, 0, 0, cvs.width, cvs.height);
+            setPreviewImage(cvs.toDataURL('image/jpeg', 0.8));
+            logAction("[SYSTEM]: Optical frame captured for analysis.", "#e085ff");
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const cvs = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    const scale = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1;
+                    cvs.width = img.width * scale; cvs.height = img.height * scale;
+                    cvs.getContext('2d').drawImage(img, 0, 0, cvs.width, cvs.height);
+                    setPreviewImage(cvs.toDataURL('image/jpeg', 0.8));
+                    logAction("[SYSTEM]: File uploaded and compressed for analysis.", "#e085ff");
+                }
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
+        // AUTH & DATABASE
         function switchAuthMode(mode) {
             authMode = mode;
             document.getElementById('loginTab').classList.toggle('active', mode === 'login');
@@ -390,9 +320,29 @@
             if (!cameraReady || !document.getElementById('captureFaceCheck').checked) return null;
             const video = document.getElementById('webcamVideo');
             const canvas = document.getElementById('faceCanvas');
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
             return canvas.toDataURL('image/jpeg', 0.6);
+        }
+
+        async function updateFaceID() {
+            if (currentUser === "Guest") return;
+            let faceData = captureFaceSnapshot();
+            if (!faceData) { logAction("[ERROR]: Camera must be active to rescan Face ID.", "#ff0055"); return; }
+            
+            logAction("[SYSTEM]: Overwriting Biometric Scan...", "#00ffcc");
+            try {
+                let res = await fetch(`${SERVER_URL}/api/update_face`, {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username: currentUser, face_id: faceData })
+                });
+                let data = await res.json();
+                if (data.success) {
+                    document.getElementById('savedFaceImg').src = faceData;
+                    document.getElementById('savedFaceImg').style.display = "block";
+                    document.getElementById('faceIdStatus').innerText = "BIOMETRICS UPDATED";
+                    logAction("[SYSTEM]: " + data.message, "#00ffcc");
+                }
+            } catch (err) { logAction("[ERROR]: Update failed.", "#ff0055"); }
         }
 
         async function performAuth() {
@@ -400,100 +350,63 @@
             const password = document.getElementById('authPass').value.trim();
             const errBox = document.getElementById('authError');
 
-            if (!username || !password) {
-                errBox.innerText = "Please enter both Identity Name and Passcode.";
-                return;
-            }
+            if (!username || !password) { errBox.innerText = "Enter Name and Passcode."; return; }
 
-            errBox.style.color = "#00ffcc";
-            errBox.innerText = "Scanning biometrics & verifying identity...";
+            errBox.style.color = "#00ffcc"; errBox.innerText = "Scanning & verifying...";
             const faceData = captureFaceSnapshot();
 
             try {
                 let res = await fetch(`${SERVER_URL}/api/auth`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        username: username,
-                        password: password,
-                        action: authMode,
-                        face_id: faceData
-                    })
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username: username, password: password, action: authMode, face_id: faceData })
                 });
                 let data = await res.json();
 
-                if (!data.success) {
-                    errBox.style.color = "#ff0055";
-                    errBox.innerText = data.message || "Authentication failed.";
-                    return;
-                }
+                if (!data.success) { errBox.style.color = "#ff0055"; errBox.innerText = data.message; return; }
 
-                // Auth Success
-                currentUser = data.username;
-                currentRole = data.role;
+                currentUser = data.username; currentRole = data.role;
                 document.getElementById('authModal').style.display = "none";
                 document.getElementById('idVal').innerText = currentUser.toUpperCase();
                 
                 const roleEl = document.getElementById('roleVal');
                 roleEl.innerText = currentRole;
-                if (currentRole.includes("OWNER")) {
-                    roleEl.classList.add("master");
-                    document.getElementById('masterCmds').style.display = "flex";
-                } else {
-                    roleEl.classList.remove("master");
-                    document.getElementById('masterCmds').style.display = "none";
-                }
+                if (currentRole.includes("OWNER")) { roleEl.classList.add("master"); document.getElementById('masterCmds').style.display = "flex"; } 
+                else { roleEl.classList.remove("master"); document.getElementById('masterCmds').style.display = "none"; }
 
                 if (data.face_id) {
-                    const img = document.getElementById('savedFaceImg');
-                    img.src = data.face_id;
-                    img.style.display = "block";
-                    document.getElementById('faceIdStatus').innerText = "BIOMETRICS LOCKED";
-                    document.getElementById('faceIdStatus').style.color = "#00ffcc";
+                    const img = document.getElementById('savedFaceImg'); img.src = data.face_id; img.style.display = "block";
+                    document.getElementById('faceIdStatus').innerText = "BIOMETRICS LOCKED"; document.getElementById('faceIdStatus').style.color = "#00ffcc";
                 } else {
-                    document.getElementById('savedFaceImg').style.display = "none";
-                    document.getElementById('faceIdStatus').innerText = "NO SCAN SAVED";
+                    document.getElementById('savedFaceImg').style.display = "none"; document.getElementById('faceIdStatus').innerText = "NO SCAN SAVED";
                 }
 
                 document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
                 logAction(`[KIZA]: ${data.reply}`, "#e085ff");
-
-                if (data.audio_base64) {
-                    new Audio("data:audio/mp3;base64," + data.audio_base64).play();
-                }
-            } catch (err) {
-                errBox.style.color = "#ff0055";
-                errBox.innerText = "Server unreachable. Wait 50s for Render deploy.";
-            }
+                if (data.audio_base64) new Audio("data:audio/mp3;base64," + data.audio_base64).play();
+            } catch (err) { errBox.style.color = "#ff0055"; errBox.innerText = "Server offline. Wait 50s for Render."; }
         }
 
         function logoutUser() {
             document.getElementById('authModal').style.display = "flex";
-            document.getElementById('authUser').value = "";
-            document.getElementById('authPass').value = "";
-            document.getElementById('authError').innerText = "";
-            document.getElementById('masterCmds').style.display = "none";
+            document.getElementById('authUser').value = ""; document.getElementById('authPass').value = ""; document.getElementById('authError').innerText = "";
+            document.getElementById('masterCmds').style.display = "none"; clearImage();
         }
 
-        function sendQuickCmd(cmd) {
-            document.getElementById('textInput').value = cmd;
-            submitCommand();
-        }
+        function sendQuickCmd(cmd) { document.getElementById('textInput').value = cmd; submitCommand(); }
 
         async function submitCommand() {
             let inputField = document.getElementById('textInput');
             let text = inputField.value.trim();
-            if (!text) return;
+            if (!text && !attachedImageBase64) return;
 
-            logAction(`[${currentUser.toUpperCase()}]: ${text}`, "#00ffcc");
+            logAction(`[${currentUser.toUpperCase()}]: ${text || "[Visual Feed Transmitted]"}`, "#00ffcc");
             inputField.value = "";
-            document.getElementById('uiStatus').innerText = "KIZA PROCESSING...";
+            document.getElementById('uiStatus').innerText = "KIZA ANALYZING...";
 
             try {
                 let response = await fetch(`${SERVER_URL}/api/chat`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ user: currentUser, command: text })
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user: currentUser, command: text || "Analyze this image.", image_base64: attachedImageBase64 })
                 });
 
                 if (!response.ok) throw new Error("Cloud connection failed.");
@@ -501,10 +414,8 @@
                 
                 logAction(`[KIZA]: ${data.reply}`, "#e085ff");
                 document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
-
-                if (data.audio_base64) {
-                    new Audio("data:audio/mp3;base64," + data.audio_base64).play();
-                }
+                if (data.audio_base64) new Audio("data:audio/mp3;base64," + data.audio_base64).play();
+                clearImage(); 
             } catch (error) {
                 logAction(`[SYSTEM ERROR]: ${error.message}`, "#ff0055");
                 document.getElementById('uiStatus').innerText = "CONNECTION FAILED.";
@@ -514,15 +425,11 @@
         function logAction(message, color) {
             let logBox = document.getElementById('actionLog');
             let newEntry = document.createElement('div');
-            newEntry.style.color = color;
-            newEntry.innerText = `> ${message}`;
-            logBox.appendChild(newEntry);
-            logBox.scrollTop = logBox.scrollHeight;
+            newEntry.style.color = color; newEntry.innerText = `> ${message}`;
+            logBox.appendChild(newEntry); logBox.scrollTop = logBox.scrollHeight;
         }
 
-        document.getElementById('textInput').addEventListener("keypress", function(event) {
-            if (event.key === "Enter") submitCommand();
-        });
+        document.getElementById('textInput').addEventListener("keypress", function(event) { if (event.key === "Enter") submitCommand(); });
     </script>
 </body>
 </html>
