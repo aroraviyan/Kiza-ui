@@ -95,17 +95,10 @@
         .tab-btn { flex: 1; padding: 8px; background: transparent; border: 1px solid rgba(170, 0, 255, 0.4); color: #888; font-family: inherit; cursor: pointer; }
         .tab-btn.active { border-color: #00ffcc; color: #00ffcc; background: rgba(0, 255, 204, 0.1); }
 
-        /* MOBILE RESPONSIVE OPTIMIZATIONS */
         @media (max-width: 900px) {
             body { height: 100dvh; overflow: hidden; }
-            .container { 
-                flex-direction: column; 
-                padding: 10px; 
-                gap: 10px; 
-                height: 100dvh; 
-                max-height: 100dvh;
-            }
-            .left-panel { display: none; } /* Hide heavy telemetry on mobile to save space */
+            .container { flex-direction: column; padding: 10px; gap: 10px; height: 100dvh; max-height: 100dvh; }
+            .left-panel { display: none; }
             .center-panel { order: 1; flex: 0 0 auto; gap: 10px; padding: 5px 0; }
             .core-assembly { width: 90px; height: 90px; }
             .core-orb { width: 50px; height: 50px; box-shadow: 0 0 25px rgba(170, 0, 255, 0.8); }
@@ -113,19 +106,8 @@
             .ring-2 { width: 80px; height: 80px; }
             .ring-3 { width: 90px; height: 90px; }
             .status-text { font-size: 11px; letter-spacing: 1px; }
-            
-            .right-panel { 
-                order: 2; 
-                flex: 1; 
-                width: 100%; 
-                min-height: 0; 
-                margin-bottom: 5px;
-            }
-            .center-panel .input-container {
-                order: 3;
-                width: 100%;
-                margin-bottom: 5px;
-            }
+            .right-panel { order: 2; flex: 1; width: 100%; min-height: 0; margin-bottom: 5px; }
+            .center-panel .input-container { order: 3; width: 100%; margin-bottom: 5px; }
         }
     </style>
 </head>
@@ -149,7 +131,6 @@
     </div>
 
     <div class="container">
-        <!-- LEFT PANEL (Hidden on Mobile to save screen space, fully visible on PC) -->
         <div class="side-panel left-panel">
             <div class="section-title">SYSTEM TELEMETRY</div>
             <div class="telemetry-row"><span>PROTOCOL</span><span class="telemetry-val">ACTIVE</span></div>
@@ -159,12 +140,15 @@
             <div class="camera-box">
                 <video id="webcamVideo" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; display: none;"></video>
                 <canvas id="faceCanvas" width="160" height="120" style="display:none;"></canvas>
-                <span id="camStatus" style="color:#553377; position: absolute;">Camera Offline / Busy...</span>
+                <span id="camStatus" style="color:#553377; position: absolute;">Camera Offline...</span>
             </div>
             <button class="chip-btn" onclick="switchCamera()" style="border-color: #aa00ff; color: #e085ff;">🔄 FLIP CAMERA</button>
             <button class="chip-btn" onclick="initCamera()" style="border-color: #00ffcc; color: #00ffcc; font-size: 10px;">RETRY CAMERA FEED</button>
 
-            <div class="face-id-box">
+            <!-- VOICE MUTE / UNMUTE BUTTON -->
+            <button class="chip-btn" id="voiceToggleBtn" onclick="toggleVoiceMute()" style="border-color: #00ffcc; color: #00ffcc; margin-top: 5px;">🔊 VOICE: ON</button>
+
+            <div class="face-id-box" style="margin-top: 5px;">
                 <img id="savedFaceImg" class="face-thumb" alt="Biometric Face ID">
                 <div>
                     <div style="color: #aa00ff; font-weight: bold;">BIOMETRIC ID</div>
@@ -190,9 +174,10 @@
                 <button class="chip-btn" onclick="sendQuickCmd('/commands')">🛡️ /cmds</button>
             </div>
 
-            <!-- CHAT INPUT CONTAINER -->
             <div class="input-container">
                 <div class="input-row">
+                    <!-- Voice Mute Button for Mobile view -->
+                    <button class="chip-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Voice" style="padding: 6px; font-size: 14px;">🔊</button>
                     <button class="chip-btn" id="micBtn" style="padding: 6px; font-size: 16px;" onclick="toggleSpeechRecognition()" title="Voice Input">🎤</button>
                     <input type="text" id="textInput" placeholder="Speak or type command...">
                     <button class="send-btn" onclick="submitCommand()">TRANSMIT</button>
@@ -222,10 +207,41 @@
         let recognition = null;
         let isRecording = false;
 
+        // VOICE MUTE STATE & ACTIVE AUDIO CONTROLLER
+        let voiceEnabled = true;
+        let currentAudio = null;
+
+        function toggleVoiceMute() {
+            voiceEnabled = !voiceEnabled;
+            const btn = document.getElementById('voiceToggleBtn');
+            const mobileBtn = document.getElementById('mobileVoiceBtn');
+            if (voiceEnabled) {
+                if(btn) { btn.innerText = "🔊 VOICE: ON"; btn.style.borderColor = "#00ffcc"; btn.style.color = "#00ffcc"; }
+                if(mobileBtn) mobileBtn.innerText = "🔊";
+                logAction("[SYSTEM]: Voice synthesis enabled.", "#00ffcc");
+            } else {
+                if(btn) { btn.innerText = "🔇 VOICE: MUTED"; btn.style.borderColor = "#ff0055"; btn.style.color = "#ff0055"; }
+                if(mobileBtn) mobileBtn.innerText = "🔇";
+                if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+                logAction("[SYSTEM]: Voice synthesis muted.", "#ff0055");
+            }
+        }
+
+        function playKizaAudio(base64Data) {
+            if (!voiceEnabled || !base64Data) return;
+            // Stop any currently playing audio so new responses don't overlap with old ones
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+            }
+            currentAudio = new Audio("data:audio/mp3;base64," + base64Data);
+            currentAudio.play().catch(e => console.log("Audio play blocked/interrupted"));
+        }
+
         async function initCamera(deviceId = null) {
             try {
                 if (activeStream) activeStream.getTracks().forEach(track => track.stop());
-                
                 const constraints = deviceId ? { video: { deviceId: { exact: deviceId } } } : { video: { facingMode: "user" } };
                 activeStream = await navigator.mediaDevices.getUserMedia(constraints);
                 
@@ -237,7 +253,6 @@
 
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 videoDevices = devices.filter(d => d.kind === 'videoinput');
-                logAction(`[SYSTEM]: Optical feed active (${videoDevices.length} lens).`, "#00ffcc");
             } catch (error) {
                 document.getElementById('camStatus').innerText = "CAMERA OFFLINE";
                 document.getElementById('camStatus').style.color = "#ff0055";
@@ -246,10 +261,7 @@
         window.onload = () => initCamera();
 
         async function switchCamera() {
-            if (videoDevices.length <= 1) {
-                logAction("[SYSTEM]: Only 1 lens detected.", "#ff0055");
-                return;
-            }
+            if (videoDevices.length <= 1) { logAction("[SYSTEM]: Only 1 lens detected.", "#ff0055"); return; }
             currentCamIndex = (currentCamIndex + 1) % videoDevices.length;
             await initCamera(videoDevices[currentCamIndex].deviceId);
             logAction(`[SYSTEM]: Switching lens feed...`, "#00ffcc");
@@ -257,10 +269,7 @@
 
         function initSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                logAction("[SYSTEM]: Speech recognition not supported.", "#ff0055");
-                return null;
-            }
+            if (!SpeechRecognition) { logAction("[SYSTEM]: Speech recognition not supported.", "#ff0055"); return null; }
             
             const rec = new SpeechRecognition();
             rec.continuous = false;
@@ -270,8 +279,7 @@
             rec.onstart = function() {
                 isRecording = true;
                 const micBtn = document.getElementById('micBtn');
-                micBtn.style.borderColor = "#ff0055";
-                micBtn.style.color = "#ff0055";
+                micBtn.style.borderColor = "#ff0055"; micBtn.style.color = "#ff0055";
                 document.getElementById('uiStatus').innerText = "LISTENING...";
             };
 
@@ -282,21 +290,14 @@
                 submitCommand();
             };
 
-            rec.onerror = function(event) {
-                resetMicState();
-            };
-
-            rec.onend = function() {
-                resetMicState();
-            };
-
+            rec.onerror = function(event) { resetMicState(); };
+            rec.onend = function() { resetMicState(); };
             return rec;
         }
 
         function toggleSpeechRecognition() {
             if (!recognition) recognition = initSpeechRecognition();
             if (!recognition) return;
-
             if (isRecording) {
                 recognition.stop();
             } else {
@@ -307,10 +308,7 @@
         function resetMicState() {
             isRecording = false;
             const micBtn = document.getElementById('micBtn');
-            if (micBtn) {
-                micBtn.style.borderColor = "#00ffcc";
-                micBtn.style.color = "#00ffcc";
-            }
+            if (micBtn) { micBtn.style.borderColor = "#00ffcc"; micBtn.style.color = "#00ffcc"; }
         }
 
         function switchAuthMode(mode) {
@@ -393,8 +391,8 @@
                 }
 
                 document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
-                logAction(`[KIZA]: ${data.reply}`, "#e085ff");
-                if (data.audio_base64) new Audio("data:audio/mp3;base64," + data.audio_base64).play();
+                logAction(`[KIZA]: ${data.reply}`, "#e085ff", true);
+                playKizaAudio(data.audio_base64);
             } catch (err) { errBox.style.color = "#ff0055"; errBox.innerText = "Server offline. Wait 50s for Render."; }
         }
 
@@ -439,7 +437,8 @@
                 let formattedReply = formatKizaText(data.reply);
                 logAction(`[KIZA]: ${formattedReply}`, "#e085ff", true);
                 document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
-                if (data.audio_base64) new Audio("data:audio/mp3;base64," + data.audio_base64).play();
+                
+                playKizaAudio(data.audio_base64);
             } catch (error) {
                 logAction(`[SYSTEM ERROR]: ${error.message}`, "#ff0055");
                 document.getElementById('uiStatus').innerText = "CONNECTION FAILED.";
