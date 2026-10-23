@@ -9,9 +9,7 @@
         body { 
             background-color: #030008; 
             background-image: linear-gradient(rgba(170, 0, 255, 0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(170, 0, 255, 0.07) 1px, transparent 1px);
-            background-size: 40px 40px;
-            color: #a3a3a3; 
-            font-family: 'Courier New', Courier, monospace; 
+            background-size: 40px 40px; color: #a3a3a3; font-family: 'Courier New', Courier, monospace; 
             margin: 0; padding: 0; display: flex; height: 100dvh; overflow: hidden; 
         }
         body::after {
@@ -85,7 +83,6 @@
         
         .log-box { flex: 1; overflow-y: auto; font-size: 12px; color: #999; display: flex; flex-direction: column; gap: 10px; line-height: 1.4; }
 
-        /* AUTH MODAL */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 0, 8, 0.92); backdrop-filter: blur(10px);
             display: flex; align-items: center; justify-content: center; z-index: 500; padding: 20px;
@@ -98,16 +95,11 @@
         .tab-btn { flex: 1; padding: 8px; background: transparent; border: 1px solid rgba(170, 0, 255, 0.4); color: #888; font-family: inherit; cursor: pointer; }
         .tab-btn.active { border-color: #00ffcc; color: #00ffcc; background: rgba(0, 255, 204, 0.1); }
 
-        /* IMAGE PREVIEW BOX */
-        #imgPreviewBox {
-            display: none; align-items: flex-start; margin-bottom: 5px; padding-bottom: 10px; border-bottom: 1px dashed rgba(170,0,255,0.3);
+        #filePreviewBox {
+            display: none; align-items: center; justify-content: space-between; margin-bottom: 5px; padding-bottom: 8px; border-bottom: 1px dashed rgba(170,0,255,0.3);
+            font-size: 12px; color: #00ffcc;
         }
-        .preview-wrapper { position: relative; width: 70px; height: 70px; }
-        #imgPreview { width: 100%; height: 100%; object-fit: cover; border: 1px solid #00ffcc; border-radius: 4px; }
-        .del-img-btn { 
-            position: absolute; top: -8px; right: -8px; background: #ff0055; border: none; color: white; 
-            border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 12px; font-weight: bold; 
-        }
+        .del-file-btn { background: #ff0055; border: none; color: white; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-weight: bold; }
 
         @media (max-width: 900px) {
             body { height: auto; min-height: 100dvh; overflow-y: auto; }
@@ -127,7 +119,6 @@
 </head>
 <body>
 
-    <!-- AUTH MODAL -->
     <div id="authModal" class="modal-overlay">
         <div class="auth-card">
             <div class="section-title">KIZA // IDENTITY GATE</div>
@@ -146,7 +137,6 @@
     </div>
 
     <div class="container">
-        <!-- LEFT PANEL -->
         <div class="side-panel left-panel">
             <div class="section-title">SYSTEM TELEMETRY</div>
             <div class="telemetry-row"><span>PROTOCOL</span><span class="telemetry-val">ACTIVE</span></div>
@@ -156,9 +146,10 @@
             <div class="camera-box">
                 <video id="webcamVideo" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; display: none;"></video>
                 <canvas id="faceCanvas" width="160" height="120" style="display:none;"></canvas>
-                <span id="camStatus" style="color:#553377; position: absolute;">Awaiting Signal...</span>
+                <span id="camStatus" style="color:#553377; position: absolute;">Camera Offline / Busy...</span>
             </div>
             <button class="chip-btn" onclick="switchCamera()" style="border-color: #aa00ff; color: #e085ff;">🔄 FLIP CAMERA</button>
+            <button class="chip-btn" onclick="initCamera()" style="border-color: #00ffcc; color: #00ffcc; font-size: 10px;">RETRY CAMERA FEED</button>
 
             <div class="face-id-box">
                 <img id="savedFaceImg" class="face-thumb" alt="Biometric Face ID">
@@ -171,7 +162,6 @@
             <button class="chip-btn" onclick="logoutUser()" style="margin-top: auto; border-color: #ff0055; color: #ff0055;">SWITCH IDENTITY</button>
         </div>
 
-        <!-- CENTER PANEL -->
         <div class="center-panel">
             <div class="core-assembly">
                 <div class="core-ring ring-1"></div>
@@ -187,31 +177,28 @@
                 <button class="chip-btn" onclick="sendQuickCmd('/commands')">🛡️ /cmds</button>
             </div>
 
-            <!-- ENHANCED INPUT WITH VISION (CAMERA & UPLOAD) -->
+            <!-- ENHANCED INPUT WITH MULTI-FORMAT FILE UPLOAD & CAMERA SNAP -->
             <div class="input-container">
-                <div id="imgPreviewBox">
-                    <div class="preview-wrapper">
-                        <img id="imgPreview">
-                        <button class="del-img-btn" onclick="clearImage()">X</button>
-                    </div>
-                    <div style="font-size: 11px; color:#00ffcc; padding-left: 10px; padding-top: 25px;">Visual data attached. Ready for analysis.</div>
+                <div id="filePreviewBox">
+                    <span id="filePreviewName">📁 Attached file ready</span>
+                    <button class="del-file-btn" onclick="clearAttachedFile()">REMOVE</button>
                 </div>
                 
                 <div class="input-row">
-                    <button class="chip-btn" style="padding: 6px; font-size: 16px;" onclick="document.getElementById('fileUpload').click()" title="Upload File">📁</button>
+                    <!-- Accepts Images, PDFs, text, word docs, code files -->
+                    <button class="chip-btn" style="padding: 6px; font-size: 16px;" onclick="document.getElementById('fileUpload').click()" title="Attach Document or Image">📁</button>
                     <button class="chip-btn" style="padding: 6px; font-size: 16px;" onclick="snapVisionCam()" title="Snap Photo from Video">📸</button>
-                    <input type="file" id="fileUpload" accept="image/*" style="display: none;" onchange="handleFileUpload(event)">
-                    <input type="text" id="textInput" placeholder="Ask for help or analyze an image...">
+                    <input type="file" id="fileUpload" accept="image/*,.pdf,.txt,.doc,.docx,.js,.py,.html,.css" style="display: none;" onchange="handleFileUpload(event)">
+                    <input type="text" id="textInput" placeholder="Ask for homework help or attach docs...">
                     <button class="send-btn" onclick="submitCommand()">TRANSMIT</button>
                 </div>
             </div>
         </div>
 
-        <!-- RIGHT PANEL -->
         <div class="side-panel right-panel">
             <div class="section-title">LIVE ACTION FEED</div>
             <div id="actionLog" class="log-box">
-                <div>> [KIZA SYSTEM]: Multimodal Vision UI active...</div>
+                <div>> [KIZA SYSTEM]: Multimodal document & vision UI online...</div>
             </div>
         </div>
     </div>
@@ -226,9 +213,10 @@
         let videoDevices = [];
         let currentCamIndex = 0;
         let activeStream = null;
+        
         let attachedImageBase64 = null;
+        let attachedDocText = null;
 
-        // MULTI-CAMERA INIT
         async function initCamera(deviceId = null) {
             try {
                 if (activeStream) activeStream.getTracks().forEach(track => track.stop());
@@ -242,22 +230,20 @@
                 document.getElementById('camStatus').style.display = "none";
                 cameraReady = true;
 
-                // Load available lenses
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 videoDevices = devices.filter(d => d.kind === 'videoinput');
-                logAction(`[SYSTEM]: Optical feed online (${videoDevices.length} lens(es) detected).`, "#00ffcc");
+                logAction(`[SYSTEM]: Optical feed online (${videoDevices.length} lens(es)).`, "#00ffcc");
             } catch (error) {
-                document.getElementById('camStatus').innerText = "CAMERA OFFLINE";
+                document.getElementById('camStatus').innerText = "CAMERA BUSY / OFFLINE";
                 document.getElementById('camStatus').style.color = "#ff0055";
-                logAction("[WARNING]: Camera access denied. Face ID and Snap feature disabled.", "#ff0055");
+                logAction("[WARNING]: Camera unavailable. Close other apps using camera.", "#ff0055");
             }
         }
-        window.onload = initCamera;
+        window.onload = () => initCamera();
 
-        // FLIP CAMERA
         async function switchCamera() {
             if (videoDevices.length <= 1) {
-                logAction("[SYSTEM]: Only 1 lens detected on this device.", "#ff0055");
+                logAction("[SYSTEM]: Only 1 lens detected.", "#ff0055");
                 return;
             }
             currentCamIndex = (currentCamIndex + 1) % videoDevices.length;
@@ -265,50 +251,61 @@
             logAction(`[SYSTEM]: Switching lens feed...`, "#00ffcc");
         }
 
-        // VISION CAPABILITIES (SNAP & UPLOAD)
-        function setPreviewImage(b64) {
-            attachedImageBase64 = b64;
-            document.getElementById('imgPreview').src = b64;
-            document.getElementById('imgPreviewBox').style.display = "flex";
-        }
-        
-        function clearImage() {
+        function clearAttachedFile() {
             attachedImageBase64 = null;
-            document.getElementById('imgPreviewBox').style.display = "none";
+            attachedDocText = null;
+            document.getElementById('filePreviewBox').style.display = "none";
             document.getElementById('fileUpload').value = "";
         }
 
         function snapVisionCam() {
-            if (!cameraReady) { logAction("[ERROR]: Cannot snap. Camera offline.", "#ff0055"); return; }
+            if (!cameraReady) { logAction("[ERROR]: Camera offline. Cannot snap.", "#ff0055"); return; }
             const video = document.getElementById('webcamVideo');
             const cvs = document.createElement('canvas');
             cvs.width = 640; cvs.height = 480; 
             cvs.getContext('2d').drawImage(video, 0, 0, cvs.width, cvs.height);
-            setPreviewImage(cvs.toDataURL('image/jpeg', 0.8));
-            logAction("[SYSTEM]: Optical frame captured for analysis.", "#e085ff");
+            attachedImageBase64 = cvs.toDataURL('image/jpeg', 0.8);
+            
+            document.getElementById('filePreviewName').innerText = "📸 Attached Camera Snapshot";
+            document.getElementById('filePreviewBox').style.display = "flex";
+            logAction("[SYSTEM]: Optical frame captured for homework analysis.", "#e085ff");
         }
 
         function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
+
             const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const cvs = document.createElement('canvas');
-                    const MAX_WIDTH = 800;
-                    const scale = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1;
-                    cvs.width = img.width * scale; cvs.height = img.height * scale;
-                    cvs.getContext('2d').drawImage(img, 0, 0, cvs.width, cvs.height);
-                    setPreviewImage(cvs.toDataURL('image/jpeg', 0.8));
-                    logAction("[SYSTEM]: File uploaded and compressed for analysis.", "#e085ff");
+            if (file.type.startsWith('image/')) {
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const cvs = document.createElement('canvas');
+                        const MAX_WIDTH = 800;
+                        const scale = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1;
+                        cvs.width = img.width * scale; cvs.height = img.height * scale;
+                        cvs.getContext('2d').drawImage(img, 0, 0, cvs.width, cvs.height);
+                        attachedImageBase64 = cvs.toDataURL('image/jpeg', 0.8);
+                        
+                        document.getElementById('filePreviewName').innerText = `📁 ${file.name}`;
+                        document.getElementById('filePreviewBox').style.display = "flex";
+                        logAction(`[SYSTEM]: Image file '${file.name}' attached.`, "#e085ff");
+                    }
+                    img.src = e.target.result;
                 }
-                img.src = e.target.result;
+                reader.readAsDataURL(file);
+            } else {
+                // Handle text files, code files, and documents
+                reader.onload = function(e) {
+                    attachedDocText = e.target.result;
+                    document.getElementById('filePreviewName').innerText = `📄 ${file.name}`;
+                    document.getElementById('filePreviewBox').style.display = "flex";
+                    logAction(`[SYSTEM]: Document content loaded from '${file.name}'.`, "#e085ff");
+                }
+                reader.readAsText(file);
             }
-            reader.readAsDataURL(file);
         }
 
-        // AUTH & DATABASE
         function switchAuthMode(mode) {
             authMode = mode;
             document.getElementById('loginTab').classList.toggle('active', mode === 'login');
@@ -327,9 +324,9 @@
         async function updateFaceID() {
             if (currentUser === "Guest") return;
             let faceData = captureFaceSnapshot();
-            if (!faceData) { logAction("[ERROR]: Camera must be active to rescan Face ID.", "#ff0055"); return; }
+            if (!faceData) { logAction("[ERROR]: Camera offline. Cannot rescan face.", "#ff0055"); return; }
             
-            logAction("[SYSTEM]: Overwriting Biometric Scan...", "#00ffcc");
+            logAction("[SYSTEM]: Updating Biometric Scan...", "#00ffcc");
             try {
                 let res = await fetch(`${SERVER_URL}/api/update_face`, {
                     method: "POST", headers: { "Content-Type": "application/json" },
@@ -352,7 +349,7 @@
 
             if (!username || !password) { errBox.innerText = "Enter Name and Passcode."; return; }
 
-            errBox.style.color = "#00ffcc"; errBox.innerText = "Scanning & verifying...";
+            errBox.style.color = "#00ffcc"; errBox.innerText = "Verifying identity...";
             const faceData = captureFaceSnapshot();
 
             try {
@@ -376,8 +373,6 @@
                 if (data.face_id) {
                     const img = document.getElementById('savedFaceImg'); img.src = data.face_id; img.style.display = "block";
                     document.getElementById('faceIdStatus').innerText = "BIOMETRICS LOCKED"; document.getElementById('faceIdStatus').style.color = "#00ffcc";
-                } else {
-                    document.getElementById('savedFaceImg').style.display = "none"; document.getElementById('faceIdStatus').innerText = "NO SCAN SAVED";
                 }
 
                 document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
@@ -389,7 +384,7 @@
         function logoutUser() {
             document.getElementById('authModal').style.display = "flex";
             document.getElementById('authUser').value = ""; document.getElementById('authPass').value = ""; document.getElementById('authError').innerText = "";
-            document.getElementById('masterCmds').style.display = "none"; clearImage();
+            document.getElementById('masterCmds').style.display = "none"; clearAttachedFile();
         }
 
         function sendQuickCmd(cmd) { document.getElementById('textInput').value = cmd; submitCommand(); }
@@ -397,16 +392,21 @@
         async function submitCommand() {
             let inputField = document.getElementById('textInput');
             let text = inputField.value.trim();
-            if (!text && !attachedImageBase64) return;
+            if (!text && !attachedImageBase64 && !attachedDocText) return;
 
-            logAction(`[${currentUser.toUpperCase()}]: ${text || "[Visual Feed Transmitted]"}`, "#00ffcc");
+            logAction(`[${currentUser.toUpperCase()}]: ${text || "[Attachment Transmitted]"}`, "#00ffcc");
             inputField.value = "";
             document.getElementById('uiStatus').innerText = "KIZA ANALYZING...";
 
             try {
                 let response = await fetch(`${SERVER_URL}/api/chat`, {
                     method: "POST", headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ user: currentUser, command: text || "Analyze this image.", image_base64: attachedImageBase64 })
+                    body: JSON.stringify({ 
+                        user: currentUser, 
+                        command: text || "Analyze this homework assignment or document.", 
+                        image_base64: attachedImageBase64,
+                        document_text: attachedDocText
+                    })
                 });
 
                 if (!response.ok) throw new Error("Cloud connection failed.");
@@ -415,7 +415,7 @@
                 logAction(`[KIZA]: ${data.reply}`, "#e085ff");
                 document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
                 if (data.audio_base64) new Audio("data:audio/mp3;base64," + data.audio_base64).play();
-                clearImage(); 
+                clearAttachedFile(); 
             } catch (error) {
                 logAction(`[SYSTEM ERROR]: ${error.message}`, "#ff0055");
                 document.getElementById('uiStatus').innerText = "CONNECTION FAILED.";
