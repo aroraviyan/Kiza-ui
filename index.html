@@ -98,7 +98,7 @@
             flex-direction: column; 
             align-items: center; 
             justify-content: center; 
-            gap: 35px; 
+            gap: 30px; 
         }
         .core-assembly {
             position: relative;
@@ -216,7 +216,7 @@
             border-radius: 8px;
             padding: 25px;
             width: 100%;
-            max-width: 380px;
+            max-width: 390px;
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -280,23 +280,23 @@
 </head>
 <body>
 
-    <!-- IDENTITY VERIFICATION MODAL -->
+    <!-- IDENTITY VERIFICATION MODAL (NO PRE-FILLED NAME) -->
     <div id="authModal" class="modal-overlay">
         <div class="auth-card">
             <div class="section-title">KIZA // IDENTITY VERIFICATION</div>
-            <div style="font-size: 11px; color: #00ffcc;">State your identity. Master 'viyan' unlocks biometric Face ID & system overrides.</div>
+            <div style="font-size: 11px; color: #00ffcc;">State your identity to access KIZA. Owner clearance unlocks system overrides & biometric lock.</div>
             <div class="auth-tabs">
                 <button id="loginTab" class="tab-btn active" onclick="switchAuthMode('login')">LOGIN</button>
                 <button id="signupTab" class="tab-btn" onclick="switchAuthMode('signup')">SIGN UP</button>
             </div>
-            <input type="text" id="authUser" placeholder="Identity Name (e.g., viyan)">
-            <input type="password" id="authPass" placeholder="Security Passcode">
+            <input type="text" id="authUser" placeholder="Enter Identity Name..." autocomplete="off">
+            <input type="password" id="authPass" placeholder="Enter Security Passcode...">
             <label style="font-size: 11px; color: #ccc; display: flex; align-items: center; gap: 8px; cursor: pointer;">
                 <input type="checkbox" id="captureFaceCheck" checked>
-                Lock / Update Biometric Face ID from Camera
+                Scan & Lock Biometric Face ID
             </label>
             <div id="authError" style="color: #ff0055; font-size: 11px; min-height: 14px;"></div>
-            <button class="send-btn" onclick="performAuth()" style="width: 100%; padding: 12px;">VERIFY & LOCK FACE ID</button>
+            <button class="send-btn" onclick="performAuth()" style="width: 100%; padding: 12px;">VERIFY IDENTITY</button>
         </div>
     </div>
 
@@ -315,9 +315,9 @@
             </div>
 
             <div class="face-id-box">
-                <img id="savedFaceImg" class="face-thumb" alt="Master Face ID">
+                <img id="savedFaceImg" class="face-thumb" alt="Biometric Face ID">
                 <div>
-                    <div style="color: #aa00ff; font-weight: bold;">MASTER FACE ID</div>
+                    <div style="color: #aa00ff; font-weight: bold;">BIOMETRIC FACE ID</div>
                     <div id="faceIdStatus" style="color: #888;">Awaiting Scan...</div>
                 </div>
             </div>
@@ -331,16 +331,17 @@
                 <div class="core-ring ring-3"></div>
                 <div class="core-orb"></div>
             </div>
-            <div id="uiStatus" class="status-text">IDENTIFY YOURSELF...</div>
+            <div id="uiStatus" class="status-text">AWAITING IDENTITY...</div>
             
-            <!-- MASTER VIYAN QUICK COMMANDS -->
+            <!-- OWNER QUICK COMMANDS (HIDDEN UNTIL VIYAN ARORA LOGS IN) -->
             <div id="masterCmds" class="quick-cmds">
                 <button class="chip-btn" onclick="sendQuickCmd('/health')">⚡ /health</button>
+                <button class="chip-btn" onclick="sendQuickCmd('/purge')" style="border-color:#ff0055; color:#ff0055;">🗑️ /purge</button>
                 <button class="chip-btn" onclick="sendQuickCmd('/commands')">🛡️ /commands</button>
             </div>
 
             <div class="input-container">
-                <input type="text" id="textInput" placeholder="Enter command (Master: try /health)...">
+                <input type="text" id="textInput" placeholder="Awaiting command...">
                 <button class="send-btn" onclick="submitCommand()">TRANSMIT</button>
             </div>
         </div>
@@ -348,7 +349,7 @@
         <div class="side-panel right-panel">
             <div class="section-title">LIVE ACTION FEED</div>
             <div id="actionLog" class="log-box">
-                <div>> [KIZA SYSTEM]: Responsive Neural UI initialized...</div>
+                <div>> [KIZA SYSTEM]: Neural UI initialized. Awaiting user authentication...</div>
             </div>
         </div>
     </div>
@@ -405,7 +406,7 @@
             }
 
             errBox.style.color = "#00ffcc";
-            errBox.innerText = "Scanning biometrics & verifying...";
+            errBox.innerText = "Scanning biometrics & verifying identity...";
             const faceData = captureFaceSnapshot();
 
             try {
@@ -435,7 +436,7 @@
                 
                 const roleEl = document.getElementById('roleVal');
                 roleEl.innerText = currentRole;
-                if (currentRole === "MASTER") {
+                if (currentRole.includes("OWNER")) {
                     roleEl.classList.add("master");
                     document.getElementById('masterCmds').style.display = "flex";
                 } else {
@@ -449,6 +450,9 @@
                     img.style.display = "block";
                     document.getElementById('faceIdStatus').innerText = "BIOMETRICS LOCKED";
                     document.getElementById('faceIdStatus').style.color = "#00ffcc";
+                } else {
+                    document.getElementById('savedFaceImg').style.display = "none";
+                    document.getElementById('faceIdStatus').innerText = "NO SCAN SAVED";
                 }
 
                 document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
@@ -459,14 +463,16 @@
                 }
             } catch (err) {
                 errBox.style.color = "#ff0055";
-                errBox.innerText = "Server unreachable. Check Render status.";
+                errBox.innerText = "Server unreachable. Wait 50s for Render deploy.";
             }
         }
 
         function logoutUser() {
             document.getElementById('authModal').style.display = "flex";
+            document.getElementById('authUser').value = "";
             document.getElementById('authPass').value = "";
             document.getElementById('authError').innerText = "";
+            document.getElementById('masterCmds').style.display = "none";
         }
 
         function sendQuickCmd(cmd) {
@@ -494,7 +500,7 @@
                 let data = await response.json();
                 
                 logAction(`[KIZA]: ${data.reply}`, "#e085ff");
-                document.getElementById('uiStatus').innerText = `AWAITING INPUT // ${currentUser.toUpperCase()}`;
+                document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
 
                 if (data.audio_base64) {
                     new Audio("data:audio/mp3;base64," + data.audio_base64).play();
