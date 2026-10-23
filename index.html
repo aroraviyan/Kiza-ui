@@ -255,7 +255,6 @@
             }
         }
 
-        // CHECK PERSISTENT SESSION ON PAGE LOAD
         window.onload = () => {
             initCamera();
             const savedUser = localStorage.getItem('kiza_user');
@@ -411,7 +410,6 @@
                 currentUser = data.username; 
                 currentRole = data.role;
 
-                // SAVE SESSION TO LOCALSTORAGE FOR ACROSS-SESSION / MULTI-PC RECOGNITION ON THIS BROWSER
                 localStorage.setItem('kiza_user', currentUser);
                 localStorage.setItem('kiza_role', currentRole);
                 if (data.face_id) {
