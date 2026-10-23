@@ -70,8 +70,6 @@
             background: #000; 
             border: 1px solid rgba(170, 0, 255, 0.5); 
             border-radius: 4px; 
-            object-fit: cover; 
-            filter: contrast(1.1) brightness(1.1);
         }
         .center-panel { 
             flex: 1; 
@@ -167,7 +165,10 @@
         <div class="side-panel left-panel">
             <div class="section-title">SYSTEM TELEMETRY</div>
             <div class="telemetry-row"><span>CORE PROTOCOL</span><span class="telemetry-val">ACTIVE</span></div>
-            <div class="camera-box" style="display:flex; align-items:center; justify-content:center; color:#553377;">Awaiting Signal...</div>
+            <div class="camera-box" style="display:flex; align-items:center; justify-content:center; overflow: hidden; position: relative;">
+                <video id="webcamVideo" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; display: none;"></video>
+                <span id="camStatus" style="color:#553377; position: absolute;">Awaiting Signal...</span>
+            </div>
         </div>
         <div class="center-panel">
             <div class="core-assembly">
@@ -191,8 +192,27 @@
     </div>
 
     <script>
-        // Replace this with your actual Render backend URL if different
+        // Replace this with your actual Render backend URL
         const SERVER_URL = "https://kiza-brain.onrender.com";
+
+        // Camera Activation Sequence
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const videoElement = document.getElementById('webcamVideo');
+                videoElement.srcObject = stream;
+                videoElement.style.display = "block";
+                document.getElementById('camStatus').style.display = "none";
+                logAction("[SYSTEM]: Video feed established.", "#00ffcc");
+            } catch (error) {
+                document.getElementById('camStatus').innerText = "CAMERA OFFLINE";
+                document.getElementById('camStatus').style.color = "#ff0055";
+                logAction("[SYSTEM WARNING]: Camera access denied or missing.", "#ff0055");
+            }
+        }
+
+        // Start camera when page loads
+        window.onload = initCamera;
 
         async function submitCommand() {
             let inputField = document.getElementById('textInput');
