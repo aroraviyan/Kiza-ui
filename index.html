@@ -195,7 +195,7 @@
                 <input type="checkbox" id="captureFaceCheck" checked> Scan & Lock Biometric Face ID
             </label>
             <div id="authError" style="color: #ff0055; font-size: 11px; min-height: 14px;"></div>
-            <button type="button" class="send-btn" onclick="performAuth()" style="width: 100%; padding: 12px;">VERIFY IDENTITY</button>
+            <button type="button" class="send-btn" onclick="performAuth()">VERIFY IDENTITY</button>
         </div>
     </div>
 
@@ -243,9 +243,10 @@
 
             <div id="masterCmds" style="display: none; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px;">
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/health')">⚡ /health</button>
+                <button type="button" class="chip-btn" onclick="sendQuickCmd('/userdata')">👥 /users</button>
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/lockdown')">🔒 /lock</button>
-                <button type="button" class="chip-btn" onclick="sendQuickCmd('/removelock')">🔓 /unlock</button>
-                <button type="button" class="chip-btn" onclick="sendQuickCmd('/purge')" style="border-color:#ff0055; color:#ff0055;">🗑️ /purge</button>
+                <button type="button" class="chip-btn owner-only" onclick="sendQuickCmd('/removelock')">🔓 /unlock</button>
+                <button type="button" class="chip-btn owner-only" onclick="sendQuickCmd('/purge')" style="border-color:#ff0055; color:#ff0055;">🗑️ /purge</button>
             </div>
 
             <div class="input-container">
@@ -289,7 +290,6 @@
         let currentAudio = null;
         let typingTimer;
 
-        // Force browser to ask for notification permission on click
         function requestNotificationPermission() {
             if ("Notification" in window && Notification.permission === "default") {
                 Notification.requestPermission();
@@ -297,7 +297,7 @@
         }
 
         setInterval(async () => {
-            if (currentUser === "Guest" || currentRole.includes("OWNER")) return;
+            if (currentUser === "Guest" || currentRole.includes("OWNER") || currentRole.includes("ADMIN")) return;
             try {
                 let res = await fetch(`${SERVER_URL}/api/status?user=${encodeURIComponent(currentUser)}`);
                 let data = await res.json();
@@ -427,11 +427,16 @@
                 
                 const roleEl = document.getElementById('roleVal');
                 roleEl.innerText = currentRole;
+                
                 if (currentRole.includes("OWNER")) { 
                     roleEl.classList.add("master"); 
                     document.getElementById('masterCmds').style.display = "flex"; 
-                } 
-                else { 
+                    document.querySelectorAll('.owner-only').forEach(el => el.style.display = "inline-block");
+                } else if (currentRole.includes("ADMIN")) {
+                    roleEl.classList.add("master"); 
+                    document.getElementById('masterCmds').style.display = "flex"; 
+                    document.querySelectorAll('.owner-only').forEach(el => el.style.display = "none");
+                } else { 
                     roleEl.classList.remove("master"); 
                     document.getElementById('masterCmds').style.display = "none"; 
                 }
@@ -547,7 +552,7 @@
         }
 
         async function handleGoogleLogin(response) {
-            requestNotificationPermission(); // Ask for permission here!
+            requestNotificationPermission(); 
             const googleToken = response.credential;
             const errBox = document.getElementById('authError');
             errBox.style.color = "#00ffcc"; 
@@ -586,6 +591,11 @@
                 if (currentRole.includes("OWNER")) { 
                     roleEl.classList.add("master"); 
                     document.getElementById('masterCmds').style.display = "flex"; 
+                    document.querySelectorAll('.owner-only').forEach(el => el.style.display = "inline-block");
+                } else if (currentRole.includes("ADMIN")) {
+                    roleEl.classList.add("master"); 
+                    document.getElementById('masterCmds').style.display = "flex"; 
+                    document.querySelectorAll('.owner-only').forEach(el => el.style.display = "none");
                 } else { 
                     roleEl.classList.remove("master"); 
                     document.getElementById('masterCmds').style.display = "none"; 
@@ -610,7 +620,7 @@
         }
 
         function performAuth() {
-            requestNotificationPermission(); // Ask for permission here!
+            requestNotificationPermission(); 
             const errBox = document.getElementById('authError');
             try {
                 const username = document.getElementById('authUser').value.trim();
@@ -656,8 +666,12 @@
                         if (currentRole.includes("OWNER")) { 
                             roleEl.classList.add("master"); 
                             document.getElementById('masterCmds').style.display = "flex";
-                        } 
-                        else { 
+                            document.querySelectorAll('.owner-only').forEach(el => el.style.display = "inline-block");
+                        } else if (currentRole.includes("ADMIN")) {
+                            roleEl.classList.add("master"); 
+                            document.getElementById('masterCmds').style.display = "flex";
+                            document.querySelectorAll('.owner-only').forEach(el => el.style.display = "none");
+                        } else { 
                             roleEl.classList.remove("master"); 
                             document.getElementById('masterCmds').style.display = "none";
                         }
