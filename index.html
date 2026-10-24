@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- FORCE BROWSER TO CLEAR CACHE -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -194,10 +193,17 @@
             </div>
             <div id="uiStatus" class="status-text">AWAITING IDENTITY...</div>
             
-            <div id="masterCmds" style="display: none; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px;">
-                <button type="button" class="chip-btn" onclick="sendQuickCmd('/health')">⚡ /health</button>
+            <!-- PUBLIC COMMANDS (Visible to Everyone) -->
+            <div id="publicCmds" style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 5px;">
+                <button type="button" class="chip-btn" onclick="sendQuickCmd('/help')">❓ /help</button>
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/checkmail')">📧 /mail</button>
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/sendmail')">📤 /send</button>
+            </div>
+
+            <!-- MASTER COMMANDS (Visible only to Viyan) -->
+            <div id="masterCmds" style="display: none; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px;">
+                <button type="button" class="chip-btn" onclick="sendQuickCmd('/health')">⚡ /health</button>
+                <button type="button" class="chip-btn" onclick="sendQuickCmd('/lockdown')">🔒 /lock</button>
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/purge')" style="border-color:#ff0055; color:#ff0055;">🗑️ /purge</button>
             </div>
 
@@ -243,7 +249,6 @@
         
         let typingTimer;
 
-        // Clean & robust logging function
         function logAction(message, color, isHtml = false) {
             let logBox = document.getElementById('actionLog');
             let newEntry = document.createElement('div');
@@ -454,7 +459,6 @@
             } catch (err) { logAction("[ERROR]: Update failed.", "#ff0055"); }
         }
 
-        // --- NEW: GOOGLE OAUTH LOGIN HANDLER ---
         async function handleGoogleLogin(response) {
             const googleToken = response.credential;
             const errBox = document.getElementById('authError');
@@ -509,7 +513,6 @@
             }
         }
 
-        // Standard Manual Auth
         function performAuth() {
             const errBox = document.getElementById('authError');
             try {
@@ -574,7 +577,6 @@
             document.getElementById('masterCmds').style.display = "none";
         }
 
-        // --- TYPING INDICATOR LOGIC ---
         function updateIndicator(msg) {
             let logBox = document.getElementById('actionLog');
             let indicator = document.getElementById('chatIndicator');
