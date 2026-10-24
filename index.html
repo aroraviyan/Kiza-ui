@@ -277,6 +277,7 @@
         let currentUser = "Guest";
         let currentRole = "LOCKED";
         let authMode = "login";
+        let alertIndex = 0;
         
         let cameraReady = false;
         let videoDevices = [];
@@ -297,16 +298,27 @@
         }
 
         setInterval(async () => {
-            if (currentUser === "Guest" || currentRole.includes("OWNER") || currentRole.includes("ADMIN")) return;
+            if (currentUser === "Guest") return;
             try {
-                let res = await fetch(`${SERVER_URL}/api/status?user=${encodeURIComponent(currentUser)}`);
+                let res = await fetch(`${SERVER_URL}/api/status?user=${encodeURIComponent(currentUser)}&last_alert_idx=${alertIndex}`);
                 let data = await res.json();
-                if (data.lockdown) {
+                
+                if (data.next_alert_idx !== undefined) {
+                    alertIndex = data.next_alert_idx;
+                }
+                
+                if (data.new_alerts && data.new_alerts.length > 0) {
+                    data.new_alerts.forEach(alert => {
+                        showNotification(alert.title, alert.message, false);
+                    });
+                }
+
+                if (data.lockdown && !currentRole.includes("OWNER") && !currentRole.includes("ADMIN")) {
                     forceLogout();
                     showNotification("SECURITY LOCKDOWN", `Owner initiated Lockdown: ${data.reason}`, true);
                 }
             } catch(e) {}
-        }, 4000);
+        }, 3000);
 
         function showNotification(title, message, isError = false) {
             if (voiceEnabled) {
@@ -821,14 +833,4 @@
             } catch (error) {
                 document.getElementById('orb').classList.remove('processing');
                 logAction(`[SYSTEM ERROR]: ${error.message}`, "#ff0055");
-                document.getElementById('uiStatus').innerText = "CONNECTION FAILED.";
-                clearIndicator();
-            }
-        }
-
-        document.getElementById('textInput').addEventListener("keypress", function(event) { 
-            if (event.key === "Enter") { submitCommand(); } 
-        });
-    </script>
-</body>
-</html>
+                document.getElementById('uiStatus').
