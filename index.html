@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- FORCE BROWSER TO CLEAR CACHE AND LOAD NEWEST FIX -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>KIZA // ADVANCED COMM HUB</title>
     <style>
         * { box-sizing: border-box; }
@@ -125,8 +129,8 @@
         <div class="auth-card">
             <div class="section-title">KIZA // IDENTITY GATE</div>
             <div class="auth-tabs">
-                <button id="loginTab" class="tab-btn active" onclick="switchAuthMode('login')">LOGIN</button>
-                <button id="signupTab" class="tab-btn" onclick="switchAuthMode('signup')">SIGN UP / RESET</button>
+                <button type="button" id="loginTab" class="tab-btn active" onclick="switchAuthMode('login')">LOGIN</button>
+                <button type="button" id="signupTab" class="tab-btn" onclick="switchAuthMode('signup')">SIGN UP / RESET</button>
             </div>
             <input type="text" id="authUser" placeholder="Enter Identity Name..." autocomplete="off">
             <input type="password" id="authPass" placeholder="Enter Security Passcode...">
@@ -134,7 +138,7 @@
                 <input type="checkbox" id="captureFaceCheck" checked> Scan & Lock Biometric Face ID
             </label>
             <div id="authError" style="color: #ff0055; font-size: 11px; min-height: 14px;"></div>
-            <button class="send-btn" onclick="performAuth()" style="width: 100%; padding: 12px;">VERIFY IDENTITY</button>
+            <button type="button" class="send-btn" onclick="performAuth()" style="width: 100%; padding: 12px;">VERIFY IDENTITY</button>
         </div>
     </div>
 
@@ -151,9 +155,9 @@
                 <div id="laser" class="scanner-laser"></div>
                 <span id="camStatus" style="color:#553377; position: absolute;">Camera Offline...</span>
             </div>
-            <button class="chip-btn" onclick="switchCamera()" style="border-color: #aa00ff; color: #e085ff;">🔄 FLIP CAMERA</button>
+            <button type="button" class="chip-btn" onclick="switchCamera()" style="border-color: #aa00ff; color: #e085ff;">🔄 FLIP CAMERA</button>
             
-            <button class="chip-btn" id="voiceToggleBtn" onclick="toggleVoiceMute()" style="border-color: #00ffcc; color: #00ffcc; margin-top: 5px;">🔊 VOICE: ON</button>
+            <button type="button" class="chip-btn" id="voiceToggleBtn" onclick="toggleVoiceMute()" style="border-color: #00ffcc; color: #00ffcc; margin-top: 5px;">🔊 VOICE: ON</button>
 
             <div class="face-id-box" style="margin-top: 5px;">
                 <img id="savedFaceImg" class="face-thumb" alt="Biometric Face ID">
@@ -162,8 +166,8 @@
                     <div id="faceIdStatus" style="color: #888;">Awaiting Scan...</div>
                 </div>
             </div>
-            <button class="chip-btn" onclick="updateFaceID()" style="border-color: #00ffcc; color: #00ffcc;">🧬 RE-SCAN FACE ID</button>
-            <button class="chip-btn" onclick="logoutUser()" style="margin-top: auto; border-color: #ff0055; color: #ff0055;">SWITCH IDENTITY</button>
+            <button type="button" class="chip-btn" onclick="updateFaceID()" style="border-color: #00ffcc; color: #00ffcc;">🧬 RE-SCAN FACE ID</button>
+            <button type="button" class="chip-btn" onclick="logoutUser()" style="margin-top: auto; border-color: #ff0055; color: #ff0055;">SWITCH IDENTITY</button>
         </div>
 
         <div class="center-panel">
@@ -176,17 +180,16 @@
             <div id="uiStatus" class="status-text">AWAITING IDENTITY...</div>
             
             <div class="input-container">
-                <!-- PERSONALITY SELECTOR -->
                 <select id="personaSelect" class="chip-btn" style="border-color: #aa00ff; color: #e085ff; outline: none; margin-bottom: 5px; width: 100%; text-align: center;">
                     <option value="roast">🔥 ROASTING MODE</option>
                     <option value="polite">🛡️ POLITE MODE</option>
                 </select>
 
                 <div class="input-row">
-                    <button class="chip-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Voice" style="padding: 6px; font-size: 14px;">🔊</button>
-                    <button class="chip-btn" id="micBtn" style="padding: 6px; font-size: 16px;" onclick="toggleSpeechRecognition()" title="Voice Input">🎤</button>
+                    <button type="button" class="chip-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Voice" style="padding: 6px; font-size: 14px;">🔊</button>
+                    <button type="button" class="chip-btn" id="micBtn" style="padding: 6px; font-size: 16px;" onclick="toggleSpeechRecognition()" title="Voice Input">🎤</button>
                     <input type="text" id="textInput" placeholder="Speak or type command...">
-                    <button class="send-btn" onclick="submitCommand()">TRANSMIT</button>
+                    <button type="button" class="send-btn" onclick="submitCommand()">TRANSMIT</button>
                 </div>
             </div>
         </div>
@@ -216,9 +219,30 @@
         let voiceEnabled = true;
         let currentAudio = null;
         
-        let typingTimer; // Used for "User is typing..." timeout
+        let typingTimer;
 
-        // Safe Scanner Animation (Won't crash if camera is hidden)
+        // Clean & robust logging function
+        function logAction(message, color, isHtml = false) {
+            let logBox = document.getElementById('actionLog');
+            let newEntry = document.createElement('div');
+            newEntry.style.color = color;
+            
+            if (isHtml) {
+                newEntry.innerHTML = `> ${message}`;
+            } else {
+                newEntry.innerText = `> ${message}`;
+            }
+            
+            logBox.appendChild(newEntry);
+            
+            // Keep the typing indicator at the very bottom
+            let indicator = document.getElementById('chatIndicator');
+            if (indicator) { logBox.appendChild(indicator); }
+            
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        // Safe Scanner Animation
         function triggerScanAnimation() {
             try {
                 const laser = document.getElementById('laser');
@@ -254,7 +278,7 @@
                 currentAudio = null;
             }
             currentAudio = new Audio("data:audio/mp3;base64," + base64Data);
-            currentAudio.play().catch(e => console.log("Audio play blocked/interrupted"));
+            currentAudio.play().catch(e => console.log("Audio play blocked"));
         }
 
         async function initCamera(deviceId = null) {
@@ -280,4 +304,302 @@
         window.onload = () => {
             initCamera();
             const savedUser = localStorage.getItem('kiza_user');
-            const savedRole = localStorage.getItem('kiza_
+            const savedRole = localStorage.getItem('kiza_role');
+            const savedFace = localStorage.getItem('kiza_face');
+
+            if (savedUser && savedRole) {
+                currentUser = savedUser;
+                currentRole = savedRole;
+                document.getElementById('authModal').style.display = "none";
+                document.getElementById('idVal').innerText = currentUser.toUpperCase();
+                
+                const roleEl = document.getElementById('roleVal');
+                roleEl.innerText = currentRole;
+                if (currentRole.includes("OWNER")) { roleEl.classList.add("master"); } 
+                else { roleEl.classList.remove("master"); }
+
+                if (savedFace) {
+                    const img = document.getElementById('savedFaceImg');
+                    img.src = savedFace;
+                    img.style.display = "block";
+                    document.getElementById('faceIdStatus').innerText = "RESTORED";
+                    document.getElementById('faceIdStatus').style.color = "#00ffcc";
+                }
+
+                document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
+                logAction(`[SYSTEM]: Persistent session restored.`, "#00ffcc");
+            }
+        };
+
+        async function switchCamera() {
+            if (videoDevices.length <= 1) { logAction("[SYSTEM]: Only 1 lens detected.", "#ff0055"); return; }
+            currentCamIndex = (currentCamIndex + 1) % videoDevices.length;
+            await initCamera(videoDevices[currentCamIndex].deviceId);
+            logAction(`[SYSTEM]: Switching lens feed...`, "#00ffcc");
+        }
+
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) { logAction("[SYSTEM]: Speech recognition not supported.", "#ff0055"); return null; }
+            
+            const rec = new SpeechRecognition();
+            rec.continuous = false;
+            rec.interimResults = false;
+            rec.lang = 'en-GB';
+
+            rec.onstart = function() {
+                isRecording = true;
+                const micBtn = document.getElementById('micBtn');
+                micBtn.style.borderColor = "#ff0055"; micBtn.style.color = "#ff0055";
+                document.getElementById('uiStatus').innerText = "LISTENING...";
+            };
+
+            rec.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('textInput').value = transcript;
+                logAction(`[VOICE INPUT]: ${transcript}`, "#00ffcc");
+                submitCommand();
+            };
+            rec.onerror = function(event) { resetMicState(); };
+            rec.onend = function() { resetMicState(); };
+            return rec;
+        }
+
+        function toggleSpeechRecognition() {
+            if (!recognition) recognition = initSpeechRecognition();
+            if (!recognition) return;
+            if (isRecording) { recognition.stop(); } 
+            else { try { recognition.start(); } catch (e) { recognition.stop(); recognition.start(); } }
+        }
+
+        function resetMicState() {
+            isRecording = false;
+            const micBtn = document.getElementById('micBtn');
+            if (micBtn) { micBtn.style.borderColor = "#00ffcc"; micBtn.style.color = "#00ffcc"; }
+        }
+
+        function switchAuthMode(mode) {
+            authMode = mode;
+            document.getElementById('loginTab').classList.toggle('active', mode === 'login');
+            document.getElementById('signupTab').classList.toggle('active', mode === 'signup');
+            document.getElementById('authError').innerText = "";
+        }
+
+        function captureFaceSnapshot() {
+            if (!cameraReady || !document.getElementById('captureFaceCheck').checked) return null;
+            try {
+                const video = document.getElementById('webcamVideo');
+                const canvas = document.getElementById('faceCanvas');
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                return canvas.toDataURL('image/jpeg', 0.6);
+            } catch (e) { return null; }
+        }
+
+        function captureLiveVisionFrame() {
+            if (!cameraReady) return null;
+            try {
+                const video = document.getElementById('webcamVideo');
+                const canvas = document.createElement('canvas');
+                canvas.width = 640; canvas.height = 480;
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                return canvas.toDataURL('image/jpeg', 0.7);
+            } catch (e) { return null; }
+        }
+
+        async function updateFaceID() {
+            if (currentUser === "Guest") return;
+            triggerScanAnimation();
+            let faceData = captureFaceSnapshot();
+            if (!faceData) { logAction("[ERROR]: Camera offline.", "#ff0055"); return; }
+            
+            try {
+                let res = await fetch(`${SERVER_URL}/api/update_face`, {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username: currentUser, face_id: faceData })
+                });
+                let data = await res.json();
+                if (data.success) {
+                    document.getElementById('savedFaceImg').src = faceData;
+                    document.getElementById('savedFaceImg').style.display = "block";
+                    document.getElementById('faceIdStatus').innerText = "UPDATED";
+                    localStorage.setItem('kiza_face', faceData);
+                    logAction("[SYSTEM]: Biometrics synchronized.", "#00ffcc");
+                }
+            } catch (err) { logAction("[ERROR]: Update failed.", "#ff0055"); }
+        }
+
+        function performAuth() {
+            const errBox = document.getElementById('authError');
+            try {
+                const username = document.getElementById('authUser').value.trim();
+                const password = document.getElementById('authPass').value.trim();
+
+                if (!username || !password) { errBox.innerText = "Enter Name and Passcode."; return; }
+
+                errBox.style.color = "#00ffcc"; errBox.innerText = "Scanning Biometrics...";
+                triggerScanAnimation();
+                const faceData = captureFaceSnapshot();
+
+                setTimeout(async () => {
+                    try {
+                        let res = await fetch(`${SERVER_URL}/api/auth`, {
+                            method: "POST", headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ username: username, password: password, action: authMode, face_id: faceData })
+                        });
+                        let data = await res.json();
+
+                        if (!data.success) { errBox.style.color = "#ff0055"; errBox.innerText = data.message; return; }
+
+                        currentUser = data.username; currentRole = data.role;
+
+                        localStorage.setItem('kiza_user', currentUser);
+                        localStorage.setItem('kiza_role', currentRole);
+                        if (data.face_id) { localStorage.setItem('kiza_face', data.face_id); }
+
+                        document.getElementById('authModal').style.display = "none";
+                        document.getElementById('idVal').innerText = currentUser.toUpperCase();
+                        
+                        const roleEl = document.getElementById('roleVal');
+                        roleEl.innerText = currentRole;
+                        if (currentRole.includes("OWNER")) { roleEl.classList.add("master"); } 
+                        else { roleEl.classList.remove("master"); }
+
+                        if (data.face_id) {
+                            const img = document.getElementById('savedFaceImg'); img.src = data.face_id; img.style.display = "block";
+                            document.getElementById('faceIdStatus').innerText = "LOCKED"; document.getElementById('faceIdStatus').style.color = "#00ffcc";
+                        }
+
+                        document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
+                        logAction(`[KIZA]: ${data.reply}`, "#e085ff");
+                        playKizaAudio(data.audio_base64);
+                    } catch (err) { errBox.style.color = "#ff0055"; errBox.innerText = "Server offline. Wait 50s for Render."; }
+                }, 1000); 
+            } catch(e) {
+                errBox.style.color = "#ff0055"; errBox.innerText = "UI Error: " + e.message;
+            }
+        }
+
+        function logoutUser() {
+            localStorage.removeItem('kiza_user'); localStorage.removeItem('kiza_role'); localStorage.removeItem('kiza_face');
+            document.getElementById('authModal').style.display = "flex";
+            document.getElementById('authUser').value = ""; document.getElementById('authPass').value = ""; document.getElementById('authError').innerText = "";
+        }
+
+        // --- TYPING INDICATOR LOGIC ---
+        function updateIndicator(msg) {
+            let logBox = document.getElementById('actionLog');
+            let indicator = document.getElementById('chatIndicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.id = 'chatIndicator';
+                indicator.style.color = '#777';
+                indicator.style.fontStyle = 'italic';
+                indicator.style.marginTop = '4px';
+            }
+            indicator.innerText = `> ${msg}`;
+            logBox.appendChild(indicator); 
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function clearIndicator() {
+            let indicator = document.getElementById('chatIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        // Detect user typing in input field
+        document.getElementById('textInput').addEventListener("input", function() {
+            if (this.value.trim().length > 0) {
+                updateIndicator(`${currentUser.toUpperCase()} is typing...`);
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(clearIndicator, 1500);
+            } else {
+                clearIndicator();
+            }
+        });
+
+        function formatKizaText(rawText) { return rawText.replace(/\*/g, ''); }
+
+        function typeWriterLog(message, color, onComplete = null) {
+            let logBox = document.getElementById('actionLog');
+            let newEntry = document.createElement('div');
+            newEntry.style.color = color;
+            logBox.appendChild(newEntry);
+            
+            let indicator = document.getElementById('chatIndicator');
+            if (indicator) logBox.appendChild(indicator);
+            
+            let i = 0;
+            let speed = 25; 
+            newEntry.innerHTML = "> ";
+            
+            function type() {
+                if (i < message.length) {
+                    newEntry.innerHTML += message.charAt(i);
+                    i++;
+                    logBox.scrollTop = logBox.scrollHeight;
+                    setTimeout(type, speed);
+                } else {
+                    if (onComplete) onComplete();
+                }
+            }
+            type();
+        }
+
+        async function submitCommand() {
+            let inputField = document.getElementById('textInput');
+            let text = inputField.value.trim();
+            if (!text) return;
+
+            clearTimeout(typingTimer);
+            clearIndicator();
+            logAction(`[${currentUser.toUpperCase()}]: ${text}`, "#00ffcc");
+            inputField.value = "";
+            
+            document.getElementById('uiStatus').innerText = "KIZA ANALYZING...";
+            document.getElementById('orb').classList.add('processing'); 
+            
+            updateIndicator("KIZA is thinking...");
+
+            let liveVisionFrame = captureLiveVisionFrame();
+            let selectedPersona = document.getElementById('personaSelect').value; 
+
+            try {
+                let response = await fetch(`${SERVER_URL}/api/chat`, {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        user: currentUser, 
+                        command: text, 
+                        image_base64: liveVisionFrame,
+                        personality: selectedPersona
+                    })
+                });
+
+                if (!response.ok) throw new Error("Cloud connection failed.");
+                let data = await response.json();
+                
+                document.getElementById('orb').classList.remove('processing');
+                document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
+                
+                updateIndicator("KIZA is typing...");
+
+                let formattedReply = formatKizaText(data.reply);
+                
+                playKizaAudio(data.audio_base64);
+                typeWriterLog(`[KIZA]: ${formattedReply}`, "#e085ff", () => {
+                    clearIndicator(); 
+                });
+                
+            } catch (error) {
+                document.getElementById('orb').classList.remove('processing');
+                logAction(`[SYSTEM ERROR]: ${error.message}`, "#ff0055");
+                document.getElementById('uiStatus').innerText = "CONNECTION FAILED.";
+                clearIndicator();
+            }
+        }
+
+        document.getElementById('textInput').addEventListener("keypress", function(event) { 
+            if (event.key === "Enter") { submitCommand(); } 
+        });
+    </script>
+</body>
+</html>
