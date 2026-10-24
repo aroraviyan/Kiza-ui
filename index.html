@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- FORCE BROWSER TO CLEAR CACHE AND LOAD NEWEST FIX -->
+    <!-- FORCE BROWSER TO CLEAR CACHE -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>KIZA // ADVANCED COMM HUB</title>
+    <!-- GOOGLE IDENTITY SCRIPT -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         * { box-sizing: border-box; }
         body { 
@@ -128,6 +130,19 @@
     <div id="authModal" class="modal-overlay">
         <div class="auth-card">
             <div class="section-title">KIZA // IDENTITY GATE</div>
+            
+            <!-- GOOGLE SIGN-IN WIDGET -->
+            <div id="g_id_onload"
+                 data-client_id="966529845745-0tvmb131iufp9vvkk8df4h7angi4u8p8.apps.googleusercontent.com"
+                 data-callback="handleGoogleLogin"
+                 data-auto_prompt="false">
+            </div>
+            <div style="display: flex; justify-content: center; width: 100%;">
+                <div class="g_id_signin" data-type="standard" data-theme="filled_black" data-size="large" data-width="340"></div>
+            </div>
+
+            <div style="text-align:center; color:#aa00ff; font-size:10px; margin: 5px 0; letter-spacing: 2px;">-- OR MANUAL OVERRIDE --</div>
+
             <div class="auth-tabs">
                 <button type="button" id="loginTab" class="tab-btn active" onclick="switchAuthMode('login')">LOGIN</button>
                 <button type="button" id="signupTab" class="tab-btn" onclick="switchAuthMode('signup')">SIGN UP / RESET</button>
@@ -179,6 +194,13 @@
             </div>
             <div id="uiStatus" class="status-text">AWAITING IDENTITY...</div>
             
+            <div id="masterCmds" style="display: none; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px;">
+                <button type="button" class="chip-btn" onclick="sendQuickCmd('/health')">⚡ /health</button>
+                <button type="button" class="chip-btn" onclick="sendQuickCmd('/checkmail')">📧 /mail</button>
+                <button type="button" class="chip-btn" onclick="sendQuickCmd('/sendmail')">📤 /send</button>
+                <button type="button" class="chip-btn" onclick="sendQuickCmd('/purge')" style="border-color:#ff0055; color:#ff0055;">🗑️ /purge</button>
+            </div>
+
             <div class="input-container">
                 <select id="personaSelect" class="chip-btn" style="border-color: #aa00ff; color: #e085ff; outline: none; margin-bottom: 5px; width: 100%; text-align: center;">
                     <option value="roast">🔥 ROASTING MODE</option>
@@ -235,14 +257,12 @@
             
             logBox.appendChild(newEntry);
             
-            // Keep the typing indicator at the very bottom
             let indicator = document.getElementById('chatIndicator');
             if (indicator) { logBox.appendChild(indicator); }
             
             logBox.scrollTop = logBox.scrollHeight;
         }
 
-        // Safe Scanner Animation
         function triggerScanAnimation() {
             try {
                 const laser = document.getElementById('laser');
@@ -315,8 +335,14 @@
                 
                 const roleEl = document.getElementById('roleVal');
                 roleEl.innerText = currentRole;
-                if (currentRole.includes("OWNER")) { roleEl.classList.add("master"); } 
-                else { roleEl.classList.remove("master"); }
+                if (currentRole.includes("OWNER")) { 
+                    roleEl.classList.add("master"); 
+                    document.getElementById('masterCmds').style.display = "flex"; 
+                } 
+                else { 
+                    roleEl.classList.remove("master"); 
+                    document.getElementById('masterCmds').style.display = "none"; 
+                }
 
                 if (savedFace) {
                     const img = document.getElementById('savedFaceImg');
@@ -428,6 +454,62 @@
             } catch (err) { logAction("[ERROR]: Update failed.", "#ff0055"); }
         }
 
+        // --- NEW: GOOGLE OAUTH LOGIN HANDLER ---
+        async function handleGoogleLogin(response) {
+            const googleToken = response.credential;
+            const errBox = document.getElementById('authError');
+            errBox.style.color = "#00ffcc"; 
+            errBox.innerText = "Verifying Google Identity...";
+            
+            triggerScanAnimation();
+
+            try {
+                let res = await fetch(`${SERVER_URL}/api/google_auth`, {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token: googleToken })
+                });
+                let data = await res.json();
+
+                if (!data.success) { errBox.style.color = "#ff0055"; errBox.innerText = data.message; return; }
+
+                currentUser = data.username; 
+                currentRole = data.role;
+                
+                localStorage.setItem('kiza_user', currentUser);
+                localStorage.setItem('kiza_role', currentRole);
+                if(data.face_id) localStorage.setItem('kiza_face', data.face_id);
+
+                document.getElementById('authModal').style.display = "none";
+                document.getElementById('idVal').innerText = currentUser.toUpperCase();
+                
+                const roleEl = document.getElementById('roleVal');
+                roleEl.innerText = currentRole;
+                if (currentRole.includes("OWNER")) { 
+                    roleEl.classList.add("master"); 
+                    document.getElementById('masterCmds').style.display = "flex"; 
+                } else { 
+                    roleEl.classList.remove("master"); 
+                    document.getElementById('masterCmds').style.display = "none"; 
+                }
+
+                if (data.face_id) {
+                    const img = document.getElementById('savedFaceImg');
+                    img.src = data.face_id; img.style.display = "block";
+                    document.getElementById('faceIdStatus').innerText = "LOCKED";
+                    document.getElementById('faceIdStatus').style.color = "#00ffcc";
+                }
+
+                document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
+                logAction(`[KIZA]: ${data.reply}`, "#e085ff");
+                playKizaAudio(data.audio_base64);
+
+            } catch (err) { 
+                errBox.style.color = "#ff0055"; 
+                errBox.innerText = "Google Auth Server Error."; 
+            }
+        }
+
+        // Standard Manual Auth
         function performAuth() {
             const errBox = document.getElementById('authError');
             try {
@@ -461,8 +543,14 @@
                         
                         const roleEl = document.getElementById('roleVal');
                         roleEl.innerText = currentRole;
-                        if (currentRole.includes("OWNER")) { roleEl.classList.add("master"); } 
-                        else { roleEl.classList.remove("master"); }
+                        if (currentRole.includes("OWNER")) { 
+                            roleEl.classList.add("master"); 
+                            document.getElementById('masterCmds').style.display = "flex";
+                        } 
+                        else { 
+                            roleEl.classList.remove("master"); 
+                            document.getElementById('masterCmds').style.display = "none";
+                        }
 
                         if (data.face_id) {
                             const img = document.getElementById('savedFaceImg'); img.src = data.face_id; img.style.display = "block";
@@ -483,6 +571,7 @@
             localStorage.removeItem('kiza_user'); localStorage.removeItem('kiza_role'); localStorage.removeItem('kiza_face');
             document.getElementById('authModal').style.display = "flex";
             document.getElementById('authUser').value = ""; document.getElementById('authPass').value = ""; document.getElementById('authError').innerText = "";
+            document.getElementById('masterCmds').style.display = "none";
         }
 
         // --- TYPING INDICATOR LOGIC ---
@@ -506,7 +595,6 @@
             if (indicator) indicator.remove();
         }
 
-        // Detect user typing in input field
         document.getElementById('textInput').addEventListener("input", function() {
             if (this.value.trim().length > 0) {
                 updateIndicator(`${currentUser.toUpperCase()} is typing...`);
@@ -544,6 +632,8 @@
             }
             type();
         }
+
+        function sendQuickCmd(cmd) { document.getElementById('textInput').value = cmd; submitCommand(); }
 
         async function submitCommand() {
             let inputField = document.getElementById('textInput');
