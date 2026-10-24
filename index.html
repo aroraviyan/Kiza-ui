@@ -193,17 +193,18 @@
             </div>
             <div id="uiStatus" class="status-text">AWAITING IDENTITY...</div>
             
-            <!-- PUBLIC COMMANDS (Visible to Everyone) -->
+            <!-- PUBLIC COMMANDS -->
             <div id="publicCmds" style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 5px;">
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/help')">❓ /help</button>
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/checkmail')">📧 /mail</button>
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/sendmail')">📤 /send</button>
             </div>
 
-            <!-- MASTER COMMANDS (Visible only to Viyan) -->
+            <!-- MASTER COMMANDS -->
             <div id="masterCmds" style="display: none; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px;">
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/health')">⚡ /health</button>
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/lockdown')">🔒 /lock</button>
+                <button type="button" class="chip-btn" onclick="sendQuickCmd('/removelock')">🔓 /unlock</button>
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/purge')" style="border-color:#ff0055; color:#ff0055;">🗑️ /purge</button>
             </div>
 
