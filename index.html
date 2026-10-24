@@ -23,11 +23,11 @@
             background-size: 100% 4px; z-index: 999; pointer-events: none;
         }
         
-        /* NOTIFICATION BOX SYSTEM */
+        /* FIXED NOTIFICATION BOX */
         #notificationBox {
             position: fixed;
             top: 20px;
-            right: 20px;
+            right: -400px; /* Hidden completely off screen */
             width: 320px;
             background: rgba(15, 5, 30, 0.95);
             border: 1px solid #00ffcc;
@@ -36,17 +36,14 @@
             padding: 15px;
             border-radius: 8px;
             z-index: 9999;
-            transform: translateX(120%);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: right 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             font-size: 12px;
             display: flex;
             flex-direction: column;
             gap: 8px;
             backdrop-filter: blur(5px);
         }
-        #notificationBox.show {
-            transform: translateX(0);
-        }
+        #notificationBox.show { right: 20px; }
         #notificationBox.notify-error {
             border-color: #ff0055;
             box-shadow: 0 0 25px rgba(255, 0, 85, 0.6);
@@ -170,7 +167,6 @@
 </head>
 <body>
 
-    <!-- KIZA NOTIFICATION SYSTEM -->
     <div id="notificationBox">
         <div class="notify-title" id="notifTitle">SYSTEM ALERT</div>
         <div class="notify-msg" id="notifMsg">Notification details...</div>
@@ -180,7 +176,6 @@
         <div class="auth-card">
             <div class="section-title">KIZA // IDENTITY GATE</div>
             
-            <!-- GOOGLE SIGN-IN WIDGET -->
             <div id="g_id_onload"
                  data-client_id="966529845745-0tvmb131iufp9vvkk8df4h7angi4u8p8.apps.googleusercontent.com"
                  data-callback="handleGoogleLogin"
@@ -243,13 +238,11 @@
             </div>
             <div id="uiStatus" class="status-text">AWAITING IDENTITY...</div>
             
-            <!-- PUBLIC COMMANDS -->
             <div id="publicCmds" style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 5px;">
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/help')">❓ /help</button>
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/ping')">📡 /ping</button>
             </div>
 
-            <!-- MASTER COMMANDS -->
             <div id="masterCmds" style="display: none; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px;">
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/health')">⚡ /health</button>
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/lockdown')">🔒 /lock</button>
@@ -296,62 +289,84 @@
 
         let voiceEnabled = true;
         let currentAudio = null;
-        
         let typingTimer;
 
-        // UI Beeps for Notifications
-        function playUIBeep(freq = 600, type = 'square', duration = 0.05) {
-            if (!voiceEnabled) return;
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = type;
-                osc.frequency.setValueAtTime(freq, ctx.currentTime);
-                gain.gain.setValueAtTime(0.05, ctx.currentTime);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + duration);
-            } catch(e) {}
+        // Ask for Notification permission quietly in background if possible
+        if ("Notification" in window && Notification.permission === "default") {
+            Notification.requestPermission();
         }
 
-        // NEW: NOTIFICATION SYSTEM
+        // Auto-Poller: Kicks non-owners out instantly during lockdown
+        setInterval(async () => {
+            if (currentUser === "Guest" || currentRole.includes("OWNER")) return;
+            try {
+                let res = await fetch(`${SERVER_URL}/api/status?user=${encodeURIComponent(currentUser)}`);
+                let data = await res.json();
+                if (data.lockdown) {
+                    forceLogout();
+                    showNotification("SECURITY LOCKDOWN", `Owner initiated Lockdown: ${data.reason}`, true);
+                }
+            } catch(e) {}
+        }, 4000);
+
+        // SMART NOTIFICATION SYSTEM: Checks if tab is active
         function showNotification(title, message, isError = false) {
-            const notifBox = document.getElementById('notificationBox');
-            document.getElementById('notifTitle').innerText = title;
-            document.getElementById('notifMsg').innerText = message;
             
-            if (isError) {
-                notifBox.classList.add('notify-error');
-                playUIBeep(200, 'sawtooth', 0.2); // Error Buzz
-            } else {
-                notifBox.classList.remove('notify-error');
-                playUIBeep(900, 'sine', 0.1); // Success Ping
+            // 1. Always play the custom UI Beep if sound is enabled
+            if (voiceEnabled) {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = isError ? 'sawtooth' : 'sine';
+                    osc.frequency.setValueAtTime(isError ? 200 : 900, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + (isError ? 0.2 : 0.1));
+                } catch(e) {}
             }
 
-            notifBox.classList.add('show');
-            setTimeout(() => {
-                notifBox.classList.remove('show');
-            }, 4500);
+            // 2. Check if the user is looking at the tab
+            if (document.hidden) {
+                // User is NOT on the tab: Show OS Desktop Notification
+                if ("Notification" in window) {
+                    if (Notification.permission === "granted") {
+                        new Notification(title, { body: message });
+                    } else if (Notification.permission !== "denied") {
+                        Notification.requestPermission().then(p => {
+                            if (p === "granted") new Notification(title, { body: message });
+                        });
+                    }
+                }
+            } else {
+                // User IS on the tab: Show Cyberpunk UI Slide-in Box
+                const notifBox = document.getElementById('notificationBox');
+                document.getElementById('notifTitle').innerText = title;
+                document.getElementById('notifMsg').innerText = message;
+                
+                if (isError) {
+                    notifBox.classList.add('notify-error');
+                } else {
+                    notifBox.classList.remove('notify-error');
+                }
+
+                notifBox.classList.add('show');
+                setTimeout(() => { notifBox.classList.remove('show'); }, 5000);
+            }
         }
 
         function logAction(message, color, isHtml = false) {
             let logBox = document.getElementById('actionLog');
             let newEntry = document.createElement('div');
             newEntry.style.color = color;
-            
-            if (isHtml) {
-                newEntry.innerHTML = `> ${message}`;
-            } else {
-                newEntry.innerText = `> ${message}`;
-            }
-            
+            if (isHtml) newEntry.innerHTML = `> ${message}`;
+            else newEntry.innerText = `> ${message}`;
             logBox.appendChild(newEntry);
             
             let indicator = document.getElementById('chatIndicator');
-            if (indicator) { logBox.appendChild(indicator); }
-            
+            if (indicator) logBox.appendChild(indicator);
             logBox.scrollTop = logBox.scrollHeight;
         }
 
@@ -419,11 +434,8 @@
             const savedRole = localStorage.getItem('kiza_role');
             const savedFace = localStorage.getItem('kiza_face');
             
-            // IDENTITY MEMORY: Pre-fill username if they've visited before
             const lastUsername = localStorage.getItem('kiza_last_username');
-            if (lastUsername) {
-                document.getElementById('authUser').value = lastUsername;
-            }
+            if (lastUsername) document.getElementById('authUser').value = lastUsername;
 
             if (savedUser && savedRole) {
                 currentUser = savedUser;
@@ -568,7 +580,8 @@
                 let data = await res.json();
 
                 if (!data.success) { 
-                    errBox.innerText = "";
+                    errBox.innerText = data.message;
+                    errBox.style.color = "#ff0055";
                     showNotification(data.is_lockdown ? "SECURITY LOCKDOWN" : "ACCESS DENIED", data.message, true);
                     return; 
                 }
@@ -578,7 +591,7 @@
                 
                 localStorage.setItem('kiza_user', currentUser);
                 localStorage.setItem('kiza_role', currentRole);
-                localStorage.setItem('kiza_last_username', currentUser); // IDENTITY MEMORY
+                localStorage.setItem('kiza_last_username', currentUser); 
 
                 if(data.face_id) localStorage.setItem('kiza_face', data.face_id);
 
@@ -604,7 +617,7 @@
 
                 document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
                 
-                showNotification("KIZA ALERT", data.reply, false); // SHOW KIZA WELCOME NOTIFICATION
+                showNotification("KIZA ALERT", data.reply, false); 
                 playKizaAudio(data.audio_base64);
 
             } catch (err) { 
@@ -637,7 +650,8 @@
                         let data = await res.json();
 
                         if (!data.success) { 
-                            errBox.innerText = "";
+                            errBox.innerText = data.message;
+                            errBox.style.color = "#ff0055";
                             showNotification(data.is_lockdown ? "SECURITY LOCKDOWN" : "ACCESS DENIED", data.message, true);
                             return; 
                         }
@@ -646,7 +660,7 @@
 
                         localStorage.setItem('kiza_user', currentUser);
                         localStorage.setItem('kiza_role', currentRole);
-                        localStorage.setItem('kiza_last_username', currentUser); // IDENTITY MEMORY
+                        localStorage.setItem('kiza_last_username', currentUser); 
 
                         if (data.face_id) { localStorage.setItem('kiza_face', data.face_id); }
 
@@ -671,7 +685,7 @@
 
                         document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
                         
-                        showNotification("KIZA ALERT", data.reply, false); // KIZA NOTIFICATION
+                        showNotification("KIZA ALERT", data.reply, false); 
                         playKizaAudio(data.audio_base64);
                     } catch (err) { errBox.style.color = "#ff0055"; errBox.innerText = "Server offline. Wait 50s for Render."; }
                 }, 1000); 
@@ -680,18 +694,21 @@
             }
         }
 
-        function logoutUser() {
+        // Silent logout used by auto-kicker
+        function forceLogout() {
             localStorage.removeItem('kiza_user'); 
             localStorage.removeItem('kiza_role'); 
             localStorage.removeItem('kiza_face');
-            
-            // Re-fill the username box so they don't have to type it again
+            document.getElementById('authModal').style.display = "flex";
+            document.getElementById('masterCmds').style.display = "none";
+        }
+
+        // Standard user logout
+        function logoutUser() {
+            forceLogout();
             document.getElementById('authUser').value = localStorage.getItem('kiza_last_username') || "";
             document.getElementById('authPass').value = "";
-            
-            document.getElementById('authModal').style.display = "flex";
             document.getElementById('authError').innerText = "";
-            document.getElementById('masterCmds').style.display = "none";
         }
 
         function updateIndicator(msg) {
@@ -790,7 +807,6 @@
                 document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
                 clearIndicator();
                 
-                // NOTIFICATION TRIGGER IF KIZA FLAGS AN ERROR (Like Lockdown)
                 if (data.is_error) {
                     showNotification("KIZA SECURITY", data.reply, true);
                     playKizaAudio(data.audio_base64);
@@ -801,7 +817,6 @@
                 
                 playKizaAudio(data.audio_base64);
                 typeWriterLog(`[KIZA]: ${formattedReply}`, "#e085ff", () => {
-                    // Optional: Triggers notification for long outputs if they aren't looking at log
                     if (formattedReply.length > 100) {
                         showNotification("KIZA ALERT", "New detailed intelligence report processed.", false);
                     }
