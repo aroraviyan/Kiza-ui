@@ -7,7 +7,6 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>KIZA // ADVANCED COMM HUB</title>
-    <!-- GOOGLE IDENTITY SCRIPT -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         * { box-sizing: border-box; }
@@ -23,11 +22,10 @@
             background-size: 100% 4px; z-index: 999; pointer-events: none;
         }
         
-        /* FIXED NOTIFICATION BOX */
         #notificationBox {
             position: fixed;
             top: 20px;
-            right: -400px; /* Hidden completely off screen */
+            right: -400px;
             width: 320px;
             background: rgba(15, 5, 30, 0.95);
             border: 1px solid #00ffcc;
@@ -291,12 +289,13 @@
         let currentAudio = null;
         let typingTimer;
 
-        // Ask for Notification permission quietly in background if possible
-        if ("Notification" in window && Notification.permission === "default") {
-            Notification.requestPermission();
+        // Force browser to ask for notification permission on click
+        function requestNotificationPermission() {
+            if ("Notification" in window && Notification.permission === "default") {
+                Notification.requestPermission();
+            }
         }
 
-        // Auto-Poller: Kicks non-owners out instantly during lockdown
         setInterval(async () => {
             if (currentUser === "Guest" || currentRole.includes("OWNER")) return;
             try {
@@ -309,10 +308,7 @@
             } catch(e) {}
         }, 4000);
 
-        // SMART NOTIFICATION SYSTEM: Checks if tab is active
         function showNotification(title, message, isError = false) {
-            
-            // 1. Always play the custom UI Beep if sound is enabled
             if (voiceEnabled) {
                 try {
                     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -328,30 +324,16 @@
                 } catch(e) {}
             }
 
-            // 2. Check if the user is looking at the tab
             if (document.hidden) {
-                // User is NOT on the tab: Show OS Desktop Notification
-                if ("Notification" in window) {
-                    if (Notification.permission === "granted") {
-                        new Notification(title, { body: message });
-                    } else if (Notification.permission !== "denied") {
-                        Notification.requestPermission().then(p => {
-                            if (p === "granted") new Notification(title, { body: message });
-                        });
-                    }
+                if ("Notification" in window && Notification.permission === "granted") {
+                    new Notification(title, { body: message });
                 }
             } else {
-                // User IS on the tab: Show Cyberpunk UI Slide-in Box
                 const notifBox = document.getElementById('notificationBox');
                 document.getElementById('notifTitle').innerText = title;
                 document.getElementById('notifMsg').innerText = message;
-                
-                if (isError) {
-                    notifBox.classList.add('notify-error');
-                } else {
-                    notifBox.classList.remove('notify-error');
-                }
-
+                if (isError) { notifBox.classList.add('notify-error'); } 
+                else { notifBox.classList.remove('notify-error'); }
                 notifBox.classList.add('show');
                 setTimeout(() => { notifBox.classList.remove('show'); }, 5000);
             }
@@ -565,6 +547,7 @@
         }
 
         async function handleGoogleLogin(response) {
+            requestNotificationPermission(); // Ask for permission here!
             const googleToken = response.credential;
             const errBox = document.getElementById('authError');
             errBox.style.color = "#00ffcc"; 
@@ -627,6 +610,7 @@
         }
 
         function performAuth() {
+            requestNotificationPermission(); // Ask for permission here!
             const errBox = document.getElementById('authError');
             try {
                 const username = document.getElementById('authUser').value.trim();
@@ -694,7 +678,6 @@
             }
         }
 
-        // Silent logout used by auto-kicker
         function forceLogout() {
             localStorage.removeItem('kiza_user'); 
             localStorage.removeItem('kiza_role'); 
@@ -703,7 +686,6 @@
             document.getElementById('masterCmds').style.display = "none";
         }
 
-        // Standard user logout
         function logoutUser() {
             forceLogout();
             document.getElementById('authUser').value = localStorage.getItem('kiza_last_username') || "";
