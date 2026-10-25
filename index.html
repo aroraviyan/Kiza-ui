@@ -169,6 +169,28 @@
         </div>
     </div>
 
+    <!-- RANK ASSIGNMENT MODAL -->
+    <div id="rankModal" class="modal-overlay" style="display:none;">
+        <div class="auth-card">
+            <div class="section-title">
+                <span>⭐ ASSIGN RANK</span>
+                <button type="button" class="chip-btn" style="border-color:#ff0055; color:#ff0055; padding: 2px 6px;" onclick="closeRankModal()">X</button>
+            </div>
+            <label style="font-size:11px; font-weight:bold; margin-top:10px;">Search Operative Name:</label>
+            <input type="text" id="rankSearchInput" placeholder="Type operative name..." list="operativeListOptions" autocomplete="off" oninput="filterOperativeList()">
+            <datalist id="operativeListOptions"></datalist>
+
+            <label style="font-size:11px; font-weight:bold; margin-top:10px;">Select New Rank:</label>
+            <select id="rankSelectDropdown" style="margin-bottom:15px;">
+                <option value="operative">OPERATIVE</option>
+                <option value="admin">ADMIN</option>
+                <option value="mod">MOD</option>
+                <option value="owner">OWNER</option>
+            </select>
+            <button type="button" class="send-btn" style="width:100%;" onclick="submitRankAssignment()">EXECUTE RANK ASSIGNMENT</button>
+        </div>
+    </div>
+
     <!-- MEMORY ARCHIVE MODAL -->
     <div id="logsModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
@@ -264,10 +286,11 @@
                 <button type="button" class="chip-btn" onclick="openLogsModal()">📂 ARCHIVE</button>
             </div>
 
-            <!-- ALL HIGH COMMAND (Owner, Admin, Mod) CAN SEE THESE -->
+            <!-- HIGH COMMAND COMMANDS (Owner, Admin, Mod) -->
             <div id="masterCmds" style="display: none; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px;">
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/health')">⚡ /health</button>
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/userdata')">👥 /users</button>
+                <button type="button" class="chip-btn mod-owner-only" onclick="openRankModal()" style="border-color:#007BFF; color:#007BFF; display:none;">⭐ RANK MGMT</button>
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/lockdown')">🔒 /lock</button>
                 <button type="button" class="chip-btn owner-only" onclick="sendQuickCmd('/removelock')">🔓 /unlock</button>
                 <button type="button" class="chip-btn owner-only" onclick="sendQuickCmd('/purge')" style="border-color:#ff0055; color:#ff0055;">🗑️ /purge</button>
@@ -346,6 +369,37 @@
         }
         function closeSettings() { document.getElementById('settingsModal').style.display = "none"; }
 
+        // --- RANK MODAL LOGIC ---
+        async function openRankModal() {
+            document.getElementById('rankModal').style.display = "flex";
+            const datalist = document.getElementById('operativeListOptions');
+            datalist.innerHTML = "";
+            try {
+                let res = await fetch(`${SERVER_URL}/api/admin/users?user=${encodeURIComponent(currentUser)}`);
+                let data = await res.json();
+                if (data.success && data.users.length > 0) {
+                    data.users.forEach(u => {
+                        let opt = document.createElement('option');
+                        opt.value = u;
+                        datalist.appendChild(opt);
+                    });
+                }
+            } catch(e) {}
+        }
+        function closeRankModal() { document.getElementById('rankModal').style.display = "none"; }
+
+        async function submitRankAssignment() {
+            const targetName = document.getElementById('rankSearchInput').value.trim();
+            const selectedRank = document.getElementById('rankSelectDropdown').value;
+            if (!targetName) {
+                showNotification("ERROR", "Please specify an operative name.", true);
+                return;
+            }
+            closeRankModal();
+            document.getElementById('textInput').value = `/giverank ${targetName} ${selectedRank}`;
+            submitCommand();
+        }
+
         function renderProfileList() {
             const list = document.getElementById('profileListContainer');
             list.innerHTML = "";
@@ -420,11 +474,16 @@
             const roleEl = document.getElementById('roleVal');
             roleEl.innerText = currentRole;
             
-            // --- NEW FIX: SHOW BUTTONS FOR ALL 3 HIGH COMMAND ROLES ---
             if (currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD")) { 
                 roleEl.classList.add("master"); 
                 document.getElementById('masterCmds').style.display = "flex";
-                document.querySelectorAll('.owner-only').forEach(el => el.style.display = "inline-block");
+                
+                // Show owner-only and mod-owner-only buttons accordingly
+                let isOwner = currentRole.includes("OWNER");
+                let isMod = currentRole.includes("MOD");
+                
+                document.querySelectorAll('.owner-only').forEach(el => el.style.display = isOwner ? "inline-block" : "none");
+                document.querySelectorAll('.mod-owner-only').forEach(el => el.style.display = (isOwner || isMod) ? "inline-block" : "none");
             } else { 
                 roleEl.classList.remove("master"); 
                 document.getElementById('masterCmds').style.display = "none";
