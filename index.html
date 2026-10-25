@@ -53,6 +53,19 @@
             flex: 1; background: transparent; border: none; border-bottom: 1px solid #87CEEB; 
             padding: 8px 10px; color: #333; font-size: 14px; font-family: inherit; outline: none; width: 100%;
         }
+        
+        /* Custom Select styling for consistency */
+        select {
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%2387CEEB" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 5px center;
+            padding-right: 25px;
+        }
+
         .log-box, .logs-viewer { flex: 1; overflow-y: auto; font-size: 11px; color: #444; display: flex; flex-direction: column; gap: 8px; line-height: 1.4; background: #fdfdfd; padding: 10px; border: 1px solid #e0f0ff; border-radius: 4px;}
 
         #notificationBox {
@@ -106,6 +119,7 @@
         body.dark-mode .send-btn { border-color: #aa00ff; color: #e085ff; background: rgba(170, 0, 255, 0.2); }
         body.dark-mode .log-box, body.dark-mode .logs-viewer { color: #999; background: transparent; border-color: rgba(0,255,204,0.3); }
         body.dark-mode input[type="text"], body.dark-mode input[type="password"], body.dark-mode select { color: #00ffcc; border-bottom-color: #aa00ff; background: rgba(0,0,0,0.8); }
+        body.dark-mode select { background-image: url('data:image/svg+xml;utf8,<svg fill="%23aa00ff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>'); }
         body.dark-mode .input-container { background: rgba(0,0,0,0.8); border-color: rgba(170, 0, 255, 0.4); }
         body.dark-mode #notificationBox { background: rgba(15, 5, 30, 0.95); border-color: #00ffcc; color: #00ffcc; }
         body.dark-mode .camera-box { border-color: rgba(170, 0, 255, 0.5); }
@@ -177,12 +191,14 @@
                 <span>⭐ ASSIGN RANK</span>
                 <button type="button" class="chip-btn" style="border-color:#ff0055; color:#ff0055; padding: 2px 6px; width:auto;" onclick="closeRankModal()">X</button>
             </div>
-            <label style="font-size:11px; font-weight:bold; margin-top:10px;">Search Operative Name:</label>
-            <input type="text" id="rankSearchInput" placeholder="Type operative name..." list="operativeListOptions" autocomplete="off">
-            <datalist id="operativeListOptions"></datalist>
+            <label style="font-size:11px; font-weight:bold; margin-top:10px;">Select Operative Name:</label>
+            
+            <select id="rankSearchSelect" style="margin-bottom:15px; text-align: center;">
+                <option value="">-- FETCHING OPERATIVES --</option>
+            </select>
 
             <label style="font-size:11px; font-weight:bold; margin-top:10px;">Select New Rank:</label>
-            <select id="rankSelectDropdown" style="margin-bottom:15px;">
+            <select id="rankSelectDropdown" style="margin-bottom:15px; text-align: center;">
                 <option value="operative">OPERATIVE</option>
                 <option value="admin">ADMIN</option>
                 <option value="mod">MOD</option>
@@ -192,7 +208,7 @@
         </div>
     </div>
 
-    <!-- MEMORY ARCHIVE MODAL (NOW COMBO-BOX STYLE SEARCH) -->
+    <!-- MEMORY ARCHIVE MODAL (NOW STRICT DROPDOWN) -->
     <div id="logsModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
@@ -201,13 +217,14 @@
             </div>
             
             <div id="archiveAdminControls" style="display: none; flex-direction: column; gap: 5px;">
-                <label style="font-size:11px; font-weight:bold; margin-top:5px;">Search / Select Operative:</label>
-                <!-- NEW COMBO-BOX BEHAVIOR -->
-                <input type="text" id="logSearchInput" placeholder="-- SEARCH OPERATIVE --" list="archiveListOptions" autocomplete="off" onchange="handleUserSelect()" style="text-align: center;">
-                <datalist id="archiveListOptions"></datalist>
+                <label style="font-size:11px; font-weight:bold; margin-top:5px;">Select Target Operative:</label>
+                <!-- STRICT SELECT ELEMENT INSTEAD OF DATALIST -->
+                <select id="logOperativeSelect" onchange="handleUserSelect()" style="text-align: center;">
+                    <option value="">-- FETCHING OPERATIVES --</option>
+                </select>
             </div>
 
-            <select id="logSessionSelect" onchange="handleSessionSelect()" style="margin-top:10px;">
+            <select id="logSessionSelect" onchange="handleSessionSelect()" style="margin-top:10px; text-align: center;">
                 <option value="">-- SELECT CHAT SESSION --</option>
             </select>
             
@@ -347,22 +364,11 @@
         let voiceEnabled = false;
         let currentAudio = null;
         let typingTimer;
-        
-        let targetUserMap = {}; 
 
         let currentSessionId = generateSessionId();
 
         function generateSessionId() {
             return 'sess_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-        }
-
-        // UNIVERSAL DB NAME RESOLVER AS A FALLBACK
-        function resolveDBUser(displayStr) {
-            let d = displayStr.toLowerCase();
-            if (d.includes("viyan") || d.includes("owner")) return "viyan_arora_owner";
-            if (d.includes("admin1")) return "admin1";
-            if (d.includes("mod1")) return "mod1";
-            return d.replace(" (owner)", "").replace(" (admin)", "").replace(" (mod)", "").trim();
         }
 
         function startNewSession() {
@@ -402,31 +408,38 @@
 
         async function openRankModal() {
             document.getElementById('rankModal').style.display = "flex";
-            const datalist = document.getElementById('operativeListOptions');
-            datalist.innerHTML = "";
+            const selectDropdown = document.getElementById('rankSearchSelect');
+            selectDropdown.innerHTML = '<option value="">-- FETCHING OPERATIVES --</option>';
             try {
                 let res = await fetch(`${SERVER_URL}/api/admin/users?user=${encodeURIComponent(currentUser)}`);
                 let data = await res.json();
                 if (data.success && data.users.length > 0) {
+                    selectDropdown.innerHTML = '<option value="">-- SELECT TARGET OPERATIVE --</option>';
                     data.users.forEach(u => {
                         let opt = document.createElement('option');
-                        opt.value = u.display;
-                        datalist.appendChild(opt);
+                        opt.value = u.username;
+                        opt.innerText = u.display;
+                        selectDropdown.appendChild(opt);
                     });
+                } else {
+                    selectDropdown.innerHTML = '<option value="">-- NO TARGETS FOUND --</option>';
                 }
-            } catch(e) {}
+            } catch(e) {
+                selectDropdown.innerHTML = '<option value="">-- CONNECTION FAILED --</option>';
+            }
         }
         function closeRankModal() { document.getElementById('rankModal').style.display = "none"; }
 
         async function submitRankAssignment() {
-            const targetName = document.getElementById('rankSearchInput').value.trim();
+            const targetDBName = document.getElementById('rankSearchSelect').value;
             const selectedRank = document.getElementById('rankSelectDropdown').value;
-            if (!targetName) {
-                showNotification("ERROR", "Please specify an operative name.", true);
+            
+            if (!targetDBName) {
+                showNotification("ERROR", "Please select a valid operative from the list.", true);
                 return;
             }
             closeRankModal();
-            document.getElementById('textInput').value = `/giverank ${targetName} ${selectedRank}`;
+            document.getElementById('textInput').value = `/giverank ${targetDBName} ${selectedRank}`;
             submitCommand();
         }
 
@@ -566,63 +579,62 @@
         async function openLogsModal() {
             document.getElementById('logsModal').style.display = "flex";
             const adminControls = document.getElementById('archiveAdminControls');
+            const opSelect = document.getElementById('logOperativeSelect');
             const sessionSelect = document.getElementById('logSessionSelect');
             const viewer = document.getElementById('logsViewer');
             const resumeBtn = document.getElementById('resumeArchiveBtn');
-            const datalist = document.getElementById('archiveListOptions');
             
-            // PRELOAD SEARCH BAR WITH CURRENT USER
-            document.getElementById('logSearchInput').value = currentUser;
-            
-            // GUARANTEE selectedLogTarget IS MAPPED EVEN BEFORE API CALL
-            selectedLogTarget = currentDBUser; // Updated to use the variable rather than the function
-
             sessionSelect.innerHTML = '<option value="">-- SELECT CHAT SESSION --</option>';
             viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">Fetching archives...</div>';
             resumeBtn.style.display = "none"; loadedArchiveHTML = "";
 
             if (currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD")) {
                 adminControls.style.display = "flex";
-                datalist.innerHTML = "";
-                targetUserMap = {};
+                opSelect.innerHTML = '<option value="">-- FETCHING OPERATIVES --</option>';
                 try {
                     let res = await fetch(`${SERVER_URL}/api/admin/users?user=${encodeURIComponent(currentUser)}`);
                     let data = await res.json();
                     if (data.success && data.users.length > 0) {
+                        opSelect.innerHTML = ''; 
+                        let userOpt = document.createElement('option'); 
+                        userOpt.value = currentDBUser;
+                        userOpt.innerText = currentUser + " (YOU)";
+                        opSelect.appendChild(userOpt);
+                        
                         data.users.forEach(u => {
-                            let opt = document.createElement('option'); 
-                            opt.value = u.display;
-                            targetUserMap[u.display.toLowerCase()] = u.username;
-                            datalist.appendChild(opt);
+                            if (u.username !== currentDBUser) {
+                                let opt = document.createElement('option'); 
+                                opt.value = u.username;
+                                opt.innerText = u.display;
+                                opSelect.appendChild(opt);
+                            }
                         });
+                        
+                        opSelect.value = currentDBUser; 
+                        selectedLogTarget = currentDBUser;
+                        fetchLogSessions(); 
                     }
-                } catch(e) {}
+                } catch(e) { 
+                    opSelect.innerHTML = '<option value="">-- CONNECTION FAILED --</option>';
+                }
             } else {
                 adminControls.style.display = "none";
+                selectedLogTarget = currentDBUser;
+                fetchLogSessions();
             }
-            
-            // FETCH AUTOMATICALLY ON OPEN
-            fetchLogSessions();
         }
 
         function closeLogsModal() { document.getElementById('logsModal').style.display = "none"; }
 
         function handleUserSelect() {
-            const rawInput = document.getElementById('logSearchInput').value.trim();
-            const rawLower = rawInput.toLowerCase();
-            
-            if (targetUserMap[rawLower]) {
-                selectedLogTarget = targetUserMap[rawLower]; // Map successful
-            } else {
-                selectedLogTarget = resolveDBUser(rawInput); // Fallback robust mapper
-            }
-            
+            selectedLogTarget = document.getElementById('logOperativeSelect').value;
             document.getElementById('resumeArchiveBtn').style.display = "none";
+            
             if (selectedLogTarget) {
                 fetchLogSessions();
             } else {
                 document.getElementById('logSessionSelect').innerHTML = '<option value="">-- SELECT CHAT SESSION --</option>';
-                document.getElementById('logsViewer').innerHTML = '<div style="text-align:center; margin-top:20px;">Type an Operative name to begin...</div>';
+                document.getElementById('logsViewer').innerHTML = '<div style="text-align:center; margin-top:20px;">Select an Operative...</div>';
             }
         }
 
