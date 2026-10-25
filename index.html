@@ -176,6 +176,9 @@
                 <span>KIZA // MEMORY ARCHIVE</span>
                 <button type="button" class="chip-btn" style="border-color:#ff0055; color:#ff0055; padding: 2px 6px;" onclick="closeLogsModal()">X</button>
             </div>
+            <select id="logUserSelect" style="display: none; margin-bottom: 5px;" onchange="handleUserSelect()">
+                <option value="">-- SELECT OPERATIVE --</option>
+            </select>
             <select id="logDateSelect" onchange="handleDateSelect()">
                 <option value="">-- SELECT DATE --</option>
             </select>
@@ -243,7 +246,6 @@
             </div>
             <button type="button" class="chip-btn" onclick="updateFaceID()">🧬 RE-SCAN FACE ID</button>
             
-            <!-- NEW SETTINGS BUTTON LOCATION -->
             <button type="button" class="chip-btn" onclick="openSettings()" style="margin-top: auto;">⚙️ SETTINGS</button>
         </div>
 
@@ -262,6 +264,7 @@
                 <button type="button" class="chip-btn" onclick="openLogsModal()">📂 ARCHIVE</button>
             </div>
 
+            <!-- ALL HIGH COMMAND (Owner, Admin, Mod) CAN SEE THESE -->
             <div id="masterCmds" style="display: none; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px;">
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/health')">⚡ /health</button>
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/userdata')">👥 /users</button>
@@ -416,14 +419,12 @@
             
             const roleEl = document.getElementById('roleVal');
             roleEl.innerText = currentRole;
-            if (currentRole.includes("OWNER")) { 
+            
+            // --- NEW FIX: SHOW BUTTONS FOR ALL 3 HIGH COMMAND ROLES ---
+            if (currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD")) { 
                 roleEl.classList.add("master"); 
                 document.getElementById('masterCmds').style.display = "flex";
                 document.querySelectorAll('.owner-only').forEach(el => el.style.display = "inline-block");
-            } else if (currentRole.includes("ADMIN")) {
-                roleEl.classList.add("master"); 
-                document.getElementById('masterCmds').style.display = "flex";
-                document.querySelectorAll('.owner-only').forEach(el => el.style.display = "none");
             } else { 
                 roleEl.classList.remove("master"); 
                 document.getElementById('masterCmds').style.display = "none";
@@ -471,24 +472,56 @@
 
         async function openLogsModal() {
             document.getElementById('logsModal').style.display = "flex";
+            const userSelect = document.getElementById('logUserSelect');
             const dateSelect = document.getElementById('logDateSelect');
             const viewer = document.getElementById('logsViewer');
             const resumeBtn = document.getElementById('resumeArchiveBtn');
             
+            userSelect.innerHTML = '<option value="">-- SELECT OPERATIVE --</option>';
             dateSelect.innerHTML = '<option value="">-- SELECT DATE --</option>';
-            viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">Fetching your archives...</div>';
+            viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">Fetching archives...</div>';
             resumeBtn.style.display = "none"; loadedArchiveHTML = "";
 
-            selectedLogTarget = currentUser.replace(" (Owner)", "").replace(" (Admin)", "");
-            fetchLogDates();
+            if (currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD")) {
+                userSelect.style.display = "block";
+                try {
+                    let res = await fetch(`${SERVER_URL}/api/admin/users?user=${encodeURIComponent(currentUser)}`);
+                    let data = await res.json();
+                    if (data.success && data.users.length > 0) {
+                        data.users.forEach(u => {
+                            let opt = document.createElement('option'); opt.value = u; opt.innerText = u.toUpperCase();
+                            userSelect.appendChild(opt);
+                        });
+                        viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">Select an Operative to view their memory archives.</div>';
+                    } else {
+                        viewer.innerHTML = '<div style="color:#d9534f; text-align:center; margin-top:20px;">No archives found.</div>';
+                    }
+                } catch(e) { viewer.innerHTML = '<div style="color:#d9534f; text-align:center; margin-top:20px;">Connection failed.</div>'; }
+            } else {
+                userSelect.style.display = "none";
+                selectedLogTarget = currentUser.replace(" (Owner)", "").replace(" (Admin)", "").replace(" (Mod)", "");
+                fetchLogDates();
+            }
         }
 
         function closeLogsModal() { document.getElementById('logsModal').style.display = "none"; }
+
+        function handleUserSelect() {
+            selectedLogTarget = document.getElementById('logUserSelect').value;
+            document.getElementById('resumeArchiveBtn').style.display = "none";
+            if (selectedLogTarget) {
+                fetchLogDates();
+            } else {
+                document.getElementById('logDateSelect').innerHTML = '<option value="">-- SELECT DATE --</option>';
+                document.getElementById('logsViewer').innerHTML = '<div style="text-align:center; margin-top:20px;">Select an Operative...</div>';
+            }
+        }
 
         async function fetchLogDates() {
             const dateSelect = document.getElementById('logDateSelect');
             const viewer = document.getElementById('logsViewer');
             dateSelect.innerHTML = '<option value="">-- FETCHING DATES --</option>';
+            document.getElementById('resumeArchiveBtn').style.display = "none";
             
             try {
                 let res = await fetch(`${SERVER_URL}/api/history/dates?target_user=${encodeURIComponent(selectedLogTarget)}&request_user=${encodeURIComponent(currentUser)}`);
@@ -502,7 +535,7 @@
                     });
                     viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">Select a Date to load logs.</div>';
                 } else {
-                    viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">No archives found for your identity.</div>';
+                    viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">No archives found for this operative.</div>';
                 }
             } catch(e) {
                 dateSelect.innerHTML = '<option value="">-- ERROR --</option>';
@@ -544,7 +577,12 @@
                         div.innerHTML = htmlContent; viewer.appendChild(div);
                         loadedArchiveHTML += `<div>> ${htmlContent}</div>`;
                     });
-                    viewer.scrollTop = viewer.scrollHeight; resumeBtn.style.display = "block";
+                    viewer.scrollTop = viewer.scrollHeight; 
+                    
+                    let cleanCurrent = currentUser.replace(" (Owner)", "").replace(" (Admin)", "").replace(" (Mod)", "");
+                    if (selectedLogTarget.toLowerCase() === cleanCurrent.toLowerCase()) {
+                        resumeBtn.style.display = "block";
+                    }
                 } else {
                     viewer.innerHTML = '<div style="color:#d9534f; text-align:center; margin-top:20px;">Archive empty or corrupted.</div>';
                 }
@@ -595,7 +633,7 @@
                 let data = await res.json();
                 if (data.next_alert_idx !== undefined) alertIndex = data.next_alert_idx;
                 if (data.new_alerts && data.new_alerts.length > 0) { data.new_alerts.forEach(alert => showNotification(alert.title, alert.message, false)); }
-                if (data.lockdown && !currentRole.includes("OWNER") && !currentRole.includes("ADMIN")) { forceLogout(); showNotification("SECURITY LOCKDOWN", `Owner initiated Lockdown: ${data.reason}`, true); }
+                if (data.lockdown && !(currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD"))) { forceLogout(); showNotification("SECURITY LOCKDOWN", `Owner initiated Lockdown: ${data.reason}`, true); }
             } catch(e) {}
         }, 3000);
 
