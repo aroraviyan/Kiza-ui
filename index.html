@@ -160,7 +160,7 @@
             border-radius: 4px; color: #fff; font-size: 11px; line-height: 1.5; min-height: 250px; display: flex; flex-direction: column; gap: 8px;
         }
         .log-select { 
-            background: rgba(0,0,0,0.8); color: #00ffcc; border: 1px solid #00ffcc; padding: 8px; border-radius: 4px; font-family: inherit; font-size: 12px; outline: none; width: 100%;
+            background: rgba(0,0,0,0.8); color: #00ffcc; border: 1px solid #00ffcc; padding: 8px; border-radius: 4px; font-family: inherit; font-size: 12px; outline: none; width: 100%; margin-bottom: 5px;
         }
 
         @media (max-width: 900px) {
@@ -203,8 +203,11 @@
             </select>
 
             <div id="logsViewer" class="logs-viewer">
-                <div style="color:#888; text-align:center; margin-top:20px;">Awaiting archive selection...</div>
+                <div style="color:#888; text-align:center; margin-top:20px;">Awaiting date selection...</div>
             </div>
+
+            <!-- RESUME BUTTON -->
+            <button id="resumeArchiveBtn" class="send-btn" style="display: none; width: 100%; margin-top: 10px;" onclick="resumeArchive()">RESUME THIS CHAT ARCHIVE</button>
         </div>
     </div>
 
@@ -277,7 +280,7 @@
             <div id="publicCmds" style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 5px;">
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/help')">❓ /help</button>
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/ping')">📡 /ping</button>
-                <button type="button" class="chip-btn" onclick="sendQuickCmd('/logs')">📂 /logs</button>
+                <button type="button" class="chip-btn" style="border-color: #e085ff; color: #e085ff;" onclick="openLogsModal()">📂 MEMORY ARCHIVE</button>
             </div>
 
             <div id="masterCmds" style="display: none; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px;">
@@ -330,18 +333,22 @@
         let currentAudio = null;
         let typingTimer;
 
-        // --- MEMORY LOGS LOGIC ---
+        // --- MEMORY LOGS & CONTINUE LOGIC ---
         let selectedLogTarget = "";
+        let loadedArchiveHTML = "";
 
         async function openLogsModal() {
             document.getElementById('logsModal').style.display = "flex";
             const userSelect = document.getElementById('logUserSelect');
             const dateSelect = document.getElementById('logDateSelect');
             const viewer = document.getElementById('logsViewer');
+            const resumeBtn = document.getElementById('resumeArchiveBtn');
             
             userSelect.innerHTML = '<option value="">-- SELECT OPERATIVE --</option>';
             dateSelect.innerHTML = '<option value="">-- SELECT DATE --</option>';
             viewer.innerHTML = '<div style="color:#888; text-align:center; margin-top:20px;">Fetching archives...</div>';
+            resumeBtn.style.display = "none";
+            loadedArchiveHTML = "";
 
             if (currentRole.includes("OWNER") || currentRole.includes("ADMIN")) {
                 userSelect.style.display = "block";
@@ -374,6 +381,7 @@
 
         function handleUserSelect() {
             selectedLogTarget = document.getElementById('logUserSelect').value;
+            document.getElementById('resumeArchiveBtn').style.display = "none";
             if (selectedLogTarget) {
                 fetchLogDates();
             } else {
@@ -386,6 +394,7 @@
             const dateSelect = document.getElementById('logDateSelect');
             const viewer = document.getElementById('logsViewer');
             dateSelect.innerHTML = '<option value="">-- FETCHING DATES --</option>';
+            document.getElementById('resumeArchiveBtn').style.display = "none";
             
             try {
                 let res = await fetch(`${SERVER_URL}/api/history/dates?target_user=${encodeURIComponent(selectedLogTarget)}&request_user=${encodeURIComponent(currentUser)}`);
@@ -411,39 +420,65 @@
         async function handleDateSelect() {
             const date = document.getElementById('logDateSelect').value;
             const viewer = document.getElementById('logsViewer');
+            const resumeBtn = document.getElementById('resumeArchiveBtn');
             
             if (!date) {
                 viewer.innerHTML = '<div style="color:#888; text-align:center; margin-top:20px;">Select a Date to load logs.</div>';
+                resumeBtn.style.display = "none";
                 return;
             }
 
             viewer.innerHTML = '<div style="color:#00ffcc; text-align:center; margin-top:20px;">Decrypting memory archive...</div>';
+            resumeBtn.style.display = "none";
             
             try {
                 let res = await fetch(`${SERVER_URL}/api/history/messages?target_user=${encodeURIComponent(selectedLogTarget)}&date=${date}&request_user=${encodeURIComponent(currentUser)}`);
                 let data = await res.json();
                 
                 viewer.innerHTML = '';
+                loadedArchiveHTML = ''; 
+                
                 if (data.success && data.history.length > 0) {
                     data.history.forEach(log => {
                         let div = document.createElement('div');
                         let timeMatch = log.timestamp.match(/(\d{2}:\d{2}:\d{2})/);
                         let timeStr = timeMatch ? timeMatch[1] : "";
                         
+                        let htmlContent = "";
                         if (log.role === "USER") {
-                            div.innerHTML = `<span style="color:#555;">[${timeStr}]</span> <span style="color:#00ffcc; font-weight:bold;">[${selectedLogTarget.toUpperCase()}]:</span> ${log.message}`;
+                            htmlContent = `<span style="color:#555;">[${timeStr}]</span> <span style="color:#00ffcc; font-weight:bold;">[${selectedLogTarget.toUpperCase()}]:</span> ${log.message}`;
                         } else {
-                            div.innerHTML = `<span style="color:#555;">[${timeStr}]</span> <span style="color:#e085ff; font-weight:bold;">[KIZA]:</span> ${log.message}`;
+                            htmlContent = `<span style="color:#555;">[${timeStr}]</span> <span style="color:#e085ff; font-weight:bold;">[KIZA]:</span> ${log.message}`;
                         }
+                        
+                        div.innerHTML = htmlContent;
                         viewer.appendChild(div);
+                        
+                        loadedArchiveHTML += `<div>> ${htmlContent}</div>`;
                     });
                     viewer.scrollTop = viewer.scrollHeight;
+                    
+                    // Show "Continue Chat" button only if it's the current user's archive
+                    let cleanCurrent = currentUser.replace(" (Owner)", "").replace(" (Admin)", "");
+                    if (selectedLogTarget.toLowerCase() === cleanCurrent.toLowerCase()) {
+                        resumeBtn.style.display = "block";
+                    }
+                    
                 } else {
                     viewer.innerHTML = '<div style="color:#ff0055; text-align:center; margin-top:20px;">Archive empty or corrupted.</div>';
                 }
             } catch(e) {
                 viewer.innerHTML = '<div style="color:#ff0055; text-align:center; margin-top:20px;">Failed to decrypt logs.</div>';
             }
+        }
+
+        function resumeArchive() {
+            if (!loadedArchiveHTML) return;
+            const logBox = document.getElementById('actionLog');
+            logBox.innerHTML = `<div>> [KIZA SYSTEM]: Loading historical context...</div>` + loadedArchiveHTML;
+            logBox.scrollTop = logBox.scrollHeight;
+            closeLogsModal();
+            showNotification("ARCHIVE RESTORED", "You are now continuing a previous session.", false);
         }
         // -----------------------------
 
