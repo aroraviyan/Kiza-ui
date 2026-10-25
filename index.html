@@ -147,6 +147,22 @@
         .tab-btn { flex: 1; padding: 8px; background: transparent; border: 1px solid rgba(170, 0, 255, 0.4); color: #888; font-family: inherit; cursor: pointer; }
         .tab-btn.active { border-color: #00ffcc; color: #00ffcc; background: rgba(0, 255, 204, 0.1); }
 
+        /* MEMORY LOGS MODAL */
+        #logsModal {
+            display: none; flex-direction: column;
+        }
+        .logs-card {
+            background: rgba(15, 5, 30, 0.95); border: 1px solid #00ffcc; box-shadow: 0 0 35px rgba(0, 255, 204, 0.2);
+            border-radius: 8px; padding: 20px; width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 12px; max-height: 90vh;
+        }
+        .logs-viewer { 
+            flex: 1; overflow-y: auto; background: rgba(0,0,0,0.6); padding: 10px; border: 1px solid rgba(0, 255, 204, 0.3); 
+            border-radius: 4px; color: #fff; font-size: 11px; line-height: 1.5; min-height: 250px; display: flex; flex-direction: column; gap: 8px;
+        }
+        .log-select { 
+            background: rgba(0,0,0,0.8); color: #00ffcc; border: 1px solid #00ffcc; padding: 8px; border-radius: 4px; font-family: inherit; font-size: 12px; outline: none; width: 100%;
+        }
+
         @media (max-width: 900px) {
             body { height: 100dvh; overflow: hidden; }
             .container { flex-direction: column; padding: 10px; gap: 10px; height: 100dvh; max-height: 100dvh; }
@@ -168,6 +184,28 @@
     <div id="notificationBox">
         <div class="notify-title" id="notifTitle">SYSTEM ALERT</div>
         <div class="notify-msg" id="notifMsg">Notification details...</div>
+    </div>
+
+    <!-- MEMORY ARCHIVE MODAL -->
+    <div id="logsModal" class="modal-overlay">
+        <div class="logs-card">
+            <div class="section-title" style="color:#00ffcc; border-bottom-color: rgba(0,255,204,0.3); text-shadow: 0 0 5px rgba(0,255,204,0.5); display: flex; justify-content: space-between; align-items: center;">
+                <span>KIZA // MEMORY ARCHIVE</span>
+                <button type="button" class="chip-btn" style="border-color:#ff0055; color:#ff0055; padding: 2px 6px;" onclick="closeLogsModal()">X</button>
+            </div>
+            
+            <select id="logUserSelect" class="log-select" style="display: none;" onchange="handleUserSelect()">
+                <option value="">-- SELECT OPERATIVE --</option>
+            </select>
+            
+            <select id="logDateSelect" class="log-select" onchange="handleDateSelect()">
+                <option value="">-- SELECT DATE --</option>
+            </select>
+
+            <div id="logsViewer" class="logs-viewer">
+                <div style="color:#888; text-align:center; margin-top:20px;">Awaiting archive selection...</div>
+            </div>
+        </div>
     </div>
 
     <div id="authModal" class="modal-overlay">
@@ -239,6 +277,7 @@
             <div id="publicCmds" style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 5px;">
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/help')">❓ /help</button>
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/ping')">📡 /ping</button>
+                <button type="button" class="chip-btn" onclick="sendQuickCmd('/logs')">📂 /logs</button>
             </div>
 
             <div id="masterCmds" style="display: none; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px;">
@@ -290,6 +329,123 @@
         let voiceEnabled = true;
         let currentAudio = null;
         let typingTimer;
+
+        // --- MEMORY LOGS LOGIC ---
+        let selectedLogTarget = "";
+
+        async function openLogsModal() {
+            document.getElementById('logsModal').style.display = "flex";
+            const userSelect = document.getElementById('logUserSelect');
+            const dateSelect = document.getElementById('logDateSelect');
+            const viewer = document.getElementById('logsViewer');
+            
+            userSelect.innerHTML = '<option value="">-- SELECT OPERATIVE --</option>';
+            dateSelect.innerHTML = '<option value="">-- SELECT DATE --</option>';
+            viewer.innerHTML = '<div style="color:#888; text-align:center; margin-top:20px;">Fetching archives...</div>';
+
+            if (currentRole.includes("OWNER") || currentRole.includes("ADMIN")) {
+                userSelect.style.display = "block";
+                try {
+                    let res = await fetch(`${SERVER_URL}/api/admin/users?user=${encodeURIComponent(currentUser)}`);
+                    let data = await res.json();
+                    if (data.success && data.users.length > 0) {
+                        data.users.forEach(u => {
+                            let opt = document.createElement('option');
+                            opt.value = u; opt.innerText = u.toUpperCase();
+                            userSelect.appendChild(opt);
+                        });
+                        viewer.innerHTML = '<div style="color:#888; text-align:center; margin-top:20px;">Select an Operative to view their memory archives.</div>';
+                    } else {
+                        viewer.innerHTML = '<div style="color:#ff0055; text-align:center; margin-top:20px;">No archives found.</div>';
+                    }
+                } catch(e) {
+                    viewer.innerHTML = '<div style="color:#ff0055; text-align:center; margin-top:20px;">Connection failed.</div>';
+                }
+            } else {
+                userSelect.style.display = "none";
+                selectedLogTarget = currentUser.replace(" (Owner)", "").replace(" (Admin)", "");
+                fetchLogDates();
+            }
+        }
+
+        function closeLogsModal() {
+            document.getElementById('logsModal').style.display = "none";
+        }
+
+        function handleUserSelect() {
+            selectedLogTarget = document.getElementById('logUserSelect').value;
+            if (selectedLogTarget) {
+                fetchLogDates();
+            } else {
+                document.getElementById('logDateSelect').innerHTML = '<option value="">-- SELECT DATE --</option>';
+                document.getElementById('logsViewer').innerHTML = '<div style="color:#888; text-align:center; margin-top:20px;">Select an Operative...</div>';
+            }
+        }
+
+        async function fetchLogDates() {
+            const dateSelect = document.getElementById('logDateSelect');
+            const viewer = document.getElementById('logsViewer');
+            dateSelect.innerHTML = '<option value="">-- FETCHING DATES --</option>';
+            
+            try {
+                let res = await fetch(`${SERVER_URL}/api/history/dates?target_user=${encodeURIComponent(selectedLogTarget)}&request_user=${encodeURIComponent(currentUser)}`);
+                let data = await res.json();
+                
+                dateSelect.innerHTML = '<option value="">-- SELECT DATE --</option>';
+                if (data.success && data.dates.length > 0) {
+                    data.dates.forEach(d => {
+                        let opt = document.createElement('option');
+                        opt.value = d; opt.innerText = d;
+                        dateSelect.appendChild(opt);
+                    });
+                    viewer.innerHTML = '<div style="color:#888; text-align:center; margin-top:20px;">Select a Date to load logs.</div>';
+                } else {
+                    viewer.innerHTML = '<div style="color:#888; text-align:center; margin-top:20px;">No archives found for this operative.</div>';
+                }
+            } catch(e) {
+                dateSelect.innerHTML = '<option value="">-- ERROR --</option>';
+                viewer.innerHTML = '<div style="color:#ff0055; text-align:center; margin-top:20px;">Failed to fetch dates.</div>';
+            }
+        }
+
+        async function handleDateSelect() {
+            const date = document.getElementById('logDateSelect').value;
+            const viewer = document.getElementById('logsViewer');
+            
+            if (!date) {
+                viewer.innerHTML = '<div style="color:#888; text-align:center; margin-top:20px;">Select a Date to load logs.</div>';
+                return;
+            }
+
+            viewer.innerHTML = '<div style="color:#00ffcc; text-align:center; margin-top:20px;">Decrypting memory archive...</div>';
+            
+            try {
+                let res = await fetch(`${SERVER_URL}/api/history/messages?target_user=${encodeURIComponent(selectedLogTarget)}&date=${date}&request_user=${encodeURIComponent(currentUser)}`);
+                let data = await res.json();
+                
+                viewer.innerHTML = '';
+                if (data.success && data.history.length > 0) {
+                    data.history.forEach(log => {
+                        let div = document.createElement('div');
+                        let timeMatch = log.timestamp.match(/(\d{2}:\d{2}:\d{2})/);
+                        let timeStr = timeMatch ? timeMatch[1] : "";
+                        
+                        if (log.role === "USER") {
+                            div.innerHTML = `<span style="color:#555;">[${timeStr}]</span> <span style="color:#00ffcc; font-weight:bold;">[${selectedLogTarget.toUpperCase()}]:</span> ${log.message}`;
+                        } else {
+                            div.innerHTML = `<span style="color:#555;">[${timeStr}]</span> <span style="color:#e085ff; font-weight:bold;">[KIZA]:</span> ${log.message}`;
+                        }
+                        viewer.appendChild(div);
+                    });
+                    viewer.scrollTop = viewer.scrollHeight;
+                } else {
+                    viewer.innerHTML = '<div style="color:#ff0055; text-align:center; margin-top:20px;">Archive empty or corrupted.</div>';
+                }
+            } catch(e) {
+                viewer.innerHTML = '<div style="color:#ff0055; text-align:center; margin-top:20px;">Failed to decrypt logs.</div>';
+            }
+        }
+        // -----------------------------
 
         function requestNotificationPermission() {
             if ("Notification" in window && Notification.permission === "default") {
@@ -710,6 +866,9 @@
             localStorage.removeItem('kiza_face');
             document.getElementById('authModal').style.display = "flex";
             document.getElementById('masterCmds').style.display = "none";
+            
+            // WIPES THE CHAT LOG COMPLETELY ON LOGOUT
+            document.getElementById('actionLog').innerHTML = '<div>> [KIZA SYSTEM]: HUD online. System ready.</div>';
         }
 
         function logoutUser() {
@@ -783,6 +942,12 @@
             let inputField = document.getElementById('textInput');
             let text = inputField.value.trim();
             if (!text) return;
+            
+            if (text.toLowerCase() === "/logs") {
+                inputField.value = "";
+                openLogsModal();
+                return;
+            }
 
             clearTimeout(typingTimer);
             clearIndicator();
