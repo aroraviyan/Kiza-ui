@@ -56,6 +56,13 @@
         
         select {
             cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%2387CEEB" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 5px center;
+            padding-right: 25px;
             background-color: rgba(135, 206, 235, 0.08);
             border-radius: 4px;
         }
@@ -114,6 +121,7 @@
         body.dark-mode .send-btn { border-color: #aa00ff; color: #e085ff; background: rgba(170, 0, 255, 0.2); }
         body.dark-mode .log-box, body.dark-mode .logs-viewer { color: #999; background: transparent; border-color: rgba(0,255,204,0.3); }
         body.dark-mode input[type="text"], body.dark-mode input[type="password"], body.dark-mode select { color: #00ffcc; border-bottom-color: #aa00ff; background: rgba(0,0,0,0.8); }
+        body.dark-mode select { background-image: url('data:image/svg+xml;utf8,<svg fill="%23aa00ff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>'); }
         body.dark-mode .input-container { background: rgba(0,0,0,0.8); border-color: rgba(170, 0, 255, 0.4); }
         body.dark-mode #notificationBox { background: rgba(15, 5, 30, 0.95); border-color: #00ffcc; color: #00ffcc; }
         body.dark-mode .camera-box { border-color: rgba(170, 0, 255, 0.5); }
@@ -178,7 +186,7 @@
         </div>
     </div>
 
-    <!-- RANK ASSIGNMENT MODAL (SEARCH BAR + DROPDOWN) -->
+    <!-- RANK ASSIGNMENT MODAL -->
     <div id="rankModal" class="modal-overlay" style="display:none;">
         <div class="auth-card">
             <div class="section-title">
@@ -203,7 +211,7 @@
         </div>
     </div>
 
-    <!-- MEMORY ARCHIVE MODAL (SEARCH BAR + DROPDOWN + CONTINUE BUTTON) -->
+    <!-- MEMORY ARCHIVE MODAL -->
     <div id="logsModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
@@ -361,7 +369,7 @@
         let currentAudio = null;
         let typingTimer;
 
-        let cachedOperatives = []; // Stores [{display, username}] safely
+        let cachedOperatives = [];
         let currentSessionId = generateSessionId();
 
         function generateSessionId() {
@@ -377,7 +385,6 @@
             return d.replace(" (owner)", "").replace(" (admin)", "").replace(" (mod)", "").trim();
         }
 
-        // Safely normalizes any user entry from backend (whether string or object) so it is NEVER undefined
         function normalizeUserEntry(u) {
             if (!u) return null;
             if (typeof u === "string") {
@@ -428,7 +435,6 @@
         }
         function closeSettings() { document.getElementById('settingsModal').style.display = "none"; }
 
-        // --- FETCH OPERATIVES HELPER ---
         async function fetchOperativesList() {
             let list = [];
             try {
@@ -447,7 +453,6 @@
             return list;
         }
 
-        // --- RANK MODAL (SEARCH + DROPDOWN) ---
         async function openRankModal() {
             document.getElementById('rankModal').style.display = "flex";
             document.getElementById('rankSearchInput').value = "";
@@ -469,7 +474,7 @@
 
             filtered.forEach(u => {
                 let opt = document.createElement('option');
-                opt.value = u.display;
+                opt.value = u.username;
                 opt.innerText = `${u.display.toUpperCase()} (${u.username})`;
                 selectDropdown.appendChild(opt);
             });
@@ -487,22 +492,21 @@
         function closeRankModal() { document.getElementById('rankModal').style.display = "none"; }
 
         async function submitRankAssignment() {
-            let targetName = document.getElementById('rankSearchSelect').value;
-            if (!targetName) {
-                targetName = document.getElementById('rankSearchInput').value.trim();
+            let targetDBName = document.getElementById('rankSearchSelect').value;
+            if (!targetDBName) {
+                targetDBName = resolveDBUser(document.getElementById('rankSearchInput').value.trim());
             }
             const selectedRank = document.getElementById('rankSelectDropdown').value;
             
-            if (!targetName) {
+            if (!targetDBName) {
                 showNotification("ERROR", "Please select or type an operative name.", true);
                 return;
             }
             closeRankModal();
-            document.getElementById('textInput').value = `/giverank ${targetName} ${selectedRank}`;
+            document.getElementById('textInput').value = `/giverank ${targetDBName} ${selectedRank}`;
             submitCommand();
         }
 
-        // --- PROFILE STORAGE ---
         function renderProfileList() {
             const list = document.getElementById('profileListContainer');
             list.innerHTML = "";
@@ -564,39 +568,43 @@
             document.getElementById('cancelAuthBtn').style.display = "none";
         }
 
+        function applyRoleUI(roleStr) {
+            currentRole = roleStr || "OPERATIVE";
+            localStorage.setItem('kiza_role', currentRole);
+            saveCurrentProfileToStorage(currentUser, currentDBUser, currentRole, localStorage.getItem('kiza_face'));
+
+            const roleEl = document.getElementById('roleVal');
+            roleEl.innerText = currentRole;
+
+            if (currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD")) {
+                roleEl.classList.add("master");
+                document.getElementById('masterCmds').style.display = "flex";
+
+                let isOwner = currentRole.includes("OWNER");
+                let isMod = currentRole.includes("MOD");
+
+                document.querySelectorAll('.owner-only').forEach(el => el.style.display = isOwner ? "inline-block" : "none");
+                document.querySelectorAll('.mod-owner-only').forEach(el => el.style.display = (isOwner || isMod) ? "inline-block" : "none");
+            } else {
+                roleEl.classList.remove("master");
+                document.getElementById('masterCmds').style.display = "none";
+            }
+        }
+
         function finalizeLogin(username, db_username, role, face_id, playGreeting = true, replyMsg = "", audioBase64 = null) {
             currentUser = username || "Guest"; 
             currentDBUser = (db_username && db_username !== "undefined") ? db_username : resolveDBUser(currentUser);
-            currentRole = role || "OPERATIVE";
             
             currentSessionId = generateSessionId();
 
             localStorage.setItem('kiza_user', currentUser);
             localStorage.setItem('kiza_db', currentDBUser);
-            localStorage.setItem('kiza_role', currentRole);
             if (face_id) localStorage.setItem('kiza_face', face_id);
             
-            saveCurrentProfileToStorage(currentUser, currentDBUser, currentRole, face_id);
+            applyRoleUI(role);
 
             document.getElementById('authModal').style.display = "none";
             document.getElementById('idVal').innerText = currentUser.toUpperCase();
-            
-            const roleEl = document.getElementById('roleVal');
-            roleEl.innerText = currentRole;
-            
-            if (currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD")) { 
-                roleEl.classList.add("master"); 
-                document.getElementById('masterCmds').style.display = "flex";
-                
-                let isOwner = currentRole.includes("OWNER");
-                let isMod = currentRole.includes("MOD");
-                
-                document.querySelectorAll('.owner-only').forEach(el => el.style.display = isOwner ? "inline-block" : "none");
-                document.querySelectorAll('.mod-owner-only').forEach(el => el.style.display = (isOwner || isMod) ? "inline-block" : "none");
-            } else { 
-                roleEl.classList.remove("master"); 
-                document.getElementById('masterCmds').style.display = "none";
-            }
 
             if (face_id) {
                 const img = document.getElementById('savedFaceImg'); img.src = face_id; img.style.display = "block";
@@ -635,7 +643,6 @@
             document.getElementById('authError').innerText = "";
         }
 
-        // --- MEMORY ARCHIVE MODAL (SEARCH + DROPDOWN + CONTINUE) ---
         let selectedLogTarget = "";
         let loadedArchiveHTML = "";
 
@@ -674,7 +681,6 @@
             const q = (filterText || "").toLowerCase().trim();
             opSelect.innerHTML = '';
 
-            // Always include self at top if matching filter
             const selfEntry = { display: `${currentUser} (YOU)`, username: currentDBUser };
             const allEntries = [selfEntry];
 
@@ -716,8 +722,7 @@
         function closeLogsModal() { document.getElementById('logsModal').style.display = "none"; }
 
         function handleUserSelect() {
-            const val = document.getElementById('logOperativeSelect').value;
-            selectedLogTarget = val || resolveDBUser(document.getElementById('logSearchInput').value) || currentDBUser;
+            selectedLogTarget = document.getElementById('logOperativeSelect').value;
             document.getElementById('resumeArchiveBtn').style.display = "none";
             
             if (selectedLogTarget) {
@@ -746,7 +751,6 @@
                         opt.innerText = `${idx + 1}. ${(s.title || "Untitled Session").toUpperCase()}`;
                         sessionSelect.appendChild(opt);
                     });
-                    // Auto-select the latest session so logs & Continue button appear right away!
                     sessionSelect.selectedIndex = 1;
                     handleSessionSelect();
                 } else {
@@ -798,14 +802,11 @@
                         loadedArchiveHTML += `<div>> ${htmlContent}</div>`;
                     });
                     viewer.scrollTop = viewer.scrollHeight; 
-                    
-                    // Always show the Continue button when a valid session is loaded
                     resumeBtn.style.display = "block";
                 } else {
                     viewer.innerHTML = '<div style="color:#d9534f; text-align:center; margin-top:20px;">No messages recorded in this session.</div>';
                 }
             } catch(e) { 
-                console.error("Archive decryption error:", e);
                 viewer.innerHTML = '<div style="color:#d9534f; text-align:center; margin-top:20px;">Failed to decrypt logs.</div>'; 
             }
         }
@@ -862,6 +863,10 @@
                 let res = await fetch(`${SERVER_URL}/api/status?user=${encodeURIComponent(currentUser)}&last_alert_idx=${alertIndex}`);
                 let data = await res.json();
                 if (data.next_alert_idx !== undefined) alertIndex = data.next_alert_idx;
+                if (data.role && data.role !== "LOCKED" && data.role !== currentRole) {
+                    applyRoleUI(data.role);
+                    showNotification("CLEARANCE UPDATED", `Your clearance is now ${data.role}`, false);
+                }
                 if (data.new_alerts && data.new_alerts.length > 0) { data.new_alerts.forEach(alert => showNotification(alert.title, alert.message, false)); }
                 if (data.lockdown && !(currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD"))) { forceLogout(); showNotification("SECURITY LOCKDOWN", `Owner initiated Lockdown: ${data.reason}`, true); }
             } catch(e) {}
