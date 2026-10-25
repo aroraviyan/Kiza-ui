@@ -50,23 +50,18 @@
             background: #ffffff; padding: 10px; border: 1px solid #87CEEB; border-radius: 6px; box-shadow: 0 4px 15px rgba(135, 206, 235, 0.15);
         }
         input[type="text"], input[type="password"], select { 
-            flex: 1; background: transparent; border: none; border-bottom: 1px solid #87CEEB; 
+            background: transparent; border: none; border-bottom: 1px solid #87CEEB; 
             padding: 8px 10px; color: #333; font-size: 14px; font-family: inherit; outline: none; width: 100%;
         }
         
-        /* Custom Select styling for consistency */
         select {
             cursor: pointer;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            background-image: url('data:image/svg+xml;utf8,<svg fill="%2387CEEB" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
-            background-repeat: no-repeat;
-            background-position: right 5px center;
-            padding-right: 25px;
+            background-color: rgba(135, 206, 235, 0.08);
+            border-radius: 4px;
         }
 
-        .log-box, .logs-viewer { flex: 1; overflow-y: auto; font-size: 11px; color: #444; display: flex; flex-direction: column; gap: 8px; line-height: 1.4; background: #fdfdfd; padding: 10px; border: 1px solid #e0f0ff; border-radius: 4px;}
+        .log-box, .logs-viewer { flex: 1; overflow-y: auto; font-size: 11px; color: #444; display: flex; flex-direction: column; gap: 8px; line-height: 1.4; background: #fdfdfd; padding: 10px; border: 1px solid #e0f0ff; border-radius: 4px; min-height: 180px; max-height: 300px; }
+        .log-box { max-height: none; }
 
         #notificationBox {
             position: fixed; top: 20px; right: -400px; width: 320px; background: rgba(255, 255, 255, 0.95); border: 1px solid #87CEEB; 
@@ -102,8 +97,8 @@
         .input-row { display: flex; gap: 8px; width: 100%; align-items: center; }
         
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(240, 248, 255, 0.8); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 500; padding: 15px; }
-        .auth-card, .logs-card { width: 100%; max-width: 380px; }
-        .logs-card { max-width: 600px; max-height: 90vh; }
+        .auth-card, .logs-card { width: 100%; max-width: 420px; }
+        .logs-card { max-width: 600px; max-height: 92vh; overflow-y: auto; }
         
         .auth-tabs { display: flex; gap: 10px; }
         .tab-btn { flex: 1; padding: 8px; background: transparent; border: 1px solid #87CEEB; color: #666; font-family: inherit; cursor: pointer; border-radius: 4px; }
@@ -111,7 +106,7 @@
         .profile-list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border: 1px solid #87CEEB; border-radius: 4px; margin-bottom: 5px; background: rgba(135,206,235,0.1); }
 
         body.dark-mode { background-color: #030008; background-image: linear-gradient(rgba(170, 0, 255, 0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(170, 0, 255, 0.07) 1px, transparent 1px); color: #a3a3a3; }
-        body.dark-mode .side-panel, body.dark-mode .auth-card, body.dark-mode .logs-card { background: rgba(12, 5, 25, 0.75); border-color: rgba(170, 0, 255, 0.4); box-shadow: 0 0 20px rgba(170, 0, 255, 0.15), inset 0 0 15px rgba(170, 0, 255, 0.1); }
+        body.dark-mode .side-panel, body.dark-mode .auth-card, body.dark-mode .logs-card { background: rgba(12, 5, 25, 0.85); border-color: rgba(170, 0, 255, 0.4); box-shadow: 0 0 20px rgba(170, 0, 255, 0.15), inset 0 0 15px rgba(170, 0, 255, 0.1); }
         body.dark-mode .section-title { color: #aa00ff; border-bottom-color: rgba(170, 0, 255, 0.3); text-shadow: 0 0 5px rgba(170, 0, 255, 0.5); }
         body.dark-mode .telemetry-val { color: #00ffcc; text-shadow: 0 0 8px rgba(0, 255, 204, 0.6); }
         body.dark-mode .telemetry-val.master { color: #ff0055; text-shadow: 0 0 8px rgba(255, 0, 85, 0.8); }
@@ -119,7 +114,6 @@
         body.dark-mode .send-btn { border-color: #aa00ff; color: #e085ff; background: rgba(170, 0, 255, 0.2); }
         body.dark-mode .log-box, body.dark-mode .logs-viewer { color: #999; background: transparent; border-color: rgba(0,255,204,0.3); }
         body.dark-mode input[type="text"], body.dark-mode input[type="password"], body.dark-mode select { color: #00ffcc; border-bottom-color: #aa00ff; background: rgba(0,0,0,0.8); }
-        body.dark-mode select { background-image: url('data:image/svg+xml;utf8,<svg fill="%23aa00ff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>'); }
         body.dark-mode .input-container { background: rgba(0,0,0,0.8); border-color: rgba(170, 0, 255, 0.4); }
         body.dark-mode #notificationBox { background: rgba(15, 5, 30, 0.95); border-color: #00ffcc; color: #00ffcc; }
         body.dark-mode .camera-box { border-color: rgba(170, 0, 255, 0.5); }
@@ -184,21 +178,22 @@
         </div>
     </div>
 
-    <!-- RANK ASSIGNMENT MODAL -->
+    <!-- RANK ASSIGNMENT MODAL (SEARCH BAR + DROPDOWN) -->
     <div id="rankModal" class="modal-overlay" style="display:none;">
         <div class="auth-card">
             <div class="section-title">
                 <span>⭐ ASSIGN RANK</span>
                 <button type="button" class="chip-btn" style="border-color:#ff0055; color:#ff0055; padding: 2px 6px; width:auto;" onclick="closeRankModal()">X</button>
             </div>
-            <label style="font-size:11px; font-weight:bold; margin-top:10px;">Select Operative Name:</label>
             
-            <select id="rankSearchSelect" style="margin-bottom:15px; text-align: center;">
-                <option value="">-- FETCHING OPERATIVES --</option>
+            <label style="font-size:11px; font-weight:bold; margin-top:6px;">1. Search or Select Operative:</label>
+            <input type="text" id="rankSearchInput" placeholder="🔍 Type to search operative..." autocomplete="off" oninput="filterRankOperatives()">
+            <select id="rankSearchSelect" style="margin-bottom:10px;">
+                <option value="">-- SELECT TARGET OPERATIVE --</option>
             </select>
 
-            <label style="font-size:11px; font-weight:bold; margin-top:10px;">Select New Rank:</label>
-            <select id="rankSelectDropdown" style="margin-bottom:15px; text-align: center;">
+            <label style="font-size:11px; font-weight:bold; margin-top:6px;">2. Select New Rank:</label>
+            <select id="rankSelectDropdown" style="margin-bottom:15px;">
                 <option value="operative">OPERATIVE</option>
                 <option value="admin">ADMIN</option>
                 <option value="mod">MOD</option>
@@ -208,7 +203,7 @@
         </div>
     </div>
 
-    <!-- MEMORY ARCHIVE MODAL (NOW STRICT DROPDOWN) -->
+    <!-- MEMORY ARCHIVE MODAL (SEARCH BAR + DROPDOWN + CONTINUE BUTTON) -->
     <div id="logsModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
@@ -216,22 +211,23 @@
                 <button type="button" class="chip-btn" style="border-color:#ff0055; color:#ff0055; padding: 2px 6px; width:auto;" onclick="closeLogsModal()">X</button>
             </div>
             
-            <div id="archiveAdminControls" style="display: none; flex-direction: column; gap: 5px;">
-                <label style="font-size:11px; font-weight:bold; margin-top:5px;">Select Target Operative:</label>
-                <!-- STRICT SELECT ELEMENT INSTEAD OF DATALIST -->
-                <select id="logOperativeSelect" onchange="handleUserSelect()" style="text-align: center;">
-                    <option value="">-- FETCHING OPERATIVES --</option>
+            <div id="archiveAdminControls" style="display: none; flex-direction: column; gap: 6px;">
+                <label style="font-size:11px; font-weight:bold; margin-top:4px;">Search or Select Operative:</label>
+                <input type="text" id="logSearchInput" placeholder="🔍 Type to filter operative dropdown..." autocomplete="off" oninput="filterArchiveOperatives()">
+                <select id="logOperativeSelect" onchange="handleUserSelect()">
+                    <option value="">-- SELECT OPERATIVE --</option>
                 </select>
             </div>
 
-            <select id="logSessionSelect" onchange="handleSessionSelect()" style="margin-top:10px; text-align: center;">
+            <label style="font-size:11px; font-weight:bold; margin-top:6px;">Select Chat Session:</label>
+            <select id="logSessionSelect" onchange="handleSessionSelect()">
                 <option value="">-- SELECT CHAT SESSION --</option>
             </select>
             
             <div id="logsViewer" class="logs-viewer">
                 <div style="text-align:center; margin-top:20px;">Awaiting session selection...</div>
             </div>
-            <button id="resumeArchiveBtn" class="send-btn" style="display: none; width: 100%; margin-top: 10px;" onclick="resumeArchive()">RESUME THIS CHAT SESSION</button>
+            <button id="resumeArchiveBtn" class="send-btn" style="display: none; width: 100%; margin-top: 8px; background: #007BFF; border-color: #0056b3;" onclick="resumeArchive()">▶ CONTINUE THIS CHAT SESSION</button>
         </div>
     </div>
 
@@ -305,7 +301,7 @@
             <div id="uiStatus" class="status-text">AWAITING IDENTITY...</div>
             
             <div id="publicCmds" style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
-                <button type="button" class="chip-btn" style="width:auto; border-color:#00ffcc; color:#00ffcc; background: rgba(0, 255, 204, 0.1);" onclick="startNewSession()">➕ NEW CHAT</button>
+                <button type="button" class="chip-btn" style="width:auto; border-color:#007BFF; color:#007BFF; background: rgba(0, 123, 255, 0.1);" onclick="startNewSession()">➕ NEW CHAT</button>
                 <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/cmds')">❓ /cmds</button>
                 <button type="button" class="chip-btn" style="width:auto;" onclick="openLogsModal()">📂 ARCHIVE</button>
             </div>
@@ -365,10 +361,36 @@
         let currentAudio = null;
         let typingTimer;
 
+        let cachedOperatives = []; // Stores [{display, username}] safely
         let currentSessionId = generateSessionId();
 
         function generateSessionId() {
             return 'sess_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        }
+
+        function resolveDBUser(nameStr) {
+            if (!nameStr || nameStr === "undefined") return "guest";
+            let d = String(nameStr).toLowerCase().trim();
+            if (d.includes("viyan") || d.includes("owner")) return "viyan_arora_owner";
+            if (d === "admin1" || d.startsWith("admin1 ")) return "admin1";
+            if (d === "mod1" || d.startsWith("mod1 ")) return "mod1";
+            return d.replace(" (owner)", "").replace(" (admin)", "").replace(" (mod)", "").trim();
+        }
+
+        // Safely normalizes any user entry from backend (whether string or object) so it is NEVER undefined
+        function normalizeUserEntry(u) {
+            if (!u) return null;
+            if (typeof u === "string") {
+                return { display: u, username: resolveDBUser(u) };
+            }
+            if (typeof u === "object") {
+                let disp = u.display || u.display_name || u.username || u.name || "";
+                let uname = u.username || resolveDBUser(disp);
+                if (!disp) disp = uname;
+                if (!disp) return null;
+                return { display: String(disp), username: String(uname) };
+            }
+            return null;
         }
 
         function startNewSession() {
@@ -388,7 +410,7 @@
                 document.body.classList.remove('dark-mode');
                 document.getElementById('themeSelect').value = 'light';
             }
-            document.getElementById('voiceDefaultSelect').value = userSettings.voiceDefault;
+            document.getElementById('voiceDefaultSelect').value = userSettings.voiceDefault || 'off';
             document.getElementById('notifToggleSelect').value = userSettings.showNotifs || 'on';
         }
 
@@ -406,43 +428,81 @@
         }
         function closeSettings() { document.getElementById('settingsModal').style.display = "none"; }
 
-        async function openRankModal() {
-            document.getElementById('rankModal').style.display = "flex";
-            const selectDropdown = document.getElementById('rankSearchSelect');
-            selectDropdown.innerHTML = '<option value="">-- FETCHING OPERATIVES --</option>';
+        // --- FETCH OPERATIVES HELPER ---
+        async function fetchOperativesList() {
+            let list = [];
             try {
                 let res = await fetch(`${SERVER_URL}/api/admin/users?user=${encodeURIComponent(currentUser)}`);
                 let data = await res.json();
-                if (data.success && data.users.length > 0) {
-                    selectDropdown.innerHTML = '<option value="">-- SELECT TARGET OPERATIVE --</option>';
-                    data.users.forEach(u => {
-                        let opt = document.createElement('option');
-                        opt.value = u.username;
-                        opt.innerText = u.display;
-                        selectDropdown.appendChild(opt);
+                if (data.success && Array.isArray(data.users)) {
+                    data.users.forEach(item => {
+                        let norm = normalizeUserEntry(item);
+                        if (norm && !list.some(x => x.username.toLowerCase() === norm.username.toLowerCase())) {
+                            list.push(norm);
+                        }
                     });
-                } else {
-                    selectDropdown.innerHTML = '<option value="">-- NO TARGETS FOUND --</option>';
                 }
-            } catch(e) {
-                selectDropdown.innerHTML = '<option value="">-- CONNECTION FAILED --</option>';
+            } catch(e) {}
+            cachedOperatives = list;
+            return list;
+        }
+
+        // --- RANK MODAL (SEARCH + DROPDOWN) ---
+        async function openRankModal() {
+            document.getElementById('rankModal').style.display = "flex";
+            document.getElementById('rankSearchInput').value = "";
+            const selectDropdown = document.getElementById('rankSearchSelect');
+            selectDropdown.innerHTML = '<option value="">-- FETCHING OPERATIVES... --</option>';
+            
+            await fetchOperativesList();
+            renderRankOperativesDropdown("");
+        }
+
+        function renderRankOperativesDropdown(filterText) {
+            const selectDropdown = document.getElementById('rankSearchSelect');
+            const q = (filterText || "").toLowerCase().trim();
+            selectDropdown.innerHTML = '<option value="">-- SELECT TARGET OPERATIVE --</option>';
+            
+            const filtered = cachedOperatives.filter(u => 
+                u.display.toLowerCase().includes(q) || u.username.toLowerCase().includes(q)
+            );
+
+            filtered.forEach(u => {
+                let opt = document.createElement('option');
+                opt.value = u.display;
+                opt.innerText = `${u.display.toUpperCase()} (${u.username})`;
+                selectDropdown.appendChild(opt);
+            });
+
+            if (filtered.length === 1 && q.length > 0) {
+                selectDropdown.selectedIndex = 1;
             }
         }
+
+        function filterRankOperatives() {
+            const q = document.getElementById('rankSearchInput').value;
+            renderRankOperativesDropdown(q);
+        }
+
         function closeRankModal() { document.getElementById('rankModal').style.display = "none"; }
 
         async function submitRankAssignment() {
-            const targetDBName = document.getElementById('rankSearchSelect').value;
+            let targetName = document.getElementById('rankSearchSelect').value;
+            if (!targetName) {
+                targetName = document.getElementById('rankSearchInput').value.trim();
+            }
             const selectedRank = document.getElementById('rankSelectDropdown').value;
             
-            if (!targetDBName) {
-                showNotification("ERROR", "Please select a valid operative from the list.", true);
+            if (!targetName) {
+                showNotification("ERROR", "Please select or type an operative name.", true);
                 return;
             }
             closeRankModal();
-            document.getElementById('textInput').value = `/giverank ${targetDBName} ${selectedRank}`;
+            document.getElementById('textInput').value = `/giverank ${targetName} ${selectedRank}`;
             submitCommand();
         }
 
+        // --- PROFILE STORAGE ---
         function renderProfileList() {
             const list = document.getElementById('profileListContainer');
             list.innerHTML = "";
@@ -466,13 +526,14 @@
         }
 
         function saveCurrentProfileToStorage(username, db_username, role, face_id) {
+            let safeDB = db_username || resolveDBUser(username);
             let existing = storedProfiles.find(p => p.username === username);
             if (existing) {
                 existing.role = role;
-                existing.db_username = db_username;
+                existing.db_username = safeDB;
                 if (face_id) existing.face_id = face_id;
             } else {
-                storedProfiles.push({ username, db_username, role, face_id });
+                storedProfiles.push({ username, db_username: safeDB, role, face_id });
             }
             localStorage.setItem('kiza_profiles', JSON.stringify(storedProfiles));
         }
@@ -487,7 +548,8 @@
         function switchToProfile(idx) {
             let prof = storedProfiles[idx];
             closeSettings();
-            finalizeLogin(prof.username, prof.db_username, prof.role, prof.face_id, false);
+            let safeDB = prof.db_username || resolveDBUser(prof.username);
+            finalizeLogin(prof.username, safeDB, prof.role, prof.face_id, false);
         }
 
         function addIdentity() {
@@ -503,9 +565,9 @@
         }
 
         function finalizeLogin(username, db_username, role, face_id, playGreeting = true, replyMsg = "", audioBase64 = null) {
-            currentUser = username; 
-            currentDBUser = db_username;
-            currentRole = role;
+            currentUser = username || "Guest"; 
+            currentDBUser = (db_username && db_username !== "undefined") ? db_username : resolveDBUser(currentUser);
+            currentRole = role || "OPERATIVE";
             
             currentSessionId = generateSessionId();
 
@@ -514,7 +576,7 @@
             localStorage.setItem('kiza_role', currentRole);
             if (face_id) localStorage.setItem('kiza_face', face_id);
             
-            saveCurrentProfileToStorage(username, db_username, role, face_id);
+            saveCurrentProfileToStorage(currentUser, currentDBUser, currentRole, face_id);
 
             document.getElementById('authModal').style.display = "none";
             document.getElementById('idVal').innerText = currentUser.toUpperCase();
@@ -573,6 +635,7 @@
             document.getElementById('authError').innerText = "";
         }
 
+        // --- MEMORY ARCHIVE MODAL (SEARCH + DROPDOWN + CONTINUE) ---
         let selectedLogTarget = "";
         let loadedArchiveHTML = "";
 
@@ -584,50 +647,77 @@
             const viewer = document.getElementById('logsViewer');
             const resumeBtn = document.getElementById('resumeArchiveBtn');
             
+            document.getElementById('logSearchInput').value = "";
+            currentDBUser = (currentDBUser && currentDBUser !== "undefined") ? currentDBUser : resolveDBUser(currentUser);
+            selectedLogTarget = currentDBUser;
+
             sessionSelect.innerHTML = '<option value="">-- SELECT CHAT SESSION --</option>';
             viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">Fetching archives...</div>';
-            resumeBtn.style.display = "none"; loadedArchiveHTML = "";
+            resumeBtn.style.display = "none"; 
+            loadedArchiveHTML = "";
 
             if (currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD")) {
                 adminControls.style.display = "flex";
-                opSelect.innerHTML = '<option value="">-- FETCHING OPERATIVES --</option>';
-                try {
-                    let res = await fetch(`${SERVER_URL}/api/admin/users?user=${encodeURIComponent(currentUser)}`);
-                    let data = await res.json();
-                    if (data.success && data.users.length > 0) {
-                        opSelect.innerHTML = ''; 
-                        let userOpt = document.createElement('option'); 
-                        userOpt.value = currentDBUser;
-                        userOpt.innerText = currentUser + " (YOU)";
-                        opSelect.appendChild(userOpt);
-                        
-                        data.users.forEach(u => {
-                            if (u.username !== currentDBUser) {
-                                let opt = document.createElement('option'); 
-                                opt.value = u.username;
-                                opt.innerText = u.display;
-                                opSelect.appendChild(opt);
-                            }
-                        });
-                        
-                        opSelect.value = currentDBUser; 
-                        selectedLogTarget = currentDBUser;
-                        fetchLogSessions(); 
-                    }
-                } catch(e) { 
-                    opSelect.innerHTML = '<option value="">-- CONNECTION FAILED --</option>';
-                }
+                opSelect.innerHTML = '<option value="">-- FETCHING OPERATIVES... --</option>';
+                await fetchOperativesList();
+                renderArchiveOperativesDropdown("");
+                opSelect.value = currentDBUser;
             } else {
                 adminControls.style.display = "none";
-                selectedLogTarget = currentDBUser;
-                fetchLogSessions();
+            }
+            
+            fetchLogSessions();
+        }
+
+        function renderArchiveOperativesDropdown(filterText) {
+            const opSelect = document.getElementById('logOperativeSelect');
+            const q = (filterText || "").toLowerCase().trim();
+            opSelect.innerHTML = '';
+
+            // Always include self at top if matching filter
+            const selfEntry = { display: `${currentUser} (YOU)`, username: currentDBUser };
+            const allEntries = [selfEntry];
+
+            cachedOperatives.forEach(u => {
+                if (u.username.toLowerCase() !== currentDBUser.toLowerCase()) {
+                    allEntries.push(u);
+                }
+            });
+
+            const filtered = allEntries.filter(u => 
+                u.display.toLowerCase().includes(q) || u.username.toLowerCase().includes(q)
+            );
+
+            if (filtered.length === 0) {
+                let emptyOpt = document.createElement('option');
+                emptyOpt.value = q ? resolveDBUser(q) : currentDBUser;
+                emptyOpt.innerText = q ? `SEARCH: "${q.toUpperCase()}"` : currentUser;
+                opSelect.appendChild(emptyOpt);
+            } else {
+                filtered.forEach(u => {
+                    let opt = document.createElement('option');
+                    opt.value = u.username;
+                    opt.innerText = u.display;
+                    opSelect.appendChild(opt);
+                });
+            }
+        }
+
+        function filterArchiveOperatives() {
+            const q = document.getElementById('logSearchInput').value;
+            renderArchiveOperativesDropdown(q);
+            const opSelect = document.getElementById('logOperativeSelect');
+            if (opSelect.options.length > 0) {
+                opSelect.selectedIndex = 0;
+                handleUserSelect();
             }
         }
 
         function closeLogsModal() { document.getElementById('logsModal').style.display = "none"; }
 
         function handleUserSelect() {
-            selectedLogTarget = document.getElementById('logOperativeSelect').value;
+            const val = document.getElementById('logOperativeSelect').value;
+            selectedLogTarget = val || resolveDBUser(document.getElementById('logSearchInput').value) || currentDBUser;
             document.getElementById('resumeArchiveBtn').style.display = "none";
             
             if (selectedLogTarget) {
@@ -641,7 +731,7 @@
         async function fetchLogSessions() {
             const sessionSelect = document.getElementById('logSessionSelect');
             const viewer = document.getElementById('logsViewer');
-            sessionSelect.innerHTML = '<option value="">-- FETCHING SESSIONS --</option>';
+            sessionSelect.innerHTML = '<option value="">-- FETCHING SESSIONS... --</option>';
             document.getElementById('resumeArchiveBtn').style.display = "none";
             
             try {
@@ -649,16 +739,18 @@
                 let data = await res.json();
                 
                 sessionSelect.innerHTML = '<option value="">-- SELECT CHAT SESSION --</option>';
-                if (data.success && data.sessions.length > 0) {
-                    data.sessions.forEach(s => {
+                if (data.success && Array.isArray(data.sessions) && data.sessions.length > 0) {
+                    data.sessions.forEach((s, idx) => {
                         let opt = document.createElement('option'); 
                         opt.value = s.id; 
-                        opt.innerText = s.title.toUpperCase();
+                        opt.innerText = `${idx + 1}. ${(s.title || "Untitled Session").toUpperCase()}`;
                         sessionSelect.appendChild(opt);
                     });
-                    viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">Select a Session to load logs.</div>';
+                    // Auto-select the latest session so logs & Continue button appear right away!
+                    sessionSelect.selectedIndex = 1;
+                    handleSessionSelect();
                 } else {
-                    viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">No archives found for this operative.</div>';
+                    viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">No chat sessions found for this operative yet. Send a message first!</div>';
                 }
             } catch(e) {
                 sessionSelect.innerHTML = '<option value="">-- ERROR --</option>';
@@ -672,8 +764,9 @@
             const resumeBtn = document.getElementById('resumeArchiveBtn');
             
             if (!targetSessionId) {
-                viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">Select a Session to load logs.</div>';
-                resumeBtn.style.display = "none"; return;
+                viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">Select a Session above to view messages.</div>';
+                resumeBtn.style.display = "none"; 
+                return;
             }
 
             viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">Decrypting memory archive...</div>';
@@ -683,52 +776,66 @@
                 let res = await fetch(`${SERVER_URL}/api/history/messages?session_id=${encodeURIComponent(targetSessionId)}&target_user=${encodeURIComponent(selectedLogTarget)}&request_user=${encodeURIComponent(currentUser)}`);
                 let data = await res.json();
                 
-                viewer.innerHTML = ''; loadedArchiveHTML = ''; 
+                viewer.innerHTML = ''; 
+                loadedArchiveHTML = ''; 
                 
-                if (data.success && data.history.length > 0) {
+                if (data.success && Array.isArray(data.history) && data.history.length > 0) {
+                    let displayLabel = (selectedLogTarget || currentUser || "USER").toUpperCase();
                     data.history.forEach(log => {
                         let div = document.createElement('div');
-                        let timeMatch = log.timestamp.match(/(\d{2}:\d{2}:\d{2})/);
+                        let ts = String(log.timestamp || "");
+                        let timeMatch = ts.match(/(\d{2}:\d{2}:\d{2})/);
                         let timeStr = timeMatch ? timeMatch[1] : "";
                         let htmlContent = "";
                         
                         if (log.role === "USER") {
-                            htmlContent = `<span style="opacity:0.6;">[${timeStr}]</span> <span style="font-weight:bold;">[${selectedLogTarget.toUpperCase()}]:</span> ${log.message}`;
+                            htmlContent = `<span style="opacity:0.6;">[${timeStr}]</span> <span style="font-weight:bold;">[${displayLabel}]:</span> ${log.message}`;
                         } else {
-                            htmlContent = `<span style="opacity:0.6;">[${timeStr}]</span> <span style="font-weight:bold;">[KIZA]:</span> ${log.message}`;
+                            htmlContent = `<span style="opacity:0.6;">[${timeStr}]</span> <span style="font-weight:bold; color:#007BFF;">[KIZA]:</span> ${log.message}`;
                         }
-                        div.innerHTML = htmlContent; viewer.appendChild(div);
+                        div.innerHTML = htmlContent; 
+                        viewer.appendChild(div);
                         loadedArchiveHTML += `<div>> ${htmlContent}</div>`;
                     });
                     viewer.scrollTop = viewer.scrollHeight; 
                     
-                    if (selectedLogTarget.toLowerCase() === currentDBUser.toLowerCase()) {
-                        resumeBtn.style.display = "block";
-                    }
+                    // Always show the Continue button when a valid session is loaded
+                    resumeBtn.style.display = "block";
                 } else {
-                    viewer.innerHTML = '<div style="color:#d9534f; text-align:center; margin-top:20px;">Archive empty or corrupted.</div>';
+                    viewer.innerHTML = '<div style="color:#d9534f; text-align:center; margin-top:20px;">No messages recorded in this session.</div>';
                 }
-            } catch(e) { viewer.innerHTML = '<div style="color:#d9534f; text-align:center; margin-top:20px;">Failed to decrypt logs.</div>'; }
+            } catch(e) { 
+                console.error("Archive decryption error:", e);
+                viewer.innerHTML = '<div style="color:#d9534f; text-align:center; margin-top:20px;">Failed to decrypt logs.</div>'; 
+            }
         }
 
         function resumeArchive() {
             if (!loadedArchiveHTML) return;
             const logBox = document.getElementById('actionLog');
-            currentSessionId = document.getElementById('logSessionSelect').value;
-            logBox.innerHTML = `<div>> [KIZA SYSTEM]: Loading historical context...</div>` + loadedArchiveHTML;
+            const chosenSession = document.getElementById('logSessionSelect').value;
+            if (chosenSession) {
+                currentSessionId = chosenSession;
+            }
+            logBox.innerHTML = `<div>> [KIZA SYSTEM]: Historical session restored. Continuing conversation...</div>` + loadedArchiveHTML;
             logBox.scrollTop = logBox.scrollHeight;
-            closeLogsModal(); showNotification("ARCHIVE RESTORED", "You are now continuing a previous session.", false);
+            closeLogsModal(); 
+            showNotification("SESSION RESUMED", "You are now continuing your selected chat session.", false);
         }
 
         window.onload = () => {
             applySettings();
-            voiceEnabled = (userSettings.voiceDefault === 'on'); updateVoiceUI();
+            voiceEnabled = (userSettings.voiceDefault === 'on'); 
+            updateVoiceUI();
             initCamera();
             const savedUser = localStorage.getItem('kiza_user');
             const savedDB = localStorage.getItem('kiza_db');
             const savedRole = localStorage.getItem('kiza_role');
             const savedFace = localStorage.getItem('kiza_face');
-            if (savedUser && savedRole && savedDB) { finalizeLogin(savedUser, savedDB, savedRole, savedFace, false); }
+            if (savedUser && savedRole) { 
+                let safeDB = (savedDB && savedDB !== "undefined") ? savedDB : resolveDBUser(savedUser);
+                finalizeLogin(savedUser, safeDB, savedRole, savedFace, false); 
+            }
         };
 
         function updateVoiceUI() {
@@ -909,7 +1016,7 @@
                 if (!data.success) { errBox.innerText = data.message; showNotification("ACCESS DENIED", data.message, true); return; }
                 
                 errBox.innerText = "";
-                finalizeLogin(data.username, data.db_username, data.role, data.face_id, true, data.reply, data.audio_base64);
+                finalizeLogin(data.username, data.db_username || resolveDBUser(data.username), data.role, data.face_id, true, data.reply, data.audio_base64);
             } catch (err) { 
                 errBox.style.color = "#ff0055";
                 errBox.innerText = "Network Error: Make sure your server is online."; 
@@ -936,7 +1043,7 @@
                         if (!data.success) { errBox.innerText = data.message; showNotification("ACCESS DENIED", data.message, true); return; }
                         
                         errBox.innerText = "";
-                        finalizeLogin(data.username, data.db_username, data.role, data.face_id, true, data.reply, data.audio_base64);
+                        finalizeLogin(data.username, data.db_username || resolveDBUser(data.username), data.role, data.face_id, true, data.reply, data.audio_base64);
                     } catch (err) { 
                         errBox.style.color = "#ff0055";
                         errBox.innerText = "Server offline. Wait 50s for Render to wake up."; 
