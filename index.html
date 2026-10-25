@@ -291,9 +291,10 @@
             </div>
 
             <div class="input-container">
+                <!-- UPDATED PERSONALITY MODES -->
                 <select id="personaSelect" style="margin-bottom: 2px; text-align: center; border-radius:4px; font-weight:bold;">
-                    <option value="roast">🔥 ROASTING MODE</option>
-                    <option value="polite">🛡️ POLITE MODE</option>
+                    <option value="normal" selected>🟢 NORMAL (DRY SARCASM)</option>
+                    <option value="energetic">⚡ ENERGETIC (HYPER SARCASM)</option>
                 </select>
 
                 <div class="input-row">
@@ -335,7 +336,6 @@
         let currentAudio = null;
         let typingTimer;
 
-        // NEW: Unique Session Tracking
         let currentSessionId = generateSessionId();
 
         function generateSessionId() {
@@ -467,7 +467,6 @@
             currentUser = username; 
             currentRole = role;
             
-            // New login generates a new session id automatically
             currentSessionId = generateSessionId();
 
             localStorage.setItem('kiza_user', currentUser);
@@ -582,7 +581,6 @@
             }
         }
 
-        // NEW: Fetches Smart Session Titles instead of dates
         async function fetchLogSessions() {
             const sessionSelect = document.getElementById('logSessionSelect');
             const viewer = document.getElementById('logsViewer');
@@ -611,7 +609,6 @@
             }
         }
 
-        // NEW: Handles fetching by session_id
         async function handleSessionSelect() {
             const targetSessionId = document.getElementById('logSessionSelect').value;
             const viewer = document.getElementById('logsViewer');
@@ -645,3 +642,323 @@
                         }
                         div.innerHTML = htmlContent; viewer.appendChild(div);
                         loadedArchiveHTML += `<div>> ${htmlContent}</div>`;
+                    });
+                    viewer.scrollTop = viewer.scrollHeight; 
+                    
+                    let cleanCurrent = currentUser.replace(" (Owner)", "").replace(" (Admin)", "").replace(" (Mod)", "");
+                    if (selectedLogTarget.toLowerCase() === cleanCurrent.toLowerCase()) {
+                        resumeBtn.style.display = "block";
+                    }
+                } else {
+                    viewer.innerHTML = '<div style="color:#d9534f; text-align:center; margin-top:20px;">Archive empty or corrupted.</div>';
+                }
+            } catch(e) { viewer.innerHTML = '<div style="color:#d9534f; text-align:center; margin-top:20px;">Failed to decrypt logs.</div>'; }
+        }
+
+        function resumeArchive() {
+            if (!loadedArchiveHTML) return;
+            const logBox = document.getElementById('actionLog');
+            currentSessionId = document.getElementById('logSessionSelect').value;
+            logBox.innerHTML = `<div>> [KIZA SYSTEM]: Loading historical context...</div>` + loadedArchiveHTML;
+            logBox.scrollTop = logBox.scrollHeight;
+            closeLogsModal(); showNotification("ARCHIVE RESTORED", "You are now continuing a previous session.", false);
+        }
+
+        window.onload = () => {
+            applySettings();
+            voiceEnabled = (userSettings.voiceDefault === 'on'); updateVoiceUI();
+            initCamera();
+            const savedUser = localStorage.getItem('kiza_user');
+            const savedRole = localStorage.getItem('kiza_role');
+            const savedFace = localStorage.getItem('kiza_face');
+            if (savedUser && savedRole) { finalizeLogin(savedUser, savedRole, savedFace, false); }
+        };
+
+        function updateVoiceUI() {
+            const btn = document.getElementById('voiceToggleBtn');
+            const mobileBtn = document.getElementById('mobileVoiceBtn');
+            if (voiceEnabled) {
+                if(btn) btn.innerText = "🔊 VOICE: ON";
+                if(mobileBtn) mobileBtn.innerText = "🔊";
+            } else {
+                if(btn) btn.innerText = "🔇 VOICE: MUTED";
+                if(mobileBtn) mobileBtn.innerText = "🔇";
+                if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+            }
+        }
+
+        function toggleVoiceMute() {
+            voiceEnabled = !voiceEnabled; updateVoiceUI();
+            logAction(voiceEnabled ? "[SYSTEM]: Voice synthesis enabled." : "[SYSTEM]: Voice synthesis muted.", voiceEnabled ? "" : "#ff0055");
+        }
+
+        setInterval(async () => {
+            if (currentUser === "Guest") return;
+            try {
+                let res = await fetch(`${SERVER_URL}/api/status?user=${encodeURIComponent(currentUser)}&last_alert_idx=${alertIndex}`);
+                let data = await res.json();
+                if (data.next_alert_idx !== undefined) alertIndex = data.next_alert_idx;
+                if (data.new_alerts && data.new_alerts.length > 0) { data.new_alerts.forEach(alert => showNotification(alert.title, alert.message, false)); }
+                if (data.lockdown && !(currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD"))) { forceLogout(); showNotification("SECURITY LOCKDOWN", `Owner initiated Lockdown: ${data.reason}`, true); }
+            } catch(e) {}
+        }, 3000);
+
+        function showNotification(title, message, isError = false) {
+            if (voiceEnabled) {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                    osc.type = isError ? 'sawtooth' : 'sine'; osc.frequency.setValueAtTime(isError ? 200 : 900, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.05, ctx.currentTime); osc.connect(gain); gain.connect(ctx.destination);
+                    osc.start(); osc.stop(ctx.currentTime + (isError ? 0.2 : 0.1));
+                } catch(e) {}
+            }
+            if (document.hidden) {
+                if ("Notification" in window && Notification.permission === "granted") new Notification(title, { body: message });
+            } else {
+                const notifBox = document.getElementById('notificationBox');
+                document.getElementById('notifTitle').innerText = title; document.getElementById('notifMsg').innerText = message;
+                if (isError) { notifBox.classList.add('notify-error'); } else { notifBox.classList.remove('notify-error'); }
+                notifBox.classList.add('show'); setTimeout(() => { notifBox.classList.remove('show'); }, 5000);
+            }
+        }
+
+        function logAction(message, color, isHtml = false) {
+            let logBox = document.getElementById('actionLog'); let newEntry = document.createElement('div');
+            if(color && document.body.classList.contains('dark-mode')) newEntry.style.color = color;
+            if (isHtml) newEntry.innerHTML = `> ${message}`; else newEntry.innerText = `> ${message}`;
+            logBox.appendChild(newEntry);
+            let indicator = document.getElementById('chatIndicator'); if (indicator) logBox.appendChild(indicator);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function playKizaAudio(base64Data) {
+            if (!voiceEnabled || !base64Data) return;
+            if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
+            currentAudio = new Audio("data:audio/mp3;base64," + base64Data); currentAudio.play().catch(e => console.log("Audio blocked"));
+        }
+
+        async function initCamera() {
+            if (!isCameraActive) return;
+            try {
+                if (activeStream) activeStream.getTracks().forEach(track => track.stop());
+                activeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                const videoElement = document.getElementById('webcamVideo');
+                videoElement.srcObject = activeStream; videoElement.style.display = "block";
+                document.getElementById('camStatus').style.display = "none"; cameraReady = true;
+                const devices = await navigator.mediaDevices.enumerateDevices(); videoDevices = devices.filter(d => d.kind === 'videoinput');
+            } catch (error) { 
+                document.getElementById('camStatus').innerText = "CAMERA OFFLINE"; 
+                document.getElementById('camStatus').style.display = "block";
+                cameraReady = false; 
+            }
+        }
+
+        function toggleCamera() {
+            isCameraActive = !isCameraActive;
+            const btn = document.getElementById('camToggleBtn');
+            const videoElement = document.getElementById('webcamVideo');
+            const status = document.getElementById('camStatus');
+            
+            if (isCameraActive) {
+                btn.innerText = "📷 CAM: ON";
+                initCamera();
+            } else {
+                btn.innerText = "📷 CAM: OFF";
+                if (activeStream) {
+                    activeStream.getTracks().forEach(track => track.stop());
+                    activeStream = null;
+                }
+                videoElement.srcObject = null;
+                videoElement.style.display = "none";
+                status.style.display = "block";
+                status.innerText = "Camera Disabled";
+                cameraReady = false;
+            }
+        }
+
+        async function switchCamera() {
+            if (videoDevices.length <= 1) { logAction("[SYSTEM]: Only 1 lens detected."); return; }
+            currentCamIndex = (currentCamIndex + 1) % videoDevices.length;
+            if (activeStream) activeStream.getTracks().forEach(track => track.stop());
+            activeStream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: videoDevices[currentCamIndex].deviceId } } });
+            document.getElementById('webcamVideo').srcObject = activeStream;
+            logAction(`[SYSTEM]: Switching lens feed...`);
+        }
+
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) return null;
+            const rec = new SpeechRecognition(); rec.continuous = false; rec.interimResults = false; rec.lang = 'en-GB';
+            rec.onstart = function() { isRecording = true; document.getElementById('uiStatus').innerText = "LISTENING..."; };
+            rec.onresult = function(event) {
+                document.getElementById('textInput').value = event.results[0][0].transcript; submitCommand();
+            };
+            rec.onerror = function() { resetMicState(); }; rec.onend = function() { resetMicState(); };
+            return rec;
+        }
+
+        function toggleSpeechRecognition() {
+            if (!recognition) recognition = initSpeechRecognition();
+            if (!recognition) return;
+            if (isRecording) { recognition.stop(); } else { try { recognition.start(); } catch (e) { recognition.stop(); recognition.start(); } }
+        }
+        function resetMicState() { isRecording = false; }
+
+        function switchAuthMode(mode) {
+            authMode = mode;
+            document.getElementById('loginTab').classList.toggle('active', mode === 'login');
+            document.getElementById('signupTab').classList.toggle('active', mode === 'signup');
+            document.getElementById('authError').innerText = "";
+        }
+
+        function captureFaceSnapshot() {
+            if (!cameraReady || !document.getElementById('captureFaceCheck').checked) return null;
+            try {
+                const video = document.getElementById('webcamVideo'); const canvas = document.getElementById('faceCanvas');
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height); return canvas.toDataURL('image/jpeg', 0.6);
+            } catch (e) { return null; }
+        }
+
+        async function updateFaceID() {
+            if (currentUser === "Guest") return;
+            let faceData = captureFaceSnapshot();
+            if (!faceData) return;
+            try {
+                let res = await fetch(`${SERVER_URL}/api/update_face`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: currentUser, face_id: faceData }) });
+                let data = await res.json();
+                if (data.success) {
+                    document.getElementById('savedFaceImg').src = faceData; document.getElementById('savedFaceImg').style.display = "block";
+                    document.getElementById('faceIdStatus').innerText = "UPDATED";
+                    saveCurrentProfileToStorage(currentUser, currentRole, faceData);
+                    logAction("[SYSTEM]: Biometrics synchronized.");
+                }
+            } catch (err) { }
+        }
+
+        // --- ENHANCED GOOGLE AUTH WITH RENDER SLEEP NOTIFICATION ---
+        async function handleGoogleLogin(response) {
+            const errBox = document.getElementById('authError'); 
+            errBox.style.color = "#007BFF";
+            errBox.innerText = "Verifying Identity... (Waking up server, please wait up to 50s)";
+            
+            try {
+                let res = await fetch(`${SERVER_URL}/api/google_auth`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: response.credential }) });
+                let data = await res.json();
+                
+                errBox.style.color = "#ff0055"; // Reset for errors
+                if (!data.success) { errBox.innerText = data.message; showNotification("ACCESS DENIED", data.message, true); return; }
+                
+                errBox.innerText = "";
+                finalizeLogin(data.username, data.role, data.face_id, true, data.reply, data.audio_base64);
+            } catch (err) { 
+                errBox.style.color = "#ff0055";
+                errBox.innerText = "Network Error: Make sure your server is online."; 
+                console.error(err);
+            }
+        }
+
+        // --- ENHANCED MANUAL AUTH WITH RENDER SLEEP NOTIFICATION ---
+        function performAuth() {
+            const errBox = document.getElementById('authError');
+            try {
+                const username = document.getElementById('authUser').value.trim(); const password = document.getElementById('authPass').value.trim();
+                if (!username || !password) { showNotification("ERROR", "Enter Name and Passcode.", true); return; }
+                
+                errBox.style.color = "#007BFF";
+                errBox.innerText = "Scanning Biometrics... (Waking up server, please wait up to 50s)";
+                
+                const faceData = captureFaceSnapshot();
+                
+                setTimeout(async () => {
+                    try {
+                        let res = await fetch(`${SERVER_URL}/api/auth`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: username, password: password, action: authMode, face_id: faceData }) });
+                        let data = await res.json();
+                        
+                        errBox.style.color = "#ff0055"; // Reset for errors
+                        if (!data.success) { errBox.innerText = data.message; showNotification("ACCESS DENIED", data.message, true); return; }
+                        
+                        errBox.innerText = "";
+                        finalizeLogin(data.username, data.role, data.face_id, true, data.reply, data.audio_base64);
+                    } catch (err) { 
+                        errBox.style.color = "#ff0055";
+                        errBox.innerText = "Server offline. Wait 50s for Render to wake up."; 
+                        console.error(err);
+                    }
+                }, 1000); 
+            } catch(e) { errBox.innerText = "UI Error: " + e.message; }
+        }
+
+        function updateIndicator(msg) {
+            let logBox = document.getElementById('actionLog'); let indicator = document.getElementById('chatIndicator');
+            if (!indicator) { indicator = document.createElement('div'); indicator.id = 'chatIndicator'; indicator.style.fontStyle = 'italic'; indicator.style.marginTop = '4px'; }
+            indicator.innerText = `> ${msg}`; logBox.appendChild(indicator); logBox.scrollTop = logBox.scrollHeight;
+        }
+        function clearIndicator() { let indicator = document.getElementById('chatIndicator'); if (indicator) indicator.remove(); }
+
+        document.getElementById('textInput').addEventListener("input", function() {
+            if (this.value.trim().length > 0) { updateIndicator(`${currentUser.toUpperCase()} is typing...`); clearTimeout(typingTimer); typingTimer = setTimeout(clearIndicator, 1500); } else { clearIndicator(); }
+        });
+
+        function typeWriterLog(message, onComplete = null) {
+            let logBox = document.getElementById('actionLog'); let newEntry = document.createElement('div');
+            if(document.body.classList.contains('dark-mode')) newEntry.style.color = "#e085ff";
+            logBox.appendChild(newEntry);
+            let indicator = document.getElementById('chatIndicator'); if (indicator) logBox.appendChild(indicator);
+            let i = 0; let speed = 25; newEntry.innerHTML = "> ";
+            function type() {
+                if (i < message.length) { newEntry.innerHTML += message.charAt(i); i++; logBox.scrollTop = logBox.scrollHeight; setTimeout(type, speed); } 
+                else { if (onComplete) onComplete(); }
+            }
+            type();
+        }
+
+        function sendQuickCmd(cmd) { document.getElementById('textInput').value = cmd; submitCommand(); }
+
+        async function submitCommand() {
+            let inputField = document.getElementById('textInput'); let text = inputField.value.trim();
+            if (!text) return;
+            if (text.toLowerCase() === "/logs") { inputField.value = ""; openLogsModal(); return; }
+            if (text.toLowerCase() === "/cmds") { text = "/help"; } 
+
+            clearTimeout(typingTimer); clearIndicator();
+            logAction(`[${currentUser.toUpperCase()}]: ${text}`); inputField.value = "";
+            document.getElementById('uiStatus').innerText = "KIZA ANALYZING..."; document.getElementById('orb').classList.add('processing'); 
+            updateIndicator("KIZA is thinking...");
+
+            let selectedPersona = document.getElementById('personaSelect').value; 
+            let liveVisionFrame = null;
+            try {
+                if (isCameraActive && cameraReady) {
+                    const video = document.getElementById('webcamVideo'); const canvas = document.createElement('canvas');
+                    canvas.width = 640; canvas.height = 480; canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                    liveVisionFrame = canvas.toDataURL('image/jpeg', 0.7);
+                }
+            } catch (e) {}
+
+            try {
+                let response = await fetch(`${SERVER_URL}/api/chat`, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "application/json" }, 
+                    body: JSON.stringify({ 
+                        user: currentUser, 
+                        command: text, 
+                        image_base64: liveVisionFrame, 
+                        personality: selectedPersona,
+                        session_id: currentSessionId
+                    }) 
+                });
+                if (!response.ok) throw new Error("Cloud connection failed.");
+                let data = await response.json();
+                document.getElementById('orb').classList.remove('processing'); document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`; clearIndicator();
+                if (data.is_error) { showNotification("KIZA SECURITY", data.reply, true); playKizaAudio(data.audio_base64); return; }
+                let formattedReply = data.reply.replace(/\*/g, ''); playKizaAudio(data.audio_base64);
+                typeWriterLog(`[KIZA]: ${formattedReply}`, () => { if (formattedReply.length > 100) showNotification("KIZA ALERT", "New detailed intelligence report processed.", false); });
+            } catch (error) {
+                document.getElementById('orb').classList.remove('processing'); logAction(`[SYSTEM ERROR]: ${error.message}`); document.getElementById('uiStatus').innerText = "CONNECTION FAILED."; clearIndicator();
+            }
+        }
+        document.getElementById('textInput').addEventListener("keypress", function(event) { if (event.key === "Enter") submitCommand(); });
+    </script>
+</body>
+</html>
