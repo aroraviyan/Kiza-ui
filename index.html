@@ -226,9 +226,13 @@
                 <canvas id="faceCanvas" width="160" height="120" style="display:none;"></canvas>
                 <span id="camStatus" style="position: absolute; font-weight:bold;">Camera Offline...</span>
             </div>
-            <button type="button" class="chip-btn" onclick="switchCamera()">🔄 FLIP CAMERA</button>
             
-            <button type="button" class="chip-btn" id="voiceToggleBtn" onclick="toggleVoiceMute()" style="margin-top: 5px;">🔊 VOICE: ON</button>
+            <div style="display: flex; gap: 8px; margin-top: 5px;">
+                <button type="button" class="chip-btn" id="camToggleBtn" style="flex: 1;" onclick="toggleCamera()">📷 CAM: ON</button>
+                <button type="button" class="chip-btn" style="flex: 1;" onclick="switchCamera()">🔄 FLIP</button>
+            </div>
+            
+            <button type="button" class="chip-btn" id="voiceToggleBtn" onclick="toggleVoiceMute()">🔊 VOICE: ON</button>
 
             <div class="face-id-box" style="margin-top: 5px;">
                 <img id="savedFaceImg" class="face-thumb" alt="Biometric Face ID">
@@ -238,6 +242,9 @@
                 </div>
             </div>
             <button type="button" class="chip-btn" onclick="updateFaceID()">🧬 RE-SCAN FACE ID</button>
+            
+            <!-- NEW SETTINGS BUTTON LOCATION -->
+            <button type="button" class="chip-btn" onclick="openSettings()" style="margin-top: auto;">⚙️ SETTINGS</button>
         </div>
 
         <div class="center-panel">
@@ -253,7 +260,6 @@
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/cmds')">❓ /cmds</button>
                 <button type="button" class="chip-btn" onclick="sendQuickCmd('/ping')">📡 /ping</button>
                 <button type="button" class="chip-btn" onclick="openLogsModal()">📂 ARCHIVE</button>
-                <button type="button" class="chip-btn" onclick="openSettings()">⚙️ SETTINGS</button>
             </div>
 
             <div id="masterCmds" style="display: none; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px;">
@@ -271,7 +277,7 @@
                 </select>
 
                 <div class="input-row">
-                    <button type="button" class="chip-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" style="padding: 6px; font-size: 14px;">🔊</button>
+                    <button type="button" class="chip-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Voice" style="padding: 6px; font-size: 14px;">🔊</button>
                     <button type="button" class="chip-btn" id="micBtn" style="padding: 6px; font-size: 16px;" onclick="toggleSpeechRecognition()">🎤</button>
                     <input type="text" id="textInput" placeholder="Speak or type command...">
                     <button type="button" class="send-btn" onclick="submitCommand()">TRANSMIT</button>
@@ -297,6 +303,7 @@
         let alertIndex = 0;
         
         let cameraReady = false;
+        let isCameraActive = true;
         let videoDevices = [];
         let currentCamIndex = 0;
         let activeStream = null;
@@ -628,6 +635,7 @@
         }
 
         async function initCamera() {
+            if (!isCameraActive) return;
             try {
                 if (activeStream) activeStream.getTracks().forEach(track => track.stop());
                 activeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
@@ -635,7 +643,34 @@
                 videoElement.srcObject = activeStream; videoElement.style.display = "block";
                 document.getElementById('camStatus').style.display = "none"; cameraReady = true;
                 const devices = await navigator.mediaDevices.enumerateDevices(); videoDevices = devices.filter(d => d.kind === 'videoinput');
-            } catch (error) { document.getElementById('camStatus').innerText = "CAMERA OFFLINE"; }
+            } catch (error) { 
+                document.getElementById('camStatus').innerText = "CAMERA OFFLINE"; 
+                document.getElementById('camStatus').style.display = "block";
+                cameraReady = false; 
+            }
+        }
+
+        function toggleCamera() {
+            isCameraActive = !isCameraActive;
+            const btn = document.getElementById('camToggleBtn');
+            const videoElement = document.getElementById('webcamVideo');
+            const status = document.getElementById('camStatus');
+            
+            if (isCameraActive) {
+                btn.innerText = "📷 CAM: ON";
+                initCamera();
+            } else {
+                btn.innerText = "📷 CAM: OFF";
+                if (activeStream) {
+                    activeStream.getTracks().forEach(track => track.stop());
+                    activeStream = null;
+                }
+                videoElement.srcObject = null;
+                videoElement.style.display = "none";
+                status.style.display = "block";
+                status.innerText = "Camera Disabled";
+                cameraReady = false;
+            }
         }
 
         async function switchCamera() {
@@ -765,9 +800,11 @@
             let selectedPersona = document.getElementById('personaSelect').value; 
             let liveVisionFrame = null;
             try {
-                const video = document.getElementById('webcamVideo'); const canvas = document.createElement('canvas');
-                canvas.width = 640; canvas.height = 480; canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-                liveVisionFrame = canvas.toDataURL('image/jpeg', 0.7);
+                if (isCameraActive && cameraReady) {
+                    const video = document.getElementById('webcamVideo'); const canvas = document.createElement('canvas');
+                    canvas.width = 640; canvas.height = 480; canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                    liveVisionFrame = canvas.toDataURL('image/jpeg', 0.7);
+                }
             } catch (e) {}
 
             try {
