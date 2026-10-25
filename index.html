@@ -24,19 +24,21 @@
         
         .side-panel, .auth-card, .logs-card { 
             background: #ffffff; backdrop-filter: blur(8px); border: 1px solid #87CEEB; 
-            box-shadow: 0 4px 15px rgba(135, 206, 235, 0.2); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 12px; 
+            box-shadow: 0 4px 15px rgba(135, 206, 235, 0.2); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 8px; 
         }
+        .side-panel { overflow-y: auto; max-height: 100%; }
+        
         .section-title { 
-            font-size: 12px; color: #4682B4; letter-spacing: 3px; text-transform: uppercase; 
-            border-bottom: 1px solid #87CEEB; padding-bottom: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center;
+            font-size: 11px; color: #4682B4; letter-spacing: 2px; text-transform: uppercase; 
+            border-bottom: 1px solid #87CEEB; padding-bottom: 4px; font-weight: bold; display: flex; justify-content: space-between; align-items: center;
         }
-        .telemetry-row { display: flex; justify-content: space-between; font-size: 12px; }
+        .telemetry-row { display: flex; justify-content: space-between; font-size: 11px; }
         .telemetry-val { font-weight: bold; color: #007BFF; }
         .telemetry-val.master { color: #d9534f; }
         
         .chip-btn {
             background: rgba(135, 206, 235, 0.15); border: 1px solid #87CEEB; color: #4682B4;
-            padding: 6px 12px; font-family: inherit; font-size: 11px; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-weight: bold;
+            padding: 6px 10px; font-family: inherit; font-size: 11px; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-weight: bold; width: 100%; text-align: center;
         }
         .chip-btn:active { background: rgba(135, 206, 235, 0.3); }
         .send-btn { 
@@ -62,28 +64,28 @@
         #notificationBox.notify-error { border-color: #ff0055; box-shadow: 0 0 25px rgba(255, 0, 85, 0.6); }
         .notify-title { font-weight: bold; font-size: 11px; letter-spacing: 2px; border-bottom: 1px solid rgba(135, 206, 235, 0.5); padding-bottom: 5px; text-transform: uppercase; }
         
-        .container { display: flex; width: 100%; height: 100%; padding: 25px; gap: 25px; z-index: 10; }
-        .left-panel, .right-panel { width: 320px; flex-shrink: 0; }
+        .container { display: flex; width: 100%; height: 100%; padding: 20px; gap: 20px; z-index: 10; }
+        .left-panel, .right-panel { width: 300px; flex-shrink: 0; }
         
-        .camera-box { width: 100%; height: 140px; background: #000; border: 1px solid #87CEEB; border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
-        .face-id-box { display: flex; align-items: center; gap: 10px; background: rgba(135, 206, 235, 0.1); border: 1px dashed #87CEEB; padding: 8px; border-radius: 4px; font-size: 11px; }
-        .face-thumb { width: 42px; height: 42px; border-radius: 4px; border: 1px solid #87CEEB; object-fit: cover; display: none; }
+        .camera-box { width: 100%; height: 120px; background: #000; border: 1px solid #87CEEB; border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        .face-id-box { display: flex; align-items: center; gap: 10px; background: rgba(135, 206, 235, 0.1); border: 1px dashed #87CEEB; padding: 6px; border-radius: 4px; font-size: 11px; }
+        .face-thumb { width: 36px; height: 36px; border-radius: 4px; border: 1px solid #87CEEB; object-fit: cover; display: none; }
         
-        .center-panel { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
-        .core-assembly { position: relative; width: 160px; height: 160px; display: flex; align-items: center; justify-content: center; }
-        .core-orb { width: 90px; height: 90px; background: radial-gradient(circle, #87CEEB 0%, #4682B4 40%, #002244 80%, #000 100%); border-radius: 50%; box-shadow: 0 0 50px rgba(135, 206, 235, 0.8); animation: pulseOrb 2.5s infinite alternate; z-index: 2; transition: all 0.3s; }
-        .core-orb.processing { filter: hue-rotate(90deg); box-shadow: 0 0 60px #00ffcc; }
+        .center-panel { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; }
+        .core-assembly { position: relative; width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; }
+        .core-orb { width: 80px; height: 80px; background: radial-gradient(circle, #87CEEB 0%, #4682B4 40%, #002244 80%, #000 100%); border-radius: 50%; box-shadow: 0 0 40px rgba(135, 206, 235, 0.8); animation: pulseOrb 2.5s infinite alternate; z-index: 2; transition: all 0.3s; }
+        .core-orb.processing { filter: hue-rotate(90deg); box-shadow: 0 0 50px #00ffcc; }
         
         .core-ring { position: absolute; border-radius: 50%; border: 1px dashed #87CEEB; z-index: 1; }
-        .ring-1 { width: 120px; height: 120px; border-top: 2px solid #007BFF; animation: spinRight 8s linear infinite; }
-        .ring-2 { width: 140px; height: 140px; border-bottom: 2px dashed #4682B4; animation: spinLeft 12s linear infinite; }
-        .ring-3 { width: 160px; height: 160px; border-right: 2px solid #87CEEB; animation: spinRight 15s linear infinite; }
+        .ring-1 { width: 100px; height: 100px; border-top: 2px solid #007BFF; animation: spinRight 8s linear infinite; }
+        .ring-2 { width: 120px; height: 120px; border-bottom: 2px dashed #4682B4; animation: spinLeft 12s linear infinite; }
+        .ring-3 { width: 140px; height: 140px; border-right: 2px solid #87CEEB; animation: spinRight 15s linear infinite; }
         
         @keyframes pulseOrb { 0% { transform: scale(0.95); } 100% { transform: scale(1.05); } }
         @keyframes spinRight { 100% { transform: rotate(360deg); } }
         @keyframes spinLeft { 100% { transform: rotate(-360deg); } }
         
-        .status-text { font-size: 14px; letter-spacing: 3px; color: #4682B4; text-align: center; text-shadow: 0 0 10px rgba(135,206,235,0.5); font-weight:bold; }
+        .status-text { font-size: 13px; letter-spacing: 2px; color: #4682B4; text-align: center; text-shadow: 0 0 8px rgba(135,206,235,0.5); font-weight:bold; }
         
         .input-row { display: flex; gap: 8px; width: 100%; align-items: center; }
         
@@ -119,17 +121,12 @@
         body.dark-mode .profile-list-item { border-color: rgba(170,0,255,0.4); background: rgba(170,0,255,0.1); }
 
         @media (max-width: 900px) {
-            body { height: 100dvh; overflow: hidden; }
-            .container { flex-direction: column; padding: 10px; gap: 10px; height: 100vh; }
-            .left-panel { display: none; }
+            body { height: 100vh; overflow: auto; }
+            .container { flex-direction: column; padding: 10px; gap: 10px; height: auto; }
+            .left-panel, .right-panel { width: 100%; }
             .center-panel { order: 1; flex: 0 0 auto; gap: 10px; padding: 5px 0; }
-            .core-assembly { width: 90px; height: 90px; }
-            .core-orb { width: 50px; height: 50px; }
-            .ring-1 { width: 70px; height: 70px; }
-            .ring-2 { width: 80px; height: 80px; }
-            .ring-3 { width: 90px; height: 90px; }
-            .right-panel { order: 2; flex: 1; width: 100%; min-height: 0; margin-bottom: 5px; }
-            .input-container { order: 3; width: 100%; margin-bottom: 5px; }
+            .right-panel { order: 2; min-height: 200px; }
+            .left-panel { order: 3; }
         }
     </style>
 </head>
@@ -145,7 +142,7 @@
         <div class="auth-card">
             <div class="section-title">
                 <span>⚙️ SYSTEM SETTINGS</span>
-                <button type="button" class="chip-btn" style="border-color:#ff0055; color:#ff0055; padding: 2px 6px;" onclick="closeSettings()">X</button>
+                <button type="button" class="chip-btn" style="border-color:#ff0055; color:#ff0055; padding: 2px 6px; width:auto;" onclick="closeSettings()">X</button>
             </div>
             
             <label style="font-size:11px; font-weight:bold; margin-top:10px;">UI Theme:</label>
@@ -174,10 +171,10 @@
         <div class="auth-card">
             <div class="section-title">
                 <span>⭐ ASSIGN RANK</span>
-                <button type="button" class="chip-btn" style="border-color:#ff0055; color:#ff0055; padding: 2px 6px;" onclick="closeRankModal()">X</button>
+                <button type="button" class="chip-btn" style="border-color:#ff0055; color:#ff0055; padding: 2px 6px; width:auto;" onclick="closeRankModal()">X</button>
             </div>
             <label style="font-size:11px; font-weight:bold; margin-top:10px;">Search Operative Name:</label>
-            <input type="text" id="rankSearchInput" placeholder="Type operative name..." list="operativeListOptions" autocomplete="off" oninput="filterOperativeList()">
+            <input type="text" id="rankSearchInput" placeholder="Type operative name..." list="operativeListOptions" autocomplete="off">
             <datalist id="operativeListOptions"></datalist>
 
             <label style="font-size:11px; font-weight:bold; margin-top:10px;">Select New Rank:</label>
@@ -196,7 +193,7 @@
         <div class="logs-card">
             <div class="section-title">
                 <span>KIZA // MEMORY ARCHIVE</span>
-                <button type="button" class="chip-btn" style="border-color:#ff0055; color:#ff0055; padding: 2px 6px;" onclick="closeLogsModal()">X</button>
+                <button type="button" class="chip-btn" style="border-color:#ff0055; color:#ff0055; padding: 2px 6px; width:auto;" onclick="closeLogsModal()">X</button>
             </div>
             <select id="logUserSelect" style="display: none; margin-bottom: 5px;" onchange="handleUserSelect()">
                 <option value="">-- SELECT OPERATIVE --</option>
@@ -228,11 +225,11 @@
             </div>
             <input type="text" id="authUser" placeholder="Enter Identity Name..." autocomplete="off">
             <input type="password" id="authPass" placeholder="Enter Security Passcode...">
-            <label style="font-size: 11px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <label style="font-size: 11px; display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 5px;">
                 <input type="checkbox" id="captureFaceCheck" checked> Scan & Lock Biometric Face ID
             </label>
-            <div id="authError" style="color: #ff0055; font-size: 11px; min-height: 14px; font-weight:bold;"></div>
-            <button type="button" class="send-btn" onclick="performAuth()">VERIFY IDENTITY</button>
+            <div id="authError" style="color: #ff0055; font-size: 11px; min-height: 14px; font-weight:bold; margin-top: 5px;"></div>
+            <button type="button" class="send-btn" style="width:100%; margin-top: 5px;" onclick="performAuth()">VERIFY IDENTITY</button>
             <button type="button" class="chip-btn" id="cancelAuthBtn" style="display:none; margin-top:5px;" onclick="cancelAddIdentity()">CANCEL</button>
         </div>
     </div>
@@ -249,17 +246,17 @@
             <div class="camera-box">
                 <video id="webcamVideo" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; display: none;"></video>
                 <canvas id="faceCanvas" width="160" height="120" style="display:none;"></canvas>
-                <span id="camStatus" style="position: absolute; font-weight:bold;">Camera Offline...</span>
+                <span id="camStatus" style="position: absolute; font-weight:bold; font-size:11px;">Camera Offline...</span>
             </div>
             
-            <div style="display: flex; gap: 8px; margin-top: 5px;">
+            <div style="display: flex; gap: 6px;">
                 <button type="button" class="chip-btn" id="camToggleBtn" style="flex: 1;" onclick="toggleCamera()">📷 CAM: ON</button>
                 <button type="button" class="chip-btn" style="flex: 1;" onclick="switchCamera()">🔄 FLIP</button>
             </div>
             
             <button type="button" class="chip-btn" id="voiceToggleBtn" onclick="toggleVoiceMute()">🔊 VOICE: ON</button>
 
-            <div class="face-id-box" style="margin-top: 5px;">
+            <div class="face-id-box">
                 <img id="savedFaceImg" class="face-thumb" alt="Biometric Face ID">
                 <div>
                     <div style="font-weight: bold;">BIOMETRIC ID</div>
@@ -268,7 +265,8 @@
             </div>
             <button type="button" class="chip-btn" onclick="updateFaceID()">🧬 RE-SCAN FACE ID</button>
             
-            <button type="button" class="chip-btn" onclick="openSettings()" style="margin-top: auto;">⚙️ SETTINGS</button>
+            <!-- ALWAYS VISIBLE SETTINGS BUTTON -->
+            <button type="button" class="chip-btn" onclick="openSettings()" style="margin-top: 10px; background: rgba(135,206,235,0.3);">⚙️ SETTINGS</button>
         </div>
 
         <div class="center-panel">
@@ -280,31 +278,31 @@
             </div>
             <div id="uiStatus" class="status-text">AWAITING IDENTITY...</div>
             
-            <div id="publicCmds" style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 5px;">
-                <button type="button" class="chip-btn" onclick="sendQuickCmd('/cmds')">❓ /cmds</button>
-                <button type="button" class="chip-btn" onclick="sendQuickCmd('/ping')">📡 /ping</button>
-                <button type="button" class="chip-btn" onclick="openLogsModal()">📂 ARCHIVE</button>
+            <div id="publicCmds" style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
+                <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/cmds')">❓ /cmds</button>
+                <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/ping')">📡 /ping</button>
+                <button type="button" class="chip-btn" style="width:auto;" onclick="openLogsModal()">📂 ARCHIVE</button>
             </div>
 
             <!-- HIGH COMMAND COMMANDS (Owner, Admin, Mod) -->
-            <div id="masterCmds" style="display: none; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px;">
-                <button type="button" class="chip-btn" onclick="sendQuickCmd('/health')">⚡ /health</button>
-                <button type="button" class="chip-btn" onclick="sendQuickCmd('/userdata')">👥 /users</button>
-                <button type="button" class="chip-btn mod-owner-only" onclick="openRankModal()" style="border-color:#007BFF; color:#007BFF; display:none;">⭐ RANK MGMT</button>
-                <button type="button" class="chip-btn" onclick="sendQuickCmd('/lockdown')">🔒 /lock</button>
-                <button type="button" class="chip-btn owner-only" onclick="sendQuickCmd('/removelock')">🔓 /unlock</button>
-                <button type="button" class="chip-btn owner-only" onclick="sendQuickCmd('/purge')" style="border-color:#ff0055; color:#ff0055;">🗑️ /purge</button>
+            <div id="masterCmds" style="display: none; gap: 6px; flex-wrap: wrap; justify-content: center;">
+                <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/health')">⚡ /health</button>
+                <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/userdata')">👥 /users</button>
+                <button type="button" class="chip-btn mod-owner-only" style="width:auto; border-color:#007BFF; color:#007BFF; display:none;" onclick="openRankModal()">⭐ RANK MGMT</button>
+                <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/lockdown')">🔒 /lock</button>
+                <button type="button" class="chip-btn owner-only" style="width:auto;" onclick="sendQuickCmd('/removelock')">🔓 /unlock</button>
+                <button type="button" class="chip-btn owner-only" style="width:auto; border-color:#ff0055; color:#ff0055;" onclick="sendQuickCmd('/purge')">🗑️ /purge</button>
             </div>
 
             <div class="input-container">
-                <select id="personaSelect" style="margin-bottom: 5px; text-align: center; border-radius:4px; font-weight:bold;">
+                <select id="personaSelect" style="margin-bottom: 2px; text-align: center; border-radius:4px; font-weight:bold;">
                     <option value="roast">🔥 ROASTING MODE</option>
                     <option value="polite">🛡️ POLITE MODE</option>
                 </select>
 
                 <div class="input-row">
-                    <button type="button" class="chip-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Voice" style="padding: 6px; font-size: 14px;">🔊</button>
-                    <button type="button" class="chip-btn" id="micBtn" style="padding: 6px; font-size: 16px;" onclick="toggleSpeechRecognition()">🎤</button>
+                    <button type="button" class="chip-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Voice" style="width:auto; padding: 6px; font-size: 14px;">🔊</button>
+                    <button type="button" class="chip-btn" id="micBtn" style="width:auto; padding: 6px; font-size: 16px;" onclick="toggleSpeechRecognition()">🎤</button>
                     <input type="text" id="textInput" placeholder="Speak or type command...">
                     <button type="button" class="send-btn" onclick="submitCommand()">TRANSMIT</button>
                 </div>
@@ -341,7 +339,6 @@
         let currentAudio = null;
         let typingTimer;
 
-        // MULTI-PROFILE & SETTINGS LOGIC
         let storedProfiles = JSON.parse(localStorage.getItem('kiza_profiles')) || [];
         let userSettings = JSON.parse(localStorage.getItem('kiza_settings')) || { theme: 'light', voiceDefault: 'off' };
 
@@ -369,7 +366,6 @@
         }
         function closeSettings() { document.getElementById('settingsModal').style.display = "none"; }
 
-        // --- RANK MODAL LOGIC ---
         async function openRankModal() {
             document.getElementById('rankModal').style.display = "flex";
             const datalist = document.getElementById('operativeListOptions');
@@ -414,8 +410,8 @@
                 div.innerHTML = `
                     <span style="font-weight:bold;">${prof.username.toUpperCase()} ${isCurrent ? "(ACTIVE)" : ""}</span>
                     <div>
-                        ${!isCurrent ? `<button class="chip-btn" style="padding:2px 6px;" onclick="switchToProfile(${idx})">SWITCH</button>` : ''}
-                        <button class="chip-btn" style="border-color:#ff0055; color:#ff0055; padding:2px 6px;" onclick="removeProfile(${idx})">X</button>
+                        ${!isCurrent ? `<button class="chip-btn" style="padding:2px 6px; width:auto;" onclick="switchToProfile(${idx})">SWITCH</button>` : ''}
+                        <button class="chip-btn" style="border-color:#ff0055; color:#ff0055; padding:2px 6px; width:auto;" onclick="removeProfile(${idx})">X</button>
                     </div>
                 `;
                 list.appendChild(div);
@@ -478,7 +474,6 @@
                 roleEl.classList.add("master"); 
                 document.getElementById('masterCmds').style.display = "flex";
                 
-                // Show owner-only and mod-owner-only buttons accordingly
                 let isOwner = currentRole.includes("OWNER");
                 let isMod = currentRole.includes("MOD");
                 
@@ -525,7 +520,6 @@
             document.getElementById('authError').innerText = "";
         }
 
-        // --- MEMORY LOGS & CONTINUE LOGIC ---
         let selectedLogTarget = "";
         let loadedArchiveHTML = "";
 
@@ -656,7 +650,6 @@
             closeLogsModal(); showNotification("ARCHIVE RESTORED", "You are now continuing a previous session.", false);
         }
 
-        // --- CORE LOGIC ---
         window.onload = () => {
             applySettings();
             voiceEnabled = (userSettings.voiceDefault === 'on'); updateVoiceUI();
