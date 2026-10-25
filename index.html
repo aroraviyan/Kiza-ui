@@ -155,6 +155,12 @@
                 <option value="on">Always On (Speaking)</option>
             </select>
 
+            <label style="font-size:11px; font-weight:bold; margin-top:10px;">Pop-up Notifications:</label>
+            <select id="notifToggleSelect" onchange="saveSettings()">
+                <option value="on">Enabled (Show Pop-ups)</option>
+                <option value="off">Disabled (Hide Pop-ups)</option>
+            </select>
+
             <div class="section-title" style="margin-top:20px;">
                 <span>👥 STORED IDENTITIES</span>
             </div>
@@ -186,19 +192,27 @@
         </div>
     </div>
 
-    <!-- MEMORY ARCHIVE MODAL (NOW SUPPORTS SESSIONS) -->
+    <!-- MEMORY ARCHIVE MODAL -->
     <div id="logsModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
                 <span>KIZA // MEMORY ARCHIVE</span>
                 <button type="button" class="chip-btn" style="border-color:#ff0055; color:#ff0055; padding: 2px 6px; width:auto;" onclick="closeLogsModal()">X</button>
             </div>
-            <select id="logUserSelect" style="display: none; margin-bottom: 5px;" onchange="handleUserSelect()">
-                <option value="">-- SELECT OPERATIVE --</option>
-            </select>
-            <select id="logSessionSelect" onchange="handleSessionSelect()">
+            
+            <div id="archiveAdminControls" style="display: none; flex-direction: column; gap: 5px;">
+                <label style="font-size:11px; font-weight:bold; margin-top:5px;">Search Operative:</label>
+                <div style="display:flex; gap:5px;">
+                    <input type="text" id="logSearchInput" placeholder="Type operative name..." list="archiveListOptions" autocomplete="off">
+                    <datalist id="archiveListOptions"></datalist>
+                    <button class="chip-btn" style="width:auto; padding: 8px;" onclick="handleUserSelect()">FETCH</button>
+                </div>
+            </div>
+
+            <select id="logSessionSelect" onchange="handleSessionSelect()" style="margin-top:10px;">
                 <option value="">-- SELECT CHAT SESSION --</option>
             </select>
+            
             <div id="logsViewer" class="logs-viewer">
                 <div style="text-align:center; margin-top:20px;">Awaiting session selection...</div>
             </div>
@@ -291,7 +305,6 @@
             </div>
 
             <div class="input-container">
-                <!-- UPDATED PERSONALITY MODES -->
                 <select id="personaSelect" style="margin-bottom: 2px; text-align: center; border-radius:4px; font-weight:bold;">
                     <option value="normal" selected>🟢 NORMAL (DRY SARCASM)</option>
                     <option value="energetic">⚡ ENERGETIC (HYPER SARCASM)</option>
@@ -319,6 +332,7 @@
     <script>
         const SERVER_URL = "https://kiza-brain.onrender.com";
         let currentUser = "Guest";
+        let currentDBUser = "guest";
         let currentRole = "LOCKED";
         let authMode = "login";
         let alertIndex = 0;
@@ -335,6 +349,8 @@
         let voiceEnabled = false;
         let currentAudio = null;
         let typingTimer;
+        
+        let targetUserMap = {}; // Maps Display Name to DB Username for the Search bar
 
         let currentSessionId = generateSessionId();
 
@@ -349,7 +365,7 @@
         }
 
         let storedProfiles = JSON.parse(localStorage.getItem('kiza_profiles')) || [];
-        let userSettings = JSON.parse(localStorage.getItem('kiza_settings')) || { theme: 'light', voiceDefault: 'off' };
+        let userSettings = JSON.parse(localStorage.getItem('kiza_settings')) || { theme: 'light', voiceDefault: 'off', showNotifs: 'on' };
 
         function applySettings() {
             if (userSettings.theme === 'dark') {
@@ -360,11 +376,13 @@
                 document.getElementById('themeSelect').value = 'light';
             }
             document.getElementById('voiceDefaultSelect').value = userSettings.voiceDefault;
+            document.getElementById('notifToggleSelect').value = userSettings.showNotifs || 'on';
         }
 
         function saveSettings() {
             userSettings.theme = document.getElementById('themeSelect').value;
             userSettings.voiceDefault = document.getElementById('voiceDefaultSelect').value;
+            userSettings.showNotifs = document.getElementById('notifToggleSelect').value;
             localStorage.setItem('kiza_settings', JSON.stringify(userSettings));
             applySettings();
         }
@@ -385,7 +403,7 @@
                 if (data.success && data.users.length > 0) {
                     data.users.forEach(u => {
                         let opt = document.createElement('option');
-                        opt.value = u;
+                        opt.value = u.display;
                         datalist.appendChild(opt);
                     });
                 }
@@ -427,13 +445,14 @@
             });
         }
 
-        function saveCurrentProfileToStorage(username, role, face_id) {
+        function saveCurrentProfileToStorage(username, db_username, role, face_id) {
             let existing = storedProfiles.find(p => p.username === username);
             if (existing) {
                 existing.role = role;
+                existing.db_username = db_username;
                 if (face_id) existing.face_id = face_id;
             } else {
-                storedProfiles.push({ username, role, face_id });
+                storedProfiles.push({ username, db_username, role, face_id });
             }
             localStorage.setItem('kiza_profiles', JSON.stringify(storedProfiles));
         }
@@ -448,7 +467,7 @@
         function switchToProfile(idx) {
             let prof = storedProfiles[idx];
             closeSettings();
-            finalizeLogin(prof.username, prof.role, prof.face_id, false);
+            finalizeLogin(prof.username, prof.db_username, prof.role, prof.face_id, false);
         }
 
         function addIdentity() {
@@ -463,17 +482,19 @@
             document.getElementById('cancelAuthBtn').style.display = "none";
         }
 
-        function finalizeLogin(username, role, face_id, playGreeting = true, replyMsg = "", audioBase64 = null) {
+        function finalizeLogin(username, db_username, role, face_id, playGreeting = true, replyMsg = "", audioBase64 = null) {
             currentUser = username; 
+            currentDBUser = db_username;
             currentRole = role;
             
             currentSessionId = generateSessionId();
 
             localStorage.setItem('kiza_user', currentUser);
+            localStorage.setItem('kiza_db', currentDBUser);
             localStorage.setItem('kiza_role', currentRole);
             if (face_id) localStorage.setItem('kiza_face', face_id);
             
-            saveCurrentProfileToStorage(username, role, face_id);
+            saveCurrentProfileToStorage(username, db_username, role, face_id);
 
             document.getElementById('authModal').style.display = "none";
             document.getElementById('idVal').innerText = currentUser.toUpperCase();
@@ -516,8 +537,9 @@
         }
 
         function forceLogout() {
-            localStorage.removeItem('kiza_user'); localStorage.removeItem('kiza_role'); localStorage.removeItem('kiza_face');
+            localStorage.removeItem('kiza_user'); localStorage.removeItem('kiza_db'); localStorage.removeItem('kiza_role'); localStorage.removeItem('kiza_face');
             currentUser = "Guest";
+            currentDBUser = "guest";
             document.getElementById('authModal').style.display = "flex";
             document.getElementById('cancelAuthBtn').style.display = "none";
             document.getElementById('masterCmds').style.display = "none";
@@ -536,48 +558,61 @@
 
         async function openLogsModal() {
             document.getElementById('logsModal').style.display = "flex";
-            const userSelect = document.getElementById('logUserSelect');
+            const adminControls = document.getElementById('archiveAdminControls');
             const sessionSelect = document.getElementById('logSessionSelect');
             const viewer = document.getElementById('logsViewer');
             const resumeBtn = document.getElementById('resumeArchiveBtn');
+            const datalist = document.getElementById('archiveListOptions');
             
-            userSelect.innerHTML = '<option value="">-- SELECT OPERATIVE --</option>';
+            // PRE-LOAD THE INPUT WITH CURRENT USER SO THEY DON'T HAVE TO TYPE THEIR OWN NAME
+            document.getElementById('logSearchInput').value = currentUser;
+            selectedLogTarget = currentDBUser;
+
             sessionSelect.innerHTML = '<option value="">-- SELECT CHAT SESSION --</option>';
             viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">Fetching archives...</div>';
             resumeBtn.style.display = "none"; loadedArchiveHTML = "";
 
             if (currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD")) {
-                userSelect.style.display = "block";
+                adminControls.style.display = "flex";
+                datalist.innerHTML = "";
+                targetUserMap = {};
                 try {
                     let res = await fetch(`${SERVER_URL}/api/admin/users?user=${encodeURIComponent(currentUser)}`);
                     let data = await res.json();
                     if (data.success && data.users.length > 0) {
                         data.users.forEach(u => {
-                            let opt = document.createElement('option'); opt.value = u; opt.innerText = u.toUpperCase();
-                            userSelect.appendChild(opt);
+                            let opt = document.createElement('option'); 
+                            opt.value = u.display;
+                            targetUserMap[u.display.toLowerCase()] = u.username;
+                            datalist.appendChild(opt);
                         });
-                        viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">Select an Operative to view their memory archives.</div>';
-                    } else {
-                        viewer.innerHTML = '<div style="color:#d9534f; text-align:center; margin-top:20px;">No archives found.</div>';
                     }
-                } catch(e) { viewer.innerHTML = '<div style="color:#d9534f; text-align:center; margin-top:20px;">Connection failed.</div>'; }
+                } catch(e) {}
             } else {
-                userSelect.style.display = "none";
-                selectedLogTarget = currentUser.replace(" (Owner)", "").replace(" (Admin)", "").replace(" (Mod)", "");
-                fetchLogSessions();
+                adminControls.style.display = "none";
             }
+            
+            // AUTOMATICALLY FETCH FOR YOURSELF RIGHT WHEN YOU OPEN IT!
+            fetchLogSessions();
         }
 
         function closeLogsModal() { document.getElementById('logsModal').style.display = "none"; }
 
         function handleUserSelect() {
-            selectedLogTarget = document.getElementById('logUserSelect').value;
+            const rawInput = document.getElementById('logSearchInput').value.trim().toLowerCase();
+            
+            if (targetUserMap[rawInput]) {
+                selectedLogTarget = targetUserMap[rawInput]; // Translates Display Name -> Database Name
+            } else {
+                selectedLogTarget = rawInput; 
+            }
+            
             document.getElementById('resumeArchiveBtn').style.display = "none";
             if (selectedLogTarget) {
                 fetchLogSessions();
             } else {
                 document.getElementById('logSessionSelect').innerHTML = '<option value="">-- SELECT CHAT SESSION --</option>';
-                document.getElementById('logsViewer').innerHTML = '<div style="text-align:center; margin-top:20px;">Select an Operative...</div>';
+                document.getElementById('logsViewer').innerHTML = '<div style="text-align:center; margin-top:20px;">Type an Operative name and click FETCH...</div>';
             }
         }
 
@@ -645,8 +680,7 @@
                     });
                     viewer.scrollTop = viewer.scrollHeight; 
                     
-                    let cleanCurrent = currentUser.replace(" (Owner)", "").replace(" (Admin)", "").replace(" (Mod)", "");
-                    if (selectedLogTarget.toLowerCase() === cleanCurrent.toLowerCase()) {
+                    if (selectedLogTarget.toLowerCase() === currentDBUser.toLowerCase()) {
                         resumeBtn.style.display = "block";
                     }
                 } else {
@@ -669,9 +703,10 @@
             voiceEnabled = (userSettings.voiceDefault === 'on'); updateVoiceUI();
             initCamera();
             const savedUser = localStorage.getItem('kiza_user');
+            const savedDB = localStorage.getItem('kiza_db');
             const savedRole = localStorage.getItem('kiza_role');
             const savedFace = localStorage.getItem('kiza_face');
-            if (savedUser && savedRole) { finalizeLogin(savedUser, savedRole, savedFace, false); }
+            if (savedUser && savedRole && savedDB) { finalizeLogin(savedUser, savedDB, savedRole, savedFace, false); }
         };
 
         function updateVoiceUI() {
@@ -713,6 +748,9 @@
                     osc.start(); osc.stop(ctx.currentTime + (isError ? 0.2 : 0.1));
                 } catch(e) {}
             }
+            
+            if (userSettings.showNotifs === 'off' && !isError) return; 
+
             if (document.hidden) {
                 if ("Notification" in window && Notification.permission === "granted") new Notification(title, { body: message });
             } else {
@@ -830,13 +868,12 @@
                 if (data.success) {
                     document.getElementById('savedFaceImg').src = faceData; document.getElementById('savedFaceImg').style.display = "block";
                     document.getElementById('faceIdStatus').innerText = "UPDATED";
-                    saveCurrentProfileToStorage(currentUser, currentRole, faceData);
+                    saveCurrentProfileToStorage(currentUser, currentDBUser, currentRole, faceData);
                     logAction("[SYSTEM]: Biometrics synchronized.");
                 }
             } catch (err) { }
         }
 
-        // --- ENHANCED GOOGLE AUTH WITH RENDER SLEEP NOTIFICATION ---
         async function handleGoogleLogin(response) {
             const errBox = document.getElementById('authError'); 
             errBox.style.color = "#007BFF";
@@ -846,19 +883,17 @@
                 let res = await fetch(`${SERVER_URL}/api/google_auth`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: response.credential }) });
                 let data = await res.json();
                 
-                errBox.style.color = "#ff0055"; // Reset for errors
+                errBox.style.color = "#ff0055";
                 if (!data.success) { errBox.innerText = data.message; showNotification("ACCESS DENIED", data.message, true); return; }
                 
                 errBox.innerText = "";
-                finalizeLogin(data.username, data.role, data.face_id, true, data.reply, data.audio_base64);
+                finalizeLogin(data.username, data.db_username, data.role, data.face_id, true, data.reply, data.audio_base64);
             } catch (err) { 
                 errBox.style.color = "#ff0055";
                 errBox.innerText = "Network Error: Make sure your server is online."; 
-                console.error(err);
             }
         }
 
-        // --- ENHANCED MANUAL AUTH WITH RENDER SLEEP NOTIFICATION ---
         function performAuth() {
             const errBox = document.getElementById('authError');
             try {
@@ -875,15 +910,14 @@
                         let res = await fetch(`${SERVER_URL}/api/auth`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: username, password: password, action: authMode, face_id: faceData }) });
                         let data = await res.json();
                         
-                        errBox.style.color = "#ff0055"; // Reset for errors
+                        errBox.style.color = "#ff0055"; 
                         if (!data.success) { errBox.innerText = data.message; showNotification("ACCESS DENIED", data.message, true); return; }
                         
                         errBox.innerText = "";
-                        finalizeLogin(data.username, data.role, data.face_id, true, data.reply, data.audio_base64);
+                        finalizeLogin(data.username, data.db_username, data.role, data.face_id, true, data.reply, data.audio_base64);
                     } catch (err) { 
                         errBox.style.color = "#ff0055";
                         errBox.innerText = "Server offline. Wait 50s for Render to wake up."; 
-                        console.error(err);
                     }
                 }, 1000); 
             } catch(e) { errBox.innerText = "UI Error: " + e.message; }
