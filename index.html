@@ -355,6 +355,7 @@
         let currentRole = "LOCKED";
         let authMode = "login";
         let alertIndex = 0;
+        let isChatActive = false; // Prevents background status loops from locking UI
         
         let cameraReady = false;
         let isCameraActive = true;
@@ -857,10 +858,12 @@
             logAction(voiceEnabled ? "[SYSTEM]: Voice synthesis enabled." : "[SYSTEM]: Voice synthesis muted.", voiceEnabled ? "" : "#ff0055");
         }
 
+        // Throttled background polling loop to prevent browser hanging or server hammering
         setInterval(async () => {
-            if (currentUser === "Guest") return;
+            if (currentUser === "Guest" || isChatActive) return;
             try {
                 let res = await fetch(`${SERVER_URL}/api/status?user=${encodeURIComponent(currentUser)}&last_alert_idx=${alertIndex}`);
+                if (!res.ok) return;
                 let data = await res.json();
                 if (data.next_alert_idx !== undefined) alertIndex = data.next_alert_idx;
                 if (data.role && data.role !== "LOCKED" && data.role !== currentRole) {
@@ -870,7 +873,7 @@
                 if (data.new_alerts && data.new_alerts.length > 0) { data.new_alerts.forEach(alert => showNotification(alert.title, alert.message, false)); }
                 if (data.lockdown && !(currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD"))) { forceLogout(); showNotification("SECURITY LOCKDOWN", `Owner initiated Lockdown: ${data.reason}`, true); }
             } catch(e) {}
-        }, 3000);
+        }, 5000);
 
         function showNotification(title, message, isError = false) {
             if (voiceEnabled) {
@@ -1085,10 +1088,11 @@
 
         async function submitCommand() {
             let inputField = document.getElementById('textInput'); let text = inputField.value.trim();
-            if (!text) return;
+            if (!text || isChatActive) return;
             if (text.toLowerCase() === "/logs") { inputField.value = ""; openLogsModal(); return; }
             if (text.toLowerCase() === "/cmds") { text = "/help"; } 
 
+            isChatActive = true; // Lock background loops while transmitting
             clearTimeout(typingTimer); clearIndicator();
             logAction(`[${currentUser.toUpperCase()}]: ${text}`); inputField.value = "";
             document.getElementById('uiStatus').innerText = "KIZA ANALYZING..."; document.getElementById('orb').classList.add('processing'); 
@@ -1119,10 +1123,12 @@
                 if (!response.ok) throw new Error("Cloud connection failed.");
                 let data = await response.json();
                 document.getElementById('orb').classList.remove('processing'); document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`; clearIndicator();
+                isChatActive = false; // Unlock state
                 if (data.is_error) { showNotification("KIZA SECURITY", data.reply, true); playKizaAudio(data.audio_base64); return; }
                 let formattedReply = data.reply.replace(/\*/g, ''); playKizaAudio(data.audio_base64);
                 typeWriterLog(`[KIZA]: ${formattedReply}`, () => { if (formattedReply.length > 100) showNotification("KIZA ALERT", "New detailed intelligence report processed.", false); });
             } catch (error) {
+                isChatActive = false; // Unlock state on error
                 document.getElementById('orb').classList.remove('processing'); logAction(`[SYSTEM ERROR]: ${error.message}`); document.getElementById('uiStatus').innerText = "CONNECTION FAILED."; clearIndicator();
             }
         }
