@@ -54,15 +54,17 @@
             padding: 8px 10px; color: #333; font-size: 14px; font-family: inherit; outline: none; width: 100%;
         }
         
+        /* FIXED DROPLET SELECTOR (NO REPEATING ARROW GLITCH) */
         select {
             cursor: pointer;
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
             background-image: url('data:image/svg+xml;utf8,<svg fill="%2387CEEB" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
-            background-repeat: no-repeat;
-            background-position: right 5px center;
-            padding-right: 25px;
+            background-repeat: no-repeat !important;
+            background-position: right 8px center !important;
+            background-size: 16px 16px;
+            padding-right: 30px;
             background-color: rgba(135, 206, 235, 0.08);
             border-radius: 4px;
         }
@@ -121,7 +123,15 @@
         body.dark-mode .send-btn { border-color: #aa00ff; color: #e085ff; background: rgba(170, 0, 255, 0.2); }
         body.dark-mode .log-box, body.dark-mode .logs-viewer { color: #999; background: transparent; border-color: rgba(0,255,204,0.3); }
         body.dark-mode input[type="text"], body.dark-mode input[type="password"], body.dark-mode select { color: #00ffcc; border-bottom-color: #aa00ff; background: rgba(0,0,0,0.8); }
-        body.dark-mode select { background-image: url('data:image/svg+xml;utf8,<svg fill="%23aa00ff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>'); }
+        
+        /* FIXED DARK-MODE SELECTOR ARROW */
+        body.dark-mode select { 
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%23aa00ff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>') !important; 
+            background-repeat: no-repeat !important;
+            background-position: right 8px center !important;
+            background-size: 16px 16px;
+        }
+
         body.dark-mode .input-container { background: rgba(0,0,0,0.8); border-color: rgba(170, 0, 255, 0.4); }
         body.dark-mode #notificationBox { background: rgba(15, 5, 30, 0.95); border-color: #00ffcc; color: #00ffcc; }
         body.dark-mode .camera-box { border-color: rgba(170, 0, 255, 0.5); }
@@ -332,8 +342,8 @@
                 <div class="input-row">
                     <button type="button" class="chip-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Voice" style="width:auto; padding: 6px; font-size: 14px;">🔊</button>
                     <button type="button" class="chip-btn" id="micBtn" style="width:auto; padding: 6px; font-size: 16px;" onclick="toggleSpeechRecognition()" title="Manual 1-Tap Mic">🎤</button>
-                    <button type="button" class="chip-btn" id="wakeToggleBtn" style="width:auto; padding: 6px 10px; font-size: 11px; white-space: nowrap;" onclick="toggleWakeWord()" title="Hands-Free 'Hey KIZA' Wake Word">🗣️ WAKE: OFF</button>
-                    <input type="text" id="textInput" placeholder="Say 'Hey KIZA' or type command...">
+                    <button type="button" class="chip-btn" id="wakeToggleBtn" style="width:auto; padding: 6px 10px; font-size: 11px; white-space: nowrap;" onclick="toggleWakeWord()" title="Wake Word: Hello">🗣️ WAKE: OFF</button>
+                    <input type="text" id="textInput" placeholder="Say 'Hello' or type command...">
                     <button type="button" class="send-btn" onclick="submitCommand()">TRANSMIT</button>
                 </div>
             </div>
@@ -372,18 +382,12 @@
         let recognition = null;
         let isRecording = false;
 
-        // Hands-Free "Hey KIZA" Wake Word State
+        // Wake Word State ("Hello")
         let wakeWordEnabled = false;
         let wakeRecognition = null;
         let awaitingWakeCommand = false;
         let wakeCommandTimeout = null;
         let isKizaSpeaking = false;
-
-        const WAKE_VARIATIONS = [
-            "hey kiza", "hi kiza", "ok kiza", "okay kiza", "yo kiza",
-            "hey kisa", "hi kisa", "hey keza", "hey keys", "hey keysa",
-            "hey giza", "hey pizza", "kiza"
-        ];
 
         let voiceEnabled = false;
         let currentAudio = null;
@@ -420,9 +424,6 @@
             return null;
         }
 
-        // ==========================================================
-        // REAL-TIME WEBSOCKET ENGINE (REPLACES SPAMMY HTTP POLLING)
-        // ==========================================================
         function handleServerStatusPayload(data) {
             if (!data) return;
             if (data.next_alert_idx !== undefined) alertIndex = data.next_alert_idx;
@@ -468,15 +469,10 @@
                         setTimeout(initWebSocket, 5000);
                     }
                 };
-                ws.onerror = () => {
-                    wsConnected = false;
-                };
-            } catch (e) {
-                wsConnected = false;
-            }
+                ws.onerror = () => { wsConnected = false; };
+            } catch (e) { wsConnected = false; }
         }
 
-        // Lightweight fallback check ONLY if WebSocket is disconnected (every 30s instead of 3s)
         setInterval(async () => {
             if (currentUser === "Guest" || isChatActive || wsConnected) return;
             try {
@@ -545,7 +541,6 @@
             document.getElementById('rankSearchInput').value = "";
             const selectDropdown = document.getElementById('rankSearchSelect');
             selectDropdown.innerHTML = '<option value="">-- FETCHING OPERATIVES... --</option>';
-            
             await fetchOperativesList();
             renderRankOperativesDropdown("");
         }
@@ -554,41 +549,24 @@
             const selectDropdown = document.getElementById('rankSearchSelect');
             const q = (filterText || "").toLowerCase().trim();
             selectDropdown.innerHTML = '<option value="">-- SELECT TARGET OPERATIVE --</option>';
-            
-            const filtered = cachedOperatives.filter(u => 
-                u.display.toLowerCase().includes(q) || u.username.toLowerCase().includes(q)
-            );
-
+            const filtered = cachedOperatives.filter(u => u.display.toLowerCase().includes(q) || u.username.toLowerCase().includes(q));
             filtered.forEach(u => {
                 let opt = document.createElement('option');
                 opt.value = u.username;
                 opt.innerText = `${u.display.toUpperCase()} (${u.username})`;
                 selectDropdown.appendChild(opt);
             });
-
-            if (filtered.length === 1 && q.length > 0) {
-                selectDropdown.selectedIndex = 1;
-            }
+            if (filtered.length === 1 && q.length > 0) selectDropdown.selectedIndex = 1;
         }
 
-        function filterRankOperatives() {
-            const q = document.getElementById('rankSearchInput').value;
-            renderRankOperativesDropdown(q);
-        }
-
+        function filterRankOperatives() { renderRankOperativesDropdown(document.getElementById('rankSearchInput').value); }
         function closeRankModal() { document.getElementById('rankModal').style.display = "none"; }
 
         async function submitRankAssignment() {
             let targetDBName = document.getElementById('rankSearchSelect').value;
-            if (!targetDBName) {
-                targetDBName = resolveDBUser(document.getElementById('rankSearchInput').value.trim());
-            }
+            if (!targetDBName) targetDBName = resolveDBUser(document.getElementById('rankSearchInput').value.trim());
             const selectedRank = document.getElementById('rankSelectDropdown').value;
-            
-            if (!targetDBName) {
-                showNotification("ERROR", "Please select or type an operative name.", true);
-                return;
-            }
+            if (!targetDBName) { showNotification("ERROR", "Please select or type an operative name.", true); return; }
             closeRankModal();
             document.getElementById('textInput').value = `/giverank ${targetDBName} ${selectedRank}`;
             submitCommand();
@@ -597,21 +575,12 @@
         function renderProfileList() {
             const list = document.getElementById('profileListContainer');
             list.innerHTML = "";
-            if (storedProfiles.length === 0) {
-                list.innerHTML = "<div style='font-size:11px; text-align:center;'>No saved identities.</div>";
-                return;
-            }
+            if (storedProfiles.length === 0) { list.innerHTML = "<div style='font-size:11px; text-align:center;'>No saved identities.</div>"; return; }
             storedProfiles.forEach((prof, idx) => {
                 let div = document.createElement('div');
                 div.className = "profile-list-item";
                 let isCurrent = (prof.username === currentUser);
-                div.innerHTML = `
-                    <span style="font-weight:bold;">${prof.username.toUpperCase()} ${isCurrent ? "(ACTIVE)" : ""}</span>
-                    <div>
-                        ${!isCurrent ? `<button class="chip-btn" style="padding:2px 6px; width:auto;" onclick="switchToProfile(${idx})">SWITCH</button>` : ''}
-                        <button class="chip-btn" style="border-color:#ff0055; color:#ff0055; padding:2px 6px; width:auto;" onclick="removeProfile(${idx})">X</button>
-                    </div>
-                `;
+                div.innerHTML = `<span style="font-weight:bold;">${prof.username.toUpperCase()} ${isCurrent ? "(ACTIVE)" : ""}</span><div>${!isCurrent ? `<button class="chip-btn" style="padding:2px 6px; width:auto;" onclick="switchToProfile(${idx})">SWITCH</button>` : ''}<button class="chip-btn" style="border-color:#ff0055; color:#ff0055; padding:2px 6px; width:auto;" onclick="removeProfile(${idx})">X</button></div>`;
                 list.appendChild(div);
             });
         }
@@ -619,13 +588,8 @@
         function saveCurrentProfileToStorage(username, db_username, role, face_id) {
             let safeDB = db_username || resolveDBUser(username);
             let existing = storedProfiles.find(p => p.username === username);
-            if (existing) {
-                existing.role = role;
-                existing.db_username = safeDB;
-                if (face_id) existing.face_id = face_id;
-            } else {
-                storedProfiles.push({ username, db_username: safeDB, role, face_id });
-            }
+            if (existing) { existing.role = role; existing.db_username = safeDB; if (face_id) existing.face_id = face_id; }
+            else { storedProfiles.push({ username, db_username: safeDB, role, face_id }); }
             localStorage.setItem('kiza_profiles', JSON.stringify(storedProfiles));
         }
 
@@ -633,22 +597,20 @@
             let prof = storedProfiles[idx];
             storedProfiles.splice(idx, 1);
             localStorage.setItem('kiza_profiles', JSON.stringify(storedProfiles));
-            if (prof.username === currentUser) { logoutUser(); } else { renderProfileList(); }
+            if (prof.username === currentUser) logoutUser(); else renderProfileList();
         }
 
         function switchToProfile(idx) {
             let prof = storedProfiles[idx];
             closeSettings();
-            let safeDB = prof.db_username || resolveDBUser(prof.username);
-            finalizeLogin(prof.username, safeDB, prof.role, prof.face_id, false);
+            finalizeLogin(prof.username, prof.db_username || resolveDBUser(prof.username), prof.role, prof.face_id, false);
         }
 
         function addIdentity() {
             closeSettings();
             document.getElementById('authModal').style.display = "flex";
             document.getElementById('cancelAuthBtn').style.display = "inline-block";
-            document.getElementById('authUser').value = "";
-            document.getElementById('authPass').value = "";
+            document.getElementById('authUser').value = ""; document.getElementById('authPass').value = "";
         }
         function cancelAddIdentity() {
             document.getElementById('authModal').style.display = "none";
@@ -659,17 +621,13 @@
             currentRole = roleStr || "OPERATIVE";
             localStorage.setItem('kiza_role', currentRole);
             saveCurrentProfileToStorage(currentUser, currentDBUser, currentRole, localStorage.getItem('kiza_face'));
-
             const roleEl = document.getElementById('roleVal');
             roleEl.innerText = currentRole;
-
             if (currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD")) {
                 roleEl.classList.add("master");
                 document.getElementById('masterCmds').style.display = "flex";
-
                 let isOwner = currentRole.includes("OWNER");
                 let isMod = currentRole.includes("MOD");
-
                 document.querySelectorAll('.owner-only').forEach(el => el.style.display = isOwner ? "inline-block" : "none");
                 document.querySelectorAll('.mod-owner-only').forEach(el => el.style.display = (isOwner || isMod) ? "inline-block" : "none");
             } else {
@@ -681,18 +639,13 @@
         function finalizeLogin(username, db_username, role, face_id, playGreeting = true, replyMsg = "", audioBase64 = null) {
             currentUser = username || "Guest"; 
             currentDBUser = (db_username && db_username !== "undefined") ? db_username : resolveDBUser(currentUser);
-            
             currentSessionId = generateSessionId();
-
             localStorage.setItem('kiza_user', currentUser);
             localStorage.setItem('kiza_db', currentDBUser);
             if (face_id) localStorage.setItem('kiza_face', face_id);
-            
             applyRoleUI(role);
-
             document.getElementById('authModal').style.display = "none";
             document.getElementById('idVal').innerText = currentUser.toUpperCase();
-
             if (face_id) {
                 const img = document.getElementById('savedFaceImg'); img.src = face_id; img.style.display = "block";
                 document.getElementById('faceIdStatus').innerText = "LOCKED"; 
@@ -700,41 +653,28 @@
                 document.getElementById('savedFaceImg').style.display = "none";
                 document.getElementById('faceIdStatus').innerText = "No Biometrics";
             }
-
             document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
-            
             if (playGreeting && replyMsg) {
                 showNotification("KIZA ALERT", replyMsg, false); 
                 if (audioBase64) playKizaAudio(audioBase64);
             } else {
                 logAction(`[SYSTEM]: Switched identity to ${currentUser.toUpperCase()}`, "#007BFF");
             }
-            
             document.getElementById('actionLog').innerHTML = '<div>> [KIZA SYSTEM]: HUD online. System ready.</div>';
             initWebSocket();
         }
 
         function forceLogout() {
             localStorage.removeItem('kiza_user'); localStorage.removeItem('kiza_db'); localStorage.removeItem('kiza_role'); localStorage.removeItem('kiza_face');
-            currentUser = "Guest";
-            currentDBUser = "guest";
-            if (ws) {
-                try { ws.onclose = null; ws.close(); } catch(e) {}
-                ws = null;
-                wsConnected = false;
-            }
+            currentUser = "Guest"; currentDBUser = "guest";
+            if (ws) { try { ws.onclose = null; ws.close(); } catch(e) {} ws = null; wsConnected = false; }
             document.getElementById('authModal').style.display = "flex";
             document.getElementById('cancelAuthBtn').style.display = "none";
             document.getElementById('masterCmds').style.display = "none";
             document.getElementById('actionLog').innerHTML = '<div>> [KIZA SYSTEM]: HUD online. System ready.</div>';
             closeSettings();
         }
-
-        function logoutUser() {
-            forceLogout();
-            document.getElementById('authUser').value = ""; document.getElementById('authPass').value = "";
-            document.getElementById('authError').innerText = "";
-        }
+        function logoutUser() { forceLogout(); document.getElementById('authUser').value = ""; document.getElementById('authPass').value = ""; document.getElementById('authError').innerText = ""; }
 
         let selectedLogTarget = "";
         let loadedArchiveHTML = "";
@@ -765,7 +705,6 @@
             } else {
                 adminControls.style.display = "none";
             }
-            
             fetchLogSessions();
         }
 
@@ -773,20 +712,12 @@
             const opSelect = document.getElementById('logOperativeSelect');
             const q = (filterText || "").toLowerCase().trim();
             opSelect.innerHTML = '';
-
             const selfEntry = { display: `${currentUser} (YOU)`, username: currentDBUser };
             const allEntries = [selfEntry];
-
             cachedOperatives.forEach(u => {
-                if (u.username.toLowerCase() !== currentDBUser.toLowerCase()) {
-                    allEntries.push(u);
-                }
+                if (u.username.toLowerCase() !== currentDBUser.toLowerCase()) allEntries.push(u);
             });
-
-            const filtered = allEntries.filter(u => 
-                u.display.toLowerCase().includes(q) || u.username.toLowerCase().includes(q)
-            );
-
+            const filtered = allEntries.filter(u => u.display.toLowerCase().includes(q) || u.username.toLowerCase().includes(q));
             if (filtered.length === 0) {
                 let emptyOpt = document.createElement('option');
                 emptyOpt.value = q ? resolveDBUser(q) : currentDBUser;
@@ -795,21 +726,16 @@
             } else {
                 filtered.forEach(u => {
                     let opt = document.createElement('option');
-                    opt.value = u.username;
-                    opt.innerText = u.display;
+                    opt.value = u.username; opt.innerText = u.display;
                     opSelect.appendChild(opt);
                 });
             }
         }
 
         function filterArchiveOperatives() {
-            const q = document.getElementById('logSearchInput').value;
-            renderArchiveOperativesDropdown(q);
+            renderArchiveOperativesDropdown(document.getElementById('logSearchInput').value);
             const opSelect = document.getElementById('logOperativeSelect');
-            if (opSelect.options.length > 0) {
-                opSelect.selectedIndex = 0;
-                handleUserSelect();
-            }
+            if (opSelect.options.length > 0) { opSelect.selectedIndex = 0; handleUserSelect(); }
         }
 
         function closeLogsModal() { document.getElementById('logsModal').style.display = "none"; }
@@ -817,10 +743,8 @@
         function handleUserSelect() {
             selectedLogTarget = document.getElementById('logOperativeSelect').value;
             document.getElementById('resumeArchiveBtn').style.display = "none";
-            
-            if (selectedLogTarget) {
-                fetchLogSessions();
-            } else {
+            if (selectedLogTarget) fetchLogSessions();
+            else {
                 document.getElementById('logSessionSelect').innerHTML = '<option value="">-- SELECT CHAT SESSION --</option>';
                 document.getElementById('logsViewer').innerHTML = '<div style="text-align:center; margin-top:20px;">Select an Operative...</div>';
             }
@@ -831,11 +755,9 @@
             const viewer = document.getElementById('logsViewer');
             sessionSelect.innerHTML = '<option value="">-- FETCHING SESSIONS... --</option>';
             document.getElementById('resumeArchiveBtn').style.display = "none";
-            
             try {
                 let res = await fetch(`${SERVER_URL}/api/history/sessions?target_user=${encodeURIComponent(selectedLogTarget)}&request_user=${encodeURIComponent(currentUser)}`);
                 let data = await res.json();
-                
                 sessionSelect.innerHTML = '<option value="">-- SELECT CHAT SESSION --</option>';
                 if (data.success && Array.isArray(data.sessions) && data.sessions.length > 0) {
                     data.sessions.forEach((s, idx) => {
@@ -847,7 +769,7 @@
                     sessionSelect.selectedIndex = 1;
                     handleSessionSelect();
                 } else {
-                    viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">No chat sessions found for this operative yet. Send a message first!</div>';
+                    viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">No chat sessions found for this operative yet.</div>';
                 }
             } catch(e) {
                 sessionSelect.innerHTML = '<option value="">-- ERROR --</option>';
@@ -859,23 +781,16 @@
             const targetSessionId = document.getElementById('logSessionSelect').value;
             const viewer = document.getElementById('logsViewer');
             const resumeBtn = document.getElementById('resumeArchiveBtn');
-            
             if (!targetSessionId) {
                 viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">Select a Session above to view messages.</div>';
-                resumeBtn.style.display = "none"; 
-                return;
+                resumeBtn.style.display = "none"; return;
             }
-
             viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">Decrypting memory archive...</div>';
             resumeBtn.style.display = "none";
-            
             try {
                 let res = await fetch(`${SERVER_URL}/api/history/messages?session_id=${encodeURIComponent(targetSessionId)}&target_user=${encodeURIComponent(selectedLogTarget)}&request_user=${encodeURIComponent(currentUser)}`);
                 let data = await res.json();
-                
-                viewer.innerHTML = ''; 
-                loadedArchiveHTML = ''; 
-                
+                viewer.innerHTML = ''; loadedArchiveHTML = ''; 
                 if (data.success && Array.isArray(data.history) && data.history.length > 0) {
                     let displayLabel = (selectedLogTarget || currentUser || "USER").toUpperCase();
                     data.history.forEach(log => {
@@ -883,34 +798,22 @@
                         let ts = String(log.timestamp || "");
                         let timeMatch = ts.match(/(\d{2}:\d{2}:\d{2})/);
                         let timeStr = timeMatch ? timeMatch[1] : "";
-                        let htmlContent = "";
-                        
-                        if (log.role === "USER") {
-                            htmlContent = `<span style="opacity:0.6;">[${timeStr}]</span> <span style="font-weight:bold;">[${displayLabel}]:</span> ${log.message}`;
-                        } else {
-                            htmlContent = `<span style="opacity:0.6;">[${timeStr}]</span> <span style="font-weight:bold; color:#007BFF;">[KIZA]:</span> ${log.message}`;
-                        }
-                        div.innerHTML = htmlContent; 
-                        viewer.appendChild(div);
+                        let htmlContent = log.role === "USER" ? `<span style="opacity:0.6;">[${timeStr}]</span> <span style="font-weight:bold;">[${displayLabel}]:</span> ${log.message}` : `<span style="opacity:0.6;">[${timeStr}]</span> <span style="font-weight:bold; color:#007BFF;">[KIZA]:</span> ${log.message}`;
+                        div.innerHTML = htmlContent; viewer.appendChild(div);
                         loadedArchiveHTML += `<div>> ${htmlContent}</div>`;
                     });
-                    viewer.scrollTop = viewer.scrollHeight; 
-                    resumeBtn.style.display = "block";
+                    viewer.scrollTop = viewer.scrollHeight; resumeBtn.style.display = "block";
                 } else {
                     viewer.innerHTML = '<div style="color:#d9534f; text-align:center; margin-top:20px;">No messages recorded in this session.</div>';
                 }
-            } catch(e) { 
-                viewer.innerHTML = '<div style="color:#d9534f; text-align:center; margin-top:20px;">Failed to decrypt logs.</div>'; 
-            }
+            } catch(e) { viewer.innerHTML = '<div style="color:#d9534f; text-align:center; margin-top:20px;">Failed to decrypt logs.</div>'; }
         }
 
         function resumeArchive() {
             if (!loadedArchiveHTML) return;
             const logBox = document.getElementById('actionLog');
             const chosenSession = document.getElementById('logSessionSelect').value;
-            if (chosenSession) {
-                currentSessionId = chosenSession;
-            }
+            if (chosenSession) currentSessionId = chosenSession;
             logBox.innerHTML = `<div>> [KIZA SYSTEM]: Historical session restored. Continuing conversation...</div>` + loadedArchiveHTML;
             logBox.scrollTop = logBox.scrollHeight;
             closeLogsModal(); 
@@ -927,23 +830,15 @@
             const savedRole = localStorage.getItem('kiza_role');
             const savedFace = localStorage.getItem('kiza_face');
             if (savedUser && savedRole) { 
-                let safeDB = (savedDB && savedDB !== "undefined") ? savedDB : resolveDBUser(savedUser);
-                finalizeLogin(savedUser, safeDB, savedRole, savedFace, false); 
+                finalizeLogin(savedUser, (savedDB && savedDB !== "undefined") ? savedDB : resolveDBUser(savedUser), savedRole, savedFace, false); 
             }
         };
 
         function updateVoiceUI() {
             const btn = document.getElementById('voiceToggleBtn');
             const mobileBtn = document.getElementById('mobileVoiceBtn');
-            if (voiceEnabled) {
-                if(btn) btn.innerText = "🔊 VOICE: ON";
-                if(mobileBtn) mobileBtn.innerText = "🔊";
-            } else {
-                if(btn) btn.innerText = "🔇 VOICE: MUTED";
-                if(mobileBtn) mobileBtn.innerText = "🔇";
-                if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-                isKizaSpeaking = false;
-            }
+            if (voiceEnabled) { if(btn) btn.innerText = "🔊 VOICE: ON"; if(mobileBtn) mobileBtn.innerText = "🔊"; }
+            else { if(btn) btn.innerText = "🔇 VOICE: MUTED"; if(mobileBtn) mobileBtn.innerText = "🔇"; if (currentAudio) { currentAudio.pause(); currentAudio = null; } }
         }
 
         function toggleVoiceMute() {
@@ -961,16 +856,14 @@
                     osc.start(); osc.stop(ctx.currentTime + (isError ? 0.2 : 0.1));
                 } catch(e) {}
             }
-            
             if (userSettings.showNotifs === 'off' && !isError) return; 
-
             if (document.hidden) {
                 if ("Notification" in window && Notification.permission === "granted") new Notification(title, { body: message });
             } else {
                 const notifBox = document.getElementById('notificationBox');
                 document.getElementById('notifTitle').innerText = title; document.getElementById('notifMsg').innerText = message;
-                if (isError) { notifBox.classList.add('notify-error'); } else { notifBox.classList.remove('notify-error'); }
-                notifBox.classList.add('show'); setTimeout(() => { notifBox.classList.remove('show'); }, 5000);
+                if (isError) notifBox.classList.add('notify-error'); else notifBox.classList.remove('notify-error');
+                notifBox.classList.add('show'); setTimeout(() => notifBox.classList.remove('show'), 5000);
             }
         }
 
@@ -979,26 +872,17 @@
             if(color && document.body.classList.contains('dark-mode')) newEntry.style.color = color;
             if (isHtml) newEntry.innerHTML = `> ${message}`; else newEntry.innerText = `> ${message}`;
             logBox.appendChild(newEntry);
-            let indicator = document.getElementById('chatIndicator'); if (indicator) logBox.appendChild(indicator);
             logBox.scrollTop = logBox.scrollHeight;
         }
 
-        // Echo-Safe Audio Player (Pauses Wake Word Listener while KIZA talks)
         function playKizaAudio(base64Data) {
             if (!voiceEnabled || !base64Data) return;
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio.currentTime = 0;
-                currentAudio = null;
-            }
+            if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
             isKizaSpeaking = true;
             currentAudio = new Audio("data:audio/mp3;base64," + base64Data);
             currentAudio.onended = () => { isKizaSpeaking = false; };
             currentAudio.onerror = () => { isKizaSpeaking = false; };
-            currentAudio.play().catch(e => {
-                isKizaSpeaking = false;
-                console.log("Audio blocked");
-            });
+            currentAudio.play().catch(e => { isKizaSpeaking = false; });
         }
 
         async function initCamera() {
@@ -1009,11 +893,9 @@
                 const videoElement = document.getElementById('webcamVideo');
                 videoElement.srcObject = activeStream; videoElement.style.display = "block";
                 document.getElementById('camStatus').style.display = "none"; cameraReady = true;
-                const devices = await navigator.mediaDevices.enumerateDevices(); videoDevices = devices.filter(d => d.kind === 'videoinput');
+                videoDevices = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
             } catch (error) { 
-                document.getElementById('camStatus').innerText = "CAMERA OFFLINE"; 
-                document.getElementById('camStatus').style.display = "block";
-                cameraReady = false; 
+                document.getElementById('camStatus').innerText = "CAMERA OFFLINE"; document.getElementById('camStatus').style.display = "block"; cameraReady = false; 
             }
         }
 
@@ -1022,21 +904,12 @@
             const btn = document.getElementById('camToggleBtn');
             const videoElement = document.getElementById('webcamVideo');
             const status = document.getElementById('camStatus');
-            
             if (isCameraActive) {
-                btn.innerText = "📷 CAM: ON";
-                initCamera();
+                btn.innerText = "📷 CAM: ON"; initCamera();
             } else {
                 btn.innerText = "📷 CAM: OFF";
-                if (activeStream) {
-                    activeStream.getTracks().forEach(track => track.stop());
-                    activeStream = null;
-                }
-                videoElement.srcObject = null;
-                videoElement.style.display = "none";
-                status.style.display = "block";
-                status.innerText = "Camera Disabled";
-                cameraReady = false;
+                if (activeStream) { activeStream.getTracks().forEach(track => track.stop()); activeStream = null; }
+                videoElement.srcObject = null; videoElement.style.display = "none"; status.style.display = "block"; status.innerText = "Camera Disabled"; cameraReady = false;
             }
         }
 
@@ -1050,7 +923,7 @@
         }
 
         // ==========================================================
-        // HANDS-FREE "HEY KIZA" WAKE-WORD ENGINE + 1-TAP MIC
+        // WAKE WORD ENGINE: "HELLO"
         // ==========================================================
         function playWakeChime() {
             try {
@@ -1059,23 +932,20 @@
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(550, now);
-                osc.frequency.exponentialRampToValueAtTime(1100, now + 0.14);
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.12);
                 gain.gain.setValueAtTime(0.08, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
                 osc.connect(gain);
                 gain.connect(ctx.destination);
                 osc.start(now);
-                osc.stop(now + 0.18);
+                osc.stop(now + 0.15);
             } catch (e) {}
         }
 
         function initWakeWordEngine() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                showNotification("UNSUPPORTED", "Use Google Chrome or Edge for Hands-Free Wake Word.", true);
-                return null;
-            }
+            if (!SpeechRecognition) return null;
 
             const rec = new SpeechRecognition();
             rec.continuous = true;
@@ -1097,17 +967,10 @@
                     return;
                 }
 
-                let matchedWake = null;
-                for (const variant of WAKE_VARIATIONS) {
-                    if (lowerText.includes(variant)) {
-                        matchedWake = variant;
-                        break;
-                    }
-                }
-
-                if (matchedWake) {
-                    const wakeIdx = lowerText.indexOf(matchedWake);
-                    const commandPart = transcript.slice(wakeIdx + matchedWake.length).replace(/^[,.\s!?-]+/, '').trim();
+                if (lowerText.includes("hello") || lowerText.includes("allo") || lowerText.includes("hallo")) {
+                    const wakeIdx = lowerText.indexOf("hello") !== -1 ? lowerText.indexOf("hello") : (lowerText.indexOf("allo") !== -1 ? lowerText.indexOf("allo") : lowerText.indexOf("hallo"));
+                    const wakeWordLen = lowerText.includes("hello") ? 5 : 4;
+                    const commandPart = transcript.slice(wakeIdx + wakeWordLen).replace(/^[,.\s!?-]+/, '').trim();
 
                     playWakeChime();
 
@@ -1116,7 +979,7 @@
                         submitCommand();
                     } else {
                         awaitingWakeCommand = true;
-                        document.getElementById('uiStatus').innerText = "🟢 HEY KIZA DETECTED — SPEAK NOW...";
+                        document.getElementById('uiStatus').innerText = "🟢 HELLO DETECTED — SPEAK NOW...";
                         document.getElementById('orb').classList.add('processing');
 
                         clearTimeout(wakeCommandTimeout);
@@ -1131,19 +994,9 @@
                 }
             };
 
-            rec.onerror = (event) => {
-                if (event.error === 'not-allowed') {
-                    wakeWordEnabled = false;
-                    updateWakeUI();
-                    showNotification("MIC BLOCKED", "Please allow microphone permissions.", true);
-                }
-            };
-
             rec.onend = () => {
                 if (wakeWordEnabled && !isRecording) {
-                    setTimeout(() => {
-                        try { rec.start(); } catch (e) {}
-                    }, 300);
+                    setTimeout(() => { try { rec.start(); } catch (e) {} }, 300);
                 }
             };
 
@@ -1160,8 +1013,8 @@
             if (wakeWordEnabled) {
                 if (isRecording && recognition) recognition.stop();
                 try { wakeRecognition.start(); } catch (e) {}
-                logAction("[SYSTEM]: Hands-free 'Hey KIZA' wake word ACTIVE.", "#00ffcc");
-                showNotification("WAKE WORD ON", "Say 'Hey KIZA' anytime to speak hands-free!", false);
+                logAction("[SYSTEM]: Hands-free 'Hello' wake word ACTIVE.", "#00ffcc");
+                showNotification("WAKE WORD ON", "Say 'Hello' anytime to speak hands-free!", false);
             } else {
                 awaitingWakeCommand = false;
                 try { wakeRecognition.stop(); } catch (e) {}
@@ -1198,18 +1051,14 @@
         }
 
         function toggleSpeechRecognition() {
-            if (wakeWordEnabled && wakeRecognition) {
-                try { wakeRecognition.stop(); } catch (e) {}
-            }
+            if (wakeWordEnabled && wakeRecognition) { try { wakeRecognition.stop(); } catch (e) {} }
             if (!recognition) recognition = initSpeechRecognition();
             if (!recognition) return;
             if (isRecording) { recognition.stop(); } else { try { recognition.start(); } catch (e) { recognition.stop(); recognition.start(); } }
         }
         function resetMicState() {
             isRecording = false;
-            if (wakeWordEnabled && wakeRecognition) {
-                try { wakeRecognition.start(); } catch (e) {}
-            }
+            if (wakeWordEnabled && wakeRecognition) { try { wakeRecognition.start(); } catch (e) {} }
         }
 
         function switchAuthMode(mode) {
@@ -1246,15 +1095,11 @@
         async function handleGoogleLogin(response) {
             const errBox = document.getElementById('authError'); 
             errBox.style.color = "#007BFF";
-            errBox.innerText = "Verifying Identity... (Waking up server, please wait up to 50s)";
-            
+            errBox.innerText = "Verifying Identity...";
             try {
                 let res = await fetch(`${SERVER_URL}/api/google_auth`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: response.credential }) });
                 let data = await res.json();
-                
-                errBox.style.color = "#ff0055";
-                if (!data.success) { errBox.innerText = data.message; showNotification("ACCESS DENIED", data.message, true); return; }
-                
+                if (!data.success) { errBox.style.color = "#ff0055"; errBox.innerText = data.message; showNotification("ACCESS DENIED", data.message, true); return; }
                 errBox.innerText = "";
                 finalizeLogin(data.username, data.db_username || resolveDBUser(data.username), data.role, data.face_id, true, data.reply, data.audio_base64);
             } catch (err) { 
@@ -1268,20 +1113,14 @@
             try {
                 const username = document.getElementById('authUser').value.trim(); const password = document.getElementById('authPass').value.trim();
                 if (!username || !password) { showNotification("ERROR", "Enter Name and Passcode.", true); return; }
-                
                 errBox.style.color = "#007BFF";
-                errBox.innerText = "Scanning Biometrics... (Waking up server, please wait up to 50s)";
-                
+                errBox.innerText = "Scanning Biometrics...";
                 const faceData = captureFaceSnapshot();
-                
                 setTimeout(async () => {
                     try {
-                        let res = await fetch(`${SERVER_URL}/api/auth`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: username, password: password, action: authMode, face_id: faceData }) });
+                        let res = await fetch(`${SERVER_URL}/api/auth`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, password, action: authMode, face_id: faceData }) });
                         let data = await res.json();
-                        
-                        errBox.style.color = "#ff0055"; 
-                        if (!data.success) { errBox.innerText = data.message; showNotification("ACCESS DENIED", data.message, true); return; }
-                        
+                        if (!data.success) { errBox.style.color = "#ff0055"; errBox.innerText = data.message; showNotification("ACCESS DENIED", data.message, true); return; }
                         errBox.innerText = "";
                         finalizeLogin(data.username, data.db_username || resolveDBUser(data.username), data.role, data.face_id, true, data.reply, data.audio_base64);
                     } catch (err) { 
