@@ -331,8 +331,9 @@
 
                 <div class="input-row">
                     <button type="button" class="chip-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Voice" style="width:auto; padding: 6px; font-size: 14px;">🔊</button>
-                    <button type="button" class="chip-btn" id="micBtn" style="width:auto; padding: 6px; font-size: 16px;" onclick="toggleSpeechRecognition()">🎤</button>
-                    <input type="text" id="textInput" placeholder="Speak or type command...">
+                    <button type="button" class="chip-btn" id="micBtn" style="width:auto; padding: 6px; font-size: 16px;" onclick="toggleSpeechRecognition()" title="Manual 1-Tap Mic">🎤</button>
+                    <button type="button" class="chip-btn" id="wakeToggleBtn" style="width:auto; padding: 6px 10px; font-size: 11px; white-space: nowrap;" onclick="toggleWakeWord()" title="Hands-Free 'Hey KIZA' Wake Word">🗣️ WAKE: OFF</button>
+                    <input type="text" id="textInput" placeholder="Say 'Hey KIZA' or type command...">
                     <button type="button" class="send-btn" onclick="submitCommand()">TRANSMIT</button>
                 </div>
             </div>
@@ -350,13 +351,18 @@
 
     <script>
         const SERVER_URL = "https://kiza-brain.onrender.com";
+        const WS_URL = "wss://kiza-brain.onrender.com/api/ws";
         let currentUser = "Guest";
         let currentDBUser = "guest";
         let currentRole = "LOCKED";
         let authMode = "login";
         let alertIndex = 0;
-        let isChatActive = false; // Prevents background status loops from locking UI
+        let isChatActive = false;
         
+        let ws = null;
+        let wsConnected = false;
+        let wsPingTimer = null;
+
         let cameraReady = false;
         let isCameraActive = true;
         let videoDevices = [];
@@ -365,6 +371,19 @@
 
         let recognition = null;
         let isRecording = false;
+
+        // Hands-Free "Hey KIZA" Wake Word State
+        let wakeWordEnabled = false;
+        let wakeRecognition = null;
+        let awaitingWakeCommand = false;
+        let wakeCommandTimeout = null;
+        let isKizaSpeaking = false;
+
+        const WAKE_VARIATIONS = [
+            "hey kiza", "hi kiza", "ok kiza", "okay kiza", "yo kiza",
+            "hey kisa", "hi kisa", "hey keza", "hey keys", "hey keysa",
+            "hey giza", "hey pizza", "kiza"
+        ];
 
         let voiceEnabled = false;
         let currentAudio = null;
@@ -400,6 +419,73 @@
             }
             return null;
         }
+
+        // ==========================================================
+        // REAL-TIME WEBSOCKET ENGINE (REPLACES SPAMMY HTTP POLLING)
+        // ==========================================================
+        function handleServerStatusPayload(data) {
+            if (!data) return;
+            if (data.next_alert_idx !== undefined) alertIndex = data.next_alert_idx;
+            if (data.role && data.role !== "LOCKED" && data.role !== currentRole) {
+                applyRoleUI(data.role);
+                showNotification("CLEARANCE UPDATED", `Your clearance is now ${data.role}`, false);
+            }
+            if (data.new_alerts && data.new_alerts.length > 0) {
+                data.new_alerts.forEach(alert => showNotification(alert.title, alert.message, false));
+            }
+            if (data.lockdown && !(currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD"))) {
+                forceLogout();
+                showNotification("SECURITY LOCKDOWN", `Owner initiated Lockdown: ${data.reason}`, true);
+            }
+        }
+
+        function initWebSocket() {
+            if (currentUser === "Guest") return;
+            if (ws) {
+                try { ws.onclose = null; ws.close(); } catch (e) {}
+            }
+            try {
+                ws = new WebSocket(`${WS_URL}?user=${encodeURIComponent(currentUser)}`);
+                ws.onopen = () => {
+                    wsConnected = true;
+                    if (wsPingTimer) clearInterval(wsPingTimer);
+                    wsPingTimer = setInterval(() => {
+                        if (ws && ws.readyState === WebSocket.OPEN) {
+                            ws.send("ping");
+                        }
+                    }, 25000);
+                };
+                ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        handleServerStatusPayload(data);
+                    } catch (e) {}
+                };
+                ws.onclose = () => {
+                    wsConnected = false;
+                    if (wsPingTimer) clearInterval(wsPingTimer);
+                    if (currentUser !== "Guest") {
+                        setTimeout(initWebSocket, 5000);
+                    }
+                };
+                ws.onerror = () => {
+                    wsConnected = false;
+                };
+            } catch (e) {
+                wsConnected = false;
+            }
+        }
+
+        // Lightweight fallback check ONLY if WebSocket is disconnected (every 30s instead of 3s)
+        setInterval(async () => {
+            if (currentUser === "Guest" || isChatActive || wsConnected) return;
+            try {
+                let res = await fetch(`${SERVER_URL}/api/status?user=${encodeURIComponent(currentUser)}&last_alert_idx=${alertIndex}`);
+                if (!res.ok) return;
+                let data = await res.json();
+                handleServerStatusPayload(data);
+            } catch(e) {}
+        }, 30000);
 
         function startNewSession() {
             currentSessionId = generateSessionId();
@@ -625,12 +711,18 @@
             }
             
             document.getElementById('actionLog').innerHTML = '<div>> [KIZA SYSTEM]: HUD online. System ready.</div>';
+            initWebSocket();
         }
 
         function forceLogout() {
             localStorage.removeItem('kiza_user'); localStorage.removeItem('kiza_db'); localStorage.removeItem('kiza_role'); localStorage.removeItem('kiza_face');
             currentUser = "Guest";
             currentDBUser = "guest";
+            if (ws) {
+                try { ws.onclose = null; ws.close(); } catch(e) {}
+                ws = null;
+                wsConnected = false;
+            }
             document.getElementById('authModal').style.display = "flex";
             document.getElementById('cancelAuthBtn').style.display = "none";
             document.getElementById('masterCmds').style.display = "none";
@@ -850,6 +942,7 @@
                 if(btn) btn.innerText = "🔇 VOICE: MUTED";
                 if(mobileBtn) mobileBtn.innerText = "🔇";
                 if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+                isKizaSpeaking = false;
             }
         }
 
@@ -857,23 +950,6 @@
             voiceEnabled = !voiceEnabled; updateVoiceUI();
             logAction(voiceEnabled ? "[SYSTEM]: Voice synthesis enabled." : "[SYSTEM]: Voice synthesis muted.", voiceEnabled ? "" : "#ff0055");
         }
-
-        // Throttled background polling loop to prevent browser hanging or server hammering
-        setInterval(async () => {
-            if (currentUser === "Guest" || isChatActive) return;
-            try {
-                let res = await fetch(`${SERVER_URL}/api/status?user=${encodeURIComponent(currentUser)}&last_alert_idx=${alertIndex}`);
-                if (!res.ok) return;
-                let data = await res.json();
-                if (data.next_alert_idx !== undefined) alertIndex = data.next_alert_idx;
-                if (data.role && data.role !== "LOCKED" && data.role !== currentRole) {
-                    applyRoleUI(data.role);
-                    showNotification("CLEARANCE UPDATED", `Your clearance is now ${data.role}`, false);
-                }
-                if (data.new_alerts && data.new_alerts.length > 0) { data.new_alerts.forEach(alert => showNotification(alert.title, alert.message, false)); }
-                if (data.lockdown && !(currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD"))) { forceLogout(); showNotification("SECURITY LOCKDOWN", `Owner initiated Lockdown: ${data.reason}`, true); }
-            } catch(e) {}
-        }, 5000);
 
         function showNotification(title, message, isError = false) {
             if (voiceEnabled) {
@@ -907,10 +983,22 @@
             logBox.scrollTop = logBox.scrollHeight;
         }
 
+        // Echo-Safe Audio Player (Pauses Wake Word Listener while KIZA talks)
         function playKizaAudio(base64Data) {
             if (!voiceEnabled || !base64Data) return;
-            if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
-            currentAudio = new Audio("data:audio/mp3;base64," + base64Data); currentAudio.play().catch(e => console.log("Audio blocked"));
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+            }
+            isKizaSpeaking = true;
+            currentAudio = new Audio("data:audio/mp3;base64," + base64Data);
+            currentAudio.onended = () => { isKizaSpeaking = false; };
+            currentAudio.onerror = () => { isKizaSpeaking = false; };
+            currentAudio.play().catch(e => {
+                isKizaSpeaking = false;
+                console.log("Audio blocked");
+            });
         }
 
         async function initCamera() {
@@ -961,6 +1049,142 @@
             logAction(`[SYSTEM]: Switching lens feed...`);
         }
 
+        // ==========================================================
+        // HANDS-FREE "HEY KIZA" WAKE-WORD ENGINE + 1-TAP MIC
+        // ==========================================================
+        function playWakeChime() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(550, now);
+                osc.frequency.exponentialRampToValueAtTime(1100, now + 0.14);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.18);
+            } catch (e) {}
+        }
+
+        function initWakeWordEngine() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                showNotification("UNSUPPORTED", "Use Google Chrome or Edge for Hands-Free Wake Word.", true);
+                return null;
+            }
+
+            const rec = new SpeechRecognition();
+            rec.continuous = true;
+            rec.interimResults = false;
+            rec.lang = 'en-US';
+
+            rec.onresult = (event) => {
+                if (isChatActive || isKizaSpeaking) return;
+
+                const lastResultIdx = event.results.length - 1;
+                const transcript = event.results[lastResultIdx][0].transcript.trim();
+                const lowerText = transcript.toLowerCase();
+
+                if (awaitingWakeCommand) {
+                    clearTimeout(wakeCommandTimeout);
+                    awaitingWakeCommand = false;
+                    document.getElementById('textInput').value = transcript;
+                    submitCommand();
+                    return;
+                }
+
+                let matchedWake = null;
+                for (const variant of WAKE_VARIATIONS) {
+                    if (lowerText.includes(variant)) {
+                        matchedWake = variant;
+                        break;
+                    }
+                }
+
+                if (matchedWake) {
+                    const wakeIdx = lowerText.indexOf(matchedWake);
+                    const commandPart = transcript.slice(wakeIdx + matchedWake.length).replace(/^[,.\s!?-]+/, '').trim();
+
+                    playWakeChime();
+
+                    if (commandPart.length > 2) {
+                        document.getElementById('textInput').value = commandPart;
+                        submitCommand();
+                    } else {
+                        awaitingWakeCommand = true;
+                        document.getElementById('uiStatus').innerText = "🟢 HEY KIZA DETECTED — SPEAK NOW...";
+                        document.getElementById('orb').classList.add('processing');
+
+                        clearTimeout(wakeCommandTimeout);
+                        wakeCommandTimeout = setTimeout(() => {
+                            if (awaitingWakeCommand) {
+                                awaitingWakeCommand = false;
+                                document.getElementById('orb').classList.remove('processing');
+                                document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`;
+                            }
+                        }, 7000);
+                    }
+                }
+            };
+
+            rec.onerror = (event) => {
+                if (event.error === 'not-allowed') {
+                    wakeWordEnabled = false;
+                    updateWakeUI();
+                    showNotification("MIC BLOCKED", "Please allow microphone permissions.", true);
+                }
+            };
+
+            rec.onend = () => {
+                if (wakeWordEnabled && !isRecording) {
+                    setTimeout(() => {
+                        try { rec.start(); } catch (e) {}
+                    }, 300);
+                }
+            };
+
+            return rec;
+        }
+
+        function toggleWakeWord() {
+            if (!wakeRecognition) wakeRecognition = initWakeWordEngine();
+            if (!wakeRecognition) return;
+
+            wakeWordEnabled = !wakeWordEnabled;
+            updateWakeUI();
+
+            if (wakeWordEnabled) {
+                if (isRecording && recognition) recognition.stop();
+                try { wakeRecognition.start(); } catch (e) {}
+                logAction("[SYSTEM]: Hands-free 'Hey KIZA' wake word ACTIVE.", "#00ffcc");
+                showNotification("WAKE WORD ON", "Say 'Hey KIZA' anytime to speak hands-free!", false);
+            } else {
+                awaitingWakeCommand = false;
+                try { wakeRecognition.stop(); } catch (e) {}
+                logAction("[SYSTEM]: Hands-free wake word DISABLED.", "#ff0055");
+            }
+        }
+
+        function updateWakeUI() {
+            const btn = document.getElementById('wakeToggleBtn');
+            if (!btn) return;
+            if (wakeWordEnabled) {
+                btn.innerText = "🗣️ WAKE: ON";
+                btn.style.borderColor = "#00ffcc";
+                btn.style.color = "#007BFF";
+                btn.style.background = "rgba(0, 255, 204, 0.2)";
+            } else {
+                btn.innerText = "🗣️ WAKE: OFF";
+                btn.style.borderColor = "";
+                btn.style.color = "";
+                btn.style.background = "";
+            }
+        }
+
         function initSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) return null;
@@ -974,11 +1198,19 @@
         }
 
         function toggleSpeechRecognition() {
+            if (wakeWordEnabled && wakeRecognition) {
+                try { wakeRecognition.stop(); } catch (e) {}
+            }
             if (!recognition) recognition = initSpeechRecognition();
             if (!recognition) return;
             if (isRecording) { recognition.stop(); } else { try { recognition.start(); } catch (e) { recognition.stop(); recognition.start(); } }
         }
-        function resetMicState() { isRecording = false; }
+        function resetMicState() {
+            isRecording = false;
+            if (wakeWordEnabled && wakeRecognition) {
+                try { wakeRecognition.start(); } catch (e) {}
+            }
+        }
 
         function switchAuthMode(mode) {
             authMode = mode;
@@ -1092,7 +1324,7 @@
             if (text.toLowerCase() === "/logs") { inputField.value = ""; openLogsModal(); return; }
             if (text.toLowerCase() === "/cmds") { text = "/help"; } 
 
-            isChatActive = true; // Lock background loops while transmitting
+            isChatActive = true;
             clearTimeout(typingTimer); clearIndicator();
             logAction(`[${currentUser.toUpperCase()}]: ${text}`); inputField.value = "";
             document.getElementById('uiStatus').innerText = "KIZA ANALYZING..."; document.getElementById('orb').classList.add('processing'); 
@@ -1123,12 +1355,12 @@
                 if (!response.ok) throw new Error("Cloud connection failed.");
                 let data = await response.json();
                 document.getElementById('orb').classList.remove('processing'); document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`; clearIndicator();
-                isChatActive = false; // Unlock state
+                isChatActive = false;
                 if (data.is_error) { showNotification("KIZA SECURITY", data.reply, true); playKizaAudio(data.audio_base64); return; }
                 let formattedReply = data.reply.replace(/\*/g, ''); playKizaAudio(data.audio_base64);
                 typeWriterLog(`[KIZA]: ${formattedReply}`, () => { if (formattedReply.length > 100) showNotification("KIZA ALERT", "New detailed intelligence report processed.", false); });
             } catch (error) {
-                isChatActive = false; // Unlock state on error
+                isChatActive = false;
                 document.getElementById('orb').classList.remove('processing'); logAction(`[SYSTEM ERROR]: ${error.message}`); document.getElementById('uiStatus').innerText = "CONNECTION FAILED."; clearIndicator();
             }
         }
