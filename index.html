@@ -54,6 +54,7 @@
             padding: 8px 10px; color: #333; font-size: 14px; font-family: inherit; outline: none; width: 100%;
         }
         
+        /* FIXED DROPDOWN SELECTOR (NO REPEATING ARROW GLITCH) */
         select {
             cursor: pointer;
             appearance: none;
@@ -123,6 +124,7 @@
         body.dark-mode .log-box, body.dark-mode .logs-viewer { color: #999; background: transparent; border-color: rgba(0,255,204,0.3); }
         body.dark-mode input[type="text"], body.dark-mode input[type="password"], body.dark-mode select { color: #00ffcc; border-bottom-color: #aa00ff; background: rgba(0,0,0,0.8); }
         
+        /* FIXED DARK-MODE SELECTOR ARROW */
         body.dark-mode select { 
             background-image: url('data:image/svg+xml;utf8,<svg fill="%23aa00ff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>') !important; 
             background-repeat: no-repeat !important;
@@ -342,8 +344,8 @@
                 <div class="input-row">
                     <button type="button" class="chip-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Voice" style="width:auto; padding: 6px; font-size: 14px;">🔊</button>
                     <button type="button" class="chip-btn" id="micBtn" style="width:auto; padding: 6px; font-size: 16px;" onclick="toggleSpeechRecognition()" title="Manual 1-Tap Mic">🎤</button>
-                    <button type="button" class="chip-btn" id="wakeToggleBtn" style="width:auto; padding: 6px 10px; font-size: 11px; white-space: nowrap;" onclick="toggleWakeWord()" title="Wake Word: Hello">🗣️ WAKE: OFF</button>
-                    <input type="text" id="textInput" placeholder="Say 'Hello' or type command...">
+                    <button type="button" class="chip-btn" id="wakeToggleBtn" style="width:auto; padding: 6px 10px; font-size: 11px; white-space: nowrap;" onclick="toggleWakeWord()" title="Wake Word: Listen">🗣️ WAKE: OFF</button>
+                    <input type="text" id="textInput" placeholder="Say 'Listen' or type command...">
                     <button type="button" class="send-btn" onclick="submitCommand()">TRANSMIT</button>
                 </div>
             </div>
@@ -382,12 +384,14 @@
         let recognition = null;
         let isRecording = false;
 
-        // Wake Word State ("Hello")
+        // Wake Word State ("Listen")
         let wakeWordEnabled = false;
         let wakeRecognition = null;
         let awaitingWakeCommand = false;
         let wakeCommandTimeout = null;
         let isKizaSpeaking = false;
+
+        const LISTEN_VARIATIONS = ["listen", "lissen", "listening", "list in"];
 
         let voiceEnabled = false;
         let currentAudio = null;
@@ -425,13 +429,14 @@
         }
 
         // ==========================================================
-        // VOICE / NATURAL LANGUAGE UI & COMMAND INTERCEPTOR
+        // SMART JARVIS NATURAL LANGUAGE & VOICE COMMAND INTERCEPTOR
         // ==========================================================
         function processNaturalVoiceIntent(rawText) {
             const low = rawText.toLowerCase().trim();
+            const words = low.split(/[\s,?.!]+/);
 
-            // Direct Frontend UI Controls (Instant execution without waiting)
-            if (low === "switch to dark mode" || low === "enable dark mode" || low === "dark mode" || low === "neon mode" || low === "dark theme") {
+            // 1. Direct Frontend UI Controls (Theme, Archive, Settings, Rank Modal, New Chat)
+            if ((words.includes("dark") || words.includes("neon")) && (words.includes("mode") || words.includes("theme") || words.includes("switch") || words.includes("turn") || words.includes("enable"))) {
                 document.getElementById('themeSelect').value = 'dark';
                 saveSettings();
                 logAction(`[${currentUser.toUpperCase()}]: ${rawText}`);
@@ -439,7 +444,7 @@
                 showNotification("UI THEME", "Switched to Dark / Neon Theme.", false);
                 return { handledLocally: true };
             }
-            if (low === "switch to light mode" || low === "enable light mode" || low === "light mode" || low === "default theme" || low === "light theme") {
+            if ((words.includes("light") || words.includes("white") || words.includes("sky") || words.includes("default")) && (words.includes("mode") || words.includes("theme") || words.includes("switch") || words.includes("turn") || words.includes("enable"))) {
                 document.getElementById('themeSelect').value = 'light';
                 saveSettings();
                 logAction(`[${currentUser.toUpperCase()}]: ${rawText}`);
@@ -447,34 +452,46 @@
                 showNotification("UI THEME", "Switched to Default Light Theme.", false);
                 return { handledLocally: true };
             }
-            if (low === "/logs" || low.includes("open archive") || low.includes("open memory archive") || low.includes("show chat archive") || low.includes("show my archive")) {
+            if (low === "/logs" || ((words.includes("archive") || words.includes("archives") || words.includes("history")) && (words.includes("open") || words.includes("show") || words.includes("view") || words.includes("my")))) {
                 logAction(`[${currentUser.toUpperCase()}]: ${rawText}`);
                 openLogsModal();
                 return { handledLocally: true };
             }
-            if (low.includes("open settings") || low.includes("system settings")) {
+            if (words.includes("settings") && (words.includes("open") || words.includes("show") || words.includes("system"))) {
                 logAction(`[${currentUser.toUpperCase()}]: ${rawText}`);
                 openSettings();
                 return { handledLocally: true };
             }
-            if (low.includes("open rank") || low.includes("rank management") || low.includes("assign rank")) {
+            if ((words.includes("rank") || words.includes("ranks")) && (words.includes("open") || words.includes("manage") || words.includes("management") || words.includes("assign"))) {
                 logAction(`[${currentUser.toUpperCase()}]: ${rawText}`);
                 openRankModal();
                 return { handledLocally: true };
             }
-            if (low === "new chat" || low === "start new chat" || low === "clear chat") {
+            if ((words.includes("new") || words.includes("clear") || words.includes("reset")) && (words.includes("chat") || words.includes("session"))) {
                 startNewSession();
                 return { handledLocally: true };
             }
 
-            // Backend Command Mappings (Operatives, Userdata by clearance, Purge Logs)
-            if (low.includes("active operative") || low.includes("who is online") || low.includes("online operative") || low.includes("live operative")) {
+            // 2. Smart Flexible Command Mappings (Operatives, Userdata by clearance, Purge Logs)
+            if (
+                (words.includes("online") && (words.includes("who") || words.includes("all") || words.includes("anyone") || words.includes("anybody") || words.includes("operative") || words.includes("operatives") || words.includes("users") || words.includes("right"))) ||
+                (words.includes("active") && (words.includes("operative") || words.includes("operatives") || words.includes("users") || words.includes("who"))) ||
+                (words.includes("live") && (words.includes("operative") || words.includes("operatives")))
+            ) {
                 return { handledLocally: false, mappedText: "/operative" };
             }
-            if (low.includes("show me userdata") || low.includes("show userdata") || low.includes("show me user data") || low.includes("show user data") || low.includes("registered user") || low.includes("registered operative")) {
+            if (
+                words.includes("userdata") ||
+                (words.includes("user") && words.includes("data")) ||
+                (words.includes("registered") && (words.includes("user") || words.includes("users") || words.includes("operative") || words.includes("operatives") || words.includes("identities"))) ||
+                (words.includes("list") && (words.includes("users") || words.includes("operatives") || words.includes("identities")))
+            ) {
                 return { handledLocally: false, mappedText: "/userdata" };
             }
-            if (low.includes("purge log") || low.includes("purgelog") || low.includes("purge history")) {
+            if (
+                words.includes("purgelog") || words.includes("purgelogs") ||
+                (words.includes("purge") && (words.includes("log") || words.includes("logs") || words.includes("history") || words.includes("show") || words.includes("check") || words.includes("view")))
+            ) {
                 return { handledLocally: false, mappedText: "/purgelog" };
             }
             if (low === "/cmds") {
@@ -516,6 +533,9 @@
             return replyStr.replace(/\[ACTION:[A-Z_]+\]/g, '').trim();
         }
 
+        // ==========================================================
+        // REAL-TIME WEBSOCKET ENGINE
+        // ==========================================================
         function handleServerStatusPayload(data) {
             if (!data) return;
             if (data.next_alert_idx !== undefined) alertIndex = data.next_alert_idx;
@@ -930,7 +950,7 @@
             const btn = document.getElementById('voiceToggleBtn');
             const mobileBtn = document.getElementById('mobileVoiceBtn');
             if (voiceEnabled) { if(btn) btn.innerText = "🔊 VOICE: ON"; if(mobileBtn) mobileBtn.innerText = "🔊"; }
-            else { if(btn) btn.innerText = "🔇 VOICE: MUTED"; if(mobileBtn) mobileBtn.innerText = "🔇"; if (currentAudio) { currentAudio.pause(); currentAudio = null; } }
+            else { if(btn) btn.innerText = "🔇 VOICE: MUTED"; if(mobileBtn) mobileBtn.innerText = "🔇"; if (currentAudio) { currentAudio.pause(); currentAudio = null; } isKizaSpeaking = false; }
         }
 
         function toggleVoiceMute() {
@@ -964,6 +984,7 @@
             if(color && document.body.classList.contains('dark-mode')) newEntry.style.color = color;
             if (isHtml) newEntry.innerHTML = `> ${message}`; else newEntry.innerText = `> ${message}`;
             logBox.appendChild(newEntry);
+            let indicator = document.getElementById('chatIndicator'); if (indicator) logBox.appendChild(indicator);
             logBox.scrollTop = logBox.scrollHeight;
         }
 
@@ -1015,7 +1036,7 @@
         }
 
         // ==========================================================
-        // WAKE WORD ENGINE: "HELLO"
+        // WAKE WORD ENGINE: "LISTEN"
         // ==========================================================
         function playWakeChime() {
             try {
@@ -1059,10 +1080,17 @@
                     return;
                 }
 
-                if (lowerText.includes("hello") || lowerText.includes("allo") || lowerText.includes("hallo")) {
-                    const wakeIdx = lowerText.indexOf("hello") !== -1 ? lowerText.indexOf("hello") : (lowerText.indexOf("allo") !== -1 ? lowerText.indexOf("allo") : lowerText.indexOf("hallo"));
-                    const wakeWordLen = lowerText.includes("hello") ? 5 : 4;
-                    const commandPart = transcript.slice(wakeIdx + wakeWordLen).replace(/^[,.\s!?-]+/, '').trim();
+                let matchedVariant = null;
+                for (const variant of LISTEN_VARIATIONS) {
+                    if (lowerText.includes(variant)) {
+                        matchedVariant = variant;
+                        break;
+                    }
+                }
+
+                if (matchedVariant) {
+                    const wakeIdx = lowerText.indexOf(matchedVariant);
+                    const commandPart = transcript.slice(wakeIdx + matchedVariant.length).replace(/^[,.\s!?-]+/, '').trim();
 
                     playWakeChime();
 
@@ -1071,7 +1099,7 @@
                         submitCommand();
                     } else {
                         awaitingWakeCommand = true;
-                        document.getElementById('uiStatus').innerText = "🟢 HELLO DETECTED — SPEAK NOW...";
+                        document.getElementById('uiStatus').innerText = "🟢 LISTEN DETECTED — SPEAK NOW...";
                         document.getElementById('orb').classList.add('processing');
 
                         clearTimeout(wakeCommandTimeout);
@@ -1105,8 +1133,8 @@
             if (wakeWordEnabled) {
                 if (isRecording && recognition) recognition.stop();
                 try { wakeRecognition.start(); } catch (e) {}
-                logAction("[SYSTEM]: Hands-free 'Hello' wake word ACTIVE.", "#00ffcc");
-                showNotification("WAKE WORD ON", "Say 'Hello' anytime to speak hands-free!", false);
+                logAction("[SYSTEM]: Hands-free 'Listen' wake word ACTIVE.", "#00ffcc");
+                showNotification("WAKE WORD ON", "Say 'Listen' anytime to speak hands-free!", false);
             } else {
                 awaitingWakeCommand = false;
                 try { wakeRecognition.stop(); } catch (e) {}
