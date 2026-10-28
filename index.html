@@ -54,7 +54,6 @@
             padding: 8px 10px; color: #333; font-size: 14px; font-family: inherit; outline: none; width: 100%;
         }
         
-        /* FIXED DROPLET SELECTOR (NO REPEATING ARROW GLITCH) */
         select {
             cursor: pointer;
             appearance: none;
@@ -124,7 +123,6 @@
         body.dark-mode .log-box, body.dark-mode .logs-viewer { color: #999; background: transparent; border-color: rgba(0,255,204,0.3); }
         body.dark-mode input[type="text"], body.dark-mode input[type="password"], body.dark-mode select { color: #00ffcc; border-bottom-color: #aa00ff; background: rgba(0,0,0,0.8); }
         
-        /* FIXED DARK-MODE SELECTOR ARROW */
         body.dark-mode select { 
             background-image: url('data:image/svg+xml;utf8,<svg fill="%23aa00ff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>') !important; 
             background-repeat: no-repeat !important;
@@ -326,7 +324,9 @@
 
             <div id="masterCmds" style="display: none; gap: 6px; flex-wrap: wrap; justify-content: center;">
                 <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/health')">⚡ /health</button>
-                <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/userdata')">👥 /users</button>
+                <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/operative')">🟢 /operative</button>
+                <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/userdata')">👥 /userdata</button>
+                <button type="button" class="chip-btn mod-owner-only" style="width:auto; display:none;" onclick="sendQuickCmd('/purgelog')">📜 /purgelog</button>
                 <button type="button" class="chip-btn mod-owner-only" style="width:auto; border-color:#007BFF; color:#007BFF; display:none;" onclick="openRankModal()">⭐ RANK MGMT</button>
                 <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/lockdown')">🔒 /lock</button>
                 <button type="button" class="chip-btn owner-only" style="width:auto;" onclick="sendQuickCmd('/removelock')">🔓 /unlock</button>
@@ -422,6 +422,98 @@
                 return { display: String(disp), username: String(uname) };
             }
             return null;
+        }
+
+        // ==========================================================
+        // VOICE / NATURAL LANGUAGE UI & COMMAND INTERCEPTOR
+        // ==========================================================
+        function processNaturalVoiceIntent(rawText) {
+            const low = rawText.toLowerCase().trim();
+
+            // Direct Frontend UI Controls (Instant execution without waiting)
+            if (low === "switch to dark mode" || low === "enable dark mode" || low === "dark mode" || low === "neon mode" || low === "dark theme") {
+                document.getElementById('themeSelect').value = 'dark';
+                saveSettings();
+                logAction(`[${currentUser.toUpperCase()}]: ${rawText}`);
+                logAction(`[KIZA]: Dark Neon theme activated.`, "#00ffcc");
+                showNotification("UI THEME", "Switched to Dark / Neon Theme.", false);
+                return { handledLocally: true };
+            }
+            if (low === "switch to light mode" || low === "enable light mode" || low === "light mode" || low === "default theme" || low === "light theme") {
+                document.getElementById('themeSelect').value = 'light';
+                saveSettings();
+                logAction(`[${currentUser.toUpperCase()}]: ${rawText}`);
+                logAction(`[KIZA]: Default Sky Blue theme activated.`, "#007BFF");
+                showNotification("UI THEME", "Switched to Default Light Theme.", false);
+                return { handledLocally: true };
+            }
+            if (low === "/logs" || low.includes("open archive") || low.includes("open memory archive") || low.includes("show chat archive") || low.includes("show my archive")) {
+                logAction(`[${currentUser.toUpperCase()}]: ${rawText}`);
+                openLogsModal();
+                return { handledLocally: true };
+            }
+            if (low.includes("open settings") || low.includes("system settings")) {
+                logAction(`[${currentUser.toUpperCase()}]: ${rawText}`);
+                openSettings();
+                return { handledLocally: true };
+            }
+            if (low.includes("open rank") || low.includes("rank management") || low.includes("assign rank")) {
+                logAction(`[${currentUser.toUpperCase()}]: ${rawText}`);
+                openRankModal();
+                return { handledLocally: true };
+            }
+            if (low === "new chat" || low === "start new chat" || low === "clear chat") {
+                startNewSession();
+                return { handledLocally: true };
+            }
+
+            // Backend Command Mappings (Operatives, Userdata by clearance, Purge Logs)
+            if (low.includes("active operative") || low.includes("who is online") || low.includes("online operative") || low.includes("live operative")) {
+                return { handledLocally: false, mappedText: "/operative" };
+            }
+            if (low.includes("show me userdata") || low.includes("show userdata") || low.includes("show me user data") || low.includes("show user data") || low.includes("registered user") || low.includes("registered operative")) {
+                return { handledLocally: false, mappedText: "/userdata" };
+            }
+            if (low.includes("purge log") || low.includes("purgelog") || low.includes("purge history")) {
+                return { handledLocally: false, mappedText: "/purgelog" };
+            }
+            if (low === "/cmds") {
+                return { handledLocally: false, mappedText: "/help" };
+            }
+
+            return { handledLocally: false, mappedText: rawText };
+        }
+
+        // Executes AI-returned [ACTION:...] tags from KIZA's response
+        function executeAIActionTags(replyStr) {
+            if (!replyStr) return "";
+            if (replyStr.includes("[ACTION:DARK_MODE]")) {
+                document.getElementById('themeSelect').value = 'dark';
+                saveSettings();
+            }
+            if (replyStr.includes("[ACTION:LIGHT_MODE]")) {
+                document.getElementById('themeSelect').value = 'light';
+                saveSettings();
+            }
+            if (replyStr.includes("[ACTION:OPEN_ARCHIVE]")) {
+                openLogsModal();
+            }
+            if (replyStr.includes("[ACTION:OPEN_SETTINGS]")) {
+                openSettings();
+            }
+            if (replyStr.includes("[ACTION:OPEN_RANK]")) {
+                openRankModal();
+            }
+            if (replyStr.includes("[ACTION:NEW_CHAT]")) {
+                startNewSession();
+            }
+            if (replyStr.includes("[ACTION:CAM_FLIP]")) {
+                switchCamera();
+            }
+            if (replyStr.includes("[ACTION:MUTE_VOICE]")) {
+                if (voiceEnabled) toggleVoiceMute();
+            }
+            return replyStr.replace(/\[ACTION:[A-Z_]+\]/g, '').trim();
         }
 
         function handleServerStatusPayload(data) {
@@ -1158,14 +1250,21 @@
         function sendQuickCmd(cmd) { document.getElementById('textInput').value = cmd; submitCommand(); }
 
         async function submitCommand() {
-            let inputField = document.getElementById('textInput'); let text = inputField.value.trim();
-            if (!text || isChatActive) return;
-            if (text.toLowerCase() === "/logs") { inputField.value = ""; openLogsModal(); return; }
-            if (text.toLowerCase() === "/cmds") { text = "/help"; } 
+            let inputField = document.getElementById('textInput');
+            let rawText = inputField.value.trim();
+            if (!rawText || isChatActive) return;
+
+            inputField.value = "";
+            clearTimeout(typingTimer); clearIndicator();
+
+            // Check if voice/text matches a direct UI action or natural-language command
+            const intent = processNaturalVoiceIntent(rawText);
+            if (intent.handledLocally) return;
+
+            let text = intent.mappedText;
 
             isChatActive = true;
-            clearTimeout(typingTimer); clearIndicator();
-            logAction(`[${currentUser.toUpperCase()}]: ${text}`); inputField.value = "";
+            logAction(`[${currentUser.toUpperCase()}]: ${rawText}`);
             document.getElementById('uiStatus').innerText = "KIZA ANALYZING..."; document.getElementById('orb').classList.add('processing'); 
             updateIndicator("KIZA is thinking...");
 
@@ -1196,8 +1295,11 @@
                 document.getElementById('orb').classList.remove('processing'); document.getElementById('uiStatus').innerText = `ONLINE // ${currentUser.toUpperCase()}`; clearIndicator();
                 isChatActive = false;
                 if (data.is_error) { showNotification("KIZA SECURITY", data.reply, true); playKizaAudio(data.audio_base64); return; }
-                let formattedReply = data.reply.replace(/\*/g, ''); playKizaAudio(data.audio_base64);
-                typeWriterLog(`[KIZA]: ${formattedReply}`, () => { if (formattedReply.length > 100) showNotification("KIZA ALERT", "New detailed intelligence report processed.", false); });
+                
+                // Execute any [ACTION:...] UI tags returned by the AI and strip them from displayed text
+                let cleanReply = executeAIActionTags(data.reply).replace(/\*/g, '');
+                playKizaAudio(data.audio_base64);
+                typeWriterLog(`[KIZA]: ${cleanReply}`, () => { if (cleanReply.length > 100) showNotification("KIZA ALERT", "New detailed intelligence report processed.", false); });
             } catch (error) {
                 isChatActive = false;
                 document.getElementById('orb').classList.remove('processing'); logAction(`[SYSTEM ERROR]: ${error.message}`); document.getElementById('uiStatus').innerText = "CONNECTION FAILED."; clearIndicator();
