@@ -582,7 +582,7 @@
             
             <label style="font-size:11.5px; font-weight:600; margin-top:6px;">UI Theme:</label>
             <select id="themeSelect" onchange="saveSettings()">
-                <option value="light">Default (Stark Light • Sky Blue)</option>
+                <option value="light">Default (Light • Sky Blue)</option>
                 <option value="dark">Cyberpunk (Dark • Neon Quantum)</option>
             </select>
             
@@ -757,7 +757,7 @@
 
             <div class="input-container">
                 <select id="personaSelect" style="text-align: center; font-weight:700;">
-                    <option value="normal" selected>🟢 NORMAL MODE (DRY JARVIS WIT)</option>
+                    <option value="normal" selected>🟢 NORMAL MODE (DRY SARCASM)</option>
                     <option value="energetic">⚡ ENERGETIC MODE (HYPER SARCASM)</option>
                 </select>
 
@@ -794,7 +794,6 @@
         const WS_URL = "wss://kiza-brain.onrender.com/api/ws";
         const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
 
-        /* Safe Storage Helpers: Prevents QuotaExceededError from ever freezing Login */
         function safeGetJSON(key, fallback) {
             try {
                 const raw = localStorage.getItem(key);
@@ -809,7 +808,6 @@
                 localStorage.setItem(key, value);
             } catch (quotaErr) {
                 try {
-                    // Free up space by stripping heavy base64 images from inactive stored profiles
                     let profs = safeGetJSON('kiza_profiles', []);
                     profs.forEach(p => { p.face_id = null; });
                     localStorage.setItem('kiza_profiles', JSON.stringify(profs));
@@ -863,7 +861,7 @@
         const DEFAULT_UPDATES_FALLBACK = [
             { version: "v4.2", title: "Notification Centre & Live Updates Hub", description: "Added per-user Notification Centre with unread counters, 2-day read retention, early delete, global lockdown logs, and live changelog.", author: "Viyan Arora", date: "LIVE" },
             { version: "v4.0", title: "Quantum Glass HUD & Audio-Reactive Core", description: "Modernized 3-panel interface with glassmorphism, Orbitron typography, and a Web Audio API frequency-reactive Quantum Orb.", author: "Viyan Arora", date: "ACTIVE" },
-            { version: "v3.5", title: "JARVIS Telemetry Brain & 'Listen' Wake Word", description: "Injected live system telemetry into the AI core, added natural language UI control, and hands-free 'Listen' wake-word detection.", author: "Viyan Arora", date: "ACTIVE" },
+            { version: "v3.5", title: "KIZA Telemetry Brain & 'Listen' Wake Word", description: "Injected live system telemetry into the AI core, added natural language UI control, and hands-free 'Listen' wake-word detection.", author: "Viyan Arora", date: "ACTIVE" },
             { version: "v3.0", title: "Real-Time WebSockets & 24/7 Keep-Alive", description: "Replaced HTTP polling with instant two-way FastAPI WebSockets and added 24/7 Render health monitoring.", author: "Viyan Arora", date: "ACTIVE" }
         ];
 
@@ -1144,9 +1142,10 @@
             updatesList.forEach(u => {
                 const div = document.createElement('div');
                 div.className = "update-card";
+                const cleanTitle = String(u.title || "").replace(/JARVIS/gi, "KIZA");
                 div.innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-family:'Orbitron', sans-serif; font-weight:700; font-size:11.5px; color:var(--accent-primary);">[${u.version || 'UPDATE'}] ${u.title}</span>
+                        <span style="font-family:'Orbitron', sans-serif; font-weight:700; font-size:11.5px; color:var(--accent-primary);">[${u.version || 'UPDATE'}] ${cleanTitle}</span>
                         <span style="font-size:10px; color:var(--text-muted);">${u.date || 'LIVE'}</span>
                     </div>
                     <div style="font-size:12px; color:var(--text-main); line-height:1.45;">${u.description}</div>
@@ -1200,6 +1199,9 @@
             return null;
         }
 
+        // ==========================================================
+        // SMART KIZA NATURAL LANGUAGE & VOICE COMMAND INTERCEPTOR
+        // ==========================================================
         function processNaturalVoiceIntent(rawText) {
             const low = rawText.toLowerCase().trim();
             const words = low.split(/[\s,?.!]+/);
@@ -1544,7 +1546,6 @@
         }
 
         function finalizeLogin(username, db_username, role, face_id, playGreeting = true, replyMsg = "", audioBase64 = null) {
-            // 1. Immediately close the Identity Gate modal first so it can NEVER get stuck!
             const authModalEl = document.getElementById('authModal');
             if (authModalEl) authModalEl.style.display = "none";
             const errBox = document.getElementById('authError');
@@ -2079,7 +2080,6 @@
             }
         }
 
-        // Instant Google Sign-In: Logs in immediately on client + syncs with backend in background
         async function handleGoogleLogin(response) {
             const errBox = document.getElementById('authError'); 
             errBox.style.color = "var(--accent-primary)";
@@ -2096,7 +2096,6 @@
                 const dbUser = isViyan ? "viyan_arora_owner" : rawName.replace(/\s+/g, '').toLowerCase();
                 const role = isViyan ? "OWNER" : "OPERATIVE";
 
-                // Close Identity Gate immediately!
                 finalizeLogin(displayName, dbUser, role, faceSnap, true, `Identity verified. Welcome back, ${displayName}.`);
             }
 
@@ -2167,7 +2166,6 @@
                 errBox.innerText = "";
                 finalizeLogin(data.username, data.db_username || resolveDBUser(data.username), data.role, data.face_id || faceData, true, data.reply, data.audio_base64);
             } catch (err) {
-                // Instant fallback if Render is redeploying or waking up
                 const isViyan = username.toLowerCase().includes("viyan");
                 const disp = isViyan ? "Viyan Arora (Owner)" : username;
                 const role = isViyan ? "OWNER" : (username.toLowerCase().startsWith("mod") ? "MODERATOR" : (username.toLowerCase().startsWith("admin") ? "ADMIN" : "OPERATIVE"));
