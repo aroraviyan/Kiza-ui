@@ -148,7 +148,6 @@
             text-shadow: 0 0 8px rgba(255, 0, 85, 0.7);
         }
 
-        /* Fix #4: Left Panel Live Core Diagnostics Gauges */
         .diagnostics-box {
             display: flex;
             flex-direction: column;
@@ -297,9 +296,10 @@
             flex: 1; display: flex; flex-direction: column; 
             align-items: center; justify-content: space-between; gap: 12px;
             padding: 4px 10px;
+            overflow-y: auto;
+            max-height: 100%;
         }
 
-        /* Fix #2: Floating Top HUD Bar Above the Orb */
         .top-hud-bar {
             display: flex;
             align-items: center;
@@ -421,6 +421,7 @@
             background: var(--card-bg); backdrop-filter: blur(18px);
             padding: 14px; border: 1px solid var(--card-border); 
             border-radius: 16px; box-shadow: var(--card-shadow);
+            flex-shrink: 0;
         }
         .input-row { display: flex; gap: 8px; width: 100%; align-items: center; }
 
@@ -551,6 +552,23 @@
             gap: 5px;
         }
 
+        /* Intruder Mugshot Thumbnail inside Threats Modal */
+        .mugshot-img {
+            width: 68px;
+            height: 54px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid var(--danger);
+            box-shadow: 0 0 12px rgba(244, 63, 94, 0.45);
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .mugshot-img:hover {
+            transform: scale(1.8);
+            z-index: 50;
+        }
+
         #notificationBox {
             position: fixed; top: 22px; right: -420px; width: 340px; 
             background: var(--card-bg); backdrop-filter: blur(20px);
@@ -582,7 +600,7 @@
             z-index: 500; padding: 16px; 
         }
         .auth-card, .logs-card { width: 100%; max-width: 430px; }
-        .logs-card { max-width: 660px; max-height: 92vh; overflow-y: auto; }
+        .logs-card { max-width: 680px; max-height: 92vh; overflow-y: auto; }
         
         .auth-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
         .tab-btn { 
@@ -603,11 +621,28 @@
             font-size: 12px; font-family: 'JetBrains Mono', monospace;
         }
 
+        @media (max-height: 820px) {
+            .container { padding: 10px; gap: 12px; }
+            .center-panel { gap: 6px; padding: 2px 6px; }
+            .core-center-group { gap: 8px; }
+            .core-assembly { width: 130px; height: 130px; }
+            .core-orb { width: 66px; height: 66px; }
+            .ring-1 { width: 90px; height: 90px; }
+            .ring-2 { width: 110px; height: 110px; }
+            .ring-3 { width: 130px; height: 130px; }
+            .top-hud-bar { padding: 5px 14px; font-size: 10.5px; }
+            .status-text { padding: 4px 14px; font-size: 11px; }
+            .chip-btn { padding: 5px 9px; font-size: 10px; }
+            .input-container { padding: 9px 12px; gap: 6px; }
+            input[type="text"], select { padding: 7px 10px; font-size: 12.5px; }
+            .send-btn { padding: 8px 14px; font-size: 10.5px; }
+        }
+
         @media (max-width: 960px) {
             body { height: 100vh; overflow: auto; }
             .container { flex-direction: column; padding: 12px; gap: 14px; height: auto; }
             .left-panel, .right-panel { width: 100%; }
-            .center-panel { order: 1; flex: 0 0 auto; gap: 12px; padding: 10px 0; }
+            .center-panel { order: 1; flex: 0 0 auto; gap: 12px; padding: 10px 0; overflow: visible; }
             .right-panel { order: 2; min-height: 240px; }
             .left-panel { order: 3; }
         }
@@ -621,7 +656,30 @@
         <div class="notify-msg" id="notifMsg">Notification details...</div>
     </div>
 
-    <!-- Fix #1: NOTIFICATION CENTRE MODAL (NO DOUBLE BRACKETS) -->
+    <!-- SECURITY THREATS & INTRUDER MUGSHOTS MODAL (CHECK: RANKS 1, 2, 3 • DELETE: RANK 1 ONLY) -->
+    <div id="threatsModal" class="modal-overlay" style="display:none;">
+        <div class="logs-card">
+            <div class="section-title">
+                <span>🛡️ SECURITY THREAT MONITOR & INTRUDER MUGSHOTS</span>
+                <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeThreatsModal()">✕</button>
+            </div>
+
+            <div style="font-size:11px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                <span id="threatsClearanceInfo">• Viewing Clearance: Ranks 1, 2, 3 • Delete Clearance: Rank 1 (Owner)</span>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px;" onclick="exportSecurityReportTXT()">📄 EXPORT .TXT</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px;" onclick="exportSecurityReportPDF()">🖨️ EXPORT PDF</button>
+                    <button type="button" id="wipeAllThreatsBtn" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px; border-color:var(--danger); color:var(--danger); display:none;" onclick="deleteSecurityThreatLog(null)">🧹 WIPE ALL (RANK 1)</button>
+                </div>
+            </div>
+
+            <div id="threatsBannedBanner" style="font-size:11px; font-family:'JetBrains Mono', monospace; padding:8px 12px; border-radius:8px; background:rgba(244, 63, 94, 0.1); border:1px solid rgba(244, 63, 94, 0.3); color:var(--danger); display:none;"></div>
+
+            <div id="threatsListContainer" class="logs-viewer" style="max-height: 400px; min-height: 230px;"></div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION CENTRE MODAL -->
     <div id="notifCenterModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
@@ -648,7 +706,7 @@
         </div>
     </div>
 
-    <!-- Fix #3: 1-CLICK BROADCAST TRANSMITTER MODAL -->
+    <!-- SEARCHABLE BROADCAST TRANSMITTER MODAL -->
     <div id="broadcastModal" class="modal-overlay" style="display:none;">
         <div class="auth-card">
             <div class="section-title">
@@ -656,7 +714,8 @@
                 <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeBroadcastModal()">✕</button>
             </div>
             
-            <label style="font-size:11.5px; font-weight:600; margin-top:6px;">1. Select Target Audience or Operative:</label>
+            <label style="font-size:11.5px; font-weight:600; margin-top:6px;">1. Search or Select Target Audience / Operative:</label>
+            <input type="text" id="broadcastSearchInput" placeholder="🔍 Type to search target or operative..." autocomplete="off" oninput="filterBroadcastTargets()">
             <select id="broadcastTargetSelect" style="margin-bottom:8px;">
                 <option value="all">🌐 ALL OPERATIVES (GLOBAL BROADCAST)</option>
                 <option value="admin">⚡ ADMINS ONLY</option>
@@ -682,7 +741,7 @@
             <div id="ownerUpdatePublisher" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:10px; background:var(--chip-bg); border:1px dashed var(--chip-border);">
                 <div style="font-family:'Orbitron', sans-serif; font-size:10.5px; font-weight:700; color:var(--accent-primary);">👑 PUBLISH NEW LIVE UPDATE (OWNER ONLY)</div>
                 <div style="display:flex; gap:8px;">
-                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v4.3)" style="width:140px;">
+                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v4.5)" style="width:140px;">
                     <input type="text" id="newUpdateTitle" placeholder="Update Headline...">
                 </div>
                 <input type="text" id="newUpdateDesc" placeholder="Short description of what was added or fixed...">
@@ -753,7 +812,7 @@
         </div>
     </div>
 
-    <!-- MEMORY ARCHIVE MODAL -->
+    <!-- MEMORY ARCHIVE MODAL (WITH 1-CLICK PDF & TXT EXPORT FOR ALL RANKS) -->
     <div id="logsModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
@@ -769,7 +828,13 @@
                 </select>
             </div>
 
-            <label style="font-size:11.5px; font-weight:600; margin-top:6px;">Select Chat Session:</label>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; flex-wrap:wrap; gap:6px;">
+                <label style="font-size:11.5px; font-weight:600;">Select Chat Session:</label>
+                <div style="display:flex; gap:6px;">
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; font-size:10px;" onclick="exportArchiveTXT()">📄 EXPORT .TXT</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; font-size:10px;" onclick="exportArchivePDF()">🖨️ EXPORT PDF</button>
+                </div>
+            </div>
             <select id="logSessionSelect" onchange="handleSessionSelect()">
                 <option value="">-- SELECT CHAT SESSION --</option>
             </select>
@@ -841,7 +906,6 @@
             </div>
             <button type="button" class="chip-btn" onclick="updateFaceID()">🧬 RE-SCAN FACE ID</button>
 
-            <!-- Fix #4: Live System Diagnostic Gauges (Fills Left Panel Space Cleanly) -->
             <div class="diagnostics-box">
                 <div style="font-family:'Orbitron', sans-serif; font-size:10px; font-weight:700; color:var(--accent-primary); letter-spacing:1.5px; display:flex; justify-content:space-between;">
                     <span>⚡ CORE DIAGNOSTICS</span>
@@ -856,7 +920,7 @@
                     <div class="diag-bar-bg"><div id="memSyncBar" class="diag-bar-fill" style="width: 100%;"></div></div>
                 </div>
                 <div class="diag-item">
-                    <div class="diag-header"><span>SECURITY SHIELD</span><span id="secShieldText">ACTIVE</span></div>
+                    <div class="diag-header"><span>IDS MUGSHOT SHIELD</span><span id="secShieldText">ARMED</span></div>
                     <div class="diag-bar-bg"><div class="diag-bar-fill" style="width: 100%; background: var(--success);"></div></div>
                 </div>
             </div>
@@ -866,7 +930,6 @@
 
         <!-- CENTER PANEL: TOP HUD BAR, QUANTUM CORE & COMMAND DOCK -->
         <div class="center-panel">
-            <!-- Fix #2: Floating Top HUD Bar -->
             <div class="top-hud-bar">
                 <span class="hud-stat">🕒 <span id="hudClock">--:--:-- IST</span></span>
                 <span class="hud-divider"></span>
@@ -895,11 +958,12 @@
                     <button type="button" class="chip-btn" style="width:auto;" onclick="openUpdatesModal()">🚀 UPDATES</button>
                 </div>
 
-                <div id="masterCmds" style="display: none; gap: 7px; flex-wrap: wrap; justify-content: center; max-width: 660px;">
+                <div id="masterCmds" style="display: none; gap: 7px; flex-wrap: wrap; justify-content: center; max-width: 680px;">
                     <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/health')">⚡ /health</button>
                     <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/operative')">🟢 /operative</button>
                     <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/userdata')">👥 /userdata</button>
                     <button type="button" class="chip-btn" style="width:auto;" onclick="openBroadcastModal()">📢 BROADCAST</button>
+                    <button type="button" class="chip-btn" style="width:auto; border-color:var(--warning); color:var(--warning);" onclick="openThreatsModal()" title="View Intruder Mugshots & Security Threats (Ranks 1, 2, 3)">🛡️ /threats</button>
                     <button type="button" class="chip-btn mod-owner-only" style="width:auto; display:none;" onclick="sendQuickCmd('/purgelog')">📜 /purgelog</button>
                     <button type="button" class="chip-btn mod-owner-only" style="width:auto; display:none;" onclick="openRankModal()">⭐ RANK MGMT</button>
                     <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/lockdown')">🔒 /lock</button>
@@ -1007,22 +1071,23 @@
         let typingTimer;
 
         let cachedOperatives = [];
+        let cachedThreatLogs = [];
+        let currentArchiveExportData = [];
         let currentSessionId = generateSessionId();
         let currentNotifFilter = "all";
         let lastLockdownSignature = "";
 
         const DEFAULT_UPDATES_FALLBACK = [
-            { version: "v4.3", title: "Top HUD Bar, Broadcast Modal & Live Gauges", description: "Added live IST clock & ping bar, 1-click Broadcast modal, animated left-panel core diagnostics, and clean Notification headers.", author: "Viyan Arora", date: "LIVE" },
-            { version: "v4.2", title: "Notification Centre & Live Updates Hub", description: "Added per-user Notification Centre with unread counters, 2-day read retention, early delete, global lockdown logs, and live changelog.", author: "Viyan Arora", date: "ACTIVE" },
-            { version: "v4.0", title: "Quantum Glass HUD & Audio-Reactive Core", description: "Modernized 3-panel interface with glassmorphism, Orbitron typography, and a Web Audio API frequency-reactive Quantum Orb.", author: "Viyan Arora", date: "ACTIVE" },
-            { version: "v3.5", title: "KIZA Telemetry Brain & 'Listen' Wake Word", description: "Injected live system telemetry into the AI core, added natural language UI control, and hands-free 'Listen' wake-word detection.", author: "Viyan Arora", date: "ACTIVE" }
+            { version: "v4.5", title: "Intruder Mugshot Capture & PDF/TXT Exports", description: "Added silent webcam mugshot capture on wrong password attempts, visual /threats modal for Ranks 1-3, Rank 1 log deletion, and 1-click PDF/TXT exports.", author: "Viyan Arora", date: "LIVE" },
+            { version: "v4.4", title: "Cyber-Defense IDS & Searchable Broadcasts", description: "Added Brute-Force IP Lockout, SQLi/XSS Firewall, /threats & /wrongpass security auditing, and searchable broadcast target selector.", author: "Viyan Arora", date: "ACTIVE" },
+            { version: "v4.3", title: "Top HUD Bar, Broadcast Modal & Live Gauges", description: "Added live IST clock & ping bar, 1-click Broadcast modal, animated left-panel core diagnostics, and clean Notification headers.", author: "Viyan Arora", date: "ACTIVE" },
+            { version: "v4.2", title: "Notification Centre & Live Updates Hub", description: "Added per-user Notification Centre with unread counters, 2-day read retention, early delete, global lockdown logs, and live changelog.", author: "Viyan Arora", date: "ACTIVE" }
         ];
 
         function generateSessionId() {
             return 'sess_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
         }
 
-        /* Fix #1: Strip parenthetical tags like (OWNER) so headers never show ((OWNER)) */
         function cleanDisplayNameOnly(nameStr) {
             if (!nameStr) return "USER";
             return String(nameStr)
@@ -1056,7 +1121,233 @@
         }
 
         // ==========================================================
-        // FIX #2 & #4: TOP HUD CLOCK, PING & LIVE CORE GAUGES
+        // INTRUDER MUGSHOT VIEWER & SECURITY THREATS MODAL
+        // (CHECK FOR RANKS 1, 2, 3 • DELETE FOR RANK 1 OWNER ONLY)
+        // ==========================================================
+        async function openThreatsModal() {
+            if (!(currentRole.includes("OWNER") || currentRole.includes("MOD") || currentRole.includes("ADMIN"))) {
+                showNotification("ACCESS DENIED", "Security Threat Monitor requires Rank 1, 2, or 3 clearance.", true);
+                return;
+            }
+            document.getElementById('threatsModal').style.display = "flex";
+            const isRank1 = currentRole.includes("OWNER") || currentUser.toLowerCase().includes("viyan");
+            document.getElementById('wipeAllThreatsBtn').style.display = isRank1 ? "inline-flex" : "none";
+            await fetchAndRenderThreats();
+        }
+
+        function closeThreatsModal() {
+            document.getElementById('threatsModal').style.display = "none";
+        }
+
+        async function fetchAndRenderThreats() {
+            const container = document.getElementById('threatsListContainer');
+            const banner = document.getElementById('threatsBannedBanner');
+            container.innerHTML = `<div style="text-align:center; margin-top:25px;">Scanning security logs & intruder mugshots...</div>`;
+            try {
+                let res = await fetch(`${SERVER_URL}/api/security/logs?user=${encodeURIComponent(currentUser)}`);
+                let data = await res.json();
+                if (!data.success) {
+                    container.innerHTML = `<div style="color:var(--danger); text-align:center; margin-top:25px;">${data.message}</div>`;
+                    return;
+                }
+
+                cachedThreatLogs = data.logs || [];
+                const canDelete = Boolean(data.can_delete);
+                document.getElementById('wipeAllThreatsBtn').style.display = canDelete ? "inline-flex" : "none";
+
+                if (data.banned_ips && data.banned_ips.length > 0) {
+                    banner.style.display = "block";
+                    banner.innerText = `🔒 ACTIVE IP LOCKOUTS (${data.banned_ips.length}): ` + data.banned_ips.map(b => `${b.ip} (${b.remaining_seconds}s left)`).join(" | ");
+                } else {
+                    banner.style.display = "none";
+                }
+
+                container.innerHTML = "";
+                if (cachedThreatLogs.length === 0) {
+                    container.innerHTML = `<div style="text-align:center; margin-top:35px; color:var(--success);">✓ Zero wrong passwords or security threats recorded.</div>`;
+                    return;
+                }
+
+                cachedThreatLogs.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = "notif-item type-lockdown";
+                    const mugshotHTML = item.mugshot
+                        ? `<img src="${item.mugshot}" class="mugshot-img" alt="Intruder Mugshot" title="Intruder Mugshot (Hover to enlarge)">`
+                        : `<div style="width:68px; height:54px; border-radius:8px; border:1px dashed var(--card-border); display:flex; align-items:center; justify-content:center; font-size:9px; color:var(--text-muted); text-align:center; flex-shrink:0;">NO CAM<br>SNAP</div>`;
+
+                    div.innerHTML = `
+                        <div style="display:flex; gap:12px; align-items:center;">
+                            ${mugshotHTML}
+                            <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                                <div class="notif-header">
+                                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                        <span class="notif-tag lockdown">${item.event_type}</span>
+                                        <span style="font-weight:700; font-size:12px;">Target: ${(item.username || 'UNKNOWN').toUpperCase()}</span>
+                                    </div>
+                                    ${canDelete ? `<button class="chip-btn" style="width:auto; padding:2px 8px; font-size:10px; border-color:var(--danger); color:var(--danger);" title="Delete Log (Rank 1 Only)" onclick="deleteSecurityThreatLog(${item.id})">🗑️ DELETE</button>` : ''}
+                                </div>
+                                <div style="font-size:11.5px;">${item.details}</div>
+                                <div class="notif-meta">
+                                    <span>🌐 IP: <b>${item.ip_address}</b></span>
+                                    <span>🕒 ${item.timestamp}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (e) {
+                container.innerHTML = `<div style="color:var(--danger); text-align:center; margin-top:25px;">Failed to load security threat logs.</div>`;
+            }
+        }
+
+        async function deleteSecurityThreatLog(logId = null) {
+            try {
+                const url = logId !== null
+                    ? `${SERVER_URL}/api/security/logs?user=${encodeURIComponent(currentUser)}&log_id=${logId}`
+                    : `${SERVER_URL}/api/security/logs?user=${encodeURIComponent(currentUser)}`;
+                let res = await fetch(url, { method: "DELETE" });
+                let data = await res.json();
+                if (data.success) {
+                    showNotification("SECURITY LOGS", logId ? `Threat log #${logId} deleted.` : "All threat logs wiped clean.", false, { skipStore: true });
+                    await fetchAndRenderThreats();
+                } else {
+                    showNotification("ACCESS DENIED", data.message, true);
+                }
+            } catch (e) {
+                showNotification("ERROR", "Failed to delete security log.", true);
+            }
+        }
+
+        // ==========================================================
+        // 1-CLICK EXPORT CHAT / SECURITY REPORT TO .TXT & .PDF
+        // ==========================================================
+        function triggerTextDownload(filename, textContent) {
+            const blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportArchiveTXT() {
+            if (!currentArchiveExportData || currentArchiveExportData.length === 0) {
+                showNotification("EXPORT NOTICE", "Select a chat session with messages first.", true, { skipStore: true });
+                return;
+            }
+            const sessionSelect = document.getElementById('logSessionSelect');
+            const sessionTitle = sessionSelect.options[sessionSelect.selectedIndex]?.text || "Chat Session";
+            let lines = [
+                "==========================================================",
+                "              KIZA — AI COMMAND HUB ARCHIVE               ",
+                "==========================================================",
+                `Operative : ${cleanDisplayNameOnly(selectedLogTarget || currentUser).toUpperCase()}`,
+                `Session   : ${sessionTitle}`,
+                `Exported  : ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST`,
+                "==========================================================\n"
+            ];
+            currentArchiveExportData.forEach(m => {
+                lines.push(`[${m.time}] [${m.sender}]: ${m.message}`);
+            });
+            triggerTextDownload(`KIZA_Chat_${Date.now()}.txt`, lines.join("\n"));
+            showNotification("EXPORT COMPLETE", "Chat archive downloaded as .TXT file.", false, { skipStore: true });
+        }
+
+        function exportArchivePDF() {
+            if (!currentArchiveExportData || currentArchiveExportData.length === 0) {
+                showNotification("EXPORT NOTICE", "Select a chat session with messages first.", true, { skipStore: true });
+                return;
+            }
+            const sessionSelect = document.getElementById('logSessionSelect');
+            const sessionTitle = sessionSelect.options[sessionSelect.selectedIndex]?.text || "Chat Session";
+            const opName = cleanDisplayNameOnly(selectedLogTarget || currentUser).toUpperCase();
+            let rowsHtml = currentArchiveExportData.map(m => `
+                <div style="margin-bottom:10px; padding:8px 12px; border-left:3px solid ${m.sender === 'KIZA' ? '#0284c7' : '#334155'}; background:#f8fafc; border-radius:4px;">
+                    <div style="font-size:11px; color:#64748b;">[${m.time}] <b>${m.sender}</b></div>
+                    <div style="font-size:13px; color:#0f172a; margin-top:3px;">${m.message}</div>
+                </div>
+            `).join("");
+
+            const printWin = window.open("", "_blank", "width=850,height=700");
+            if (!printWin) {
+                exportArchiveTXT();
+                return;
+            }
+            printWin.document.write(`
+                <html><head><title>KIZA Chat Report — ${opName}</title>
+                <style>body { font-family: 'Courier New', monospace; padding: 30px; color: #0f172a; }</style></head>
+                <body>
+                    <h2 style="margin:0; color:#0284c7;">KIZA — AI COMMAND HUB // OFFICIAL CHAT ARCHIVE</h2>
+                    <p style="font-size:12px; color:#475569;">Operative: <b>${opName}</b> | Session: <b>${sessionTitle}</b> | Exported: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</p>
+                    <hr style="border:1px solid #cbd5e1; margin-bottom:18px;">
+                    ${rowsHtml}
+                    <script>window.onload = () => { window.print(); };<\/script>
+                </body></html>
+            `);
+            printWin.document.close();
+        }
+
+        function exportSecurityReportTXT() {
+            if (!cachedThreatLogs || cachedThreatLogs.length === 0) {
+                showNotification("EXPORT NOTICE", "No security threat logs to export.", true, { skipStore: true });
+                return;
+            }
+            let lines = [
+                "==========================================================",
+                "       KIZA — CYBER-DEFENSE & INTRUSION AUDIT REPORT      ",
+                "==========================================================",
+                `Audited By : ${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole})`,
+                `Exported   : ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST`,
+                "==========================================================\n"
+            ];
+            cachedThreatLogs.forEach(t => {
+                lines.push(`[${t.timestamp}] ${t.event_type} | Target: ${t.username} | IP: ${t.ip_address} | Mugshot: ${t.mugshot ? 'YES' : 'NO'} | ${t.details}`);
+            });
+            triggerTextDownload(`KIZA_Security_Report_${Date.now()}.txt`, lines.join("\n"));
+            showNotification("EXPORT COMPLETE", "Security Audit Report downloaded as .TXT.", false, { skipStore: true });
+        }
+
+        function exportSecurityReportPDF() {
+            if (!cachedThreatLogs || cachedThreatLogs.length === 0) {
+                showNotification("EXPORT NOTICE", "No security threat logs to export.", true, { skipStore: true });
+                return;
+            }
+            let rowsHtml = cachedThreatLogs.map(t => `
+                <div style="display:flex; gap:14px; align-items:center; margin-bottom:12px; padding:10px; border:1px solid #fda4af; border-left:4px solid #f43f5e; border-radius:6px; background:#fff1f2;">
+                    ${t.mugshot ? `<img src="${t.mugshot}" style="width:70px; height:55px; object-fit:cover; border-radius:6px; border:1px solid #f43f5e;">` : `<div style="width:70px; height:55px; border:1px dashed #94a3b8; display:flex; align-items:center; justify-content:center; font-size:10px;">NO SNAP</div>`}
+                    <div>
+                        <div style="font-size:12px; font-weight:bold; color:#be123c;">[${t.event_type}] Target: ${(t.username || '').toUpperCase()} — IP: ${t.ip_address}</div>
+                        <div style="font-size:12px; color:#0f172a; margin-top:3px;">${t.details}</div>
+                        <div style="font-size:10px; color:#64748b; margin-top:3px;">Timestamp: ${t.timestamp}</div>
+                    </div>
+                </div>
+            `).join("");
+
+            const printWin = window.open("", "_blank", "width=850,height=700");
+            if (!printWin) {
+                exportSecurityReportTXT();
+                return;
+            }
+            printWin.document.write(`
+                <html><head><title>KIZA Security Audit Report</title>
+                <style>body { font-family: 'Courier New', monospace; padding: 30px; color: #0f172a; }</style></head>
+                <body>
+                    <h2 style="margin:0; color:#be123c;">KIZA — CYBER-DEFENSE & INTRUDER MUGSHOT REPORT</h2>
+                    <p style="font-size:12px; color:#475569;">Generated by: <b>${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole})</b> | Date: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</p>
+                    <hr style="border:1px solid #fecdd3; margin-bottom:18px;">
+                    ${rowsHtml}
+                    <script>window.onload = () => { window.print(); };<\/script>
+                </body></html>
+            `);
+            printWin.document.close();
+        }
+
+        // ==========================================================
+        // TOP HUD CLOCK, PING & LIVE CORE GAUGES
         // ==========================================================
         function updateTopHudAndGauges() {
             const clockEl = document.getElementById('hudClock');
@@ -1104,25 +1395,64 @@
         }
 
         // ==========================================================
-        // FIX #3: 1-CLICK BROADCAST MODAL
+        // SEARCHABLE BROADCAST TRANSMITTER MODAL
         // ==========================================================
+        const BASE_BROADCAST_GROUPS = [
+            { value: "all", label: "🌐 ALL OPERATIVES (GLOBAL BROADCAST)", searchKey: "all operatives global broadcast everyone" },
+            { value: "admin", label: "⚡ ADMINS ONLY", searchKey: "admins only admin" },
+            { value: "mod", label: "🛡️ MODERATORS ONLY", searchKey: "moderators only mod mods" },
+            { value: "owner", label: "👑 OWNERS ONLY", searchKey: "owners only owner master viyan" }
+        ];
+
         async function openBroadcastModal() {
             document.getElementById('broadcastModal').style.display = "flex";
+            document.getElementById('broadcastSearchInput').value = "";
             document.getElementById('broadcastMsgInput').value = "";
-            const selectEl = document.getElementById('broadcastTargetSelect');
-            selectEl.innerHTML = `
-                <option value="all">🌐 ALL OPERATIVES (GLOBAL BROADCAST)</option>
-                <option value="admin">⚡ ADMINS ONLY</option>
-                <option value="mod">🛡️ MODERATORS ONLY</option>
-                <option value="owner">👑 OWNERS ONLY</option>
-            `;
             await fetchOperativesList();
-            cachedOperatives.forEach(u => {
-                let opt = document.createElement('option');
-                opt.value = u.username;
-                opt.innerText = `👤 ${cleanDisplayNameOnly(u.display).toUpperCase()} (${u.username})`;
-                selectEl.appendChild(opt);
+            renderBroadcastTargetsDropdown("");
+        }
+
+        function renderBroadcastTargetsDropdown(filterText) {
+            const selectEl = document.getElementById('broadcastTargetSelect');
+            const q = (filterText || "").toLowerCase().trim();
+            selectEl.innerHTML = "";
+
+            let totalAdded = 0;
+
+            BASE_BROADCAST_GROUPS.forEach(g => {
+                if (!q || g.searchKey.includes(q) || g.label.toLowerCase().includes(q)) {
+                    let opt = document.createElement('option');
+                    opt.value = g.value;
+                    opt.innerText = g.label;
+                    selectEl.appendChild(opt);
+                    totalAdded++;
+                }
             });
+
+            cachedOperatives.forEach(u => {
+                const dispClean = cleanDisplayNameOnly(u.display);
+                if (!q || dispClean.toLowerCase().includes(q) || u.username.toLowerCase().includes(q)) {
+                    let opt = document.createElement('option');
+                    opt.value = u.username;
+                    opt.innerText = `👤 ${dispClean.toUpperCase()} (${u.username})`;
+                    selectEl.appendChild(opt);
+                    totalAdded++;
+                }
+            });
+
+            if (totalAdded === 0 && q) {
+                let customOpt = document.createElement('option');
+                customOpt.value = resolveDBUser(q);
+                customOpt.innerText = `🎯 TARGET: "${q.toUpperCase()}"`;
+                selectEl.appendChild(customOpt);
+            }
+            if (selectEl.options.length > 0) {
+                selectEl.selectedIndex = 0;
+            }
+        }
+
+        function filterBroadcastTargets() {
+            renderBroadcastTargetsDropdown(document.getElementById('broadcastSearchInput').value);
         }
 
         function closeBroadcastModal() {
@@ -1130,7 +1460,11 @@
         }
 
         function submitBroadcastModal() {
-            const target = document.getElementById('broadcastTargetSelect').value || "all";
+            let target = document.getElementById('broadcastTargetSelect').value;
+            if (!target) {
+                const searchVal = document.getElementById('broadcastSearchInput').value.trim();
+                target = searchVal ? resolveDBUser(searchVal) : "all";
+            }
             const msg = document.getElementById('broadcastMsgInput').value.trim();
             if (!msg) {
                 showNotification("ERROR", "Please type a broadcast message first.", true);
@@ -1142,7 +1476,7 @@
         }
 
         // ==========================================================
-        // PER-USER NOTIFICATION CENTRE ENGINE (2-DAY READ RETENTION)
+        // PER-USER NOTIFICATION CENTRE ENGINE
         // ==========================================================
         function getNotifStorageKey(dbUser = currentDBUser) {
             const safeKey = (dbUser && dbUser !== "undefined") ? dbUser : resolveDBUser(currentUser);
@@ -1152,6 +1486,36 @@
         function getSeenServerIdsKey(dbUser = currentDBUser) {
             const safeKey = (dbUser && dbUser !== "undefined") ? dbUser : resolveDBUser(currentUser);
             return `kiza_seen_srv_notifs_${safeKey}`;
+        }
+
+        function getAlertIdxStorageKey(dbUser = currentDBUser) {
+            const safeKey = (dbUser && dbUser !== "undefined") ? dbUser : resolveDBUser(currentUser);
+            return `kiza_last_alert_idx_${safeKey}`;
+        }
+
+        function getAlertUniqueId(alertObj) {
+            if (!alertObj) return null;
+            if (alertObj.server_id) return String(alertObj.server_id);
+            const rawSig = `${alertObj.target || 'all'}|${alertObj.title || ''}|${alertObj.message || ''}`
+                .toLowerCase()
+                .replace(/[^a-z0-9|]/g, '');
+            return `sig_${rawSig.slice(0, 90)}`;
+        }
+
+        function hasUserSeenOrDeletedAlert(uniqueId, dbUser = currentDBUser) {
+            if (!uniqueId) return false;
+            const seenIds = safeGetJSON(getSeenServerIdsKey(dbUser), []);
+            return seenIds.includes(uniqueId);
+        }
+
+        function markAlertIdAsSeen(uniqueId, dbUser = currentDBUser) {
+            if (!uniqueId || !dbUser || dbUser === "guest") return;
+            let seenIds = safeGetJSON(getSeenServerIdsKey(dbUser), []);
+            if (!seenIds.includes(uniqueId)) {
+                seenIds.push(uniqueId);
+                if (seenIds.length > 400) seenIds = seenIds.slice(-400);
+                safeSetItem(getSeenServerIdsKey(dbUser), JSON.stringify(seenIds));
+            }
         }
 
         function getUserNotifications(dbUser = currentDBUser) {
@@ -1176,23 +1540,28 @@
         }
 
         function addNotificationToUserStore(title, message, category = "broadcast", targetDBUser = currentDBUser, serverId = null, customTimestamp = null) {
-            if (!targetDBUser || targetDBUser === "guest") return;
+            if (!targetDBUser || targetDBUser === "guest") return false;
 
             if (serverId) {
-                let seenIds = safeGetJSON(getSeenServerIdsKey(targetDBUser), []);
-                if (seenIds.includes(serverId)) return;
-                seenIds.push(serverId);
-                if (seenIds.length > 300) seenIds = seenIds.slice(-300);
-                safeSetItem(getSeenServerIdsKey(targetDBUser), JSON.stringify(seenIds));
+                if (hasUserSeenOrDeletedAlert(serverId, targetDBUser)) {
+                    return false;
+                }
+                markAlertIdAsSeen(serverId, targetDBUser);
             }
 
             let list = getUserNotifications(targetDBUser);
             const cleanTitle = stripSlashesFromText(title).replace(/\s*\((OWNER|ADMIN|MOD)\)/gi, '');
+            const cleanMsg = stripSlashesFromText(message);
+
+            if (serverId && list.some(n => n.id === serverId)) {
+                return false;
+            }
+
             const newNotif = {
                 id: serverId || ('loc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6)),
                 category: category,
                 title: cleanTitle,
-                message: stripSlashesFromText(message),
+                message: cleanMsg,
                 createdAt: customTimestamp || Date.now(),
                 read: false,
                 readAt: null
@@ -1204,9 +1573,11 @@
             if (document.getElementById('notifCenterModal').style.display === 'flex' && targetDBUser === currentDBUser) {
                 renderNotificationCentre();
             }
+            return true;
         }
 
         function recordGlobalLockdownToEveryone(title, message, serverId = null) {
+            const uniqueLockId = serverId || getAlertUniqueId({ target: "all", title, message });
             const allTargets = new Set();
             if (currentDBUser && currentDBUser !== "guest") allTargets.add(currentDBUser);
             if (Array.isArray(storedProfiles)) {
@@ -1215,7 +1586,7 @@
                 });
             }
             allTargets.forEach(dbU => {
-                addNotificationToUserStore(title, message, "lockdown", dbU, serverId);
+                addNotificationToUserStore(title, message, "lockdown", dbU, uniqueLockId);
             });
         }
 
@@ -1270,6 +1641,7 @@
             if (item && !item.read) {
                 item.read = true;
                 item.readAt = Date.now();
+                markAlertIdAsSeen(notifId, currentDBUser);
                 saveUserNotifications(list, currentDBUser);
                 renderNotificationCentre();
             }
@@ -1279,6 +1651,7 @@
             let list = getUserNotifications(currentDBUser);
             const now = Date.now();
             list.forEach(n => {
+                markAlertIdAsSeen(n.id, currentDBUser);
                 if (!n.read) {
                     n.read = true;
                     n.readAt = now;
@@ -1289,6 +1662,7 @@
         }
 
         function deleteNotificationEarly(notifId) {
+            markAlertIdAsSeen(notifId, currentDBUser);
             let list = getUserNotifications(currentDBUser);
             list = list.filter(n => n.id !== notifId);
             saveUserNotifications(list, currentDBUser);
@@ -1297,6 +1671,9 @@
 
         function clearReadNotifications() {
             let list = getUserNotifications(currentDBUser);
+            list.forEach(n => {
+                if (n.read) markAlertIdAsSeen(n.id, currentDBUser);
+            });
             list = list.filter(n => !n.read);
             saveUserNotifications(list, currentDBUser);
             renderNotificationCentre();
@@ -1325,7 +1702,7 @@
                 const div = document.createElement('div');
                 div.className = `notif-item ${!n.read ? 'unread' : ''} type-${n.category}`;
                 const dateStr = new Date(n.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-                const catLabel = n.category === "lockdown" ? "🚨 LOCKDOWN" : (n.category === "error" ? "⚠️ PERSONAL ERROR" : (n.category === "update" ? "🚀 UPDATE" : "📡 BROADCAST"));
+                const catLabel = n.category === "lockdown" ? "🚨 SECURITY / LOCKDOWN" : (n.category === "error" ? "⚠️ PERSONAL ERROR" : (n.category === "update" ? "🚀 UPDATE" : "📡 BROADCAST"));
                 const statusBadge = !n.read
                     ? `<span style="color:var(--danger); font-weight:700;">● UNREAD (Stays until read)</span>`
                     : `<span style="color:var(--success);">✓ READ • ${formatRemainingTime(n.readAt)}</span>`;
@@ -1503,6 +1880,16 @@
             }
 
             if (
+                words.includes("threats") || words.includes("threat") || words.includes("wrongpass") || words.includes("mugshot") || words.includes("mugshots") ||
+                words.includes("hacking") || words.includes("hackers") || words.includes("intrusion") ||
+                (words.includes("wrong") && (words.includes("pass") || words.includes("password") || words.includes("passwords") || words.includes("login"))) ||
+                (words.includes("failed") && (words.includes("login") || words.includes("logins") || words.includes("password") || words.includes("attempts"))) ||
+                (words.includes("security") && (words.includes("check") || words.includes("log") || words.includes("logs") || words.includes("threat") || words.includes("report")))
+            ) {
+                return { handledLocally: false, mappedText: "/threats" };
+            }
+
+            if (
                 (words.includes("online") && (words.includes("who") || words.includes("all") || words.includes("anyone") || words.includes("anybody") || words.includes("operative") || words.includes("operatives") || words.includes("users") || words.includes("right"))) ||
                 (words.includes("active") && (words.includes("operative") || words.includes("operatives") || words.includes("users") || words.includes("who"))) ||
                 (words.includes("live") && (words.includes("operative") || words.includes("operatives")))
@@ -1555,6 +1942,9 @@
             if (replyStr.includes("[ACTION:OPEN_UPDATES]")) {
                 openUpdatesModal();
             }
+            if (replyStr.includes("[ACTION:OPEN_THREATS]")) {
+                openThreatsModal();
+            }
             if (replyStr.includes("[ACTION:NEW_CHAT]")) {
                 startNewSession();
             }
@@ -1569,20 +1959,27 @@
 
         function handleServerStatusPayload(data) {
             if (!data) return;
-            if (data.next_alert_idx !== undefined) alertIndex = data.next_alert_idx;
+            if (data.next_alert_idx !== undefined) {
+                alertIndex = data.next_alert_idx;
+                safeSetItem(getAlertIdxStorageKey(currentDBUser), String(alertIndex));
+            }
             if (data.role && data.role !== "LOCKED" && formatCleanRole(data.role, currentUser) !== currentRole) {
                 applyRoleUI(data.role);
                 showNotification("CLEARANCE UPDATED", `Your clearance is now ${formatCleanRole(data.role, currentUser)}`, false, { category: "broadcast" });
             }
             if (data.new_alerts && data.new_alerts.length > 0) {
                 data.new_alerts.forEach(alert => {
+                    const uniqueAlertId = getAlertUniqueId(alert);
+                    if (hasUserSeenOrDeletedAlert(uniqueAlertId, currentDBUser)) {
+                        return;
+                    }
                     const cat = alert.category || (String(alert.title).includes("LOCKDOWN") ? "lockdown" : "broadcast");
                     if (cat === "lockdown") {
-                        recordGlobalLockdownToEveryone(alert.title, alert.message, alert.server_id);
+                        recordGlobalLockdownToEveryone(alert.title, alert.message, uniqueAlertId);
                     }
                     showNotification(alert.title, alert.message, cat === "lockdown", {
                         category: cat,
-                        serverId: alert.server_id,
+                        serverId: uniqueAlertId,
                         timestamp: alert.timestamp
                     });
                 });
@@ -1808,6 +2205,9 @@
             currentDBUser = (db_username && db_username !== "undefined") ? db_username : resolveDBUser(currentUser);
             currentSessionId = generateSessionId();
 
+            const savedIdx = parseInt(localStorage.getItem(getAlertIdxStorageKey(currentDBUser)) || "0", 10);
+            alertIndex = isNaN(savedIdx) ? 0 : savedIdx;
+
             safeSetItem('kiza_user', currentUser);
             safeSetItem('kiza_db', currentDBUser);
             if (face_id) safeSetItem('kiza_face', face_id);
@@ -1872,6 +2272,7 @@
             viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">Fetching archives...</div>';
             resumeBtn.style.display = "none"; 
             loadedArchiveHTML = "";
+            currentArchiveExportData = [];
 
             if (currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD")) {
                 adminControls.style.display = "flex";
@@ -1920,6 +2321,7 @@
         function handleUserSelect() {
             selectedLogTarget = document.getElementById('logOperativeSelect').value;
             document.getElementById('resumeArchiveBtn').style.display = "none";
+            currentArchiveExportData = [];
             if (selectedLogTarget) fetchLogSessions();
             else {
                 document.getElementById('logSessionSelect').innerHTML = '<option value="">-- SELECT CHAT SESSION --</option>';
@@ -1958,6 +2360,7 @@
             const targetSessionId = document.getElementById('logSessionSelect').value;
             const viewer = document.getElementById('logsViewer');
             const resumeBtn = document.getElementById('resumeArchiveBtn');
+            currentArchiveExportData = [];
             if (!targetSessionId) {
                 viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">Select a Session above to view messages.</div>';
                 resumeBtn.style.display = "none"; return;
@@ -1976,6 +2379,9 @@
                         let timeMatch = ts.match(/(\d{2}:\d{2}:\d{2})/);
                         let timeStr = timeMatch ? timeMatch[1] : "";
                         let cleanMsg = stripSlashesFromText(log.message);
+                        let senderName = log.role === "USER" ? displayLabel : "KIZA";
+                        currentArchiveExportData.push({ time: timeStr, sender: senderName, message: cleanMsg });
+
                         let htmlContent = log.role === "USER" ? `<span style="opacity:0.6;">[${timeStr}]</span> <span style="font-weight:bold;">[${displayLabel}]:</span> ${cleanMsg}` : `<span style="opacity:0.6;">[${timeStr}]</span> <span style="font-weight:bold; color:var(--accent-primary);">[KIZA]:</span> ${cleanMsg}`;
                         div.innerHTML = htmlContent; viewer.appendChild(div);
                         loadedArchiveHTML += `<div>> ${htmlContent}</div>`;
@@ -2028,7 +2434,10 @@
         function showNotification(title, message, isError = false, options = {}) {
             if (!options.skipStore && currentUser !== "Guest" && currentDBUser !== "guest") {
                 const category = options.category || (isError ? "error" : "broadcast");
-                addNotificationToUserStore(title, message, category, currentDBUser, options.serverId || null, options.timestamp || null);
+                const isNew = addNotificationToUserStore(title, message, category, currentDBUser, options.serverId || null, options.timestamp || null);
+                if (!isNew && options.serverId) {
+                    return;
+                }
             }
 
             if (voiceEnabled) {
@@ -2307,9 +2716,18 @@
             } catch (e) { return null; }
         }
 
+        /* Silently captures a frame for Intruder Mugshot security logging even if user unchecked the Face ID box */
+        function captureSilentSecurityFrame() {
+            if (!cameraReady) return null;
+            try {
+                const video = document.getElementById('webcamVideo'); const canvas = document.getElementById('faceCanvas');
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height); return canvas.toDataURL('image/jpeg', 0.55);
+            } catch (e) { return null; }
+        }
+
         async function updateFaceID() {
             if (currentUser === "Guest") return;
-            let faceData = captureFaceSnapshot();
+            let faceData = captureSilentSecurityFrame();
             if (!faceData) return;
             try {
                 let res = await fetch(`${SERVER_URL}/api/update_face`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: currentUser, face_id: faceData }) });
@@ -2399,15 +2817,22 @@
             errBox.style.color = "var(--accent-primary)";
             errBox.innerText = "Scanning Biometrics & Verifying...";
             const faceData = captureFaceSnapshot();
+            const silentSecuritySnap = captureSilentSecurityFrame();
 
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 8000);
+                const timeoutId = setTimeout(() => controller.abort(), 12000);
 
                 let res = await fetch(`${SERVER_URL}/api/auth`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username, password, action: authMode, face_id: faceData }),
+                    body: JSON.stringify({
+                        username,
+                        password,
+                        action: authMode,
+                        face_id: faceData,
+                        security_snap: silentSecuritySnap
+                    }),
                     signal: controller.signal
                 });
                 clearTimeout(timeoutId);
@@ -2422,10 +2847,9 @@
                 errBox.innerText = "";
                 finalizeLogin(cleanDisplayNameOnly(data.username), data.db_username || resolveDBUser(data.username), data.role, data.face_id || faceData, true, data.reply, data.audio_base64);
             } catch (err) {
-                const isViyan = username.toLowerCase().includes("viyan");
-                const disp = isViyan ? "Viyan Arora" : username;
-                const role = isViyan ? "OWNER" : (username.toLowerCase().startsWith("mod") ? "MODERATOR" : (username.toLowerCase().startsWith("admin") ? "ADMIN" : "OPERATIVE"));
-                finalizeLogin(disp, resolveDBUser(username), role, faceData, true, `Offline override verified. Welcome, ${disp}.`);
+                errBox.style.color = "var(--danger)";
+                errBox.innerText = "Server is waking up or unreachable. Please wait a few seconds and try again.";
+                showNotification("CONNECTION ERROR", "Could not verify credentials with server.", true);
             }
         }
 
