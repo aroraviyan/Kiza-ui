@@ -417,6 +417,7 @@
         }
 
         .input-container { 
+            position: relative;
             display: flex; flex-direction: column; width: 100%; max-width: 650px; gap: 10px; 
             background: var(--card-bg); backdrop-filter: blur(18px);
             padding: 14px; border: 1px solid var(--card-border); 
@@ -424,6 +425,43 @@
             flex-shrink: 0;
         }
         .input-row { display: flex; gap: 8px; width: 100%; align-items: center; }
+
+        /* Slash Command Autocomplete Popup */
+        #slashAutocomplete {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 0;
+            width: 100%;
+            background: var(--card-bg);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border: 1px solid var(--accent-primary);
+            border-radius: 12px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+            max-height: 210px;
+            overflow-y: auto;
+            display: none;
+            flex-direction: column;
+            z-index: 900;
+            padding: 6px;
+            gap: 4px;
+        }
+        .slash-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11.5px;
+            transition: background 0.15s;
+        }
+        .slash-item:hover {
+            background: var(--chip-hover);
+        }
+        .slash-cmd-name { font-weight: 700; color: var(--accent-primary); }
+        .slash-cmd-desc { font-size: 10.5px; color: var(--text-muted); }
 
         input[type="text"], input[type="password"], select, textarea { 
             background: var(--input-bg);
@@ -552,7 +590,6 @@
             gap: 5px;
         }
 
-        /* Intruder Mugshot Thumbnail inside Threats Modal */
         .mugshot-img {
             width: 68px;
             height: 54px;
@@ -656,6 +693,29 @@
         <div class="notify-msg" id="notifMsg">Notification details...</div>
     </div>
 
+    <!-- TACTICAL MISSION BOARD MODAL -->
+    <div id="missionsModal" class="modal-overlay" style="display:none;">
+        <div class="logs-card">
+            <div class="section-title">
+                <span>📋 TACTICAL MISSION & TASK BOARD</span>
+                <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeMissionsModal()">✕</button>
+            </div>
+
+            <div id="missionAssignBox" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:10px; background:var(--chip-bg); border:1px dashed var(--chip-border);">
+                <div style="font-family:'Orbitron', sans-serif; font-size:10.5px; font-weight:700; color:var(--accent-primary);">🎯 ASSIGN NEW TACTICAL TASK (OWNER / MOD)</div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <select id="missionAssigneeSelect" style="flex:1; min-width:180px;">
+                        <option value="all">🌐 ALL OPERATIVES</option>
+                    </select>
+                    <input type="text" id="missionTitleInput" placeholder="Enter mission objective..." style="flex:2; min-width:220px;">
+                </div>
+                <button type="button" class="send-btn" style="width:100%; padding:8px;" onclick="submitNewMission()">📋 DISPATCH MISSION</button>
+            </div>
+
+            <div id="missionsListContainer" class="logs-viewer" style="max-height: 360px; min-height: 200px;"></div>
+        </div>
+    </div>
+
     <!-- SECURITY THREATS & INTRUDER MUGSHOTS MODAL (CHECK: RANKS 1, 2, 3 • DELETE: RANK 1 ONLY) -->
     <div id="threatsModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
@@ -741,7 +801,7 @@
             <div id="ownerUpdatePublisher" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:10px; background:var(--chip-bg); border:1px dashed var(--chip-border);">
                 <div style="font-family:'Orbitron', sans-serif; font-size:10.5px; font-weight:700; color:var(--accent-primary);">👑 PUBLISH NEW LIVE UPDATE (OWNER ONLY)</div>
                 <div style="display:flex; gap:8px;">
-                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v4.5)" style="width:140px;">
+                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v4.6)" style="width:140px;">
                     <input type="text" id="newUpdateTitle" placeholder="Update Headline...">
                 </div>
                 <input type="text" id="newUpdateDesc" placeholder="Short description of what was added or fixed...">
@@ -951,6 +1011,7 @@
                     <button type="button" class="chip-btn" style="width:auto;" onclick="startNewSession()">➕ NEW CHAT</button>
                     <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/cmds')">❓ /cmds</button>
                     <button type="button" class="chip-btn" style="width:auto;" onclick="openLogsModal()">📂 ARCHIVE</button>
+                    <button type="button" class="chip-btn" style="width:auto;" onclick="openMissionsModal()">📋 MISSIONS</button>
                     <button type="button" class="chip-btn" style="width:auto;" onclick="openNotifCenter()">
                         <span>🔔 ALERTS</span>
                         <span id="unreadBadgeCenter" class="unread-badge">0</span>
@@ -973,6 +1034,7 @@
             </div>
 
             <div class="input-container">
+                <div id="slashAutocomplete"></div>
                 <select id="personaSelect" style="text-align: center; font-weight:700;">
                     <option value="normal" selected>🟢 NORMAL MODE (DRY SARCASM)</option>
                     <option value="energetic">⚡ ENERGETIC MODE (HYPER SARCASM)</option>
@@ -982,7 +1044,7 @@
                     <button type="button" class="chip-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Voice" style="width:auto; padding: 9px 12px; font-size: 14px;">🔊</button>
                     <button type="button" class="chip-btn" id="micBtn" style="width:auto; padding: 9px 12px; font-size: 15px;" onclick="toggleSpeechRecognition()" title="Manual 1-Tap Mic">🎤</button>
                     <button type="button" class="chip-btn" id="wakeToggleBtn" style="width:auto; padding: 9px 12px; font-size: 11px; white-space: nowrap;" onclick="toggleWakeWord()" title="Wake Word: Listen">🗣️ WAKE: OFF</button>
-                    <input type="text" id="textInput" placeholder="Say 'Listen' or type command...">
+                    <input type="text" id="textInput" placeholder="Say 'Listen', type '/' for commands, or chat...">
                     <button type="button" class="send-btn" onclick="submitCommand()">TRANSMIT</button>
                 </div>
             </div>
@@ -993,6 +1055,7 @@
             <div class="section-title">
                 <span>⚡ LIVE ACTION FEED</span>
                 <div style="display:flex; gap:6px;">
+                    <button type="button" class="chip-btn" style="width:auto; padding:3px 8px; font-size:10px;" onclick="openMissionsModal()" title="Tactical Missions">📋</button>
                     <button type="button" class="chip-btn" style="width:auto; padding:3px 8px; font-size:10px;" onclick="openUpdatesModal()" title="System Updates">🚀</button>
                     <button type="button" class="chip-btn" style="width:auto; padding:3px 8px; font-size:10px;" onclick="openNotifCenter()" title="Notification Corner">
                         <span>🔔</span>
@@ -1078,10 +1141,10 @@
         let lastLockdownSignature = "";
 
         const DEFAULT_UPDATES_FALLBACK = [
-            { version: "v4.5", title: "Intruder Mugshot Capture & PDF/TXT Exports", description: "Added silent webcam mugshot capture on wrong password attempts, visual /threats modal for Ranks 1-3, Rank 1 log deletion, and 1-click PDF/TXT exports.", author: "Viyan Arora", date: "LIVE" },
+            { version: "v4.6", title: "Slash Autocomplete, Mission Board & Cloud Face Sync", description: "Added floating '/' command autocomplete, real-time Tactical Mission Board, and cloud-synced Face ID memory.", author: "Viyan Arora", date: "LIVE" },
+            { version: "v4.5", title: "Intruder Mugshot Capture & PDF/TXT Exports", description: "Added silent webcam mugshot capture on wrong password attempts, visual /threats modal for Ranks 1-3, Rank 1 log deletion, and 1-click PDF/TXT exports.", author: "Viyan Arora", date: "ACTIVE" },
             { version: "v4.4", title: "Cyber-Defense IDS & Searchable Broadcasts", description: "Added Brute-Force IP Lockout, SQLi/XSS Firewall, /threats & /wrongpass security auditing, and searchable broadcast target selector.", author: "Viyan Arora", date: "ACTIVE" },
-            { version: "v4.3", title: "Top HUD Bar, Broadcast Modal & Live Gauges", description: "Added live IST clock & ping bar, 1-click Broadcast modal, animated left-panel core diagnostics, and clean Notification headers.", author: "Viyan Arora", date: "ACTIVE" },
-            { version: "v4.2", title: "Notification Centre & Live Updates Hub", description: "Added per-user Notification Centre with unread counters, 2-day read retention, early delete, global lockdown logs, and live changelog.", author: "Viyan Arora", date: "ACTIVE" }
+            { version: "v4.3", title: "Top HUD Bar, Broadcast Modal & Live Gauges", description: "Added live IST clock & ping bar, 1-click Broadcast modal, animated left-panel core diagnostics, and clean Notification headers.", author: "Viyan Arora", date: "ACTIVE" }
         ];
 
         function generateSessionId() {
@@ -1121,8 +1184,172 @@
         }
 
         // ==========================================================
+        // SLASH COMMAND AUTOCOMPLETE ENGINE (/)
+        // ==========================================================
+        const SLASH_COMMANDS_CATALOG = [
+            { cmd: "/cmds", desc: "Show available commands for your rank", minRank: 4 },
+            { cmd: "/ping", desc: "Test server latency & shield status", minRank: 4 },
+            { cmd: "/logs", desc: "Open encrypted Memory Archive", minRank: 4 },
+            { cmd: "/missions", desc: "Open Tactical Mission & Task Board", minRank: 4 },
+            { cmd: "/health", desc: "Check server uptime & blocked IPs", minRank: 3 },
+            { cmd: "/operative", desc: "List all currently online operatives", minRank: 3 },
+            { cmd: "/userdata", desc: "View registered users per your clearance", minRank: 3 },
+            { cmd: "/threats", desc: "Inspect wrong passwords & intruder mugshots", minRank: 3 },
+            { cmd: "/wrongpass", desc: "Filter security log for failed logins", minRank: 3 },
+            { cmd: "/notify ", desc: "Broadcast alert: /notify [target] [msg]", minRank: 3 },
+            { cmd: "/lockdown ", desc: "Initiate system lockdown: /lockdown [reason]", minRank: 3 },
+            { cmd: "/assign ", desc: "Assign mission: /assign [user_or_all] [task]", minRank: 2 },
+            { cmd: "/giverank ", desc: "Promote/demote user: /giverank [user] [rank]", minRank: 2 },
+            { cmd: "/purgelog", desc: "Inspect historical purge records", minRank: 2 },
+            { cmd: "/unban ", desc: "Clear brute-force IP ban: /unban [ip or all]", minRank: 2 },
+            { cmd: "/removelock", desc: "Lift active system lockdown", minRank: 1 },
+            { cmd: "/purge ", desc: "Purge operative identity from database", minRank: 1 },
+            { cmd: "/clearthreats", desc: "Wipe all security logs & mugshots (Rank 1)", minRank: 1 },
+            { cmd: "/update ", desc: "Publish live update: /update Title | Details", minRank: 1 }
+        ];
+
+        function getCurrentUserNumericRank() {
+            if (currentRole.includes("OWNER")) return 1;
+            if (currentRole.includes("MOD")) return 2;
+            if (currentRole.includes("ADMIN")) return 3;
+            return 4;
+        }
+
+        function handleSlashAutocomplete(inputEl) {
+            const val = inputEl.value;
+            const box = document.getElementById('slashAutocomplete');
+            if (!box) return;
+            if (!val.startsWith('/')) {
+                box.style.display = 'none';
+                return;
+            }
+            const myRank = getCurrentUserNumericRank();
+            const query = val.toLowerCase().trim();
+            const matches = SLASH_COMMANDS_CATALOG.filter(c => c.minRank >= myRank && c.cmd.toLowerCase().startsWith(query));
+
+            if (matches.length === 0) {
+                box.style.display = 'none';
+                return;
+            }
+
+            box.innerHTML = '';
+            matches.forEach(m => {
+                const div = document.createElement('div');
+                div.className = 'slash-item';
+                div.innerHTML = `<span class="slash-cmd-name">${m.cmd}</span><span class="slash-cmd-desc">${m.desc}</span>`;
+                div.onclick = () => {
+                    inputEl.value = m.cmd;
+                    box.style.display = 'none';
+                    inputEl.focus();
+                    if (!m.cmd.endsWith(' ')) submitCommand();
+                };
+                box.appendChild(div);
+            });
+            box.style.display = 'flex';
+        }
+
+        document.addEventListener('click', (e) => {
+            const box = document.getElementById('slashAutocomplete');
+            if (box && !e.target.closest('.input-container')) {
+                box.style.display = 'none';
+            }
+        });
+
+        // ==========================================================
+        // TACTICAL MISSION BOARD ENGINE
+        // ==========================================================
+        async function openMissionsModal() {
+            document.getElementById('missionsModal').style.display = "flex";
+            const assignBox = document.getElementById('missionAssignBox');
+            const canAssign = currentRole.includes("OWNER") || currentRole.includes("MOD");
+            assignBox.style.display = canAssign ? "flex" : "none";
+
+            if (canAssign) {
+                const sel = document.getElementById('missionAssigneeSelect');
+                sel.innerHTML = `<option value="all">🌐 ALL OPERATIVES</option>`;
+                await fetchOperativesList();
+                cachedOperatives.forEach(u => {
+                    let opt = document.createElement('option');
+                    opt.value = u.username;
+                    opt.innerText = `👤 ${cleanDisplayNameOnly(u.display).toUpperCase()} (${u.username})`;
+                    sel.appendChild(opt);
+                });
+            }
+            await fetchAndRenderMissions();
+        }
+
+        function closeMissionsModal() {
+            document.getElementById('missionsModal').style.display = "none";
+        }
+
+        async function fetchAndRenderMissions() {
+            const container = document.getElementById('missionsListContainer');
+            container.innerHTML = `<div style="text-align:center; margin-top:20px;">Loading tactical missions...</div>`;
+            try {
+                let res = await fetch(`${SERVER_URL}/api/missions?user=${encodeURIComponent(currentUser)}`);
+                let data = await res.json();
+                container.innerHTML = "";
+                if (!data.success || !data.missions || data.missions.length === 0) {
+                    container.innerHTML = `<div style="text-align:center; margin-top:30px; color:var(--text-muted);">No active missions assigned.</div>`;
+                    return;
+                }
+                data.missions.forEach(m => {
+                    const isDone = m.status === "COMPLETED";
+                    const div = document.createElement('div');
+                    div.className = `notif-item ${isDone ? 'type-update' : 'unread'}`;
+                    div.innerHTML = `
+                        <div class="notif-header">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span class="notif-tag ${isDone ? 'update' : ''}">${isDone ? '✓ COMPLETED' : '⏳ PENDING'}</span>
+                                <span style="font-weight:700; font-size:12px;">Target: ${m.assignee.toUpperCase()}</span>
+                            </div>
+                            ${!isDone ? `<button class="chip-btn" style="width:auto; padding:3px 9px; font-size:10px; border-color:var(--success); color:var(--success);" onclick="markMissionComplete(${m.id})">✓ COMPLETE</button>` : ''}
+                        </div>
+                        <div style="font-size:12.5px; font-weight:600;">${m.title}</div>
+                        <div class="notif-meta">
+                            <span>Assigned by ${cleanDisplayNameOnly(m.assigned_by)}</span>
+                            <span>🕒 ${m.date}</span>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (e) {
+                container.innerHTML = `<div style="color:var(--danger); text-align:center; margin-top:20px;">Failed to load missions.</div>`;
+            }
+        }
+
+        async function submitNewMission() {
+            const assignee = document.getElementById('missionAssigneeSelect').value || "all";
+            const title = document.getElementById('missionTitleInput').value.trim();
+            if (!title) {
+                showNotification("ERROR", "Enter a mission objective first.", true);
+                return;
+            }
+            try {
+                let res = await fetch(`${SERVER_URL}/api/missions`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user: currentUser, assignee, title })
+                });
+                let data = await res.json();
+                if (data.success) {
+                    document.getElementById('missionTitleInput').value = "";
+                    showNotification("MISSION DISPATCHED", `Task assigned to ${assignee.toUpperCase()}.`, false, { skipStore: true });
+                    await fetchAndRenderMissions();
+                }
+            } catch (e) {}
+        }
+
+        async function markMissionComplete(missionId) {
+            try {
+                await fetch(`${SERVER_URL}/api/missions/complete?mission_id=${missionId}&user=${encodeURIComponent(currentUser)}`, { method: "POST" });
+                showNotification("MISSION COMPLETE", "Objective marked complete. High Command notified.", false, { skipStore: true });
+                await fetchAndRenderMissions();
+            } catch (e) {}
+        }
+
+        // ==========================================================
         // INTRUDER MUGSHOT VIEWER & SECURITY THREATS MODAL
-        // (CHECK FOR RANKS 1, 2, 3 • DELETE FOR RANK 1 OWNER ONLY)
         // ==========================================================
         async function openThreatsModal() {
             if (!(currentRole.includes("OWNER") || currentRole.includes("MOD") || currentRole.includes("ADMIN"))) {
@@ -1281,7 +1508,7 @@
                 <html><head><title>KIZA Chat Report — ${opName}</title>
                 <style>body { font-family: 'Courier New', monospace; padding: 30px; color: #0f172a; }</style></head>
                 <body>
-                    <h2 style="margin:0; color:#0284c7;">KIZA — AI COMMAND HUB // OFFICIAL CHAT ARCHIVE</h2>
+                    <h2 style="margin:0; color:#0284c7;">KIZA — AI COMMAND HUB • OFFICIAL CHAT ARCHIVE</h2>
                     <p style="font-size:12px; color:#475569;">Operative: <b>${opName}</b> | Session: <b>${sessionTitle}</b> | Exported: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</p>
                     <hr style="border:1px solid #cbd5e1; margin-bottom:18px;">
                     ${rowsHtml}
@@ -1849,6 +2076,11 @@
                 showNotification("UI THEME", "Switched to Default Light Theme.", false, { skipStore: true });
                 return { handledLocally: true };
             }
+            if ((words.includes("mission") || words.includes("missions") || words.includes("tasks")) && (words.includes("open") || words.includes("show") || words.includes("check") || words.includes("my"))) {
+                logAction(`[${cleanDisplayNameOnly(currentUser).toUpperCase()}]: ${rawText}`);
+                openMissionsModal();
+                return { handledLocally: true };
+            }
             if (words.includes("notification") || words.includes("notifications") || (words.includes("alerts") && (words.includes("open") || words.includes("show") || words.includes("check")))) {
                 logAction(`[${cleanDisplayNameOnly(currentUser).toUpperCase()}]: ${rawText}`);
                 openNotifCenter();
@@ -1945,6 +2177,9 @@
             if (replyStr.includes("[ACTION:OPEN_THREATS]")) {
                 openThreatsModal();
             }
+            if (replyStr.includes("[ACTION:OPEN_MISSIONS]")) {
+                openMissionsModal();
+            }
             if (replyStr.includes("[ACTION:NEW_CHAT]")) {
                 startNewSession();
             }
@@ -1966,6 +2201,16 @@
             if (data.role && data.role !== "LOCKED" && formatCleanRole(data.role, currentUser) !== currentRole) {
                 applyRoleUI(data.role);
                 showNotification("CLEARANCE UPDATED", `Your clearance is now ${formatCleanRole(data.role, currentUser)}`, false, { category: "broadcast" });
+            }
+            // Cloud-Synced Face ID Restoration from PostgreSQL
+            if (data.face_id) {
+                const img = document.getElementById('savedFaceImg');
+                if (img && img.style.display === "none") {
+                    img.src = data.face_id;
+                    img.style.display = "block";
+                    document.getElementById('faceIdStatus').innerText = "LOCKED (CLOUD)";
+                    safeSetItem('kiza_face', data.face_id);
+                }
             }
             if (data.new_alerts && data.new_alerts.length > 0) {
                 data.new_alerts.forEach(alert => {
@@ -2716,7 +2961,6 @@
             } catch (e) { return null; }
         }
 
-        /* Silently captures a frame for Intruder Mugshot security logging even if user unchecked the Face ID box */
         function captureSilentSecurityFrame() {
             if (!cameraReady) return null;
             try {
@@ -2793,6 +3037,13 @@
                     finalizeLogin(cleanDisplayNameOnly(data.username), data.db_username || resolveDBUser(data.username), data.role, data.face_id || faceSnap, true, data.reply, data.audio_base64);
                 } else {
                     applyRoleUI(data.role);
+                    if (data.face_id) {
+                        const img = document.getElementById('savedFaceImg');
+                        img.src = data.face_id;
+                        img.style.display = "block";
+                        document.getElementById('faceIdStatus').innerText = "LOCKED";
+                        safeSetItem('kiza_face', data.face_id);
+                    }
                     if (data.audio_base64) playKizaAudio(data.audio_base64);
                 }
             } catch (err) {
@@ -2865,6 +3116,7 @@
         function clearIndicator() { let indicator = document.getElementById('chatIndicator'); if (indicator) indicator.remove(); }
 
         document.getElementById('textInput').addEventListener("input", function() {
+            handleSlashAutocomplete(this);
             if (this.value.trim().length > 0) { updateIndicator(`${cleanDisplayNameOnly(currentUser).toUpperCase()} is typing...`); clearTimeout(typingTimer); typingTimer = setTimeout(clearIndicator, 1500); } else { clearIndicator(); }
         });
 
@@ -2893,6 +3145,8 @@
         async function submitCommand() {
             let inputField = document.getElementById('textInput');
             let rawText = inputField.value.trim();
+            const autoBox = document.getElementById('slashAutocomplete');
+            if (autoBox) autoBox.style.display = "none";
             if (!rawText || isChatActive) return;
 
             inputField.value = "";
