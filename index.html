@@ -11,6 +11,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root {
             --bg-main: #eef4f8;
@@ -426,6 +429,28 @@
         }
         .input-row { display: flex; gap: 8px; width: 100%; align-items: center; }
 
+        /* Attached Image Preview Bar */
+        #attachmentPreviewBar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: var(--chip-bg);
+            border: 1px dashed var(--accent-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+        #attachmentThumb {
+            width: 42px;
+            height: 42px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1.5px solid var(--accent-primary);
+            flex-shrink: 0;
+        }
+
         #slashAutocomplete {
             position: absolute;
             bottom: calc(100% + 8px);
@@ -523,6 +548,18 @@
         @keyframes fadeInMsg {
             from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        .streaming-cursor::after {
+            content: "▋";
+            display: inline-block;
+            margin-left: 3px;
+            color: var(--accent-primary);
+            animation: blinkCursor 0.6s infinite alternate;
+        }
+        @keyframes blinkCursor {
+            from { opacity: 1; }
+            to { opacity: 0.1; }
         }
 
         .notif-item {
@@ -816,7 +853,7 @@
             <div id="ownerUpdatePublisher" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:10px; background:var(--chip-bg); border:1px dashed var(--chip-border);">
                 <div style="font-family:'Orbitron', sans-serif; font-size:10.5px; font-weight:700; color:var(--accent-primary);">👑 PUBLISH NEW LIVE UPDATE (OWNER ONLY)</div>
                 <div style="display:flex; gap:8px;">
-                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v4.8)" style="width:140px;">
+                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v5.0)" style="width:140px;">
                     <input type="text" id="newUpdateTitle" placeholder="Update Headline...">
                 </div>
                 <input type="text" id="newUpdateDesc" placeholder="Short description of what was added or fixed...">
@@ -960,7 +997,7 @@
                 <span>📡 SYSTEM TELEMETRY</span>
                 <span style="width:8px; height:8px; border-radius:50%; background:var(--success); box-shadow: 0 0 8px var(--success);"></span>
             </div>
-            <div class="telemetry-row"><span>PROTOCOL</span><span class="telemetry-val" style="color:var(--success);">ONLINE</span></div>
+            <div class="telemetry-row"><span>PROTOCOL</span><span class="telemetry-val" style="color:var(--success);">SSE STREAMING</span></div>
             <div class="telemetry-row"><span>IDENTITY</span><span id="idVal" class="telemetry-val">UNVERIFIED</span></div>
             <div class="telemetry-row"><span>CLEARANCE</span><span id="roleVal" class="telemetry-val">LOCKED</span></div>
             
@@ -1000,7 +1037,7 @@
                     <div class="diag-bar-bg"><div id="memSyncBar" class="diag-bar-fill" style="width: 100%;"></div></div>
                 </div>
                 <div class="diag-item">
-                    <div class="diag-header"><span>BIOMETRIC PIN GATE</span><span id="secShieldText">ARMED</span></div>
+                    <div class="diag-header"><span>FILE & VISION ENGINE</span><span id="secShieldText">PDF • PPTX • OCR</span></div>
                     <div class="diag-bar-bg"><div class="diag-bar-fill" style="width: 100%; background: var(--success);"></div></div>
                 </div>
             </div>
@@ -1055,6 +1092,19 @@
 
             <div class="input-container">
                 <div id="slashAutocomplete"></div>
+
+                <!-- ATTACHED IMAGE PREVIEW & OCR STATUS BAR -->
+                <div id="attachmentPreviewBar">
+                    <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+                        <img id="attachmentThumb" src="" alt="Attached">
+                        <div style="display:flex; flex-direction:column; gap:2px; overflow:hidden;">
+                            <span id="attachmentName" style="font-weight:700; color:var(--accent-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">image.png</span>
+                            <span id="attachmentOcrStatus" style="font-size:10px; color:var(--text-muted);">Scanning image contents...</span>
+                        </div>
+                    </div>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 8px; border-color:var(--danger); color:var(--danger);" onclick="clearImageAttachment()" title="Remove Image">✕</button>
+                </div>
+
                 <!-- MULTI-PERSONA DYNAMIC VOICE SYNTHESIZER DROPDOWN -->
                 <select id="personaSelect" style="text-align: center; font-weight:700;" onchange="handlePersonaChange()">
                     <option value="normal" selected>🟢 NORMAL MODE (UK • DRY SARCASM)</option>
@@ -1064,10 +1114,12 @@
                 </select>
 
                 <div class="input-row">
+                    <input type="file" id="imageUploadInput" accept="image/*" style="display:none;" onchange="handleImageAttachment(event)">
+                    <button type="button" class="chip-btn" id="attachImgBtn" onclick="document.getElementById('imageUploadInput').click()" title="Attach Image for AI Analysis or PDF/PPTX" style="width:auto; padding: 9px 12px; font-size: 14px;">📎</button>
                     <button type="button" class="chip-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Voice" style="width:auto; padding: 9px 12px; font-size: 14px;">🔊</button>
                     <button type="button" class="chip-btn" id="micBtn" style="width:auto; padding: 9px 12px; font-size: 15px;" onclick="toggleSpeechRecognition()" title="Manual 1-Tap Mic">🎤</button>
-                    <button type="button" class="chip-btn" id="wakeToggleBtn" style="width:auto; padding: 9px 12px; font-size: 11px; white-space: nowrap;" onclick="toggleWakeWord()" title="Wake Word: Listen">🗣️ WAKE: OFF</button>
-                    <input type="text" id="textInput" placeholder="Say 'Listen', type '/' for commands, or chat...">
+                    <button type="button" class="chip-btn" id="wakeToggleBtn" style="width:auto; padding: 9px 12px; font-size: 11px; white-space: nowrap;" onclick="toggleWakeWord()" title="Wake Word: Hello">🗣️ WAKE: OFF</button>
+                    <input type="text" id="textInput" placeholder="Attach 📎 image, say 'Generate PDF/PPTX on...', or chat...">
                     <button type="button" class="send-btn" onclick="submitCommand()">TRANSMIT</button>
                 </div>
             </div>
@@ -1087,7 +1139,7 @@
                 </div>
             </div>
             <div id="actionLog" class="log-box">
-                <div>> [KIZA SYSTEM]: HUD online. System ready.</div>
+                <div>> [KIZA SYSTEM]: HUD online. Universal PDF/PPTX/File compiler & Image Attachment Vision armed.</div>
             </div>
         </div>
     </div>
@@ -1148,7 +1200,7 @@
         let wakeCommandTimeout = null;
         let isKizaSpeaking = false;
 
-        const LISTEN_VARIATIONS = ["listen", "lissen", "listening", "list in"];
+        const WAKE_WORD_VARIATIONS = ["hello", "helo", "listen", "lissen", "listening"];
 
         let voiceEnabled = false;
         let currentAudio = null;
@@ -1167,7 +1219,12 @@
         let isPinLocked = false;
         let pendingLoginData = null;
 
-        // Multi-Persona Voice Synthesizer Configuration
+        // Attached Image & In-Browser Vision/OCR State
+        let attachedImageBase64 = null;
+        let attachedImageName = "";
+        let attachedImageExtractedContext = "";
+        let isScanningAttachment = false;
+
         const PERSONA_VOICE_CONFIG = {
             normal: { label: "UK • DRY WIT", rate: 1.04 },
             energetic: { label: "US • FAST WIT", rate: 1.16 },
@@ -1176,10 +1233,10 @@
         };
 
         const DEFAULT_UPDATES_FALLBACK = [
-            { version: "v4.8", title: "Multi-Persona Dynamic Voice Synthesizer", description: "Added 4 distinct AI personas (Normal, Energetic, Security Protocol, and Executive Assistant) with dynamic voice accent and cadence tuning.", author: "Viyan Arora", date: "LIVE" },
-            { version: "v4.7", title: "Biometric Face-Match & Mandatory Backup PIN", description: "Added mandatory operative Security PINs, real-time Face ID similarity verification with PIN fallback, and silent 2nd-strike intruder mugshots.", author: "Viyan Arora", date: "ACTIVE" },
-            { version: "v4.6", title: "Slash Autocomplete, Mission Board & Cloud Face Sync", description: "Added floating '/' command autocomplete, real-time Tactical Mission Board, and cloud-synced Face ID memory.", author: "Viyan Arora", date: "ACTIVE" },
-            { version: "v4.5", title: "Intruder Mugshot Capture & PDF/TXT Exports", description: "Added silent webcam mugshot capture on wrong password attempts, visual /threats modal for Ranks 1-3, Rank 1 log deletion, and 1-click PDF/TXT exports.", author: "Viyan Arora", date: "ACTIVE" }
+            { version: "v5.0", title: "Universal File Generator (PDF, PPTX, Any File) & Image Attachment", description: "Added 1-command generation for PDF dossiers, PowerPoint (.pptx) slide decks, DOC/CSV/Code files, and full image attachment analysis.", author: "Viyan Arora", date: "LIVE" },
+            { version: "v4.9", title: "Real-Time Token Streaming Engine", description: "Implemented asynchronous SSE token streaming so responses type out character-by-character the millisecond Groq generates them.", author: "Viyan Arora", date: "ACTIVE" },
+            { version: "v4.8", title: "Multi-Persona Dynamic Voice Synthesizer", description: "Added 4 distinct AI personas (Normal, Energetic, Security Protocol, and Executive Assistant) with dynamic voice accent and cadence tuning.", author: "Viyan Arora", date: "ACTIVE" },
+            { version: "v4.7", title: "Biometric Face-Match & Mandatory Backup PIN", description: "Added mandatory operative Security PINs, real-time Face ID similarity verification with PIN fallback, and silent 2nd-strike intruder mugshots.", author: "Viyan Arora", date: "ACTIVE" }
         ];
 
         function handlePersonaChange() {
@@ -1224,6 +1281,310 @@
             if (d === "admin1" || d.startsWith("admin1 ")) return "admin1";
             if (d === "mod1" || d.startsWith("mod1 ")) return "mod1";
             return d.replace(" (owner)", "").replace(" (admin)", "").replace(" (mod)", "").trim();
+        }
+
+        // ==========================================================
+        // IMAGE ATTACHMENT UPLOADER & IN-BROWSER OCR / METADATA SCANNER
+        // ==========================================================
+        function analyzeImageVisualTelemetry(imgEl, filename) {
+            try {
+                const c = document.createElement('canvas');
+                c.width = 64; c.height = 64;
+                const ctx = c.getContext('2d');
+                ctx.drawImage(imgEl, 0, 0, 64, 64);
+                const data = ctx.getImageData(0, 0, 64, 64).data;
+                let rSum = 0, gSum = 0, bSum = 0, brightSum = 0;
+                const pixels = 64 * 64;
+                for (let i = 0; i < data.length; i += 4) {
+                    rSum += data[i];
+                    gSum += data[i + 1];
+                    bSum += data[i + 2];
+                    brightSum += (data[i] + data[i + 1] + data[i + 2]) / 3;
+                }
+                const avgR = Math.round(rSum / pixels);
+                const avgG = Math.round(gSum / pixels);
+                const avgB = Math.round(bSum / pixels);
+                const brightness = Math.round((brightSum / pixels / 255) * 100);
+                const tone = brightness > 65 ? "Bright/Light-themed" : (brightness < 35 ? "Dark-themed" : "Balanced contrast");
+                return `Image File: '${filename}' (${imgEl.naturalWidth}x${imgEl.naturalHeight}px, ${tone}, RGB(${avgR},${avgG},${avgB}))`;
+            } catch (e) {
+                return `Image File: '${filename}'`;
+            }
+        }
+
+        async function handleImageAttachment(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const rawDataUrl = e.target.result;
+                attachedImageName = file.name;
+
+                // Compress to clean JPEG Base64 & extract visual telemetry
+                const img = new Image();
+                img.onload = async () => {
+                    const canvas = document.createElement('canvas');
+                    const maxDim = 800;
+                    let w = img.naturalWidth || 640;
+                    let h = img.naturalHeight || 480;
+                    if (w > maxDim || h > maxDim) {
+                        if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+                        else { w = Math.round(w * (maxDim / h)); h = maxDim; }
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    attachedImageBase64 = canvas.toDataURL('image/jpeg', 0.78);
+
+                    document.getElementById('attachmentThumb').src = attachedImageBase64;
+                    document.getElementById('attachmentName').innerText = `📎 ${file.name}`;
+                    document.getElementById('attachmentOcrStatus').innerText = "🔍 Running Visual & OCR scan...";
+                    document.getElementById('attachmentPreviewBar').style.display = "flex";
+
+                    const visualMeta = analyzeImageVisualTelemetry(img, file.name);
+                    attachedImageExtractedContext = `[ATTACHED IMAGE TELEMETRY: ${visualMeta}]`;
+
+                    // Run client-side OCR so Qwen understands text/diagrams inside attached images
+                    if (typeof Tesseract !== "undefined") {
+                        isScanningAttachment = true;
+                        try {
+                            const ocrResult = await Tesseract.recognize(attachedImageBase64, 'eng');
+                            const extractedText = (ocrResult?.data?.text || "").replace(/\s+/g, ' ').trim();
+                            if (extractedText && extractedText.length > 2) {
+                                attachedImageExtractedContext = `[ATTACHED IMAGE TELEMETRY: ${visualMeta} | EXTRACTED IMAGE TEXT (OCR): "${extractedText.slice(0, 700)}"]`;
+                                document.getElementById('attachmentOcrStatus').innerText = "✓ Visual & OCR text extracted — Ready";
+                            } else {
+                                document.getElementById('attachmentOcrStatus').innerText = "✓ Visual telemetry locked — Ready";
+                            }
+                        } catch (ocrErr) {
+                            document.getElementById('attachmentOcrStatus').innerText = "✓ Image locked — Ready";
+                        }
+                        isScanningAttachment = false;
+                    } else {
+                        document.getElementById('attachmentOcrStatus').innerText = "✓ Image locked — Ready";
+                    }
+                };
+                img.src = rawDataUrl;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearImageAttachment() {
+            attachedImageBase64 = null;
+            attachedImageName = "";
+            attachedImageExtractedContext = "";
+            isScanningAttachment = false;
+            document.getElementById('imageUploadInput').value = "";
+            document.getElementById('attachmentPreviewBar').style.display = "none";
+        }
+
+        // ==========================================================
+        // UNIVERSAL FILE GENERATOR (PDF, PPTX, DOC, CSV, PY, HTML, TXT)
+        // ==========================================================
+        function compileAndDownloadDetailedPDF(topicTitle, rawContent, embeddedImgBase64 = null) {
+            const cleanTopic = (topicTitle || "Intelligence Dossier").toUpperCase();
+            const cleanBody = rawContent
+                .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
+                .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
+                .replace(/\n\n/g, '<br><br>')
+                .replace(/\n/g, '<br>');
+
+            const pdfContainer = document.createElement('div');
+            pdfContainer.style.padding = '35px 40px';
+            pdfContainer.style.fontFamily = "'Inter', Arial, sans-serif";
+            pdfContainer.style.color = '#0f172a';
+            pdfContainer.style.lineHeight = '1.6';
+            pdfContainer.style.background = '#ffffff';
+
+            const imgBlockHtml = embeddedImgBase64
+                ? `<div style="margin-bottom:20px; text-align:center;"><img src="${embeddedImgBase64}" style="max-width:85%; max-height:240px; border-radius:8px; border:2px solid #0284c7;"></div>`
+                : '';
+
+            pdfContainer.innerHTML = `
+                <div style="border-bottom: 2px solid #0284c7; padding-bottom: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div>
+                        <h1 style="font-family:'Orbitron', sans-serif; margin: 0; color: #0284c7; font-size: 22px; letter-spacing: 1.5px;">KIZA INTELLIGENCE DOSSIER</h1>
+                        <div style="font-size: 11px; color: #64748b; margin-top: 4px; font-weight: 600;">OFFICIAL SYSTEM GENERATED DOCUMENT</div>
+                    </div>
+                    <div style="text-align: right; font-size: 10px; color: #475569; font-family: monospace;">
+                        <div>AUTHOR: ${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole})</div>
+                        <div>DATE: ${new Date().toLocaleDateString('en-IN')}</div>
+                    </div>
+                </div>
+                <div style="background: #f0f9ff; border-left: 4px solid #0284c7; padding: 10px 16px; margin-bottom: 20px; font-size: 13px; font-weight: bold; color: #0369a1;">
+                    TOPIC: ${cleanTopic}
+                </div>
+                ${imgBlockHtml}
+                <div style="font-size: 12.5px; text-align: justify; color: #1e293b;">
+                    ${cleanBody}
+                </div>
+                <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 9px; color: #94a3b8; display: flex; justify-content: space-between; font-family: monospace;">
+                    <span>KIZA AI HUB • SECURE EXPORT</span>
+                    <span>CLASSIFIED • AUTHORIZED OPERATIVE USE ONLY</span>
+                </div>
+            `;
+
+            document.body.appendChild(pdfContainer);
+
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: `KIZA_Dossier_${cleanTopic.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 35)}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            showNotification("COMPILING PDF", `Generating PDF dossier on ${cleanTopic}...`, false, { skipStore: true });
+
+            if (typeof html2pdf !== "undefined") {
+                html2pdf().set(opt).from(pdfContainer).save().then(() => {
+                    document.body.removeChild(pdfContainer);
+                    showNotification("PDF DOWNLOADED", `Saved ${opt.filename}`, false, { skipStore: true });
+                }).catch(() => {
+                    document.body.removeChild(pdfContainer);
+                });
+            } else {
+                document.body.removeChild(pdfContainer);
+                triggerTextDownload(`KIZA_Dossier_${Date.now()}.txt`, rawContent);
+            }
+        }
+
+        function compileAndDownloadPPTX(topicTitle, rawContent, embeddedImgBase64 = null) {
+            const cleanTopic = (topicTitle || "Executive Presentation").toUpperCase();
+            const cleanBody = rawContent
+                .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
+                .replace(/\*/g, '')
+                .trim();
+
+            if (typeof PptxGenJS === "undefined") {
+                triggerTextDownload(`KIZA_Presentation_${Date.now()}.txt`, cleanBody);
+                return;
+            }
+
+            showNotification("COMPILING PPTX", `Building PowerPoint deck for ${cleanTopic}...`, false, { skipStore: true });
+
+            try {
+                const pptx = new PptxGenJS();
+                pptx.layout = "LAYOUT_16x9";
+                pptx.author = cleanDisplayNameOnly(currentUser);
+                pptx.company = "KIZA AI Command Hub";
+                pptx.title = cleanTopic;
+
+                // Cover Slide
+                let titleSlide = pptx.addSlide();
+                titleSlide.background = { color: "060A17" };
+                titleSlide.addText("KIZA AI COMMAND HUB // INTELLIGENCE DECK", {
+                    x: 0.6, y: 0.6, w: 8.8, h: 0.4,
+                    fontSize: 11, color: "00F2FE", bold: true, fontFace: "Courier New"
+                });
+                titleSlide.addText(cleanTopic, {
+                    x: 0.6, y: 1.5, w: embeddedImgBase64 ? 5.5 : 8.8, h: 1.8,
+                    fontSize: 28, color: "FFFFFF", bold: true, fontFace: "Arial"
+                });
+                titleSlide.addText(`Prepared by: ${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole})  |  ${new Date().toLocaleDateString('en-IN')}`, {
+                    x: 0.6, y: 4.6, w: 8.8, h: 0.4,
+                    fontSize: 12, color: "94A3B8", fontFace: "Arial"
+                });
+                if (embeddedImgBase64) {
+                    try {
+                        titleSlide.addImage({ data: embeddedImgBase64, x: 6.3, y: 1.3, w: 3.1, h: 2.6 });
+                    } catch (imgErr) {}
+                }
+
+                // Parse SLIDE blocks
+                const slideRegex = /SLIDE\s*\d+\s*:\s*([^\n]+)\n([\s\S]*?)(?=SLIDE\s*\d+\s*:|$)/gi;
+                let match;
+                let slideCount = 0;
+
+                while ((match = slideRegex.exec(cleanBody)) !== null) {
+                    slideCount++;
+                    const sTitle = match[1].trim();
+                    const sBodyRaw = match[2].trim();
+                    const bullets = sBodyRaw
+                        .split(/\n+/)
+                        .map(line => line.replace(/^[-•*\d.)\s]+/, '').trim())
+                        .filter(Boolean);
+
+                    let slide = pptx.addSlide();
+                    slide.background = { color: "0B1120" };
+                    slide.addText(`SLIDE 0${slideCount} // ${sTitle.toUpperCase()}`, {
+                        x: 0.6, y: 0.5, w: 8.8, h: 0.6,
+                        fontSize: 20, color: "38BDF8", bold: true, fontFace: "Arial"
+                    });
+
+                    if (bullets.length > 0) {
+                        const bulletObjs = bullets.map(b => ({
+                            text: b,
+                            options: { bullet: true, color: "F1F5F9", fontSize: 15, breakLine: true, paraSpaceAfter: 12 }
+                        }));
+                        slide.addText(bulletObjs, { x: 0.7, y: 1.4, w: 8.6, h: 3.6, valign: "top" });
+                    } else if (sBodyRaw) {
+                        slide.addText(sBodyRaw, { x: 0.7, y: 1.4, w: 8.6, h: 3.6, fontSize: 15, color: "F1F5F9", valign: "top" });
+                    }
+                }
+
+                // Fallback if AI didn't use strict SLIDE N headers
+                if (slideCount === 0) {
+                    const paragraphs = cleanBody.split(/\n\n+/).filter(Boolean);
+                    paragraphs.slice(0, 5).forEach((para, idx) => {
+                        let slide = pptx.addSlide();
+                        slide.background = { color: "0B1120" };
+                        slide.addText(`${cleanTopic} — SECTION ${idx + 1}`, {
+                            x: 0.6, y: 0.5, w: 8.8, h: 0.6,
+                            fontSize: 20, color: "38BDF8", bold: true
+                        });
+                        slide.addText(para, {
+                            x: 0.7, y: 1.4, w: 8.6, h: 3.6,
+                            fontSize: 15, color: "F1F5F9", valign: "top"
+                        });
+                    });
+                }
+
+                const fileName = `KIZA_Deck_${cleanTopic.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30)}.pptx`;
+                pptx.writeFile({ fileName }).then(() => {
+                    showNotification("PPTX DOWNLOADED", `Saved presentation: ${fileName}`, false, { skipStore: true });
+                });
+            } catch (err) {
+                triggerTextDownload(`KIZA_Presentation_${Date.now()}.txt`, cleanBody);
+            }
+        }
+
+        function compileAndDownloadUniversalFile(ext, topic, rawContent, embeddedImgBase64 = null) {
+            const cleanExt = (ext || "txt").toLowerCase().trim();
+            const safeTopic = (topic || "KIZA_Export").replace(/[^a-zA-Z0-9]/g, '_').slice(0, 32);
+            const cleanBody = rawContent
+                .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
+                .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
+                .trim();
+
+            if (cleanExt === "pdf") {
+                compileAndDownloadDetailedPDF(topic, cleanBody, embeddedImgBase64);
+                return;
+            }
+            if (cleanExt === "pptx" || cleanExt === "ppt") {
+                compileAndDownloadPPTX(topic, cleanBody, embeddedImgBase64);
+                return;
+            }
+            if (cleanExt === "doc" || cleanExt === "docx") {
+                const htmlDoc = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>${topic}</title></head><body style="font-family:Arial,sans-serif;line-height:1.6;"><h1>${topic.toUpperCase()}</h1><p><b>Generated by KIZA AI Hub</b></p><hr>${cleanBody.replace(/\n/g, '<br>')}</body></html>`;
+                const blob = new Blob(['\ufeff', htmlDoc], { type: 'application/msword' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `KIZA_${safeTopic}.doc`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showNotification("DOC DOWNLOADED", `Saved Word document: KIZA_${safeTopic}.doc`, false, { skipStore: true });
+                return;
+            }
+
+            // All other file extensions (.csv, .txt, .py, .html, .json, .md, .js)
+            const filename = `KIZA_${safeTopic}.${cleanExt}`;
+            triggerTextDownload(filename, cleanBody);
+            showNotification("FILE DOWNLOADED", `Saved ${filename}`, false, { skipStore: true });
         }
 
         // ==========================================================
@@ -1376,6 +1737,9 @@
         // ==========================================================
         const SLASH_COMMANDS_CATALOG = [
             { cmd: "/cmds", desc: "Show available commands for your rank", minRank: 4 },
+            { cmd: "/pdf ", desc: "Generate & download a detailed PDF dossier: /pdf [topic]", minRank: 4 },
+            { cmd: "/pptx ", desc: "Generate & download a PowerPoint deck: /pptx [topic]", minRank: 4 },
+            { cmd: "/file ", desc: "Generate any file (doc, csv, py, html, txt): /file [ext] [topic]", minRank: 4 },
             { cmd: "/ping", desc: "Test server latency & shield status", minRank: 4 },
             { cmd: "/logs", desc: "Open encrypted Memory Archive", minRank: 4 },
             { cmd: "/missions", desc: "Open Tactical Mission & Task Board", minRank: 4 },
@@ -1795,9 +2159,9 @@
             const loadBar = document.getElementById('coreLoadBar');
             const statusText = document.getElementById('diagStatusText');
             if (isAnalyzing) {
-                if (loadText) loadText.innerText = "89%";
-                if (loadBar) loadBar.style.width = "89%";
-                if (statusText) { statusText.innerText = "PROCESSING"; statusText.style.color = "var(--warning)"; }
+                if (loadText) loadText.innerText = "92%";
+                if (loadBar) loadBar.style.width = "92%";
+                if (statusText) { statusText.innerText = "STREAMING"; statusText.style.color = "var(--warning)"; }
             } else {
                 if (loadText) loadText.innerText = "16%";
                 if (loadBar) loadBar.style.width = "16%";
@@ -2253,7 +2617,6 @@
             const low = rawText.toLowerCase().trim();
             const words = low.split(/[\s,?.!]+/);
 
-            // Voice Persona Switching
             if (words.includes("persona") || words.includes("mode") || words.includes("protocol")) {
                 if (words.includes("energetic") || words.includes("hyper")) {
                     document.getElementById('personaSelect').value = "energetic";
@@ -2512,6 +2875,7 @@
         function startNewSession() {
             if (isPinLocked) { openPinGate(pinGateMode); return; }
             currentSessionId = generateSessionId();
+            clearImageAttachment();
             document.getElementById('actionLog').innerHTML = `<div>> [KIZA SYSTEM]: Memory wiped. New private session initialized.</div>`;
             showNotification("NEW SESSION", "Context cleared. Started a fresh conversation.", false, { skipStore: true });
         }
@@ -2689,7 +3053,7 @@
             } else {
                 logAction(`[SYSTEM]: Identity active: ${cleanNameUpper}`, "#007BFF");
             }
-            document.getElementById('actionLog').innerHTML = '<div>> [KIZA SYSTEM]: HUD online. System ready.</div>';
+            document.getElementById('actionLog').innerHTML = '<div>> [KIZA SYSTEM]: HUD online. Universal PDF/PPTX/File compiler & Image Attachment Vision armed.</div>';
             initWebSocket();
         }
 
@@ -2744,7 +3108,7 @@
             document.getElementById('authModal').style.display = "flex";
             document.getElementById('cancelAuthBtn').style.display = "none";
             document.getElementById('masterCmds').style.display = "none";
-            document.getElementById('actionLog').innerHTML = '<div>> [KIZA SYSTEM]: HUD online. System ready.</div>';
+            document.getElementById('actionLog').innerHTML = '<div>> [KIZA SYSTEM]: HUD online. Universal PDF/PPTX/File compiler & Image Attachment Vision armed.</div>';
             closeSettings();
         }
         function logoutUser() { forceLogout(); document.getElementById('authUser').value = ""; document.getElementById('authPass').value = ""; document.getElementById('authError').innerText = ""; }
@@ -2982,7 +3346,6 @@
             isKizaSpeaking = true;
             currentAudio = new Audio("data:audio/mp3;base64," + base64Data);
 
-            // Dynamically tune speech cadence based on active persona
             const selectedPersona = document.getElementById('personaSelect')?.value || "normal";
             const voiceCfg = PERSONA_VOICE_CONFIG[selectedPersona] || PERSONA_VOICE_CONFIG.normal;
             currentAudio.playbackRate = voiceCfg.rate;
@@ -3109,7 +3472,7 @@
                 }
 
                 let matchedVariant = null;
-                for (const variant of LISTEN_VARIATIONS) {
+                for (const variant of WAKE_WORD_VARIATIONS) {
                     if (lowerText.includes(variant)) {
                         matchedVariant = variant;
                         break;
@@ -3127,7 +3490,7 @@
                         submitCommand();
                     } else {
                         awaitingWakeCommand = true;
-                        document.getElementById('uiStatus').innerText = "🟢 LISTEN DETECTED • SPEAK NOW...";
+                        document.getElementById('uiStatus').innerText = "🟢 WAKE DETECTED • SPEAK NOW...";
                         document.getElementById('orb').classList.add('processing');
 
                         clearTimeout(wakeCommandTimeout);
@@ -3162,8 +3525,8 @@
             if (wakeWordEnabled) {
                 if (isRecording && recognition) recognition.stop();
                 try { wakeRecognition.start(); } catch (e) {}
-                logAction("[SYSTEM]: Hands-free 'Listen' wake word ACTIVE.", "#00ffcc");
-                showNotification("WAKE WORD ON", "Say 'Listen' anytime to speak hands-free!", false, { skipStore: true });
+                logAction("[SYSTEM]: Hands-free wake word ('Hello' / 'Listen') ACTIVE.", "#00ffcc");
+                showNotification("WAKE WORD ON", "Say 'Hello' anytime to speak hands-free!", false, { skipStore: true });
             } else {
                 awaitingWakeCommand = false;
                 try { wakeRecognition.stop(); } catch (e) {}
@@ -3409,28 +3772,17 @@
             if (this.value.trim().length > 0) { updateIndicator(`${cleanDisplayNameOnly(currentUser).toUpperCase()} is typing...`); clearTimeout(typingTimer); typingTimer = setTimeout(clearIndicator, 1500); } else { clearIndicator(); }
         });
 
-        function typeWriterLog(message, onComplete = null) {
-            let logBox = document.getElementById('actionLog'); let newEntry = document.createElement('div');
-            if(document.body.classList.contains('dark-mode')) newEntry.style.color = "#e085ff";
-            logBox.appendChild(newEntry);
-            let indicator = document.getElementById('chatIndicator'); if (indicator) logBox.appendChild(indicator);
-            let cleanMessage = stripSlashesFromText(message);
-            let i = 0; let speed = 22; newEntry.innerHTML = "> ";
-            function type() {
-                if (i < cleanMessage.length) { newEntry.innerHTML += cleanMessage.charAt(i); i++; logBox.scrollTop = logBox.scrollHeight; setTimeout(type, speed); } 
-                else { if (onComplete) onComplete(); }
-            }
-            type();
-        }
-
         function sendQuickCmd(cmd) { document.getElementById('textInput').value = cmd; submitCommand(); }
 
         function isVisualQuestion(textStr) {
             const low = textStr.toLowerCase();
-            const visualWords = ["see", "look", "camera", "webcam", "holding", "hold", "hand", "wearing", "wear", "show", "watch", "read this", "what is this", "what's this", "in front", "photo", "picture"];
+            const visualWords = ["see", "look", "camera", "webcam", "holding", "hold", "hand", "wearing", "wear", "show", "watch", "read this", "what is this", "what's this", "in front", "photo", "picture", "image", "attached", "attachment", "solve", "explain this"];
             return visualWords.some(w => low.includes(w));
         }
 
+        // ==========================================================
+        // REAL-TIME SSE TOKEN STREAMING + IMAGE & FILE COMPILER
+        // ==========================================================
         async function submitCommand() {
             if (isPinLocked) {
                 openPinGate(pinGateMode);
@@ -3440,6 +3792,11 @@
             let rawText = inputField.value.trim();
             const autoBox = document.getElementById('slashAutocomplete');
             if (autoBox) autoBox.style.display = "none";
+
+            // Allow submitting an attached image even if text input is empty
+            if (!rawText && attachedImageBase64) {
+                rawText = "Analyze and explain this attached image in detail.";
+            }
             if (!rawText || isChatActive) return;
 
             inputField.value = "";
@@ -3451,66 +3808,150 @@
             let text = intent.mappedText;
             const cleanSpeaker = cleanDisplayNameOnly(currentUser).toUpperCase();
 
+            // Capture current attachment state before clearing UI preview
+            const currentAttachedImg = attachedImageBase64;
+            const currentAttachedName = attachedImageName;
+            const currentAttachedContext = attachedImageExtractedContext;
+            const hasExplicitAttachment = Boolean(currentAttachedImg);
+
+            if (hasExplicitAttachment) {
+                logAction(`[${cleanSpeaker}]: [📎 Attached: ${currentAttachedName}] ${rawText}`);
+                // Inject extracted OCR & visual telemetry into the command string so Qwen understands the image 100%
+                if (currentAttachedContext && !text.startsWith("/")) {
+                    text = `${text}\n\n${currentAttachedContext}`;
+                }
+                clearImageAttachment();
+            } else {
+                logAction(`[${cleanSpeaker}]: ${rawText}`);
+            }
+
             isChatActive = true;
             setCoreLoadSpike(true);
-            logAction(`[${cleanSpeaker}]: ${rawText}`);
-            document.getElementById('uiStatus').innerText = "KIZA ANALYZING..."; document.getElementById('orb').classList.add('processing'); 
-            updateIndicator("KIZA is thinking...");
+            document.getElementById('uiStatus').innerText = "⚡ STREAMING RESPONSE...";
+            const orbEl = document.getElementById('orb');
+            orbEl.classList.add('processing');
 
             let selectedPersona = document.getElementById('personaSelect').value; 
-            let liveVisionFrame = null;
-            try {
-                if (isCameraActive && cameraReady && isVisualQuestion(rawText)) {
-                    const video = document.getElementById('webcamVideo'); const canvas = document.createElement('canvas');
-                    canvas.width = 640; canvas.height = 480; canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-                    liveVisionFrame = canvas.toDataURL('image/jpeg', 0.7);
-                }
-            } catch (e) {}
+            let finalVisionFrame = currentAttachedImg;
+
+            if (!finalVisionFrame) {
+                try {
+                    if (isCameraActive && cameraReady && isVisualQuestion(rawText)) {
+                        const video = document.getElementById('webcamVideo'); const canvas = document.createElement('canvas');
+                        canvas.width = 640; canvas.height = 480; canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                        finalVisionFrame = canvas.toDataURL('image/jpeg', 0.7);
+                    }
+                } catch (e) {}
+            }
+
+            const logBox = document.getElementById('actionLog');
+            const streamEntry = document.createElement('div');
+            streamEntry.className = "streaming-cursor";
+            if (document.body.classList.contains('dark-mode')) streamEntry.style.color = "#e085ff";
+            streamEntry.innerText = "> [KIZA]: ";
+            logBox.appendChild(streamEntry);
+            logBox.scrollTop = logBox.scrollHeight;
+
+            let accumulatedText = "";
+            let isStreamError = false;
 
             try {
-                let response = await fetch(`${SERVER_URL}/api/chat`, { 
+                let response = await fetch(`${SERVER_URL}/api/chat/stream`, { 
                     method: "POST", 
                     headers: { "Content-Type": "application/json" }, 
                     body: JSON.stringify({ 
                         user: currentUser, 
                         command: text, 
-                        image_base64: liveVisionFrame, 
+                        image_base64: finalVisionFrame, 
+                        is_attached_image: hasExplicitAttachment,
                         personality: selectedPersona,
                         session_id: currentSessionId
                     }) 
                 });
-                if (!response.ok) throw new Error("Cloud connection failed.");
-                let data = await response.json();
-                document.getElementById('orb').classList.remove('processing');
+                if (!response.ok) throw new Error("Cloud stream connection failed.");
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                let buffer = "";
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    buffer += decoder.decode(value, { stream: true });
+
+                    let lines = buffer.split("\n\n");
+                    buffer = lines.pop() || "";
+
+                    for (let block of lines) {
+                        const trimmed = block.trim();
+                        if (!trimmed.startsWith("data:")) continue;
+                        const jsonStr = trimmed.replace(/^data:\s*/, "");
+                        try {
+                            const payload = JSON.parse(jsonStr);
+                            if (payload.type === "token") {
+                                if (payload.is_error) isStreamError = true;
+                                accumulatedText += payload.text;
+                                const visibleClean = stripSlashesFromText(accumulatedText)
+                                    .replace(/\[ACTION:[A-Z_]+\]/g, '')
+                                    .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
+                                    .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
+                                    .replace(/\[SYSTEM[^\]]*\]/gi, '')
+                                    .replace(/\*/g, '');
+                                streamEntry.innerText = `> [KIZA]: ${visibleClean}`;
+                                logBox.scrollTop = logBox.scrollHeight;
+
+                                orbEl.style.transform = `scale(${(1.03 + Math.random() * 0.08).toFixed(3)})`;
+                            } else if (payload.type === "audio" && payload.audio_base64) {
+                                playKizaAudio(payload.audio_base64);
+                            }
+                        } catch (parseErr) {}
+                    }
+                }
+
+                streamEntry.classList.remove("streaming-cursor");
+                orbEl.style.transform = "";
+                orbEl.classList.remove('processing');
                 document.getElementById('uiStatus').innerText = `ONLINE • ${cleanSpeaker}`;
-                clearIndicator();
                 isChatActive = false;
                 setCoreLoadSpike(false);
 
-                if (data.is_error) {
-                    const isLockCmd = text.toLowerCase().startsWith("/lockdown");
-                    showNotification(isLockCmd ? "SECURITY LOCKDOWN" : "KIZA SECURITY ERROR", data.reply, true, {
-                        category: isLockCmd ? "lockdown" : "error",
-                        skipStore: isLockCmd
-                    });
-                    playKizaAudio(data.audio_base64);
-                    return;
+                // Check for Universal File Generation Trigger: [GENERATE_FILE:EXT:Topic]
+                if (accumulatedText.includes("[GENERATE_FILE:")) {
+                    const fileMatch = accumulatedText.match(/\[GENERATE_FILE:([^:]+):([^\]]+)\]/);
+                    const fileExt = fileMatch ? fileMatch[1] : "pdf";
+                    const fileTopic = fileMatch ? fileMatch[2] : "Report";
+                    compileAndDownloadUniversalFile(fileExt, fileTopic, accumulatedText, currentAttachedImg);
+                } else if (accumulatedText.includes("[GENERATING_PDF:")) {
+                    const match = accumulatedText.match(/\[GENERATING_PDF:([^\]]+)\]/);
+                    const topic = match ? match[1] : "Report";
+                    compileAndDownloadDetailedPDF(topic, accumulatedText, currentAttachedImg);
                 }
-                
-                let cleanReply = stripSlashesFromText(executeAIActionTags(data.reply))
+
+                const finalCleaned = stripSlashesFromText(executeAIActionTags(accumulatedText))
+                    .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
+                    .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
                     .replace(/\[SYSTEM[^\]]*\]/gi, '')
                     .replace(/\*/g, '')
                     .trim();
-                playKizaAudio(data.audio_base64);
-                typeWriterLog(`[KIZA]: ${cleanReply}`);
+                streamEntry.innerText = `> [KIZA]: ${finalCleaned}`;
+
+                if (isStreamError) {
+                    streamEntry.style.borderLeftColor = "var(--danger)";
+                    const isLockCmd = text.toLowerCase().startsWith("/lockdown");
+                    showNotification(isLockCmd ? "SECURITY LOCKDOWN" : "KIZA SECURITY ERROR", finalCleaned, true, {
+                        category: isLockCmd ? "lockdown" : "error",
+                        skipStore: isLockCmd
+                    });
+                }
             } catch (error) {
+                streamEntry.classList.remove("streaming-cursor");
+                streamEntry.innerText = `> [SYSTEM ERROR]: ${error.message}`;
                 isChatActive = false;
                 setCoreLoadSpike(false);
-                document.getElementById('orb').classList.remove('processing');
-                logAction(`[SYSTEM ERROR]: ${error.message}`);
+                orbEl.style.transform = "";
+                orbEl.classList.remove('processing');
                 showNotification("CONNECTION ERROR", error.message, true, { category: "error" });
                 document.getElementById('uiStatus').innerText = "CONNECTION FAILED.";
-                clearIndicator();
             }
         }
         document.getElementById('textInput').addEventListener("keypress", function(event) { if (event.key === "Enter") submitCommand(); });
