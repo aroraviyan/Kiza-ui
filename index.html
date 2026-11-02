@@ -426,7 +426,6 @@
         }
         .input-row { display: flex; gap: 8px; width: 100%; align-items: center; }
 
-        /* Slash Command Autocomplete Popup */
         #slashAutocomplete {
             position: absolute;
             bottom: calc(100% + 8px);
@@ -693,6 +692,22 @@
         <div class="notify-msg" id="notifMsg">Notification details...</div>
     </div>
 
+    <!-- MANDATORY SECURITY BACKUP PIN MODAL (SETUP & FACE-MISMATCH UNLOCK GATE) -->
+    <div id="pinGateModal" class="modal-overlay" style="display:none; z-index: 650;">
+        <div class="auth-card">
+            <div class="section-title">
+                <span id="pinGateTitle">🔢 SECURITY BACKUP PIN</span>
+            </div>
+            <div id="pinGateSubtitle" style="font-size:12px; color:var(--text-muted); line-height:1.45;">
+                Every operative is required to set a 4 to 6 digit Security Backup PIN to access KIZA when Biometric Face ID is unavailable or does not match.
+            </div>
+            <input type="password" id="pinGateInput" placeholder="Enter 4 to 6 digit numeric PIN..." maxlength="6" inputmode="numeric" autocomplete="off" style="text-align:center; font-family:'Orbitron', sans-serif; font-size:16px; letter-spacing:6px;">
+            <div id="pinGateError" style="color: var(--danger); font-size: 11.5px; min-height: 16px; font-weight:600; text-align:center;"></div>
+            <button type="button" id="pinGateSubmitBtn" class="send-btn" style="width:100%;" onclick="submitPinGate()">LOCK SECURITY PIN</button>
+            <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); margin-top:4px;" onclick="logoutUser()">CANCEL & LOGOUT</button>
+        </div>
+    </div>
+
     <!-- TACTICAL MISSION BOARD MODAL -->
     <div id="missionsModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
@@ -716,7 +731,7 @@
         </div>
     </div>
 
-    <!-- SECURITY THREATS & INTRUDER MUGSHOTS MODAL (CHECK: RANKS 1, 2, 3 • DELETE: RANK 1 ONLY) -->
+    <!-- SECURITY THREATS & INTRUDER MUGSHOTS MODAL -->
     <div id="threatsModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
@@ -801,7 +816,7 @@
             <div id="ownerUpdatePublisher" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:10px; background:var(--chip-bg); border:1px dashed var(--chip-border);">
                 <div style="font-family:'Orbitron', sans-serif; font-size:10.5px; font-weight:700; color:var(--accent-primary);">👑 PUBLISH NEW LIVE UPDATE (OWNER ONLY)</div>
                 <div style="display:flex; gap:8px;">
-                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v4.6)" style="width:140px;">
+                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v4.8)" style="width:140px;">
                     <input type="text" id="newUpdateTitle" placeholder="Update Headline...">
                 </div>
                 <input type="text" id="newUpdateDesc" placeholder="Short description of what was added or fixed...">
@@ -838,10 +853,12 @@
                 <option value="off">Silent (Save to Notification Centre Only)</option>
             </select>
 
-            <div class="section-title" style="margin-top:14px;">
+            <button type="button" class="chip-btn" style="margin-top:6px;" onclick="closeSettings(); openPinGate('setup');">🔢 UPDATE SECURITY BACKUP PIN</button>
+
+            <div class="section-title" style="margin-top:10px;">
                 <span>👥 STORED IDENTITIES</span>
             </div>
-            <div id="profileListContainer" style="max-height: 130px; overflow-y: auto;"></div>
+            <div id="profileListContainer" style="max-height: 120px; overflow-y: auto;"></div>
             <button class="chip-btn" onclick="addIdentity()" style="width:100%; margin-top:4px;">+ ADD OR SWITCH IDENTITY</button>
             <button class="chip-btn" onclick="logoutUser()" style="width:100%; border-color:var(--danger); color:var(--danger); margin-top:6px;">LOGOUT CURRENT USER</button>
         </div>
@@ -872,7 +889,7 @@
         </div>
     </div>
 
-    <!-- MEMORY ARCHIVE MODAL (WITH 1-CLICK PDF & TXT EXPORT FOR ALL RANKS) -->
+    <!-- MEMORY ARCHIVE MODAL -->
     <div id="logsModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
@@ -923,6 +940,9 @@
             </div>
             <input type="text" id="authUser" placeholder="Enter Identity Name..." autocomplete="off">
             <input type="password" id="authPass" placeholder="Enter Security Passcode...">
+            <div id="signupPinContainer" style="display:none; flex-direction:column; gap:4px;">
+                <input type="password" id="authPin" placeholder="Create 4 to 6 Digit Backup PIN (Mandatory)..." maxlength="6" inputmode="numeric" autocomplete="off">
+            </div>
             <label style="font-size: 11.5px; display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 2px; color: var(--text-muted);">
                 <input type="checkbox" id="captureFaceCheck" checked> Scan & Lock Biometric Face ID
             </label>
@@ -960,7 +980,7 @@
             <div class="face-id-box">
                 <img id="savedFaceImg" class="face-thumb" alt="Biometric Face ID">
                 <div>
-                    <div style="font-weight: 700; font-family:'Orbitron', sans-serif; font-size:10.5px; letter-spacing:1px; color:var(--accent-primary);">BIOMETRIC ID</div>
+                    <div style="font-weight: 700; font-family:'Orbitron', sans-serif; font-size:10.5px; letter-spacing:1px; color:var(--accent-primary);">BIOMETRIC ID & PIN</div>
                     <div id="faceIdStatus" style="font-size:11px; color:var(--text-muted); margin-top:2px; font-family:'JetBrains Mono', monospace;">Awaiting Scan...</div>
                 </div>
             </div>
@@ -976,11 +996,11 @@
                     <div class="diag-bar-bg"><div id="coreLoadBar" class="diag-bar-fill" style="width: 16%;"></div></div>
                 </div>
                 <div class="diag-item">
-                    <div class="diag-header"><span>NEURAL MEMORY SYNC</span><span id="memSyncText">100%</span></div>
+                    <div class="diag-header"><span>VOICE SYNTHESIZER</span><span id="voiceSynthModeLabel">UK • DRY WIT</span></div>
                     <div class="diag-bar-bg"><div id="memSyncBar" class="diag-bar-fill" style="width: 100%;"></div></div>
                 </div>
                 <div class="diag-item">
-                    <div class="diag-header"><span>IDS MUGSHOT SHIELD</span><span id="secShieldText">ARMED</span></div>
+                    <div class="diag-header"><span>BIOMETRIC PIN GATE</span><span id="secShieldText">ARMED</span></div>
                     <div class="diag-bar-bg"><div class="diag-bar-fill" style="width: 100%; background: var(--success);"></div></div>
                 </div>
             </div>
@@ -1035,9 +1055,12 @@
 
             <div class="input-container">
                 <div id="slashAutocomplete"></div>
-                <select id="personaSelect" style="text-align: center; font-weight:700;">
-                    <option value="normal" selected>🟢 NORMAL MODE (DRY SARCASM)</option>
-                    <option value="energetic">⚡ ENERGETIC MODE (HYPER SARCASM)</option>
+                <!-- MULTI-PERSONA DYNAMIC VOICE SYNTHESIZER DROPDOWN -->
+                <select id="personaSelect" style="text-align: center; font-weight:700;" onchange="handlePersonaChange()">
+                    <option value="normal" selected>🟢 NORMAL MODE (UK • DRY SARCASM)</option>
+                    <option value="energetic">⚡ ENERGETIC MODE (US • HYPER SARCASM)</option>
+                    <option value="security">🛡️ SECURITY PROTOCOL (COLD • TACTICAL)</option>
+                    <option value="helpful">💼 EXECUTIVE ASSISTANT (IN • POLITE & WARM)</option>
                 </select>
 
                 <div class="input-row">
@@ -1140,12 +1163,32 @@
         let currentNotifFilter = "all";
         let lastLockdownSignature = "";
 
+        let pinGateMode = "setup";
+        let isPinLocked = false;
+        let pendingLoginData = null;
+
+        // Multi-Persona Voice Synthesizer Configuration
+        const PERSONA_VOICE_CONFIG = {
+            normal: { label: "UK • DRY WIT", rate: 1.04 },
+            energetic: { label: "US • FAST WIT", rate: 1.16 },
+            security: { label: "UK • COLD TACTICAL", rate: 0.94 },
+            helpful: { label: "IN • EXECUTIVE", rate: 1.06 }
+        };
+
         const DEFAULT_UPDATES_FALLBACK = [
-            { version: "v4.6", title: "Slash Autocomplete, Mission Board & Cloud Face Sync", description: "Added floating '/' command autocomplete, real-time Tactical Mission Board, and cloud-synced Face ID memory.", author: "Viyan Arora", date: "LIVE" },
-            { version: "v4.5", title: "Intruder Mugshot Capture & PDF/TXT Exports", description: "Added silent webcam mugshot capture on wrong password attempts, visual /threats modal for Ranks 1-3, Rank 1 log deletion, and 1-click PDF/TXT exports.", author: "Viyan Arora", date: "ACTIVE" },
-            { version: "v4.4", title: "Cyber-Defense IDS & Searchable Broadcasts", description: "Added Brute-Force IP Lockout, SQLi/XSS Firewall, /threats & /wrongpass security auditing, and searchable broadcast target selector.", author: "Viyan Arora", date: "ACTIVE" },
-            { version: "v4.3", title: "Top HUD Bar, Broadcast Modal & Live Gauges", description: "Added live IST clock & ping bar, 1-click Broadcast modal, animated left-panel core diagnostics, and clean Notification headers.", author: "Viyan Arora", date: "ACTIVE" }
+            { version: "v4.8", title: "Multi-Persona Dynamic Voice Synthesizer", description: "Added 4 distinct AI personas (Normal, Energetic, Security Protocol, and Executive Assistant) with dynamic voice accent and cadence tuning.", author: "Viyan Arora", date: "LIVE" },
+            { version: "v4.7", title: "Biometric Face-Match & Mandatory Backup PIN", description: "Added mandatory operative Security PINs, real-time Face ID similarity verification with PIN fallback, and silent 2nd-strike intruder mugshots.", author: "Viyan Arora", date: "ACTIVE" },
+            { version: "v4.6", title: "Slash Autocomplete, Mission Board & Cloud Face Sync", description: "Added floating '/' command autocomplete, real-time Tactical Mission Board, and cloud-synced Face ID memory.", author: "Viyan Arora", date: "ACTIVE" },
+            { version: "v4.5", title: "Intruder Mugshot Capture & PDF/TXT Exports", description: "Added silent webcam mugshot capture on wrong password attempts, visual /threats modal for Ranks 1-3, Rank 1 log deletion, and 1-click PDF/TXT exports.", author: "Viyan Arora", date: "ACTIVE" }
         ];
+
+        function handlePersonaChange() {
+            const pVal = document.getElementById('personaSelect').value || "normal";
+            const cfg = PERSONA_VOICE_CONFIG[pVal] || PERSONA_VOICE_CONFIG.normal;
+            const lbl = document.getElementById('voiceSynthModeLabel');
+            if (lbl) lbl.innerText = cfg.label;
+            logAction(`[VOICE SYNTHESIZER]: Switched persona to ${pVal.toUpperCase()} (${cfg.label})`);
+        }
 
         function generateSessionId() {
             return 'sess_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
@@ -1182,6 +1225,151 @@
             if (d === "mod1" || d.startsWith("mod1 ")) return "mod1";
             return d.replace(" (owner)", "").replace(" (admin)", "").replace(" (mod)", "").trim();
         }
+
+        // ==========================================================
+        // BIOMETRIC FACE SIMILARITY ENGINE & MANDATORY PIN GATE
+        // ==========================================================
+        function compareFacesSimilarity(base64A, base64B) {
+            return new Promise((resolve) => {
+                if (!base64A || !base64B) return resolve(0);
+                const imgA = new Image();
+                const imgB = new Image();
+                let loaded = 0;
+                const onBothLoaded = () => {
+                    try {
+                        const cA = document.createElement('canvas');
+                        const cB = document.createElement('canvas');
+                        cA.width = 32; cA.height = 32;
+                        cB.width = 32; cB.height = 32;
+                        const ctxA = cA.getContext('2d');
+                        const ctxB = cB.getContext('2d');
+                        ctxA.drawImage(imgA, 0, 0, 32, 32);
+                        ctxB.drawImage(imgB, 0, 0, 32, 32);
+                        const dA = ctxA.getImageData(0, 0, 32, 32).data;
+                        const dB = ctxB.getImageData(0, 0, 32, 32).data;
+                        let diff = 0;
+                        for (let i = 0; i < dA.length; i += 4) {
+                            diff += Math.abs(dA[i] - dB[i]) + Math.abs(dA[i+1] - dB[i+1]) + Math.abs(dA[i+2] - dB[i+2]);
+                        }
+                        const maxDiff = 32 * 32 * 3 * 255;
+                        const similarity = 1 - (diff / maxDiff);
+                        resolve(similarity);
+                    } catch (e) {
+                        resolve(0);
+                    }
+                };
+                imgA.onload = () => { loaded++; if (loaded === 2) onBothLoaded(); };
+                imgB.onload = () => { loaded++; if (loaded === 2) onBothLoaded(); };
+                imgA.onerror = () => resolve(0);
+                imgB.onerror = () => resolve(0);
+                imgA.src = base64A;
+                imgB.src = base64B;
+            });
+        }
+
+        function getLocalHasPinKey(dbUser = currentDBUser) {
+            const safeKey = (dbUser && dbUser !== "undefined") ? dbUser : resolveDBUser(currentUser);
+            return `kiza_has_pin_${safeKey}`;
+        }
+
+        function openPinGate(mode, customReason = "") {
+            pinGateMode = mode;
+            isPinLocked = true;
+            const modal = document.getElementById('pinGateModal');
+            const titleEl = document.getElementById('pinGateTitle');
+            const subEl = document.getElementById('pinGateSubtitle');
+            const btnEl = document.getElementById('pinGateSubmitBtn');
+            const inputEl = document.getElementById('pinGateInput');
+            const errEl = document.getElementById('pinGateError');
+
+            inputEl.value = "";
+            errEl.innerText = "";
+
+            if (mode === "setup") {
+                titleEl.innerText = "🔢 CREATE MANDATORY SECURITY PIN";
+                subEl.innerText = customReason || "All operatives must create a 4 to 6 digit Security Backup PIN before accessing the KIZA Command Hub.";
+                btnEl.innerText = "LOCK SECURITY PIN";
+            } else {
+                titleEl.innerText = "🧬 BIOMETRIC MISMATCH • ENTER PIN";
+                subEl.innerText = customReason || "Live Face ID did not match your stored biometric profile (or camera is offline). Enter your Security Backup PIN to unlock.";
+                btnEl.innerText = "VERIFY PIN & UNLOCK HUD";
+            }
+            modal.style.display = "flex";
+            setTimeout(() => inputEl.focus(), 100);
+        }
+
+        function closePinGate() {
+            isPinLocked = false;
+            document.getElementById('pinGateModal').style.display = "none";
+        }
+
+        async function submitPinGate() {
+            const pinVal = document.getElementById('pinGateInput').value.trim();
+            const errEl = document.getElementById('pinGateError');
+            if (!/^\d{4,6}$/.test(pinVal)) {
+                errEl.innerText = "PIN must be 4 to 6 digits (numbers only).";
+                return;
+            }
+            errEl.style.color = "var(--accent-primary)";
+            errEl.innerText = pinGateMode === "setup" ? "Locking Security PIN..." : "Verifying Security PIN...";
+
+            if (pinGateMode === "setup") {
+                try {
+                    let res = await fetch(`${SERVER_URL}/api/set_pin`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ username: currentUser, pin: pinVal })
+                    });
+                    let data = await res.json();
+                    if (!data.success) {
+                        errEl.style.color = "var(--danger)";
+                        errEl.innerText = data.message || "Failed to save PIN.";
+                        return;
+                    }
+                    safeSetItem(getLocalHasPinKey(currentDBUser), "true");
+                    closePinGate();
+                    showNotification("SECURITY PIN LOCKED", "Your backup PIN is now active for biometric fallback.", false, { skipStore: true });
+                } catch (e) {
+                    errEl.style.color = "var(--danger)";
+                    errEl.innerText = "Network error while saving PIN.";
+                }
+            } else {
+                const silentSnap = captureSilentSecurityFrame();
+                try {
+                    let res = await fetch(`${SERVER_URL}/api/verify_pin`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ username: currentUser, pin: pinVal, security_snap: silentSnap })
+                    });
+                    let data = await res.json();
+                    if (!data.success) {
+                        if (data.needs_setup) {
+                            openPinGate("setup", "No PIN found on server. Create your 4 to 6 digit Security PIN now:");
+                            return;
+                        }
+                        errEl.style.color = "var(--danger)";
+                        errEl.innerText = data.message || "Invalid Security PIN.";
+                        return;
+                    }
+                    safeSetItem(getLocalHasPinKey(currentDBUser), "true");
+                    closePinGate();
+                    if (pendingLoginData) {
+                        const p = pendingLoginData;
+                        pendingLoginData = null;
+                        completeLoginAfterVerification(p.username, p.db_username, p.role, p.face_id, p.playGreeting, p.replyMsg, p.audioBase64);
+                    } else {
+                        showNotification("IDENTITY UNLOCKED", "Backup PIN verified. HUD access granted.", false, { skipStore: true });
+                    }
+                } catch (e) {
+                    errEl.style.color = "var(--danger)";
+                    errEl.innerText = "Network error verifying PIN.";
+                }
+            }
+        }
+
+        document.getElementById('pinGateInput').addEventListener("keypress", function(e) {
+            if (e.key === "Enter") submitPinGate();
+        });
 
         // ==========================================================
         // SLASH COMMAND AUTOCOMPLETE ENGINE (/)
@@ -1259,6 +1447,7 @@
         // TACTICAL MISSION BOARD ENGINE
         // ==========================================================
         async function openMissionsModal() {
+            if (isPinLocked) { openPinGate(pinGateMode); return; }
             document.getElementById('missionsModal').style.display = "flex";
             const assignBox = document.getElementById('missionAssignBox');
             const canAssign = currentRole.includes("OWNER") || currentRole.includes("MOD");
@@ -1352,6 +1541,7 @@
         // INTRUDER MUGSHOT VIEWER & SECURITY THREATS MODAL
         // ==========================================================
         async function openThreatsModal() {
+            if (isPinLocked) { openPinGate(pinGateMode); return; }
             if (!(currentRole.includes("OWNER") || currentRole.includes("MOD") || currentRole.includes("ADMIN"))) {
                 showNotification("ACCESS DENIED", "Security Threat Monitor requires Rank 1, 2, or 3 clearance.", true);
                 return;
@@ -1399,8 +1589,8 @@
                     const div = document.createElement('div');
                     div.className = "notif-item type-lockdown";
                     const mugshotHTML = item.mugshot
-                        ? `<img src="${item.mugshot}" class="mugshot-img" alt="Intruder Mugshot" title="Intruder Mugshot (Hover to enlarge)">`
-                        : `<div style="width:68px; height:54px; border-radius:8px; border:1px dashed var(--card-border); display:flex; align-items:center; justify-content:center; font-size:9px; color:var(--text-muted); text-align:center; flex-shrink:0;">NO CAM<br>SNAP</div>`;
+                        ? `<img src="${item.mugshot}" class="mugshot-img" alt="Intruder Mugshot" title="2nd+ Strike Intruder Mugshot (Hover to enlarge)">`
+                        : `<div style="width:68px; height:54px; border-radius:8px; border:1px dashed var(--card-border); display:flex; align-items:center; justify-content:center; font-size:9px; color:var(--text-muted); text-align:center; flex-shrink:0;">1ST STRIKE<br>(NO SNAP)</div>`;
 
                     div.innerHTML = `
                         <div style="display:flex; gap:12px; align-items:center;">
@@ -1532,7 +1722,7 @@
                 "==========================================================\n"
             ];
             cachedThreatLogs.forEach(t => {
-                lines.push(`[${t.timestamp}] ${t.event_type} | Target: ${t.username} | IP: ${t.ip_address} | Mugshot: ${t.mugshot ? 'YES' : 'NO'} | ${t.details}`);
+                lines.push(`[${t.timestamp}] ${t.event_type} | Target: ${t.username} | IP: ${t.ip_address} | Mugshot: ${t.mugshot ? 'YES (2nd+ Strike)' : 'NO (1st Strike)'} | ${t.details}`);
             });
             triggerTextDownload(`KIZA_Security_Report_${Date.now()}.txt`, lines.join("\n"));
             showNotification("EXPORT COMPLETE", "Security Audit Report downloaded as .TXT.", false, { skipStore: true });
@@ -1545,7 +1735,7 @@
             }
             let rowsHtml = cachedThreatLogs.map(t => `
                 <div style="display:flex; gap:14px; align-items:center; margin-bottom:12px; padding:10px; border:1px solid #fda4af; border-left:4px solid #f43f5e; border-radius:6px; background:#fff1f2;">
-                    ${t.mugshot ? `<img src="${t.mugshot}" style="width:70px; height:55px; object-fit:cover; border-radius:6px; border:1px solid #f43f5e;">` : `<div style="width:70px; height:55px; border:1px dashed #94a3b8; display:flex; align-items:center; justify-content:center; font-size:10px;">NO SNAP</div>`}
+                    ${t.mugshot ? `<img src="${t.mugshot}" style="width:70px; height:55px; object-fit:cover; border-radius:6px; border:1px solid #f43f5e;">` : `<div style="width:70px; height:55px; border:1px dashed #94a3b8; display:flex; align-items:center; justify-content:center; font-size:10px;">1ST STRIKE</div>`}
                     <div>
                         <div style="font-size:12px; font-weight:bold; color:#be123c;">[${t.event_type}] Target: ${(t.username || '').toUpperCase()} — IP: ${t.ip_address}</div>
                         <div style="font-size:12px; color:#0f172a; margin-top:3px;">${t.details}</div>
@@ -1632,6 +1822,7 @@
         ];
 
         async function openBroadcastModal() {
+            if (isPinLocked) { openPinGate(pinGateMode); return; }
             document.getElementById('broadcastModal').style.display = "flex";
             document.getElementById('broadcastSearchInput').value = "";
             document.getElementById('broadcastMsgInput').value = "";
@@ -1844,6 +2035,7 @@
         }
 
         function openNotifCenter() {
+            if (isPinLocked) { openPinGate(pinGateMode); return; }
             document.getElementById('notifCenterModal').style.display = "flex";
             document.getElementById('notifModalUserLabel').innerText = `${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole})`;
             renderNotificationCentre();
@@ -1968,6 +2160,7 @@
         // SYSTEM UPDATES & CHANGELOG SECTION
         // ==========================================================
         async function openUpdatesModal() {
+            if (isPinLocked) { openPinGate(pinGateMode); return; }
             document.getElementById('updatesModal').style.display = "flex";
             const pubBox = document.getElementById('ownerUpdatePublisher');
             pubBox.style.display = currentRole.includes("OWNER") ? "flex" : "none";
@@ -2059,6 +2252,30 @@
         function processNaturalVoiceIntent(rawText) {
             const low = rawText.toLowerCase().trim();
             const words = low.split(/[\s,?.!]+/);
+
+            // Voice Persona Switching
+            if (words.includes("persona") || words.includes("mode") || words.includes("protocol")) {
+                if (words.includes("energetic") || words.includes("hyper")) {
+                    document.getElementById('personaSelect').value = "energetic";
+                    handlePersonaChange();
+                    return { handledLocally: true };
+                }
+                if (words.includes("security") || words.includes("strict") || words.includes("tactical")) {
+                    document.getElementById('personaSelect').value = "security";
+                    handlePersonaChange();
+                    return { handledLocally: true };
+                }
+                if (words.includes("executive") || words.includes("helpful") || words.includes("polite")) {
+                    document.getElementById('personaSelect').value = "helpful";
+                    handlePersonaChange();
+                    return { handledLocally: true };
+                }
+                if (words.includes("normal")) {
+                    document.getElementById('personaSelect').value = "normal";
+                    handlePersonaChange();
+                    return { handledLocally: true };
+                }
+            }
 
             if ((words.includes("dark") || words.includes("neon") || words.includes("cyberpunk")) && (words.includes("mode") || words.includes("theme") || words.includes("switch") || words.includes("turn") || words.includes("enable"))) {
                 document.getElementById('themeSelect').value = 'dark';
@@ -2202,7 +2419,6 @@
                 applyRoleUI(data.role);
                 showNotification("CLEARANCE UPDATED", `Your clearance is now ${formatCleanRole(data.role, currentUser)}`, false, { category: "broadcast" });
             }
-            // Cloud-Synced Face ID Restoration from PostgreSQL
             if (data.face_id) {
                 const img = document.getElementById('savedFaceImg');
                 if (img && img.style.display === "none") {
@@ -2212,6 +2428,12 @@
                     safeSetItem('kiza_face', data.face_id);
                 }
             }
+            if (data.has_pin === false && currentUser !== "Guest" && !isPinLocked) {
+                openPinGate("setup", "Mandatory Security Requirement: Set a 4 to 6 digit Backup PIN for your account to continue using KIZA.");
+            } else if (data.has_pin === true) {
+                safeSetItem(getLocalHasPinKey(currentDBUser), "true");
+            }
+
             if (data.new_alerts && data.new_alerts.length > 0) {
                 data.new_alerts.forEach(alert => {
                     const uniqueAlertId = getAlertUniqueId(alert);
@@ -2288,6 +2510,7 @@
         }, 30000);
 
         function startNewSession() {
+            if (isPinLocked) { openPinGate(pinGateMode); return; }
             currentSessionId = generateSessionId();
             document.getElementById('actionLog').innerHTML = `<div>> [KIZA SYSTEM]: Memory wiped. New private session initialized.</div>`;
             showNotification("NEW SESSION", "Context cleared. Started a fresh conversation.", false, { skipStore: true });
@@ -2317,6 +2540,7 @@
         }
 
         function openSettings() {
+            if (isPinLocked) { openPinGate(pinGateMode); return; }
             document.getElementById('settingsModal').style.display = "flex";
             renderProfileList();
         }
@@ -2341,6 +2565,7 @@
         }
 
         async function openRankModal() {
+            if (isPinLocked) { openPinGate(pinGateMode); return; }
             document.getElementById('rankModal').style.display = "flex";
             document.getElementById('rankSearchInput').value = "";
             const selectDropdown = document.getElementById('rankSearchSelect');
@@ -2407,7 +2632,7 @@
         function switchToProfile(idx) {
             let prof = storedProfiles[idx];
             closeSettings();
-            finalizeLogin(prof.username, prof.db_username || resolveDBUser(prof.username), prof.role, prof.face_id, false);
+            finalizeLogin(prof.username, prof.db_username || resolveDBUser(prof.username), prof.role, prof.face_id, false, "", null, true);
         }
 
         function addIdentity() {
@@ -2440,7 +2665,35 @@
             }
         }
 
-        function finalizeLogin(username, db_username, role, face_id, playGreeting = true, replyMsg = "", audioBase64 = null) {
+        function completeLoginAfterVerification(username, db_username, role, face_id, playGreeting = true, replyMsg = "", audioBase64 = null) {
+            const cleanNameUpper = cleanDisplayNameOnly(currentUser).toUpperCase();
+            document.getElementById('idVal').innerText = cleanNameUpper;
+
+            const savedFace = face_id || localStorage.getItem('kiza_face');
+            if (savedFace) {
+                const img = document.getElementById('savedFaceImg');
+                img.src = savedFace;
+                img.style.display = "block";
+                document.getElementById('faceIdStatus').innerText = "LOCKED & PIN ARMED"; 
+            } else {
+                document.getElementById('savedFaceImg').style.display = "none";
+                document.getElementById('faceIdStatus').innerText = "PIN ARMED";
+            }
+
+            document.getElementById('uiStatus').innerText = `ONLINE • ${cleanNameUpper}`;
+            updateUnreadBadges();
+
+            if (playGreeting && replyMsg) {
+                showNotification("KIZA ALERT", replyMsg, false, { skipStore: true }); 
+                if (audioBase64) playKizaAudio(audioBase64);
+            } else {
+                logAction(`[SYSTEM]: Identity active: ${cleanNameUpper}`, "#007BFF");
+            }
+            document.getElementById('actionLog').innerHTML = '<div>> [KIZA SYSTEM]: HUD online. System ready.</div>';
+            initWebSocket();
+        }
+
+        async function finalizeLogin(username, db_username, role, face_id, playGreeting = true, replyMsg = "", audioBase64 = null, hasPin = true, liveCamSnap = null, isInteractiveLogin = false) {
             const authModalEl = document.getElementById('authModal');
             if (authModalEl) authModalEl.style.display = "none";
             const errBox = document.getElementById('authError');
@@ -2456,36 +2709,34 @@
             safeSetItem('kiza_user', currentUser);
             safeSetItem('kiza_db', currentDBUser);
             if (face_id) safeSetItem('kiza_face', face_id);
-
             applyRoleUI(role);
-            const cleanNameUpper = cleanDisplayNameOnly(currentUser).toUpperCase();
-            document.getElementById('idVal').innerText = cleanNameUpper;
 
-            const savedFace = face_id || localStorage.getItem('kiza_face');
-            if (savedFace) {
-                const img = document.getElementById('savedFaceImg');
-                img.src = savedFace;
-                img.style.display = "block";
-                document.getElementById('faceIdStatus').innerText = "LOCKED"; 
-            } else {
-                document.getElementById('savedFaceImg').style.display = "none";
-                document.getElementById('faceIdStatus').innerText = "No Biometrics";
+            if (hasPin === false) {
+                completeLoginAfterVerification(username, db_username, role, face_id, false, "", null);
+                openPinGate("setup", "All operatives must create a 4 to 6 digit Security Backup PIN before using KIZA.");
+                return;
+            }
+            safeSetItem(getLocalHasPinKey(currentDBUser), "true");
+
+            if (isInteractiveLogin && face_id) {
+                if (!liveCamSnap) {
+                    pendingLoginData = { username, db_username, role, face_id, playGreeting, replyMsg, audioBase64 };
+                    openPinGate("verify", "Webcam Face ID scan was unavailable during login. Enter your Security Backup PIN to unlock:");
+                    return;
+                }
+                const similarity = await compareFacesSimilarity(face_id, liveCamSnap);
+                if (similarity < 0.72) {
+                    pendingLoginData = { username, db_username, role, face_id, playGreeting, replyMsg, audioBase64 };
+                    openPinGate("verify", `Biometric Face ID similarity (${Math.round(similarity * 100)}%) below threshold. Enter your Security Backup PIN to login without Face ID:`);
+                    return;
+                }
             }
 
-            document.getElementById('uiStatus').innerText = `ONLINE • ${cleanNameUpper}`;
-            updateUnreadBadges();
-
-            if (playGreeting && replyMsg) {
-                showNotification("KIZA ALERT", replyMsg, false, { skipStore: true }); 
-                if (audioBase64) playKizaAudio(audioBase64);
-            } else {
-                logAction(`[SYSTEM]: Switched identity to ${cleanNameUpper}`, "#007BFF");
-            }
-            document.getElementById('actionLog').innerHTML = '<div>> [KIZA SYSTEM]: HUD online. System ready.</div>';
-            initWebSocket();
+            completeLoginAfterVerification(username, db_username, role, face_id, playGreeting, replyMsg, audioBase64);
         }
 
         function forceLogout() {
+            closePinGate();
             localStorage.removeItem('kiza_user'); localStorage.removeItem('kiza_db'); localStorage.removeItem('kiza_role'); localStorage.removeItem('kiza_face');
             currentUser = "Guest"; currentDBUser = "guest";
             updateUnreadBadges();
@@ -2502,6 +2753,7 @@
         let loadedArchiveHTML = "";
 
         async function openLogsModal() {
+            if (isPinLocked) { openPinGate(pinGateMode); return; }
             document.getElementById('logsModal').style.display = "flex";
             const adminControls = document.getElementById('archiveAdminControls');
             const opSelect = document.getElementById('logOperativeSelect');
@@ -2660,7 +2912,9 @@
             const savedRole = localStorage.getItem('kiza_role');
             const savedFace = localStorage.getItem('kiza_face');
             if (savedUser && savedRole) { 
-                finalizeLogin(savedUser, (savedDB && savedDB !== "undefined") ? savedDB : resolveDBUser(savedUser), savedRole, savedFace, false); 
+                const safeDB = (savedDB && savedDB !== "undefined") ? savedDB : resolveDBUser(savedUser);
+                const knownHasPin = localStorage.getItem(getLocalHasPinKey(safeDB)) === "true";
+                finalizeLogin(savedUser, safeDB, savedRole, savedFace, false, "", null, knownHasPin, null, false); 
             }
         });
 
@@ -2717,6 +2971,9 @@
             logBox.scrollTop = logBox.scrollHeight;
         }
 
+        // ==========================================================
+        // MULTI-PERSONA DYNAMIC VOICE PLAYER & AUDIO-REACTIVE ORB
+        // ==========================================================
         function playKizaAudio(base64Data) {
             if (!voiceEnabled || !base64Data) return;
             if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
@@ -2724,6 +2981,12 @@
 
             isKizaSpeaking = true;
             currentAudio = new Audio("data:audio/mp3;base64," + base64Data);
+
+            // Dynamically tune speech cadence based on active persona
+            const selectedPersona = document.getElementById('personaSelect')?.value || "normal";
+            const voiceCfg = PERSONA_VOICE_CONFIG[selectedPersona] || PERSONA_VOICE_CONFIG.normal;
+            currentAudio.playbackRate = voiceCfg.rate;
+
             const orbEl = document.getElementById('orb');
 
             try {
@@ -2831,7 +3094,7 @@
             rec.lang = 'en-US';
 
             rec.onresult = (event) => {
-                if (isChatActive || isKizaSpeaking) return;
+                if (isChatActive || isKizaSpeaking || isPinLocked) return;
 
                 const lastResultIdx = event.results.length - 1;
                 const transcript = event.results[lastResultIdx][0].transcript.trim();
@@ -2889,6 +3152,7 @@
         }
 
         function toggleWakeWord() {
+            if (isPinLocked) { openPinGate(pinGateMode); return; }
             if (!wakeRecognition) wakeRecognition = initWakeWordEngine();
             if (!wakeRecognition) return;
 
@@ -2936,6 +3200,7 @@
         }
 
         function toggleSpeechRecognition() {
+            if (isPinLocked) { openPinGate(pinGateMode); return; }
             if (wakeWordEnabled && wakeRecognition) { try { wakeRecognition.stop(); } catch (e) {} }
             if (!recognition) recognition = initSpeechRecognition();
             if (!recognition) return;
@@ -2950,6 +3215,7 @@
             authMode = mode;
             document.getElementById('loginTab').classList.toggle('active', mode === 'login');
             document.getElementById('signupTab').classList.toggle('active', mode === 'signup');
+            document.getElementById('signupPinContainer').style.display = mode === 'signup' ? 'flex' : 'none';
             document.getElementById('authError').innerText = "";
         }
 
@@ -2970,7 +3236,7 @@
         }
 
         async function updateFaceID() {
-            if (currentUser === "Guest") return;
+            if (currentUser === "Guest" || isPinLocked) return;
             let faceData = captureSilentSecurityFrame();
             if (!faceData) return;
             try {
@@ -2979,10 +3245,15 @@
                 if (data.success) {
                     document.getElementById('savedFaceImg').src = faceData; document.getElementById('savedFaceImg').style.display = "block";
                     document.getElementById('faceIdStatus').innerText = "UPDATED";
-                    saveCurrentProfileToStorage(currentUser, currentDBUser, currentRole, faceData);
+                    saveSetFace(faceData);
                     logAction("[SYSTEM]: Biometrics synchronized.");
                 }
             } catch (err) { }
+        }
+
+        function saveSetFace(faceData) {
+            safeSetItem('kiza_face', faceData);
+            saveCurrentProfileToStorage(currentUser, currentDBUser, currentRole, faceData);
         }
 
         function parseGoogleJwt(token) {
@@ -3005,17 +3276,7 @@
 
             const jwtPayload = parseGoogleJwt(response.credential);
             const faceSnap = captureFaceSnapshot();
-
-            if (jwtPayload) {
-                const email = (jwtPayload.email || "").toLowerCase();
-                const rawName = jwtPayload.name || email.split('@')[0] || "Operative";
-                const isViyan = rawName.toLowerCase().includes("viyan") || email.includes("viyan");
-                const displayName = isViyan ? "Viyan Arora" : rawName;
-                const dbUser = isViyan ? "viyan_arora_owner" : rawName.replace(/\s+/g, '').toLowerCase();
-                const role = isViyan ? "OWNER" : "OPERATIVE";
-
-                finalizeLogin(displayName, dbUser, role, faceSnap, true, `Identity verified. Welcome back, ${displayName}.`);
-            }
+            const silentSnap = captureSilentSecurityFrame();
 
             try {
                 let res = await fetch(`${SERVER_URL}/api/google_auth`, {
@@ -3025,29 +3286,35 @@
                 });
                 let data = await res.json();
                 if (!data.success) {
-                    if (!jwtPayload) {
-                        errBox.style.color = "var(--danger)";
-                        errBox.innerText = data.message;
-                    }
+                    errBox.style.color = "var(--danger)";
+                    errBox.innerText = data.message;
                     if (data.is_lockdown) recordGlobalLockdownToEveryone("🚨 SECURITY LOCKDOWN ACTIVE", data.message);
                     showNotification("ACCESS DENIED", data.message, true);
                     return;
                 }
-                if (!jwtPayload) {
-                    finalizeLogin(cleanDisplayNameOnly(data.username), data.db_username || resolveDBUser(data.username), data.role, data.face_id || faceSnap, true, data.reply, data.audio_base64);
-                } else {
-                    applyRoleUI(data.role);
-                    if (data.face_id) {
-                        const img = document.getElementById('savedFaceImg');
-                        img.src = data.face_id;
-                        img.style.display = "block";
-                        document.getElementById('faceIdStatus').innerText = "LOCKED";
-                        safeSetItem('kiza_face', data.face_id);
-                    }
-                    if (data.audio_base64) playKizaAudio(data.audio_base64);
-                }
+                await finalizeLogin(
+                    cleanDisplayNameOnly(data.username),
+                    data.db_username || resolveDBUser(data.username),
+                    data.role,
+                    data.face_id || faceSnap,
+                    true,
+                    data.reply,
+                    data.audio_base64,
+                    Boolean(data.has_pin),
+                    silentSnap,
+                    true
+                );
             } catch (err) {
-                if (!jwtPayload) {
+                if (jwtPayload) {
+                    const email = (jwtPayload.email || "").toLowerCase();
+                    const rawName = jwtPayload.name || email.split('@')[0] || "Operative";
+                    const isViyan = rawName.toLowerCase().includes("viyan") || email.includes("viyan");
+                    const displayName = isViyan ? "Viyan Arora" : rawName;
+                    const dbUser = isViyan ? "viyan_arora_owner" : rawName.replace(/\s+/g, '').toLowerCase();
+                    const role = isViyan ? "OWNER" : "OPERATIVE";
+                    const knownPin = localStorage.getItem(getLocalHasPinKey(dbUser)) === "true";
+                    await finalizeLogin(displayName, dbUser, role, faceSnap, true, `Identity verified. Welcome back, ${displayName}.`, null, knownPin, silentSnap, false);
+                } else {
                     errBox.style.color = "var(--danger)";
                     errBox.innerText = "Network Error: Make sure your server is online.";
                 }
@@ -3058,10 +3325,18 @@
             const errBox = document.getElementById('authError');
             const username = document.getElementById('authUser').value.trim();
             const password = document.getElementById('authPass').value.trim();
+            const pinInput = document.getElementById('authPin').value.trim();
+
             if (!username || !password) {
                 errBox.style.color = "var(--danger)";
                 errBox.innerText = "Please enter both Identity Name and Passcode.";
                 showNotification("ERROR", "Enter Name and Passcode.", true);
+                return;
+            }
+
+            if (authMode === "signup" && !/^\d{4,6}$/.test(pinInput)) {
+                errBox.style.color = "var(--danger)";
+                errBox.innerText = "Mandatory: Enter a 4 to 6 digit numeric Backup PIN.";
                 return;
             }
 
@@ -3082,7 +3357,8 @@
                         password,
                         action: authMode,
                         face_id: faceData,
-                        security_snap: silentSecuritySnap
+                        security_snap: silentSecuritySnap,
+                        pin: authMode === "signup" ? pinInput : null
                     }),
                     signal: controller.signal
                 });
@@ -3096,7 +3372,19 @@
                     return;
                 }
                 errBox.innerText = "";
-                finalizeLogin(cleanDisplayNameOnly(data.username), data.db_username || resolveDBUser(data.username), data.role, data.face_id || faceData, true, data.reply, data.audio_base64);
+                document.getElementById('authPin').value = "";
+                await finalizeLogin(
+                    cleanDisplayNameOnly(data.username),
+                    data.db_username || resolveDBUser(data.username),
+                    data.role,
+                    data.face_id || faceData,
+                    true,
+                    data.reply,
+                    data.audio_base64,
+                    Boolean(data.has_pin),
+                    silentSecuritySnap,
+                    authMode === "login"
+                );
             } catch (err) {
                 errBox.style.color = "var(--danger)";
                 errBox.innerText = "Server is waking up or unreachable. Please wait a few seconds and try again.";
@@ -3106,6 +3394,7 @@
 
         document.getElementById('authUser').addEventListener("keypress", function(e) { if (e.key === "Enter") performAuth(); });
         document.getElementById('authPass').addEventListener("keypress", function(e) { if (e.key === "Enter") performAuth(); });
+        document.getElementById('authPin').addEventListener("keypress", function(e) { if (e.key === "Enter") performAuth(); });
         document.getElementById('broadcastMsgInput').addEventListener("keypress", function(e) { if (e.key === "Enter") submitBroadcastModal(); });
 
         function updateIndicator(msg) {
@@ -3143,6 +3432,10 @@
         }
 
         async function submitCommand() {
+            if (isPinLocked) {
+                openPinGate(pinGateMode);
+                return;
+            }
             let inputField = document.getElementById('textInput');
             let rawText = inputField.value.trim();
             const autoBox = document.getElementById('slashAutocomplete');
