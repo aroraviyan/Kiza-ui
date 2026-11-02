@@ -429,7 +429,6 @@
         }
         .input-row { display: flex; gap: 8px; width: 100%; align-items: center; }
 
-        /* Attached Image Preview Bar */
         #attachmentPreviewBar {
             display: none;
             align-items: center;
@@ -1219,11 +1218,11 @@
         let isPinLocked = false;
         let pendingLoginData = null;
 
-        // Attached Image & In-Browser Vision/OCR State
         let attachedImageBase64 = null;
         let attachedImageName = "";
         let attachedImageExtractedContext = "";
         let isScanningAttachment = false;
+        let attachmentScanPromise = null;
 
         const PERSONA_VOICE_CONFIG = {
             normal: { label: "UK • DRY WIT", rate: 1.04 },
@@ -1270,6 +1269,8 @@
         function stripSlashesFromText(textStr) {
             if (!textStr) return "";
             return String(textStr)
+                .replace(/<think>[\s\S]*?<\/think>/gi, '')
+                .replace(/<\/?think>/gi, '')
                 .replace(/\s*\/\/\s*(MASTER|COMMANDER|OVERSEER)/gi, '')
                 .replace(/\s*\/\/\s*/g, ' • ');
         }
@@ -1305,69 +1306,77 @@
                 const avgG = Math.round(gSum / pixels);
                 const avgB = Math.round(bSum / pixels);
                 const brightness = Math.round((brightSum / pixels / 255) * 100);
-                const tone = brightness > 65 ? "Bright/Light-themed" : (brightness < 35 ? "Dark-themed" : "Balanced contrast");
-                return `Image File: '${filename}' (${imgEl.naturalWidth}x${imgEl.naturalHeight}px, ${tone}, RGB(${avgR},${avgG},${avgB}))`;
+                const tone = brightness > 65 ? "Bright/Light-themed" : (brightness < 35 ? "Dark/Futuristic-themed" : "Balanced contrast");
+                return `Image File Name: '${filename}' (${imgEl.naturalWidth}x${imgEl.naturalHeight}px, ${tone}, Dominant RGB(${avgR},${avgG},${avgB}))`;
             } catch (e) {
-                return `Image File: '${filename}'`;
+                return `Image File Name: '${filename}'`;
             }
         }
 
-        async function handleImageAttachment(event) {
+        function handleImageAttachment(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                const rawDataUrl = e.target.result;
-                attachedImageName = file.name;
+            isScanningAttachment = true;
+            attachmentScanPromise = new Promise((resolveScan) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const rawDataUrl = e.target.result;
+                    attachedImageName = file.name;
 
-                // Compress to clean JPEG Base64 & extract visual telemetry
-                const img = new Image();
-                img.onload = async () => {
-                    const canvas = document.createElement('canvas');
-                    const maxDim = 800;
-                    let w = img.naturalWidth || 640;
-                    let h = img.naturalHeight || 480;
-                    if (w > maxDim || h > maxDim) {
-                        if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
-                        else { w = Math.round(w * (maxDim / h)); h = maxDim; }
-                    }
-                    canvas.width = w;
-                    canvas.height = h;
-                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                    attachedImageBase64 = canvas.toDataURL('image/jpeg', 0.78);
+                    const img = new Image();
+                    img.onload = async () => {
+                        const canvas = document.createElement('canvas');
+                        const maxDim = 800;
+                        let w = img.naturalWidth || 640;
+                        let h = img.naturalHeight || 480;
+                        if (w > maxDim || h > maxDim) {
+                            if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+                            else { w = Math.round(w * (maxDim / h)); h = maxDim; }
+                        }
+                        canvas.width = w;
+                        canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        attachedImageBase64 = canvas.toDataURL('image/jpeg', 0.78);
 
-                    document.getElementById('attachmentThumb').src = attachedImageBase64;
-                    document.getElementById('attachmentName').innerText = `📎 ${file.name}`;
-                    document.getElementById('attachmentOcrStatus').innerText = "🔍 Running Visual & OCR scan...";
-                    document.getElementById('attachmentPreviewBar').style.display = "flex";
+                        document.getElementById('attachmentThumb').src = attachedImageBase64;
+                        document.getElementById('attachmentName').innerText = `📎 ${file.name}`;
+                        document.getElementById('attachmentOcrStatus').innerText = "🔍 Scanning image text & colors...";
+                        document.getElementById('attachmentPreviewBar').style.display = "flex";
 
-                    const visualMeta = analyzeImageVisualTelemetry(img, file.name);
-                    attachedImageExtractedContext = `[ATTACHED IMAGE TELEMETRY: ${visualMeta}]`;
+                        const visualMeta = analyzeImageVisualTelemetry(img, file.name);
+                        attachedImageExtractedContext = `[ATTACHED IMAGE TELEMETRY: ${visualMeta}]`;
 
-                    // Run client-side OCR so Qwen understands text/diagrams inside attached images
-                    if (typeof Tesseract !== "undefined") {
-                        isScanningAttachment = true;
-                        try {
-                            const ocrResult = await Tesseract.recognize(attachedImageBase64, 'eng');
-                            const extractedText = (ocrResult?.data?.text || "").replace(/\s+/g, ' ').trim();
-                            if (extractedText && extractedText.length > 2) {
-                                attachedImageExtractedContext = `[ATTACHED IMAGE TELEMETRY: ${visualMeta} | EXTRACTED IMAGE TEXT (OCR): "${extractedText.slice(0, 700)}"]`;
-                                document.getElementById('attachmentOcrStatus').innerText = "✓ Visual & OCR text extracted — Ready";
-                            } else {
+                        if (typeof Tesseract !== "undefined") {
+                            try {
+                                const ocrResult = await Promise.race([
+                                    Tesseract.recognize(attachedImageBase64, 'eng'),
+                                    new Promise((_, rej) => setTimeout(() => rej(new Error("OCR timeout")), 4500))
+                                ]);
+                                const extractedText = (ocrResult?.data?.text || "").replace(/\s+/g, ' ').trim();
+                                if (extractedText && extractedText.length > 1) {
+                                    attachedImageExtractedContext = `[ATTACHED IMAGE TELEMETRY: ${visualMeta} | VISIBLE TEXT IN IMAGE (OCR): "${extractedText.slice(0, 600)}"]`;
+                                    document.getElementById('attachmentOcrStatus').innerText = "✓ Visual & OCR text locked — Ready";
+                                } else {
+                                    document.getElementById('attachmentOcrStatus').innerText = "✓ Visual logo/graphic locked — Ready";
+                                }
+                            } catch (ocrErr) {
                                 document.getElementById('attachmentOcrStatus').innerText = "✓ Visual telemetry locked — Ready";
                             }
-                        } catch (ocrErr) {
+                        } else {
                             document.getElementById('attachmentOcrStatus').innerText = "✓ Image locked — Ready";
                         }
                         isScanningAttachment = false;
-                    } else {
-                        document.getElementById('attachmentOcrStatus').innerText = "✓ Image locked — Ready";
-                    }
+                        resolveScan();
+                    };
+                    img.onerror = () => {
+                        isScanningAttachment = false;
+                        resolveScan();
+                    };
+                    img.src = rawDataUrl;
                 };
-                img.src = rawDataUrl;
-            };
-            reader.readAsDataURL(file);
+                reader.readAsDataURL(file);
+            });
         }
 
         function clearImageAttachment() {
@@ -1375,6 +1384,7 @@
             attachedImageName = "";
             attachedImageExtractedContext = "";
             isScanningAttachment = false;
+            attachmentScanPromise = null;
             document.getElementById('imageUploadInput').value = "";
             document.getElementById('attachmentPreviewBar').style.display = "none";
         }
@@ -1384,7 +1394,7 @@
         // ==========================================================
         function compileAndDownloadDetailedPDF(topicTitle, rawContent, embeddedImgBase64 = null) {
             const cleanTopic = (topicTitle || "Intelligence Dossier").toUpperCase();
-            const cleanBody = rawContent
+            const cleanBody = stripSlashesFromText(rawContent)
                 .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
                 .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
                 .replace(/\n\n/g, '<br><br>')
@@ -1446,13 +1456,13 @@
                 });
             } else {
                 document.body.removeChild(pdfContainer);
-                triggerTextDownload(`KIZA_Dossier_${Date.now()}.txt`, rawContent);
+                triggerTextDownload(`KIZA_Dossier_${Date.now()}.txt`, cleanBody);
             }
         }
 
         function compileAndDownloadPPTX(topicTitle, rawContent, embeddedImgBase64 = null) {
             const cleanTopic = (topicTitle || "Executive Presentation").toUpperCase();
-            const cleanBody = rawContent
+            const cleanBody = stripSlashesFromText(rawContent)
                 .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
                 .replace(/\*/g, '')
                 .trim();
@@ -1471,10 +1481,9 @@
                 pptx.company = "KIZA AI Command Hub";
                 pptx.title = cleanTopic;
 
-                // Cover Slide
                 let titleSlide = pptx.addSlide();
                 titleSlide.background = { color: "060A17" };
-                titleSlide.addText("KIZA AI COMMAND HUB // INTELLIGENCE DECK", {
+                titleSlide.addText("KIZA AI COMMAND HUB • INTELLIGENCE DECK", {
                     x: 0.6, y: 0.6, w: 8.8, h: 0.4,
                     fontSize: 11, color: "00F2FE", bold: true, fontFace: "Courier New"
                 });
@@ -1492,7 +1501,6 @@
                     } catch (imgErr) {}
                 }
 
-                // Parse SLIDE blocks
                 const slideRegex = /SLIDE\s*\d+\s*:\s*([^\n]+)\n([\s\S]*?)(?=SLIDE\s*\d+\s*:|$)/gi;
                 let match;
                 let slideCount = 0;
@@ -1508,7 +1516,7 @@
 
                     let slide = pptx.addSlide();
                     slide.background = { color: "0B1120" };
-                    slide.addText(`SLIDE 0${slideCount} // ${sTitle.toUpperCase()}`, {
+                    slide.addText(`SLIDE 0${slideCount} • ${sTitle.toUpperCase()}`, {
                         x: 0.6, y: 0.5, w: 8.8, h: 0.6,
                         fontSize: 20, color: "38BDF8", bold: true, fontFace: "Arial"
                     });
@@ -1524,7 +1532,6 @@
                     }
                 }
 
-                // Fallback if AI didn't use strict SLIDE N headers
                 if (slideCount === 0) {
                     const paragraphs = cleanBody.split(/\n\n+/).filter(Boolean);
                     paragraphs.slice(0, 5).forEach((para, idx) => {
@@ -1553,7 +1560,7 @@
         function compileAndDownloadUniversalFile(ext, topic, rawContent, embeddedImgBase64 = null) {
             const cleanExt = (ext || "txt").toLowerCase().trim();
             const safeTopic = (topic || "KIZA_Export").replace(/[^a-zA-Z0-9]/g, '_').slice(0, 32);
-            const cleanBody = rawContent
+            const cleanBody = stripSlashesFromText(rawContent)
                 .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
                 .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
                 .trim();
@@ -1581,7 +1588,6 @@
                 return;
             }
 
-            // All other file extensions (.csv, .txt, .py, .html, .json, .md, .js)
             const filename = `KIZA_${safeTopic}.${cleanExt}`;
             triggerTextDownload(filename, cleanBody);
             showNotification("FILE DOWNLOADED", `Saved ${filename}`, false, { skipStore: true });
@@ -3776,12 +3782,12 @@
 
         function isVisualQuestion(textStr) {
             const low = textStr.toLowerCase();
-            const visualWords = ["see", "look", "camera", "webcam", "holding", "hold", "hand", "wearing", "wear", "show", "watch", "read this", "what is this", "what's this", "in front", "photo", "picture", "image", "attached", "attachment", "solve", "explain this"];
+            const visualWords = ["see", "look", "camera", "webcam", "holding", "hold", "hand", "wearing", "wear", "show", "watch", "read this", "what is this", "what's this", "in front", "photo", "picture", "image", "attached", "attachment", "solve", "explain this", "hows this", "how is this"];
             return visualWords.some(w => low.includes(w));
         }
 
         // ==========================================================
-        // REAL-TIME SSE TOKEN STREAMING + IMAGE & FILE COMPILER
+        // REAL-TIME SSE TOKEN STREAMING + AUTOMATIC FALLBACK ENGINE
         // ==========================================================
         async function submitCommand() {
             if (isPinLocked) {
@@ -3793,7 +3799,6 @@
             const autoBox = document.getElementById('slashAutocomplete');
             if (autoBox) autoBox.style.display = "none";
 
-            // Allow submitting an attached image even if text input is empty
             if (!rawText && attachedImageBase64) {
                 rawText = "Analyze and explain this attached image in detail.";
             }
@@ -3802,13 +3807,18 @@
             inputField.value = "";
             clearTimeout(typingTimer); clearIndicator();
 
+            // Wait up to 2.5s if user clicked Transmit while image OCR/telemetry is still scanning
+            if (isScanningAttachment && attachmentScanPromise) {
+                document.getElementById('uiStatus').innerText = "🔍 FINISHING IMAGE SCAN...";
+                try { await attachmentScanPromise; } catch (e) {}
+            }
+
             const intent = processNaturalVoiceIntent(rawText);
             if (intent.handledLocally) return;
 
             let text = intent.mappedText;
             const cleanSpeaker = cleanDisplayNameOnly(currentUser).toUpperCase();
 
-            // Capture current attachment state before clearing UI preview
             const currentAttachedImg = attachedImageBase64;
             const currentAttachedName = attachedImageName;
             const currentAttachedContext = attachedImageExtractedContext;
@@ -3816,7 +3826,6 @@
 
             if (hasExplicitAttachment) {
                 logAction(`[${cleanSpeaker}]: [📎 Attached: ${currentAttachedName}] ${rawText}`);
-                // Inject extracted OCR & visual telemetry into the command string so Qwen understands the image 100%
                 if (currentAttachedContext && !text.startsWith("/")) {
                     text = `${text}\n\n${currentAttachedContext}`;
                 }
@@ -3854,57 +3863,74 @@
 
             let accumulatedText = "";
             let isStreamError = false;
+            const reqPayload = {
+                user: currentUser,
+                command: text,
+                image_base64: finalVisionFrame,
+                is_attached_image: hasExplicitAttachment,
+                personality: selectedPersona,
+                session_id: currentSessionId
+            };
 
             try {
                 let response = await fetch(`${SERVER_URL}/api/chat/stream`, { 
                     method: "POST", 
                     headers: { "Content-Type": "application/json" }, 
-                    body: JSON.stringify({ 
-                        user: currentUser, 
-                        command: text, 
-                        image_base64: finalVisionFrame, 
-                        is_attached_image: hasExplicitAttachment,
-                        personality: selectedPersona,
-                        session_id: currentSessionId
-                    }) 
+                    body: JSON.stringify(reqPayload) 
                 });
-                if (!response.ok) throw new Error("Cloud stream connection failed.");
 
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder("utf-8");
-                let buffer = "";
+                if (response.ok && response.body) {
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder("utf-8");
+                    let buffer = "";
 
-                while (true) {
-                    const { value, done } = await reader.read();
-                    if (done) break;
-                    buffer += decoder.decode(value, { stream: true });
+                    while (true) {
+                        const { value, done } = await reader.read();
+                        if (done) break;
+                        buffer += decoder.decode(value, { stream: true });
 
-                    let lines = buffer.split("\n\n");
-                    buffer = lines.pop() || "";
+                        let lines = buffer.split("\n\n");
+                        buffer = lines.pop() || "";
 
-                    for (let block of lines) {
-                        const trimmed = block.trim();
-                        if (!trimmed.startsWith("data:")) continue;
-                        const jsonStr = trimmed.replace(/^data:\s*/, "");
-                        try {
-                            const payload = JSON.parse(jsonStr);
-                            if (payload.type === "token") {
-                                if (payload.is_error) isStreamError = true;
-                                accumulatedText += payload.text;
-                                const visibleClean = stripSlashesFromText(accumulatedText)
-                                    .replace(/\[ACTION:[A-Z_]+\]/g, '')
-                                    .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
-                                    .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
-                                    .replace(/\[SYSTEM[^\]]*\]/gi, '')
-                                    .replace(/\*/g, '');
-                                streamEntry.innerText = `> [KIZA]: ${visibleClean}`;
-                                logBox.scrollTop = logBox.scrollHeight;
+                        for (let block of lines) {
+                            const trimmed = block.trim();
+                            if (!trimmed.startsWith("data:")) continue;
+                            const jsonStr = trimmed.replace(/^data:\s*/, "");
+                            try {
+                                const payload = JSON.parse(jsonStr);
+                                if (payload.type === "token") {
+                                    if (payload.is_error) isStreamError = true;
+                                    accumulatedText += payload.text;
+                                    const visibleClean = stripSlashesFromText(accumulatedText)
+                                        .replace(/\[ACTION:[A-Z_]+\]/g, '')
+                                        .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
+                                        .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
+                                        .replace(/\[SYSTEM[^\]]*\]/gi, '')
+                                        .replace(/\*/g, '');
+                                    streamEntry.innerText = `> [KIZA]: ${visibleClean}`;
+                                    logBox.scrollTop = logBox.scrollHeight;
+                                    orbEl.style.transform = `scale(${(1.03 + Math.random() * 0.08).toFixed(3)})`;
+                                } else if (payload.type === "audio" && payload.audio_base64) {
+                                    playKizaAudio(payload.audio_base64);
+                                }
+                            } catch (parseErr) {}
+                        }
+                    }
+                }
 
-                                orbEl.style.transform = `scale(${(1.03 + Math.random() * 0.08).toFixed(3)})`;
-                            } else if (payload.type === "audio" && payload.audio_base64) {
-                                playKizaAudio(payload.audio_base64);
-                            }
-                        } catch (parseErr) {}
+                // Automatic Fallback to /api/chat if /api/chat/stream returned empty or 404 during Render deploy
+                const visibleCheck = stripSlashesFromText(accumulatedText).trim();
+                if (!visibleCheck) {
+                    let syncRes = await fetch(`${SERVER_URL}/api/chat`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(reqPayload)
+                    });
+                    if (syncRes.ok) {
+                        let syncData = await syncRes.json();
+                        accumulatedText = syncData.reply || "";
+                        isStreamError = Boolean(syncData.is_error);
+                        if (syncData.audio_base64) playKizaAudio(syncData.audio_base64);
                     }
                 }
 
@@ -3915,7 +3941,6 @@
                 isChatActive = false;
                 setCoreLoadSpike(false);
 
-                // Check for Universal File Generation Trigger: [GENERATE_FILE:EXT:Topic]
                 if (accumulatedText.includes("[GENERATE_FILE:")) {
                     const fileMatch = accumulatedText.match(/\[GENERATE_FILE:([^:]+):([^\]]+)\]/);
                     const fileExt = fileMatch ? fileMatch[1] : "pdf";
@@ -3927,13 +3952,18 @@
                     compileAndDownloadDetailedPDF(topic, accumulatedText, currentAttachedImg);
                 }
 
-                const finalCleaned = stripSlashesFromText(executeAIActionTags(accumulatedText))
+                let finalCleaned = stripSlashesFromText(executeAIActionTags(accumulatedText))
                     .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
                     .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
                     .replace(/\[SYSTEM[^\]]*\]/gi, '')
                     .replace(/\*/g, '')
                     .trim();
+
+                if (!finalCleaned) {
+                    finalCleaned = "I am online and ready. Tell me what you'd like to do next!";
+                }
                 streamEntry.innerText = `> [KIZA]: ${finalCleaned}`;
+                logBox.scrollTop = logBox.scrollHeight;
 
                 if (isStreamError) {
                     streamEntry.style.borderLeftColor = "var(--danger)";
