@@ -9,18 +9,18 @@
     <title>KIZA — AI Command Hub</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root {
-            --bg-main: #eef4f8;
-            --bg-gradient: radial-gradient(circle at 50% 20%, #ffffff 0%, #e2edf8 60%, #d4e4f4 100%);
-            --card-bg: rgba(255, 255, 255, 0.84);
-            --card-border: rgba(56, 189, 248, 0.45);
-            --card-shadow: 0 10px 30px -5px rgba(14, 165, 233, 0.14), 0 0 1px 1px rgba(14, 165, 233, 0.2);
+            --bg-main: #f0f6fc;
+            --bg-gradient: radial-gradient(circle at 50% 15%, #ffffff 0%, #e6f0fa 58%, #d5e6f7 100%);
+            --card-bg: rgba(255, 255, 255, 0.88);
+            --card-border: rgba(14, 165, 233, 0.35);
+            --card-shadow: 0 10px 30px -6px rgba(14, 165, 233, 0.14), 0 0 1px 1px rgba(14, 165, 233, 0.18);
             --text-main: #0f172a;
             --text-muted: #475569;
             --accent-primary: #0284c7;
@@ -29,17 +29,17 @@
             --danger: #f43f5e;
             --warning: #f59e0b;
             --success: #10b981;
-            --chip-bg: rgba(14, 165, 233, 0.08);
+            --chip-bg: rgba(14, 165, 233, 0.09);
             --chip-hover: rgba(14, 165, 233, 0.18);
-            --chip-border: rgba(14, 165, 233, 0.4);
-            --feed-bg: rgba(248, 250, 252, 0.9);
-            --input-bg: rgba(255, 255, 255, 0.92);
+            --chip-border: rgba(14, 165, 233, 0.38);
+            --feed-bg: rgba(248, 250, 252, 0.94);
+            --input-bg: rgba(255, 255, 255, 0.96);
         }
 
         body.dark-mode {
             --bg-main: #040711;
             --bg-gradient: radial-gradient(circle at 50% 25%, #110926 0%, #060814 55%, #020308 100%);
-            --card-bg: rgba(11, 15, 30, 0.8);
+            --card-bg: rgba(11, 15, 30, 0.84);
             --card-border: rgba(168, 85, 247, 0.38);
             --card-shadow: 0 12px 35px -5px rgba(0, 0, 0, 0.7), 0 0 20px rgba(168, 85, 247, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.06);
             --text-main: #f1f5f9;
@@ -50,11 +50,11 @@
             --danger: #ff0055;
             --warning: #fbbf24;
             --success: #00ffcc;
-            --chip-bg: rgba(0, 242, 254, 0.07);
+            --chip-bg: rgba(0, 242, 254, 0.08);
             --chip-hover: rgba(0, 242, 254, 0.18);
             --chip-border: rgba(0, 242, 254, 0.4);
-            --feed-bg: rgba(6, 9, 20, 0.75);
-            --input-bg: rgba(9, 13, 28, 0.9);
+            --feed-bg: rgba(6, 9, 20, 0.78);
+            --input-bg: rgba(9, 13, 28, 0.92);
         }
 
         * { box-sizing: border-box; }
@@ -76,8 +76,8 @@
         body::before {
             content: ""; position: fixed; inset: 0;
             background-image: 
-                linear-gradient(to right, rgba(14, 165, 233, 0.05) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(14, 165, 233, 0.05) 1px, transparent 1px);
+                linear-gradient(to right, rgba(14, 165, 233, 0.045) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(14, 165, 233, 0.045) 1px, transparent 1px);
             background-size: 36px 36px;
             pointer-events: none; z-index: 1;
         }
@@ -88,8 +88,8 @@
         }
 
         .container { 
-            display: flex; width: 100%; height: 100%; padding: 18px; gap: 18px; 
-            z-index: 10; position: relative; max-width: 1680px; margin: 0 auto;
+            display: flex; width: 100%; height: 100%; padding: 16px; gap: 16px; 
+            z-index: 10; position: relative; max-width: 1700px; margin: 0 auto;
         }
 
         .side-panel, .auth-card, .logs-card { 
@@ -99,22 +99,22 @@
             border: 1px solid var(--card-border);
             box-shadow: var(--card-shadow);
             border-radius: 16px;
-            padding: 16px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 9px;
             transition: all 0.3s ease;
         }
 
         .side-panel { overflow-y: auto; max-height: 100%; }
-        .left-panel { width: 315px; flex-shrink: 0; }
-        .right-panel { width: 365px; flex-shrink: 0; }
+        .left-panel { width: 310px; flex-shrink: 0; }
+        .right-panel { width: 390px; flex-shrink: 0; }
 
         .section-title { 
             font-family: 'Orbitron', sans-serif;
             font-size: 11px;
             color: var(--accent-primary);
-            letter-spacing: 2px;
+            letter-spacing: 1.6px;
             text-transform: uppercase;
             border-bottom: 1px solid var(--card-border);
             padding-bottom: 7px;
@@ -140,55 +140,38 @@
             background: rgba(255, 255, 255, 0.025);
             border-color: rgba(255, 255, 255, 0.06);
         }
-        .telemetry-row span:first-child { color: var(--text-muted); font-weight: 500; font-size: 10.5px; letter-spacing: 1px; }
+        .telemetry-row span:first-child { color: var(--text-muted); font-weight: 600; font-size: 10.5px; }
         .telemetry-val { font-weight: 700; color: var(--accent-primary); }
         .telemetry-val.master { 
             color: var(--danger); 
             background: rgba(244, 63, 94, 0.12);
             padding: 2px 7px; border-radius: 6px; border: 1px solid rgba(244, 63, 94, 0.3);
         }
-        body.dark-mode .telemetry-val.master {
-            text-shadow: 0 0 8px rgba(255, 0, 85, 0.7);
-        }
 
         .diagnostics-box {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            padding: 11px 12px;
+            gap: 7px;
+            padding: 10px 12px;
             border-radius: 11px;
             background: rgba(14, 165, 233, 0.04);
             border: 1px solid var(--card-border);
             margin-top: 2px;
         }
-        .diag-item {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
+        .diag-item { display: flex; flex-direction: column; gap: 4px; }
         .diag-header {
-            display: flex;
-            justify-content: space-between;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            color: var(--text-muted);
-            font-weight: 600;
+            display: flex; justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace; font-size: 10px;
+            color: var(--text-muted); font-weight: 600;
         }
         .diag-bar-bg {
-            width: 100%;
-            height: 6px;
-            background: rgba(148, 163, 184, 0.2);
-            border-radius: 999px;
-            overflow: hidden;
+            width: 100%; height: 6px; background: rgba(148, 163, 184, 0.2);
+            border-radius: 999px; overflow: hidden;
         }
         .diag-bar-fill {
-            height: 100%;
-            border-radius: 999px;
+            height: 100%; border-radius: 999px;
             background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
             transition: width 0.5s ease;
-        }
-        body.dark-mode .diag-bar-fill {
-            box-shadow: 0 0 8px var(--accent-primary);
         }
 
         .chip-btn {
@@ -196,13 +179,11 @@
             border: 1px solid var(--chip-border);
             color: var(--accent-primary);
             padding: 7px 11px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 11.5px;
+            border-radius: 9px;
             cursor: pointer;
-            text-transform: uppercase;
             font-weight: 600;
-            letter-spacing: 0.6px;
             width: 100%;
             text-align: center;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -248,7 +229,7 @@
             cursor: pointer;
             font-family: 'Orbitron', sans-serif;
             font-size: 11.5px;
-            letter-spacing: 1.5px;
+            letter-spacing: 1.2px;
             font-weight: 700;
             border-radius: 10px;
             white-space: nowrap;
@@ -267,7 +248,7 @@
         }
 
         .camera-box { 
-            width: 100%; height: 138px; background: #070b14; 
+            width: 100%; height: 132px; background: #070b14; 
             border: 1px solid var(--card-border); border-radius: 12px; 
             display: flex; align-items: center; justify-content: center; 
             overflow: hidden; position: relative;
@@ -297,8 +278,8 @@
 
         .center-panel { 
             flex: 1; display: flex; flex-direction: column; 
-            align-items: center; justify-content: space-between; gap: 12px;
-            padding: 4px 10px;
+            align-items: center; justify-content: space-between; gap: 10px;
+            padding: 4px 8px;
             overflow-y: auto;
             max-height: 100%;
         }
@@ -319,18 +300,8 @@
             font-size: 11.5px;
             flex-wrap: wrap;
         }
-        .hud-divider {
-            width: 1px;
-            height: 14px;
-            background: var(--card-border);
-        }
-        .hud-stat {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--text-main);
-            font-weight: 600;
-        }
+        .hud-divider { width: 1px; height: 14px; background: var(--card-border); }
+        .hud-stat { display: inline-flex; align-items: center; gap: 6px; color: var(--text-main); font-weight: 600; }
         .hud-theme-btn {
             background: var(--chip-bg);
             border: 1px solid var(--chip-border);
@@ -344,26 +315,23 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
-        .hud-theme-btn:hover {
-            background: var(--chip-hover);
-            transform: scale(1.04);
-        }
+        .hud-theme-btn:hover { background: var(--chip-hover); transform: scale(1.04); }
 
         .core-center-group {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 14px;
+            gap: 12px;
             width: 100%;
         }
 
         .core-assembly { 
-            position: relative; width: 185px; height: 185px; 
+            position: relative; width: 175px; height: 175px; 
             display: flex; align-items: center; justify-content: center; 
         }
         .core-orb { 
-            width: 90px; height: 90px; 
+            width: 86px; height: 86px; 
             background: radial-gradient(circle at 35% 35%, #e0f2fe 0%, #38bdf8 30%, #0284c7 65%, #082f49 100%);
             border-radius: 50%; 
             box-shadow: 0 0 45px rgba(56, 189, 248, 0.75), inset 0 0 20px rgba(255, 255, 255, 0.6); 
@@ -381,25 +349,9 @@
         }
         
         .core-ring { position: absolute; border-radius: 50%; z-index: 1; pointer-events: none; }
-        .ring-1 { 
-            width: 122px; height: 122px; 
-            border: 1.5px dashed var(--accent-primary);
-            border-top: 2.5px solid var(--accent-secondary); 
-            animation: spinRight 7s linear infinite; 
-        }
-        .ring-2 { 
-            width: 152px; height: 152px; 
-            border: 1px solid rgba(56, 189, 248, 0.25);
-            border-bottom: 2.5px dashed var(--accent-primary); 
-            border-left: 2px solid var(--accent-glow);
-            animation: spinLeft 11s linear infinite; 
-        }
-        .ring-3 { 
-            width: 182px; height: 182px; 
-            border: 1px dashed rgba(56, 189, 248, 0.3);
-            border-right: 2.5px solid var(--accent-primary); 
-            animation: spinRight 16s linear infinite; 
-        }
+        .ring-1 { width: 116px; height: 116px; border: 1.5px dashed var(--accent-primary); border-top: 2.5px solid var(--accent-secondary); animation: spinRight 7s linear infinite; }
+        .ring-2 { width: 145px; height: 145px; border: 1px solid rgba(56, 189, 248, 0.25); border-bottom: 2.5px dashed var(--accent-primary); border-left: 2px solid var(--accent-glow); animation: spinLeft 11s linear infinite; }
+        .ring-3 { width: 174px; height: 174px; border: 1px dashed rgba(56, 189, 248, 0.3); border-right: 2.5px solid var(--accent-primary); animation: spinRight 16s linear infinite; }
         body.dark-mode .ring-1 { border-color: rgba(0, 242, 254, 0.5); border-top-color: #00f2fe; }
         body.dark-mode .ring-2 { border-color: rgba(168, 85, 247, 0.35); border-bottom-color: #c084fc; border-left-color: #00f2fe; }
         body.dark-mode .ring-3 { border-color: rgba(168, 85, 247, 0.25); border-right-color: #a855f7; }
@@ -410,24 +362,22 @@
 
         .status-text { 
             font-family: 'Orbitron', sans-serif;
-            font-size: 13px; letter-spacing: 2.5px; color: var(--accent-primary); 
+            font-size: 12.5px; letter-spacing: 2px; color: var(--accent-primary); 
             text-align: center; font-weight: 700;
             padding: 6px 18px; border-radius: 999px;
             background: var(--chip-bg); border: 1px solid var(--chip-border);
         }
-        body.dark-mode .status-text { 
-            color: #fff; text-shadow: 0 0 12px var(--accent-glow); 
-        }
+        body.dark-mode .status-text { color: #fff; text-shadow: 0 0 12px var(--accent-glow); }
 
         .input-container { 
             position: relative;
-            display: flex; flex-direction: column; width: 100%; max-width: 650px; gap: 10px; 
+            display: flex; flex-direction: column; width: 100%; max-width: 670px; gap: 9px; 
             background: var(--card-bg); backdrop-filter: blur(18px);
-            padding: 14px; border: 1px solid var(--card-border); 
+            padding: 13px; border: 1px solid var(--card-border); 
             border-radius: 16px; box-shadow: var(--card-shadow);
             flex-shrink: 0;
         }
-        .input-row { display: flex; gap: 8px; width: 100%; align-items: center; }
+        .input-row { display: flex; gap: 7px; width: 100%; align-items: center; }
 
         #attachmentPreviewBar {
             display: none;
@@ -442,12 +392,53 @@
             font-size: 11px;
         }
         #attachmentThumb {
-            width: 42px;
-            height: 42px;
-            object-fit: cover;
-            border-radius: 6px;
-            border: 1.5px solid var(--accent-primary);
-            flex-shrink: 0;
+            width: 42px; height: 42px; object-fit: cover;
+            border-radius: 6px; border: 1.5px solid var(--accent-primary); flex-shrink: 0;
+        }
+
+        /* Task Planner & Web Search Cards inside Feed */
+        .planner-card {
+            background: var(--card-bg);
+            border: 1px solid var(--accent-primary);
+            border-left: 4px solid var(--accent-secondary);
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 11.5px;
+        }
+        .planner-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            transition: opacity 0.3s ease;
+        }
+        .web-search-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid var(--success);
+            color: var(--success);
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Slide Preview Card in Preview Studio */
+        .ppt-slide-preview {
+            background: linear-gradient(135deg, #0b1120 0%, #111827 100%);
+            color: #f8fafc;
+            border: 1px solid #38bdf8;
+            border-radius: 12px;
+            padding: 18px 20px;
+            margin-bottom: 14px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
         }
 
         #slashAutocomplete {
@@ -461,7 +452,7 @@
             border: 1px solid var(--accent-primary);
             border-radius: 12px;
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
-            max-height: 210px;
+            max-height: 220px;
             overflow-y: auto;
             display: none;
             flex-direction: column;
@@ -470,21 +461,14 @@
             gap: 4px;
         }
         .slash-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11.5px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 12px; border-radius: 8px; cursor: pointer;
+            font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
             transition: background 0.15s;
         }
-        .slash-item:hover {
-            background: var(--chip-hover);
-        }
+        .slash-item:hover { background: var(--chip-hover); }
         .slash-cmd-name { font-weight: 700; color: var(--accent-primary); }
-        .slash-cmd-desc { font-size: 10.5px; color: var(--text-muted); }
+        .slash-cmd-desc { font-size: 10.5px; color: var(--text-muted); font-family: 'Inter', sans-serif; }
 
         input[type="text"], input[type="password"], select, textarea { 
             background: var(--input-bg);
@@ -505,36 +489,31 @@
 
         select {
             cursor: pointer;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
             background-image: url('data:image/svg+xml;utf8,<svg fill="%230284c7" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>') !important;
             background-repeat: no-repeat !important;
             background-position: right 10px center !important;
             background-size: 18px 18px !important;
             padding-right: 34px !important;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Inter', sans-serif;
             font-size: 12px;
         }
         body.dark-mode select { 
             background-image: url('data:image/svg+xml;utf8,<svg fill="%2300f2fe" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>') !important; 
-            background-repeat: no-repeat !important;
-            background-position: right 10px center !important;
-            background-size: 18px 18px !important;
         }
 
         .log-box, .logs-viewer { 
-            flex: 1; overflow-y: auto; font-size: 12px; color: var(--text-main); 
+            flex: 1; overflow-y: auto; font-size: 12.5px; color: var(--text-main); 
             display: flex; flex-direction: column; gap: 10px; line-height: 1.55; 
             background: var(--feed-bg); padding: 14px; 
             border: 1px solid var(--card-border); border-radius: 12px; 
             min-height: 180px; max-height: 320px;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Inter', sans-serif;
         }
         .log-box { max-height: none; }
         .log-box > div, .logs-viewer > div {
-            padding: 8px 11px;
-            border-radius: 8px;
+            padding: 9px 12px;
+            border-radius: 9px;
             background: rgba(14, 165, 233, 0.05);
             border-left: 3px solid var(--accent-primary);
             word-break: break-word;
@@ -556,90 +535,40 @@
             color: var(--accent-primary);
             animation: blinkCursor 0.6s infinite alternate;
         }
-        @keyframes blinkCursor {
-            from { opacity: 1; }
-            to { opacity: 0.1; }
-        }
+        @keyframes blinkCursor { from { opacity: 1; } to { opacity: 0.1; } }
 
         .notif-item {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            padding: 12px 14px;
-            border-radius: 10px;
-            background: var(--input-bg);
-            border: 1px solid var(--card-border);
-            border-left: 4px solid var(--accent-primary);
-            position: relative;
-            transition: all 0.2s ease;
+            display: flex; flex-direction: column; gap: 6px;
+            padding: 12px 14px; border-radius: 10px;
+            background: var(--input-bg); border: 1px solid var(--card-border);
+            border-left: 4px solid var(--accent-primary); position: relative;
         }
-        .notif-item.unread {
-            background: var(--chip-bg);
-            box-shadow: 0 4px 14px rgba(14, 165, 233, 0.12);
-        }
-        .notif-item.type-error { border-left-color: var(--danger); }
-        .notif-item.type-lockdown { border-left-color: var(--danger); background: rgba(244, 63, 94, 0.08); }
+        .notif-item.unread { background: var(--chip-bg); }
+        .notif-item.type-error, .notif-item.type-lockdown { border-left-color: var(--danger); }
         .notif-item.type-update { border-left-color: var(--success); }
 
-        .notif-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 8px;
-        }
+        .notif-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
         .notif-tag {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            padding: 2px 7px;
-            border-radius: 5px;
-            background: rgba(14, 165, 233, 0.15);
-            color: var(--accent-primary);
+            font-family: 'Orbitron', sans-serif; font-size: 10px; font-weight: 700;
+            padding: 2px 7px; border-radius: 5px;
+            background: rgba(14, 165, 233, 0.15); color: var(--accent-primary);
         }
-        .notif-tag.error, .notif-tag.lockdown {
-            background: rgba(244, 63, 94, 0.18);
-            color: var(--danger);
-        }
-        .notif-tag.update {
-            background: rgba(16, 185, 129, 0.18);
-            color: var(--success);
-        }
-        .notif-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 10.5px;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
+        .notif-tag.error, .notif-tag.lockdown { background: rgba(244, 63, 94, 0.18); color: var(--danger); }
+        .notif-tag.update { background: rgba(16, 185, 129, 0.18); color: var(--success); }
+        .notif-meta { display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; color: var(--text-muted); margin-top: 2px; }
 
         .update-card {
-            padding: 12px 14px;
-            border-radius: 10px;
-            background: var(--input-bg);
-            border: 1px solid var(--card-border);
-            border-left: 4px solid var(--accent-secondary);
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
+            padding: 12px 14px; border-radius: 10px; background: var(--input-bg);
+            border: 1px solid var(--card-border); border-left: 4px solid var(--accent-secondary);
+            display: flex; flex-direction: column; gap: 5px;
         }
 
         .mugshot-img {
-            width: 68px;
-            height: 54px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 2px solid var(--danger);
-            box-shadow: 0 0 12px rgba(244, 63, 94, 0.45);
-            flex-shrink: 0;
-            cursor: pointer;
-            transition: transform 0.2s ease;
+            width: 68px; height: 54px; object-fit: cover; border-radius: 8px;
+            border: 2px solid var(--danger); box-shadow: 0 0 12px rgba(244, 63, 94, 0.45);
+            flex-shrink: 0; cursor: pointer; transition: transform 0.2s ease;
         }
-        .mugshot-img:hover {
-            transform: scale(1.8);
-            z-index: 50;
-        }
+        .mugshot-img:hover { transform: scale(1.8); z-index: 50; }
 
         #notificationBox {
             position: fixed; top: 22px; right: -420px; width: 340px; 
@@ -652,40 +581,31 @@
             cursor: pointer;
         }
         #notificationBox.show { right: 22px; }
-        #notificationBox.notify-error { 
-            border-color: var(--danger); 
-            box-shadow: 0 15px 35px rgba(244, 63, 94, 0.35); 
-        }
+        #notificationBox.notify-error { border-color: var(--danger); }
         .notify-title { 
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 700; font-size: 11px; letter-spacing: 2px; 
-            color: var(--accent-primary);
-            border-bottom: 1px solid var(--card-border); padding-bottom: 6px; text-transform: uppercase; 
+            font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 2px; 
+            color: var(--accent-primary); border-bottom: 1px solid var(--card-border); padding-bottom: 6px;
         }
         #notificationBox.notify-error .notify-title { color: var(--danger); }
 
         .modal-overlay { 
             position: fixed; inset: 0; 
-            background: rgba(15, 23, 42, 0.65); 
+            background: rgba(15, 23, 42, 0.68); 
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             display: flex; align-items: center; justify-content: center; 
             z-index: 500; padding: 16px; 
         }
         .auth-card, .logs-card { width: 100%; max-width: 430px; }
-        .logs-card { max-width: 680px; max-height: 92vh; overflow-y: auto; }
+        .logs-card { max-width: 720px; max-height: 92vh; overflow-y: auto; }
         
         .auth-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
         .tab-btn { 
             flex: 1; padding: 8px 10px; background: transparent; 
             border: 1px solid var(--card-border); color: var(--text-muted); 
             font-family: 'Orbitron', sans-serif; font-size: 10.5px; letter-spacing: 1px;
-            cursor: pointer; border-radius: 8px; transition: all 0.2s;
-            white-space: nowrap;
+            cursor: pointer; border-radius: 8px; transition: all 0.2s; white-space: nowrap;
         }
-        .tab-btn.active { 
-            border-color: var(--accent-primary); color: var(--accent-primary); 
-            background: var(--chip-bg); font-weight: 700; 
-        }
+        .tab-btn.active { border-color: var(--accent-primary); color: var(--accent-primary); background: var(--chip-bg); font-weight: 700; }
         .profile-list-item { 
             display: flex; justify-content: space-between; align-items: center; 
             padding: 10px 12px; border: 1px solid var(--card-border); 
@@ -704,7 +624,7 @@
             .ring-3 { width: 130px; height: 130px; }
             .top-hud-bar { padding: 5px 14px; font-size: 10.5px; }
             .status-text { padding: 4px 14px; font-size: 11px; }
-            .chip-btn { padding: 5px 9px; font-size: 10px; }
+            .chip-btn { padding: 5px 9px; font-size: 10.5px; }
             .input-container { padding: 9px 12px; gap: 6px; }
             input[type="text"], select { padding: 7px 10px; font-size: 12.5px; }
             .send-btn { padding: 8px 14px; font-size: 10.5px; }
@@ -728,7 +648,24 @@
         <div class="notify-msg" id="notifMsg">Notification details...</div>
     </div>
 
-    <!-- MANDATORY SECURITY BACKUP PIN MODAL (SETUP & FACE-MISMATCH UNLOCK GATE) -->
+    <!-- INTERACTIVE DOCUMENT & SLIDE PREVIEW STUDIO MODAL (PREVIEW FIRST BEFORE DOWNLOADING) -->
+    <div id="filePreviewModal" class="modal-overlay" style="display:none; z-index: 620;">
+        <div class="logs-card" style="max-width: 860px; width: 95%;">
+            <div class="section-title">
+                <span id="filePreviewModalTitle">🎨 VISUAL DOCUMENT & SLIDE PREVIEW STUDIO</span>
+                <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeFilePreviewModal()">✕ CLOSE</button>
+            </div>
+            <div style="font-size:12px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:4px;">
+                <span>Inspect your generated document or slides below. Click <b>Confirm & Download</b> when ready.</span>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" id="confirmDownloadBtn" class="send-btn" style="padding:7px 16px; font-size:11px;" onclick="confirmAndDownloadPreviewedFile()">⬇️ CONFIRM & DOWNLOAD FILE</button>
+                </div>
+            </div>
+            <div id="filePreviewViewport" style="max-height: 68vh; overflow-y: auto; border: 1px solid var(--card-border); border-radius: 12px; background: #e2e8f0; padding: 16px;"></div>
+        </div>
+    </div>
+
+    <!-- MANDATORY SECURITY BACKUP PIN MODAL -->
     <div id="pinGateModal" class="modal-overlay" style="display:none; z-index: 650;">
         <div class="auth-card">
             <div class="section-title">
@@ -852,7 +789,7 @@
             <div id="ownerUpdatePublisher" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:10px; background:var(--chip-bg); border:1px dashed var(--chip-border);">
                 <div style="font-family:'Orbitron', sans-serif; font-size:10.5px; font-weight:700; color:var(--accent-primary);">👑 PUBLISH NEW LIVE UPDATE (OWNER ONLY)</div>
                 <div style="display:flex; gap:8px;">
-                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v5.1)" style="width:140px;">
+                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v5.2)" style="width:140px;">
                     <input type="text" id="newUpdateTitle" placeholder="Update Headline...">
                 </div>
                 <input type="text" id="newUpdateDesc" placeholder="Short description of what was added or fixed...">
@@ -929,7 +866,7 @@
     <div id="logsModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
-                <span>📂 MEMORY ARCHIVE</span>
+                <span>📂 CHAT MEMORY ARCHIVE</span>
                 <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeLogsModal()">✕</button>
             </div>
             
@@ -990,15 +927,15 @@
 
     <!-- MAIN 3-PANEL COMMAND HUD -->
     <div class="container">
-        <!-- LEFT PANEL: TELEMETRY, BIOMETRICS & LIVE GAUGES -->
+        <!-- LEFT PANEL: USER PROFILE, CAMERA & SYSTEM HEALTH -->
         <div class="side-panel left-panel">
             <div class="section-title">
-                <span>📡 SYSTEM TELEMETRY</span>
+                <span>📡 PROFILE & TELEMETRY</span>
                 <span style="width:8px; height:8px; border-radius:50%; background:var(--success); box-shadow: 0 0 8px var(--success);"></span>
             </div>
-            <div class="telemetry-row"><span>PROTOCOL</span><span class="telemetry-val" style="color:var(--success);">SSE STREAMING</span></div>
-            <div class="telemetry-row"><span>IDENTITY</span><span id="idVal" class="telemetry-val">UNVERIFIED</span></div>
-            <div class="telemetry-row"><span>CLEARANCE</span><span id="roleVal" class="telemetry-val">LOCKED</span></div>
+            <div class="telemetry-row"><span>STATUS</span><span class="telemetry-val" style="color:var(--success);">ONLINE (LIVE STREAM)</span></div>
+            <div class="telemetry-row"><span>USER</span><span id="idVal" class="telemetry-val">UNVERIFIED</span></div>
+            <div class="telemetry-row"><span>RANK</span><span id="roleVal" class="telemetry-val">LOCKED</span></div>
             
             <div class="camera-box">
                 <video id="webcamVideo" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; display: none;"></video>
@@ -1016,40 +953,40 @@
             <div class="face-id-box">
                 <img id="savedFaceImg" class="face-thumb" alt="Biometric Face ID">
                 <div>
-                    <div style="font-weight: 700; font-family:'Orbitron', sans-serif; font-size:10.5px; letter-spacing:1px; color:var(--accent-primary);">BIOMETRIC ID & PIN</div>
+                    <div style="font-weight: 700; font-family:'Orbitron', sans-serif; font-size:10.5px; letter-spacing:1px; color:var(--accent-primary);">FACE ID & PIN LOCK</div>
                     <div id="faceIdStatus" style="font-size:11px; color:var(--text-muted); margin-top:2px; font-family:'JetBrains Mono', monospace;">Awaiting Scan...</div>
                 </div>
             </div>
-            <button type="button" class="chip-btn" onclick="updateFaceID()">🧬 RE-SCAN FACE ID</button>
+            <button type="button" class="chip-btn" onclick="updateFaceID()">🧬 UPDATE FACE ID</button>
 
             <div class="diagnostics-box">
-                <div style="font-family:'Orbitron', sans-serif; font-size:10px; font-weight:700; color:var(--accent-primary); letter-spacing:1.5px; display:flex; justify-content:space-between;">
-                    <span>⚡ CORE DIAGNOSTICS</span>
-                    <span id="diagStatusText" style="color:var(--success);">OPTIMAL</span>
+                <div style="font-family:'Orbitron', sans-serif; font-size:10px; font-weight:700; color:var(--accent-primary); letter-spacing:1.2px; display:flex; justify-content:space-between;">
+                    <span>⚡ AI CAPABILITIES</span>
+                    <span id="diagStatusText" style="color:var(--success);">READY</span>
                 </div>
                 <div class="diag-item">
-                    <div class="diag-header"><span>AI CORE LOAD</span><span id="coreLoadText">16%</span></div>
-                    <div class="diag-bar-bg"><div id="coreLoadBar" class="diag-bar-fill" style="width: 16%;"></div></div>
+                    <div class="diag-header"><span>BRAIN LOAD</span><span id="coreLoadText">14%</span></div>
+                    <div class="diag-bar-bg"><div id="coreLoadBar" class="diag-bar-fill" style="width: 14%;"></div></div>
                 </div>
                 <div class="diag-item">
-                    <div class="diag-header"><span>VOICE SYNTHESIZER</span><span id="voiceSynthModeLabel">UK • DRY WIT</span></div>
+                    <div class="diag-header"><span>VOICE PERSONA</span><span id="voiceSynthModeLabel">UK • DRY WIT</span></div>
                     <div class="diag-bar-bg"><div id="memSyncBar" class="diag-bar-fill" style="width: 100%;"></div></div>
                 </div>
                 <div class="diag-item">
-                    <div class="diag-header"><span>VISUAL INFOGRAPHIC ENGINE</span><span id="secShieldText">PDF • PPTX • CHARTS</span></div>
+                    <div class="diag-header"><span>ACTIVE MODULES</span><span id="secShieldText">WEB • PDF • PPTX</span></div>
                     <div class="diag-bar-bg"><div class="diag-bar-fill" style="width: 100%; background: var(--success);"></div></div>
                 </div>
             </div>
             
-            <button type="button" class="chip-btn" onclick="openSettings()" style="margin-top: auto; background: var(--chip-hover);">⚙️ SYSTEM SETTINGS</button>
+            <button type="button" class="chip-btn" onclick="openSettings()" style="margin-top: auto; background: var(--chip-hover);">⚙️ SETTINGS & ACCOUNTS</button>
         </div>
 
-        <!-- CENTER PANEL: TOP HUD BAR, QUANTUM CORE & COMMAND DOCK -->
+        <!-- CENTER PANEL: TOP HUD BAR, QUANTUM CORE & EASY COMMAND DOCK -->
         <div class="center-panel">
             <div class="top-hud-bar">
                 <span class="hud-stat">🕒 <span id="hudClock">--:--:-- IST</span></span>
                 <span class="hud-divider"></span>
-                <span class="hud-stat">⚡ PING: <span id="hudPing" style="color:var(--success);">24ms</span></span>
+                <span class="hud-stat">⚡ PING: <span id="hudPing" style="color:var(--success);">22ms</span></span>
                 <span class="hud-divider"></span>
                 <button type="button" id="quickThemeBtn" class="hud-theme-btn" onclick="toggleQuickTheme()">🌙 DARK MODE</button>
             </div>
@@ -1063,29 +1000,32 @@
                 </div>
                 <div id="uiStatus" class="status-text">AWAITING IDENTITY...</div>
                 
-                <div id="publicCmds" style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="startNewSession()">➕ NEW CHAT</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/cmds')">❓ /cmds</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="openLogsModal()">📂 ARCHIVE</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="openMissionsModal()">📋 MISSIONS</button>
+                <!-- EASY-TO-UNDERSTAND QUICK TOOLS FOR EVERYONE -->
+                <div id="publicCmds" style="display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; max-width: 680px;">
+                    <button type="button" class="chip-btn" style="width:auto;" onclick="startNewSession()">➕ New Chat</button>
+                    <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/search ')">🌐 Web Search</button>
+                    <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/pdf ')">📄 Make PDF</button>
+                    <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/pptx ')">📊 Make PPTX</button>
+                    <button type="button" class="chip-btn" style="width:auto;" onclick="openLogsModal()">📂 Chat History</button>
+                    <button type="button" class="chip-btn" style="width:auto;" onclick="openMissionsModal()">📋 Tasks</button>
                     <button type="button" class="chip-btn" style="width:auto;" onclick="openNotifCenter()">
-                        <span>🔔 ALERTS</span>
+                        <span>🔔 Alerts</span>
                         <span id="unreadBadgeCenter" class="unread-badge">0</span>
                     </button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="openUpdatesModal()">🚀 UPDATES</button>
+                    <button type="button" class="chip-btn" style="width:auto;" onclick="openUpdatesModal()">🚀 Updates</button>
                 </div>
 
-                <div id="masterCmds" style="display: none; gap: 7px; flex-wrap: wrap; justify-content: center; max-width: 680px;">
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/health')">⚡ /health</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/operative')">🟢 /operative</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/userdata')">👥 /userdata</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="openBroadcastModal()">📢 BROADCAST</button>
-                    <button type="button" class="chip-btn" style="width:auto; border-color:var(--warning); color:var(--warning);" onclick="openThreatsModal()" title="View Intruder Mugshots & Security Threats (Ranks 1, 2, 3)">🛡️ /threats</button>
-                    <button type="button" class="chip-btn mod-owner-only" style="width:auto; display:none;" onclick="sendQuickCmd('/purgelog')">📜 /purgelog</button>
-                    <button type="button" class="chip-btn mod-owner-only" style="width:auto; display:none;" onclick="openRankModal()">⭐ RANK MGMT</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/lockdown')">🔒 /lock</button>
-                    <button type="button" class="chip-btn owner-only" style="width:auto;" onclick="sendQuickCmd('/removelock')">🔓 /unlock</button>
-                    <button type="button" class="chip-btn owner-only" style="width:auto; border-color:var(--danger); color:var(--danger);" onclick="sendQuickCmd('/purge')">🗑️ /purge</button>
+                <!-- ADMIN / MOD / OWNER CONTROLS -->
+                <div id="masterCmds" style="display: none; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 680px;">
+                    <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/operative')">🟢 Online Users</button>
+                    <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/userdata')">👥 All Users</button>
+                    <button type="button" class="chip-btn" style="width:auto;" onclick="openBroadcastModal()">📢 Broadcast</button>
+                    <button type="button" class="chip-btn" style="width:auto; border-color:var(--warning); color:var(--warning);" onclick="openThreatsModal()">🛡️ Security & Mugshots</button>
+                    <button type="button" class="chip-btn mod-owner-only" style="width:auto; display:none;" onclick="openRankModal()">⭐ Promote/Demote</button>
+                    <button type="button" class="chip-btn mod-owner-only" style="width:auto; display:none;" onclick="sendQuickCmd('/purgelog')">📜 Purge History</button>
+                    <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/lockdown')">🔒 Lockdown</button>
+                    <button type="button" class="chip-btn owner-only" style="width:auto;" onclick="sendQuickCmd('/removelock')">🔓 Unlock</button>
+                    <button type="button" class="chip-btn owner-only" style="width:auto; border-color:var(--danger); color:var(--danger);" onclick="sendQuickCmd('/purge')">🗑️ Purge</button>
                 </div>
             </div>
 
@@ -1106,39 +1046,39 @@
 
                 <!-- MULTI-PERSONA DYNAMIC VOICE SYNTHESIZER DROPDOWN -->
                 <select id="personaSelect" style="text-align: center; font-weight:700;" onchange="handlePersonaChange()">
-                    <option value="normal" selected>🟢 NORMAL MODE (UK • DRY SARCASM)</option>
-                    <option value="energetic">⚡ ENERGETIC MODE (US • HYPER SARCASM)</option>
-                    <option value="security">🛡️ SECURITY PROTOCOL (COLD • TACTICAL)</option>
-                    <option value="helpful">💼 EXECUTIVE ASSISTANT (IN • POLITE & WARM)</option>
+                    <option value="normal" selected>🟢 AI Personality: Normal (Witty & Helpful)</option>
+                    <option value="helpful">💼 AI Personality: Executive Assistant (Polite & Warm)</option>
+                    <option value="energetic">⚡ AI Personality: Energetic (Fast & Punchy)</option>
+                    <option value="security">🛡️ AI Personality: Security Protocol (Strict & Tactical)</option>
                 </select>
 
                 <div class="input-row">
                     <input type="file" id="imageUploadInput" accept="image/*" style="display:none;" onchange="handleImageAttachment(event)">
                     <button type="button" class="chip-btn" id="attachImgBtn" onclick="document.getElementById('imageUploadInput').click()" title="Attach Image for AI Analysis or PDF/PPTX" style="width:auto; padding: 9px 12px; font-size: 14px;">📎</button>
-                    <button type="button" class="chip-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Voice" style="width:auto; padding: 9px 12px; font-size: 14px;">🔊</button>
-                    <button type="button" class="chip-btn" id="micBtn" style="width:auto; padding: 9px 12px; font-size: 15px;" onclick="toggleSpeechRecognition()" title="Manual 1-Tap Mic">🎤</button>
-                    <button type="button" class="chip-btn" id="wakeToggleBtn" style="width:auto; padding: 9px 12px; font-size: 11px; white-space: nowrap;" onclick="toggleWakeWord()" title="Wake Word: Hello">🗣️ WAKE: OFF</button>
-                    <input type="text" id="textInput" placeholder="Attach 📎 image, say 'Generate PDF/PPTX on...', or chat...">
-                    <button type="button" class="send-btn" onclick="submitCommand()">TRANSMIT</button>
+                    <button type="button" class="chip-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Spoken Voice" style="width:auto; padding: 9px 12px; font-size: 14px;">🔊</button>
+                    <button type="button" class="chip-btn" id="micBtn" style="width:auto; padding: 9px 12px; font-size: 15px;" onclick="toggleSpeechRecognition()" title="Tap to Speak">🎤</button>
+                    <button type="button" class="chip-btn" id="wakeToggleBtn" style="width:auto; padding: 9px 12px; font-size: 11px; white-space: nowrap;" onclick="toggleWakeWord()" title="Hands-Free Wake Word: Say 'Hello'">🗣️ WAKE: OFF</button>
+                    <input type="text" id="textInput" placeholder="Ask anything, attach 📎 photo, or say 'Make a PPTX/PDF on...'">
+                    <button type="button" class="send-btn" onclick="submitCommand()">SEND</button>
                 </div>
             </div>
         </div>
 
-        <!-- RIGHT PANEL: LIVE ACTION FEED & NOTIFICATION CORNER -->
+        <!-- RIGHT PANEL: LIVE CONVERSATION & ACTIVITY FEED -->
         <div class="side-panel right-panel">
             <div class="section-title">
-                <span>⚡ LIVE ACTION FEED</span>
-                <div style="display:flex; gap:6px;">
-                    <button type="button" class="chip-btn" style="width:auto; padding:3px 8px; font-size:10px;" onclick="openMissionsModal()" title="Tactical Missions">📋</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:3px 8px; font-size:10px;" onclick="openUpdatesModal()" title="System Updates">🚀</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:3px 8px; font-size:10px;" onclick="openNotifCenter()" title="Notification Corner">
+                <span>💬 KIZA LIVE CHAT & PREVIEWS</span>
+                <div style="display:flex; gap:5px;">
+                    <button type="button" class="chip-btn" style="width:auto; padding:3px 8px; font-size:10px;" onclick="openMissionsModal()" title="Tasks & Missions">📋</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:3px 8px; font-size:10px;" onclick="openUpdatesModal()" title="What's New">🚀</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:3px 8px; font-size:10px;" onclick="openNotifCenter()" title="Notifications">
                         <span>🔔</span>
                         <span id="unreadBadgeCorner" class="unread-badge">0</span>
                     </button>
                 </div>
             </div>
             <div id="actionLog" class="log-box">
-                <div>> [KIZA SYSTEM]: HUD online. Decorative Infographic PDF/PPTX Compiler & Image Vision armed.</div>
+                <div>> [KIZA]: Ready! Ask me anything, search the web, attach an image (📎), or ask me to create a PDF or PowerPoint presentation.</div>
             </div>
         </div>
     </div>
@@ -1224,7 +1164,7 @@
         let isScanningAttachment = false;
         let attachmentScanPromise = null;
 
-        // Store last generated file so user can re-download with 1 click from the visual card
+        // Stores the generated file so user can preview it first and download only when ready
         let lastCompiledFileCache = null;
 
         const PERSONA_VOICE_CONFIG = {
@@ -1235,10 +1175,17 @@
         };
 
         const DEFAULT_UPDATES_FALLBACK = [
-            { version: "v5.1", title: "Decorative Infographic PDFs, Visual PPTX & Live Preview Canvas", description: "Upgraded file compiler with visual KPI stat cards, dynamic bar charts, comparison tables, 2-column PPTX slide graphics, and an in-chat visual document card.", author: "Viyan Arora", date: "LIVE" },
-            { version: "v5.0", title: "Universal File Generator (PDF, PPTX, Any File) & Image Attachment", description: "Added 1-command generation for PDF dossiers, PowerPoint (.pptx) slide decks, DOC/CSV/Code files, and full image attachment analysis.", author: "Viyan Arora", date: "ACTIVE" },
-            { version: "v4.9", title: "Real-Time Token Streaming Engine", description: "Implemented asynchronous SSE token streaming so responses type out character-by-character the millisecond Groq generates them.", author: "Viyan Arora", date: "ACTIVE" }
+            { version: "v5.2", title: "Live Web Search, Task Planner & File Preview Studio", description: "Added real-time web search (/search), animated multi-step task planner (/plan), typo-tolerant PPTX/PDF creation, and interactive preview-before-download.", author: "Viyan Arora", date: "LIVE" },
+            { version: "v5.1", title: "Decorative Infographic PDFs & Visual 2-Column PPTX", description: "Upgraded file compiler with visual KPI stat cards, dynamic bar charts, comparison tables, and 2-column PPTX slide graphics.", author: "Viyan Arora", date: "ACTIVE" },
+            { version: "v5.0", title: "Universal File Generator & Image Attachment Vision", description: "Added 1-command generation for PDF dossiers, PowerPoint (.pptx) slide decks, DOC/CSV/Code files, and full image attachment analysis.", author: "Viyan Arora", date: "ACTIVE" }
         ];
+
+        function prefillInput(prefixStr) {
+            const inp = document.getElementById('textInput');
+            inp.value = prefixStr;
+            inp.focus();
+            handleSlashAutocomplete(inp);
+        }
 
         function handlePersonaChange() {
             const pVal = document.getElementById('personaSelect').value || "normal";
@@ -1284,6 +1231,30 @@
             if (d === "admin1" || d.startsWith("admin1 ")) return "admin1";
             if (d === "mod1" || d.startsWith("mod1 ")) return "mod1";
             return d.replace(" (owner)", "").replace(" (admin)", "").replace(" (mod)", "").trim();
+        }
+
+        // ==========================================================
+        // CLIENT-SIDE TYPO-TOLERANT FILE INTENT DETECTOR (SAFETY NET)
+        // ==========================================================
+        function detectClientSideFileIntent(rawCmd) {
+            const clean = rawCmd.trim();
+            const low = clean.toLowerCase();
+            if (low.startswith && low.startsWith("/")) return null;
+
+            const extPatterns = [
+                { regex: /\b(pptx|ppt|powerpoint|slide\s*deck|presentation|slides)\b/i, ext: 'pptx' },
+                { regex: /\b(pdf|dossier)\b/i, ext: 'pdf' },
+                { regex: /\b(docx|doc|word\s*file|word\s*document)\b/i, ext: 'doc' },
+                { regex: /\b(csv|spreadsheet|excel)\b/i, ext: 'csv' }
+            ];
+            for (const item of extPatterns) {
+                if (item.regex.test(low)) {
+                    const m = clean.match(/\b(?:on|about|for|titled|called|regarding|of)\s+(.+)$/i);
+                    let topic = m ? m[1].trim() : clean.replace(/\b(please|can\s+you|could\s+you|gen\w*|mak\w*|creat\w*|buld\w*|build\w*|export\w*|download\w*|writ\w*|prepar\w*|a|an|the|file|pptx|ppt|powerpoint|slide\s*deck|presentation|slides|pdf|dossier|docx|doc|csv)\b/gi, ' ').replace(/\s+/g, ' ').trim();
+                    return { ext: item.ext, topic: topic || "KIZA AI Command Hub" };
+                }
+            }
+            return null;
         }
 
         // ==========================================================
@@ -1392,7 +1363,7 @@
         }
 
         // ==========================================================
-        // DECORATIVE INFOGRAPHIC COMPILER (KPI CARDS, BAR CHARTS, TABLES)
+        // DECORATIVE INFOGRAPHIC COMPILER & PREVIEW STUDIO ENGINE
         // ==========================================================
         function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = null) {
             const cleanTopic = (topicTitle || "Intelligence Dossier").toUpperCase();
@@ -1423,7 +1394,7 @@
                     const parts = t.replace(/^CHART:\s*/i, '').split('|').map(s => s.trim());
                     if (parts.length >= 2) {
                         let pct = parseInt(parts[1].replace(/[^0-9]/g, ''), 10);
-                        if (isNaN(pct) || pct < 5) pct = 78;
+                        if (isNaN(pct) || pct < 5) pct = 82;
                         if (pct > 100) pct = 100;
                         charts.push({ label: parts[0], pct });
                     }
@@ -1443,14 +1414,14 @@
             });
 
             const kpiHtml = kpis.length > 0 ? `
-                <div style="display:flex; gap:14px; margin-bottom:24px;">
+                <div style="display:flex; gap:14px; margin-bottom:24px; flex-wrap:wrap;">
                     ${kpis.slice(0, 3).map((k, idx) => {
                         const colors = ['#0284c7', '#7c3aed', '#059669'];
                         const bgColors = ['#f0f9ff', '#f5f3ff', '#ecfdf5'];
                         const c = colors[idx % 3];
                         const bg = bgColors[idx % 3];
                         return `
-                            <div style="flex:1; background:${bg}; border:1px solid ${c}40; border-top:4px solid ${c}; border-radius:10px; padding:14px 16px;">
+                            <div style="flex:1; min-width:150px; background:${bg}; border:1px solid ${c}40; border-top:4px solid ${c}; border-radius:10px; padding:14px 16px;">
                                 <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:1px;">${k.label}</div>
                                 <div style="font-size:24px; font-weight:800; color:${c}; margin:4px 0;">${k.value}</div>
                                 <div style="font-size:10.5px; color:#64748b;">${k.sub}</div>
@@ -1500,7 +1471,7 @@
             const imgBlockHtml = embeddedImgBase64 ? `
                 <div style="margin:16px 0 22px 0; text-align:center; background:#f8fafc; padding:14px; border-radius:12px; border:1px dashed #38bdf8;">
                     <img src="${embeddedImgBase64}" style="max-width:82%; max-height:220px; border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,0.12);">
-                    <div style="font-size:10px; color:#64748b; margin-top:6px; font-weight:600;">ATTACHED VISUAL EVIDENCE // ANALYZED BY KIZA</div>
+                    <div style="font-size:10px; color:#64748b; margin-top:6px; font-weight:600;">ATTACHED VISUAL EVIDENCE • ANALYZED BY KIZA</div>
                 </div>
             ` : '';
 
@@ -1541,9 +1512,8 @@
                 kpis,
                 charts,
                 html: `
-                    <div style="font-family:'Inter', Arial, sans-serif; color:#0f172a; background:#ffffff; padding:30px 36px;">
-                        <!-- DECORATIVE GRADIENT HERO BANNER -->
-                        <div style="background:linear-gradient(135deg, #090d16 0%, #0f172a 55%, #0284c7 100%); color:#ffffff; padding:24px 28px; border-radius:14px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-family:'Inter', Arial, sans-serif; color:#0f172a; background:#ffffff; padding:30px 36px; border-radius:10px;">
+                        <div style="background:linear-gradient(135deg, #090d16 0%, #0f172a 55%, #0284c7 100%); color:#ffffff; padding:24px 28px; border-radius:14px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                             <div>
                                 <div style="font-size:10px; font-weight:700; color:#38bdf8; letter-spacing:2px; text-transform:uppercase;">KIZA QUANTUM INTELLIGENCE DOSSIER</div>
                                 <h1 style="margin:6px 0 4px 0; font-size:22px; font-weight:800; letter-spacing:0.5px; color:#ffffff;">${cleanTopic}</h1>
@@ -1561,239 +1531,124 @@
                         ${renderedBody}
 
                         <div style="margin-top:34px; border-top:2px solid #e2e8f0; padding-top:10px; font-size:9.5px; color:#64748b; display:flex; justify-content:space-between; font-family:monospace;">
-                            <span>GENERATED BY KIZA AI COMMAND HUB • INFOGRAPHIC ENGINE v5.1</span>
-                            <span>CLASSIFIED // AUTHORIZED OPERATIVE USE ONLY</span>
+                            <span>GENERATED BY KIZA AI COMMAND HUB • INFOGRAPHIC ENGINE v5.2</span>
+                            <span>CLASSIFIED • AUTHORIZED OPERATIVE USE ONLY</span>
                         </div>
                     </div>
                 `
             };
         }
 
-        function renderInChatVisualFileCard(ext, topic, rawContent, embeddedImgBase64 = null) {
-            lastCompiledFileCache = { ext, topic, rawContent, embeddedImgBase64 };
-            const parsed = buildDecorativeReportHTML(topic, rawContent, embeddedImgBase64);
-            const logBox = document.getElementById('actionLog');
-            const card = document.createElement('div');
-            card.style.background = "var(--card-bg)";
-            card.style.border = "1px solid var(--accent-primary)";
-            card.style.borderRadius = "12px";
-            card.style.padding = "14px";
-            card.style.marginTop = "6px";
-
-            const kpiBadges = parsed.kpis.slice(0, 3).map(k =>
-                `<div style="flex:1; min-width:80px; background:var(--chip-bg); border:1px solid var(--chip-border); border-radius:8px; padding:6px 8px; text-align:center;">
-                    <div style="font-size:9px; color:var(--text-muted);">${k.label}</div>
-                    <div style="font-size:14px; font-weight:800; color:var(--accent-primary);">${k.value}</div>
-                </div>`
-            ).join('');
-
-            card.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--card-border); padding-bottom:8px; margin-bottom:10px;">
-                    <div>
-                        <span style="font-family:'Orbitron', sans-serif; font-size:10px; font-weight:800; color:var(--accent-primary); background:var(--chip-bg); padding:3px 8px; border-radius:5px;">🎨 VISUAL ${ext.toUpperCase()} CANVAS</span>
-                        <div style="font-weight:700; font-size:13px; margin-top:5px;">${parsed.cleanTopic}</div>
-                    </div>
-                    <button type="button" class="send-btn" style="padding:6px 12px; font-size:10px;" onclick="redownloadLastCompiledFile()">⬇️ DOWNLOAD .${ext.toUpperCase()}</button>
-                </div>
-                ${kpiBadges ? `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">${kpiBadges}</div>` : ''}
-                <div style="font-size:11px; color:var(--text-muted);">${parsed.subtitle}</div>
-            `;
-            logBox.appendChild(card);
-            logBox.scrollTop = logBox.scrollHeight;
-        }
-
-        function redownloadLastCompiledFile() {
-            if (!lastCompiledFileCache) return;
-            compileAndDownloadUniversalFile(
-                lastCompiledFileCache.ext,
-                lastCompiledFileCache.topic,
-                lastCompiledFileCache.rawContent,
-                lastCompiledFileCache.embeddedImgBase64,
-                true
-            );
-        }
-
-        function compileAndDownloadDetailedPDF(topicTitle, rawContent, embeddedImgBase64 = null) {
-            const reportObj = buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64);
-            const pdfContainer = document.createElement('div');
-            pdfContainer.innerHTML = reportObj.html;
-            document.body.appendChild(pdfContainer);
-
-            const opt = {
-                margin: [8, 8, 8, 8],
-                filename: `KIZA_Infographic_${reportObj.cleanTopic.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 32)}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            showNotification("COMPILING VISUAL PDF", `Rendering infographic cards & charts for ${reportObj.cleanTopic}...`, false, { skipStore: true });
-
-            if (typeof html2pdf !== "undefined") {
-                html2pdf().set(opt).from(pdfContainer).save().then(() => {
-                    document.body.removeChild(pdfContainer);
-                    showNotification("PDF DOWNLOADED", `Saved decorative dossier: ${opt.filename}`, false, { skipStore: true });
-                }).catch(() => {
-                    document.body.removeChild(pdfContainer);
-                });
-            } else {
-                document.body.removeChild(pdfContainer);
-                triggerTextDownload(`KIZA_Dossier_${Date.now()}.txt`, rawContent);
-            }
-        }
-
-        function compileAndDownloadPPTX(topicTitle, rawContent, embeddedImgBase64 = null) {
+        function buildPPTXSlidePreviewHTML(topicTitle, rawContent, embeddedImgBase64 = null) {
             const cleanTopic = (topicTitle || "Executive Presentation").toUpperCase();
             const cleanBody = stripSlashesFromText(rawContent)
                 .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
                 .replace(/\*/g, '')
                 .trim();
 
-            if (typeof PptxGenJS === "undefined") {
-                triggerTextDownload(`KIZA_Presentation_${Date.now()}.txt`, cleanBody);
-                return;
-            }
+            const slideRegex = /SLIDE\s*\d+\s*:\s*([^\n]+)\n([\s\S]*?)(?=SLIDE\s*\d+\s*:|$)/gi;
+            let match;
+            let slideCards = [];
+            let count = 0;
 
-            showNotification("COMPILING VISUAL PPTX", `Designing widescreen slide deck for ${cleanTopic}...`, false, { skipStore: true });
+            while ((match = slideRegex.exec(cleanBody)) !== null) {
+                count++;
+                const sTitle = match[1].trim();
+                const sBodyRaw = match[2].trim();
+                const lines = sBodyRaw.split(/\n+/).map(l => l.trim()).filter(Boolean);
+                let statValue = `0${count}`;
+                let statLabel = "KEY METRIC";
+                const bullets = [];
 
-            try {
-                const pptx = new PptxGenJS();
-                pptx.layout = "LAYOUT_16x9";
-                pptx.author = cleanDisplayNameOnly(currentUser);
-                pptx.company = "KIZA AI Command Hub";
-                pptx.title = cleanTopic;
-
-                // Decorative Cover Slide
-                let titleSlide = pptx.addSlide();
-                titleSlide.background = { color: "060A17" };
-                titleSlide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 10, h: 0.18, fill: { color: "00F2FE" } });
-                titleSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.1, w: 0.12, h: 2.6, fill: { color: "A855F7" } });
-                titleSlide.addText("KIZA QUANTUM HUB // VISUAL BRIEFING DECK", {
-                    x: 0.8, y: 0.65, w: 8.5, h: 0.4,
-                    fontSize: 11, color: "00F2FE", bold: true, fontFace: "Courier New"
-                });
-                titleSlide.addText(cleanTopic, {
-                    x: 0.8, y: 1.25, w: embeddedImgBase64 ? 5.3 : 8.5, h: 2.1,
-                    fontSize: 30, color: "FFFFFF", bold: true, fontFace: "Arial"
-                });
-                titleSlide.addText(`AUTHOR: ${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole})   |   ${new Date().toLocaleDateString('en-IN')}`, {
-                    x: 0.8, y: 4.7, w: 8.5, h: 0.4,
-                    fontSize: 11, color: "94A3B8", fontFace: "Courier New"
-                });
-                if (embeddedImgBase64) {
-                    try {
-                        titleSlide.addImage({ data: embeddedImgBase64, x: 6.3, y: 1.15, w: 3.1, h: 2.8 });
-                    } catch (imgErr) {}
-                }
-
-                // Parse SLIDE blocks with STAT callouts
-                const slideRegex = /SLIDE\s*\d+\s*:\s*([^\n]+)\n([\s\S]*?)(?=SLIDE\s*\d+\s*:|$)/gi;
-                let match;
-                let slideCount = 0;
-
-                while ((match = slideRegex.exec(cleanBody)) !== null) {
-                    slideCount++;
-                    const sTitle = match[1].trim();
-                    const sBodyRaw = match[2].trim();
-                    const lines = sBodyRaw.split(/\n+/).map(l => l.trim()).filter(Boolean);
-
-                    let statValue = `0${slideCount}`;
-                    let statLabel = "KEY PILLAR";
-                    const bullets = [];
-
-                    lines.forEach(l => {
-                        if (/^STAT:/i.test(l)) {
-                            const sp = l.replace(/^STAT:\s*/i, '').split('|').map(x => x.trim());
-                            if (sp[0]) statValue = sp[0];
-                            if (sp[1]) statLabel = sp[1];
-                        } else {
-                            bullets.push(l.replace(/^[-•*\d.)\s]+/, '').trim());
-                        }
-                    });
-
-                    let slide = pptx.addSlide();
-                    slide.background = { color: "0B1120" };
-
-                    // Top Cyber Header Bar
-                    slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 10, h: 0.1, fill: { color: "38BDF8" } });
-                    slide.addText(`0${slideCount} // ${sTitle.toUpperCase()}`, {
-                        x: 0.5, y: 0.35, w: 9.0, h: 0.55,
-                        fontSize: 20, color: "38BDF8", bold: true, fontFace: "Arial"
-                    });
-
-                    // Left Content Card
-                    slide.addShape(pptx.ShapeType.rect, {
-                        x: 0.5, y: 1.1, w: 6.1, h: 3.8,
-                        fill: { color: "111827" },
-                        line: { color: "1E293B", width: 1.5 }
-                    });
-
-                    if (bullets.length > 0) {
-                        const bulletObjs = bullets.map(b => ({
-                            text: b,
-                            options: { bullet: true, color: "F1F5F9", fontSize: 14, breakLine: true, paraSpaceAfter: 12 }
-                        }));
-                        slide.addText(bulletObjs, { x: 0.7, y: 1.3, w: 5.7, h: 3.4, valign: "top" });
+                lines.forEach(l => {
+                    if (/^STAT:/i.test(l)) {
+                        const sp = l.replace(/^STAT:\s*/i, '').split('|').map(x => x.trim());
+                        if (sp[0]) statValue = sp[0];
+                        if (sp[1]) statLabel = sp[1];
+                    } else {
+                        bullets.push(l.replace(/^[-•*\d.)\s]+/, '').trim());
                     }
-
-                    // Right Visual Metric Highlight Card
-                    slide.addShape(pptx.ShapeType.rect, {
-                        x: 6.85, y: 1.1, w: 2.65, h: 3.8,
-                        fill: { color: "1E1B4B" },
-                        line: { color: "A855F7", width: 2 }
-                    });
-                    slide.addText(statValue, {
-                        x: 6.95, y: 1.85, w: 2.45, h: 1.1,
-                        fontSize: 34, color: "00F2FE", bold: true, align: "center", fontFace: "Arial"
-                    });
-                    slide.addText(statLabel.toUpperCase(), {
-                        x: 6.95, y: 3.0, w: 2.45, h: 0.8,
-                        fontSize: 11, color: "E2E8F0", bold: true, align: "center", fontFace: "Courier New"
-                    });
-
-                    // Footer
-                    slide.addText(`KIZA AI COMMAND HUB  •  ${cleanTopic}  •  SLIDE 0${slideCount}`, {
-                        x: 0.5, y: 5.15, w: 9.0, h: 0.3,
-                        fontSize: 9, color: "64748B", fontFace: "Courier New"
-                    });
-                }
-
-                if (slideCount === 0) {
-                    const paragraphs = cleanBody.split(/\n\n+/).filter(Boolean);
-                    paragraphs.slice(0, 5).forEach((para, idx) => {
-                        let slide = pptx.addSlide();
-                        slide.background = { color: "0B1120" };
-                        slide.addText(`${cleanTopic} — SECTION ${idx + 1}`, {
-                            x: 0.6, y: 0.5, w: 8.8, h: 0.6,
-                            fontSize: 20, color: "38BDF8", bold: true
-                        });
-                        slide.addText(para, {
-                            x: 0.7, y: 1.4, w: 8.6, h: 3.6,
-                            fontSize: 15, color: "F1F5F9", valign: "top"
-                        });
-                    });
-                }
-
-                const fileName = `KIZA_VisualDeck_${cleanTopic.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30)}.pptx`;
-                pptx.writeFile({ fileName }).then(() => {
-                    showNotification("PPTX DOWNLOADED", `Saved visual presentation: ${fileName}`, false, { skipStore: true });
                 });
-            } catch (err) {
-                triggerTextDownload(`KIZA_Presentation_${Date.now()}.txt`, cleanBody);
+
+                slideCards.push(`
+                    <div class="ppt-slide-preview">
+                        <div style="font-size:10px; color:#38bdf8; font-family:monospace; letter-spacing:1.5px; margin-bottom:4px;">SLIDE 0${count} // WIDESCREEN 16:9 PREVIEW</div>
+                        <div style="font-size:18px; font-weight:800; color:#ffffff; margin-bottom:12px; border-bottom:1px solid #1e293b; padding-bottom:8px;">${sTitle.toUpperCase()}</div>
+                        <div style="display:flex; gap:14px; align-items:stretch; flex-wrap:wrap;">
+                            <div style="flex:2; min-width:220px; background:#111827; border:1px solid #1e293b; border-radius:8px; padding:12px;">
+                                ${bullets.map(b => `<div style="margin-bottom:8px; font-size:12.5px; color:#e2e8f0; display:flex; gap:8px;"><span style="color:#38bdf8;">▸</span><span>${b}</span></div>`).join('')}
+                            </div>
+                            <div style="flex:1; min-width:130px; background:#1e1b4b; border:2px solid #a855f7; border-radius:8px; padding:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                                <div style="font-size:26px; font-weight:800; color:#00f2fe;">${statValue}</div>
+                                <div style="font-size:10px; font-weight:700; color:#e2e8f0; margin-top:4px; font-family:monospace;">${statLabel.toUpperCase()}</div>
+                            </div>
+                        </div>
+                    </div>
+                `);
             }
+
+            if (slideCards.length === 0) {
+                slideCards.push(`<div class="ppt-slide-preview"><div style="font-size:16px; font-weight:700; color:#38bdf8; margin-bottom:8px;">${cleanTopic}</div><div style="font-size:12.5px; white-space:pre-wrap;">${cleanBody}</div></div>`);
+            }
+
+            return `
+                <div style="padding:10px;">
+                    <div class="ppt-slide-preview" style="border-color:#00f2fe; background:linear-gradient(135deg, #060a17 0%, #1e1b4b 100%);">
+                        <div style="font-size:10px; color:#00f2fe; font-family:monospace; letter-spacing:2px;">COVER SLIDE // KIZA QUANTUM BRIEFING DECK</div>
+                        <div style="font-size:24px; font-weight:800; color:#ffffff; margin:10px 0;">${cleanTopic}</div>
+                        <div style="font-size:11px; color:#94a3b8; font-family:monospace;">Prepared by ${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole}) • ${new Date().toLocaleDateString('en-IN')}</div>
+                    </div>
+                    ${slideCards.join('')}
+                </div>
+            `;
         }
 
-        function compileAndDownloadUniversalFile(ext, topic, rawContent, embeddedImgBase64 = null, isRedownload = false) {
+        // Opens the interactive Preview Studio first (NO automatic download until user clicks Confirm & Download)
+        function prepareAndPreviewUniversalFile(ext, topic, rawContent, embeddedImgBase64 = null) {
+            const cleanExt = (ext || "pdf").toLowerCase().trim();
+            lastCompiledFileCache = { ext: cleanExt, topic, rawContent, embeddedImgBase64 };
+
+            renderInChatVisualFileCard(cleanExt, topic, rawContent, embeddedImgBase64);
+            openFilePreviewModal();
+            showNotification("PREVIEW READY", `Inspect your ${cleanExt.toUpperCase()} in the Preview Studio. Click Download when ready!`, false, { skipStore: true });
+        }
+
+        function openFilePreviewModal() {
+            if (!lastCompiledFileCache) return;
+            const { ext, topic, rawContent, embeddedImgBase64 } = lastCompiledFileCache;
+            const modal = document.getElementById('filePreviewModal');
+            const titleEl = document.getElementById('filePreviewModalTitle');
+            const btnEl = document.getElementById('confirmDownloadBtn');
+            const viewport = document.getElementById('filePreviewViewport');
+
+            titleEl.innerText = `🎨 PREVIEW STUDIO • ${(topic || 'Document').toUpperCase()} (.${ext.toUpperCase()})`;
+            btnEl.innerText = `⬇️ CONFIRM & DOWNLOAD .${ext.toUpperCase()}`;
+
+            if (ext === "pptx" || ext === "ppt") {
+                viewport.innerHTML = buildPPTXSlidePreviewHTML(topic, rawContent, embeddedImgBase64);
+            } else if (ext === "pdf" || ext === "doc" || ext === "docx") {
+                const reportObj = buildDecorativeReportHTML(topic, rawContent, embeddedImgBase64);
+                viewport.innerHTML = reportObj.html;
+            } else {
+                const cleanBody = stripSlashesFromText(rawContent).replace(/\[GENERATE_FILE:[^\]]+\]/g, '').trim();
+                viewport.innerHTML = `<pre style="background:#0f172a; color:#f8fafc; padding:18px; border-radius:10px; overflow-x:auto; font-family:'JetBrains Mono', monospace; font-size:12px;">${cleanBody.replace(/</g, '&lt;')}</pre>`;
+            }
+            modal.style.display = "flex";
+        }
+
+        function closeFilePreviewModal() {
+            document.getElementById('filePreviewModal').style.display = "none";
+        }
+
+        function confirmAndDownloadPreviewedFile() {
+            if (!lastCompiledFileCache) return;
+            const { ext, topic, rawContent, embeddedImgBase64 } = lastCompiledFileCache;
             const cleanExt = (ext || "txt").toLowerCase().trim();
             const safeTopic = (topic || "KIZA_Export").replace(/[^a-zA-Z0-9]/g, '_').slice(0, 32);
             const cleanBody = stripSlashesFromText(rawContent)
                 .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
                 .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
                 .trim();
-
-            if (!isRedownload) {
-                renderInChatVisualFileCard(cleanExt, topic, rawContent, embeddedImgBase64);
-            }
 
             if (cleanExt === "pdf") {
                 compileAndDownloadDetailedPDF(topic, cleanBody, embeddedImgBase64);
@@ -1822,6 +1677,238 @@
             const filename = `KIZA_${safeTopic}.${cleanExt}`;
             triggerTextDownload(filename, cleanBody);
             showNotification("FILE DOWNLOADED", `Saved ${filename}`, false, { skipStore: true });
+        }
+
+        function renderInChatVisualFileCard(ext, topic, rawContent, embeddedImgBase64 = null) {
+            const parsed = buildDecorativeReportHTML(topic, rawContent, embeddedImgBase64);
+            const logBox = document.getElementById('actionLog');
+            const card = document.createElement('div');
+            card.style.background = "var(--card-bg)";
+            card.style.border = "1px solid var(--accent-primary)";
+            card.style.borderRadius = "12px";
+            card.style.padding = "14px";
+            card.style.marginTop = "6px";
+
+            const kpiBadges = parsed.kpis.slice(0, 3).map(k =>
+                `<div style="flex:1; min-width:80px; background:var(--chip-bg); border:1px solid var(--chip-border); border-radius:8px; padding:6px 8px; text-align:center;">
+                    <div style="font-size:9px; color:var(--text-muted);">${k.label}</div>
+                    <div style="font-size:14px; font-weight:800; color:var(--accent-primary);">${k.value}</div>
+                </div>`
+            ).join('');
+
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--card-border); padding-bottom:8px; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
+                    <div>
+                        <span style="font-family:'Orbitron', sans-serif; font-size:10px; font-weight:800; color:var(--accent-primary); background:var(--chip-bg); padding:3px 8px; border-radius:5px;">🎨 ${ext.toUpperCase()} READY FOR PREVIEW</span>
+                        <div style="font-weight:700; font-size:13px; margin-top:5px;">${parsed.cleanTopic}</div>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <button type="button" class="chip-btn" style="width:auto; padding:6px 11px; font-size:10.5px;" onclick="openFilePreviewModal()">👁️ PREVIEW</button>
+                        <button type="button" class="send-btn" style="padding:6px 12px; font-size:10.5px;" onclick="confirmAndDownloadPreviewedFile()">⬇️ DOWNLOAD .${ext.toUpperCase()}</button>
+                    </div>
+                </div>
+                ${kpiBadges ? `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">${kpiBadges}</div>` : ''}
+                <div style="font-size:11px; color:var(--text-muted);">${parsed.subtitle}</div>
+            `;
+            logBox.appendChild(card);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function compileAndDownloadDetailedPDF(topicTitle, rawContent, embeddedImgBase64 = null) {
+            const reportObj = buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64);
+            const pdfContainer = document.createElement('div');
+            pdfContainer.innerHTML = reportObj.html;
+            document.body.appendChild(pdfContainer);
+
+            const opt = {
+                margin: [8, 8, 8, 8],
+                filename: `KIZA_Infographic_${reportObj.cleanTopic.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 32)}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            showNotification("DOWNLOADING PDF", `Saving ${opt.filename}...`, false, { skipStore: true });
+
+            if (typeof html2pdf !== "undefined") {
+                html2pdf().set(opt).from(pdfContainer).save().then(() => {
+                    document.body.removeChild(pdfContainer);
+                    showNotification("PDF SAVED", `Downloaded ${opt.filename}`, false, { skipStore: true });
+                }).catch(() => {
+                    document.body.removeChild(pdfContainer);
+                });
+            } else {
+                document.body.removeChild(pdfContainer);
+                triggerTextDownload(`KIZA_Dossier_${Date.now()}.txt`, rawContent);
+            }
+        }
+
+        function compileAndDownloadPPTX(topicTitle, rawContent, embeddedImgBase64 = null) {
+            const cleanTopic = (topicTitle || "Executive Presentation").toUpperCase();
+            const cleanBody = stripSlashesFromText(rawContent)
+                .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
+                .replace(/\*/g, '')
+                .trim();
+
+            if (typeof PptxGenJS === "undefined") {
+                triggerTextDownload(`KIZA_Presentation_${Date.now()}.txt`, cleanBody);
+                return;
+            }
+
+            showNotification("DOWNLOADING PPTX", `Building PowerPoint file for ${cleanTopic}...`, false, { skipStore: true });
+
+            try {
+                const pptx = new PptxGenJS();
+                pptx.layout = "LAYOUT_16x9";
+                pptx.author = cleanDisplayNameOnly(currentUser);
+                pptx.company = "KIZA AI Command Hub";
+                pptx.title = cleanTopic;
+
+                let titleSlide = pptx.addSlide();
+                titleSlide.background = { color: "060A17" };
+                titleSlide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 10, h: 0.18, fill: { color: "00F2FE" } });
+                titleSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.1, w: 0.12, h: 2.6, fill: { color: "A855F7" } });
+                titleSlide.addText("KIZA QUANTUM HUB // VISUAL BRIEFING DECK", {
+                    x: 0.8, y: 0.65, w: 8.5, h: 0.4,
+                    fontSize: 11, color: "00F2FE", bold: true, fontFace: "Courier New"
+                });
+                titleSlide.addText(cleanTopic, {
+                    x: 0.8, y: 1.25, w: embeddedImgBase64 ? 5.3 : 8.5, h: 2.1,
+                    fontSize: 30, color: "FFFFFF", bold: true, fontFace: "Arial"
+                });
+                titleSlide.addText(`AUTHOR: ${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole})   |   ${new Date().toLocaleDateString('en-IN')}`, {
+                    x: 0.8, y: 4.7, w: 8.5, h: 0.4,
+                    fontSize: 11, color: "94A3B8", fontFace: "Courier New"
+                });
+                if (embeddedImgBase64) {
+                    try {
+                        titleSlide.addImage({ data: embeddedImgBase64, x: 6.3, y: 1.15, w: 3.1, h: 2.8 });
+                    } catch (imgErr) {}
+                }
+
+                const slideRegex = /SLIDE\s*\d+\s*:\s*([^\n]+)\n([\s\S]*?)(?=SLIDE\s*\d+\s*:|$)/gi;
+                let match;
+                let slideCount = 0;
+
+                while ((match = slideRegex.exec(cleanBody)) !== null) {
+                    slideCount++;
+                    const sTitle = match[1].trim();
+                    const sBodyRaw = match[2].trim();
+                    const lines = sBodyRaw.split(/\n+/).map(l => l.trim()).filter(Boolean);
+
+                    let statValue = `0${slideCount}`;
+                    let statLabel = "KEY PILLAR";
+                    const bullets = [];
+
+                    lines.forEach(l => {
+                        if (/^STAT:/i.test(l)) {
+                            const sp = l.replace(/^STAT:\s*/i, '').split('|').map(x => x.trim());
+                            if (sp[0]) statValue = sp[0];
+                            if (sp[1]) statLabel = sp[1];
+                        } else {
+                            bullets.push(l.replace(/^[-•*\d.)\s]+/, '').trim());
+                        }
+                    });
+
+                    let slide = pptx.addSlide();
+                    slide.background = { color: "0B1120" };
+
+                    slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 10, h: 0.1, fill: { color: "38BDF8" } });
+                    slide.addText(`0${slideCount} // ${sTitle.toUpperCase()}`, {
+                        x: 0.5, y: 0.35, w: 9.0, h: 0.55,
+                        fontSize: 20, color: "38BDF8", bold: true, fontFace: "Arial"
+                    });
+
+                    slide.addShape(pptx.ShapeType.rect, {
+                        x: 0.5, y: 1.1, w: 6.1, h: 3.8,
+                        fill: { color: "111827" },
+                        line: { color: "1E293B", width: 1.5 }
+                    });
+
+                    if (bullets.length > 0) {
+                        const bulletObjs = bullets.map(b => ({
+                            text: b,
+                            options: { bullet: true, color: "F1F5F9", fontSize: 14, breakLine: true, paraSpaceAfter: 12 }
+                        }));
+                        slide.addText(bulletObjs, { x: 0.7, y: 1.3, w: 5.7, h: 3.4, valign: "top" });
+                    }
+
+                    slide.addShape(pptx.ShapeType.rect, {
+                        x: 6.85, y: 1.1, w: 2.65, h: 3.8,
+                        fill: { color: "1E1B4B" },
+                        line: { color: "A855F7", width: 2 }
+                    });
+                    slide.addText(statValue, {
+                        x: 6.95, y: 1.85, w: 2.45, h: 1.1,
+                        fontSize: 34, color: "00F2FE", bold: true, align: "center", fontFace: "Arial"
+                    });
+                    slide.addText(statLabel.toUpperCase(), {
+                        x: 6.95, y: 3.0, w: 2.45, h: 0.8,
+                        fontSize: 11, color: "E2E8F0", bold: true, align: "center", fontFace: "Courier New"
+                    });
+
+                    slide.addText(`KIZA AI COMMAND HUB  •  ${cleanTopic}  •  SLIDE 0${slideCount}`, {
+                        x: 0.5, y: 5.15, w: 9.0, h: 0.3,
+                        fontSize: 9, color: "64748B", fontFace: "Courier New"
+                    });
+                }
+
+                if (slideCount === 0) {
+                    const paragraphs = cleanBody.split(/\n\n+/).filter(Boolean);
+                    paragraphs.slice(0, 5).forEach((para, idx) => {
+                        let slide = pptx.addSlide();
+                        slide.background = { color: "0B1120" };
+                        slide.addText(`${cleanTopic} — SECTION ${idx + 1}`, {
+                            x: 0.6, y: 0.5, w: 8.8, h: 0.6,
+                            fontSize: 20, color: "38BDF8", bold: true
+                        });
+                        slide.addText(para, {
+                            x: 0.7, y: 1.4, w: 8.6, h: 3.6,
+                            fontSize: 15, color: "F1F5F9", valign: "top"
+                        });
+                    });
+                }
+
+                const fileName = `KIZA_VisualDeck_${cleanTopic.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30)}.pptx`;
+                pptx.writeFile({ fileName }).then(() => {
+                    showNotification("PPTX SAVED", `Downloaded presentation: ${fileName}`, false, { skipStore: true });
+                });
+            } catch (err) {
+                triggerTextDownload(`KIZA_Presentation_${Date.now()}.txt`, cleanBody);
+            }
+        }
+
+        // ==========================================================
+        // UPGRADE #1 & #5: TASK PLANNER & WEB SEARCH UI RENDERERS
+        // ==========================================================
+        function renderWebSearchBadgeInFeed(queryStr) {
+            const logBox = document.getElementById('actionLog');
+            const badge = document.createElement('div');
+            badge.innerHTML = `<span class="web-search-pill">🌐 LIVE WEB SEARCH EXECUTED: "${queryStr}"</span>`;
+            logBox.appendChild(badge);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function renderTaskPlannerQueueInFeed(stepsArray) {
+            if (!Array.isArray(stepsArray) || stepsArray.length === 0) return;
+            const logBox = document.getElementById('actionLog');
+            const card = document.createElement('div');
+            card.className = "planner-card";
+            card.innerHTML = `
+                <div style="font-family:'Orbitron', sans-serif; font-size:10px; font-weight:800; color:var(--accent-primary); letter-spacing:1px;">
+                    🧠 AUTONOMOUS TASK PLANNER QUEUE (${stepsArray.length} PHASES)
+                </div>
+                <div class="planner-steps-list" style="display:flex; flex-direction:column; gap:5px;">
+                    ${stepsArray.map((st, i) => `
+                        <div class="planner-step" id="planStep_${Date.now()}_${i}">
+                            <span style="color:var(--success); font-weight:800;">[✓]</span>
+                            <span><b>Phase ${i + 1}:</b> ${st}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            logBox.appendChild(card);
+            logBox.scrollTop = logBox.scrollHeight;
         }
 
         // ==========================================================
@@ -1974,14 +2061,16 @@
         // ==========================================================
         const SLASH_COMMANDS_CATALOG = [
             { cmd: "/cmds", desc: "Show available commands for your rank", minRank: 4 },
-            { cmd: "/pdf ", desc: "Generate a decorative Infographic PDF dossier: /pdf [topic]", minRank: 4 },
-            { cmd: "/pptx ", desc: "Generate a visual 2-column PowerPoint deck: /pptx [topic]", minRank: 4 },
-            { cmd: "/file ", desc: "Generate any file (doc, csv, py, html, txt): /file [ext] [topic]", minRank: 4 },
+            { cmd: "/search ", desc: "Search live web & Wikipedia: /search [query]", minRank: 4 },
+            { cmd: "/plan ", desc: "Decompose complex goal into Task Planner steps: /plan [goal]", minRank: 4 },
+            { cmd: "/pdf ", desc: "Create & preview an Infographic PDF report: /pdf [topic]", minRank: 4 },
+            { cmd: "/pptx ", desc: "Create & preview a PowerPoint slide deck: /pptx [topic]", minRank: 4 },
+            { cmd: "/file ", desc: "Create any file (doc, csv, py, html, txt): /file [ext] [topic]", minRank: 4 },
             { cmd: "/ping", desc: "Test server latency & shield status", minRank: 4 },
-            { cmd: "/logs", desc: "Open encrypted Memory Archive", minRank: 4 },
+            { cmd: "/logs", desc: "Open encrypted Chat Memory Archive", minRank: 4 },
             { cmd: "/missions", desc: "Open Tactical Mission & Task Board", minRank: 4 },
             { cmd: "/health", desc: "Check server uptime & blocked IPs", minRank: 3 },
-            { cmd: "/operative", desc: "List all currently online operatives", minRank: 3 },
+            { cmd: "/operative", desc: "List all currently online users", minRank: 3 },
             { cmd: "/userdata", desc: "View registered users per your clearance", minRank: 3 },
             { cmd: "/threats", desc: "Inspect wrong passwords & intruder mugshots", minRank: 3 },
             { cmd: "/wrongpass", desc: "Filter security log for failed logins", minRank: 3 },
@@ -2398,11 +2487,11 @@
             if (isAnalyzing) {
                 if (loadText) loadText.innerText = "92%";
                 if (loadBar) loadBar.style.width = "92%";
-                if (statusText) { statusText.innerText = "STREAMING"; statusText.style.color = "var(--warning)"; }
+                if (statusText) { statusText.innerText = "ACTIVE"; statusText.style.color = "var(--warning)"; }
             } else {
-                if (loadText) loadText.innerText = "16%";
-                if (loadBar) loadBar.style.width = "16%";
-                if (statusText) { statusText.innerText = "OPTIMAL"; statusText.style.color = "var(--success)"; }
+                if (loadText) loadText.innerText = "14%";
+                if (loadBar) loadBar.style.width = "14%";
+                if (statusText) { statusText.innerText = "READY"; statusText.style.color = "var(--success)"; }
             }
         }
 
@@ -2854,7 +2943,16 @@
             const low = rawText.toLowerCase().trim();
             const words = low.split(/[\s,?.!]+/);
 
-            if (words.includes("persona") || words.includes("mode") || words.includes("protocol")) {
+            // Do not intercept locally if user is asking for a PDF, PPTX, DOC, or CSV file!
+            if (/\b(pptx|ppt|powerpoint|slide|slides|presentation|pdf|dossier|docx|doc|csv)\b/i.test(low)) {
+                const detected = detectClientSideFileIntent(rawText);
+                if (detected) {
+                    return { handledLocally: false, mappedText: `/${detected.ext} ${detected.topic}` };
+                }
+                return { handledLocally: false, mappedText: rawText };
+            }
+
+            if (words.includes("persona") || words.includes("personality")) {
                 if (words.includes("energetic") || words.includes("hyper")) {
                     document.getElementById('personaSelect').value = "energetic";
                     handlePersonaChange();
@@ -3113,7 +3211,7 @@
             if (isPinLocked) { openPinGate(pinGateMode); return; }
             currentSessionId = generateSessionId();
             clearImageAttachment();
-            document.getElementById('actionLog').innerHTML = `<div>> [KIZA SYSTEM]: Memory wiped. New private session initialized.</div>`;
+            document.getElementById('actionLog').innerHTML = `<div>> [KIZA]: Memory cleared! Started a fresh conversation.</div>`;
             showNotification("NEW SESSION", "Context cleared. Started a fresh conversation.", false, { skipStore: true });
         }
 
@@ -3290,7 +3388,7 @@
             } else {
                 logAction(`[SYSTEM]: Identity active: ${cleanNameUpper}`, "#007BFF");
             }
-            document.getElementById('actionLog').innerHTML = '<div>> [KIZA SYSTEM]: HUD online. Decorative Infographic PDF/PPTX Compiler & Image Vision armed.</div>';
+            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Ready! Ask me anything, search the web, attach an image (📎), or ask me to create a PDF or PowerPoint presentation.</div>';
             initWebSocket();
         }
 
@@ -3345,7 +3443,7 @@
             document.getElementById('authModal').style.display = "flex";
             document.getElementById('cancelAuthBtn').style.display = "none";
             document.getElementById('masterCmds').style.display = "none";
-            document.getElementById('actionLog').innerHTML = '<div>> [KIZA SYSTEM]: HUD online. Decorative Infographic PDF/PPTX Compiler & Image Vision armed.</div>';
+            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Ready! Ask me anything, search the web, attach an image (📎), or ask me to create a PDF or PowerPoint presentation.</div>';
             closeSettings();
         }
         function logoutUser() { forceLogout(); document.getElementById('authUser').value = ""; document.getElementById('authPass').value = ""; document.getElementById('authError').innerText = ""; }
@@ -4018,7 +4116,7 @@
         }
 
         // ==========================================================
-        // REAL-TIME SSE TOKEN STREAMING + AUTOMATIC FALLBACK ENGINE
+        // REAL-TIME SSE TOKEN STREAMING + PREVIEW STUDIO + WEB & PLANNER
         // ==========================================================
         async function submitCommand() {
             if (isPinLocked) {
@@ -4049,6 +4147,9 @@
             let text = intent.mappedText;
             const cleanSpeaker = cleanDisplayNameOnly(currentUser).toUpperCase();
 
+            // Client-side safety detection for PDF/PPTX/DOC requests (even if server is running an older build)
+            const clientFileIntent = detectClientSideFileIntent(rawText);
+
             const currentAttachedImg = attachedImageBase64;
             const currentAttachedName = attachedImageName;
             const currentAttachedContext = attachedImageExtractedContext;
@@ -4066,7 +4167,7 @@
 
             isChatActive = true;
             setCoreLoadSpike(true);
-            document.getElementById('uiStatus').innerText = "⚡ STREAMING RESPONSE...";
+            document.getElementById('uiStatus').innerText = "⚡ KIZA PROCESSING...";
             const orbEl = document.getElementById('orb');
             orbEl.classList.add('processing');
 
@@ -4093,6 +4194,8 @@
 
             let accumulatedText = "";
             let isStreamError = false;
+            let renderedPlanner = false;
+
             const reqPayload = {
                 user: currentUser,
                 command: text,
@@ -4128,7 +4231,14 @@
                             const jsonStr = trimmed.replace(/^data:\s*/, "");
                             try {
                                 const payload = JSON.parse(jsonStr);
-                                if (payload.type === "token") {
+                                if (payload.type === "web_search" && payload.query) {
+                                    renderWebSearchBadgeInFeed(payload.query);
+                                    logBox.appendChild(streamEntry);
+                                } else if (payload.type === "plan" && Array.isArray(payload.steps)) {
+                                    renderedPlanner = true;
+                                    renderTaskPlannerQueueInFeed(payload.steps);
+                                    logBox.appendChild(streamEntry);
+                                } else if (payload.type === "token") {
                                     if (payload.is_error) isStreamError = true;
                                     accumulatedText += payload.text;
                                     const visibleClean = stripSlashesFromText(accumulatedText)
@@ -4159,6 +4269,10 @@
                         let syncData = await syncRes.json();
                         accumulatedText = syncData.reply || "";
                         isStreamError = Boolean(syncData.is_error);
+                        if (syncData.web_query) renderWebSearchBadgeInFeed(syncData.web_query);
+                        if (syncData.plan_steps && syncData.plan_steps.length && !renderedPlanner) {
+                            renderTaskPlannerQueueInFeed(syncData.plan_steps);
+                        }
                         if (syncData.audio_base64) playKizaAudio(syncData.audio_base64);
                     }
                 }
@@ -4170,15 +4284,18 @@
                 isChatActive = false;
                 setCoreLoadSpike(false);
 
+                // Preview-First File Trigger (Never auto-downloads; opens Preview Studio first!)
                 if (accumulatedText.includes("[GENERATE_FILE:")) {
                     const fileMatch = accumulatedText.match(/\[GENERATE_FILE:([^:]+):([^\]]+)\]/);
                     const fileExt = fileMatch ? fileMatch[1] : "pdf";
                     const fileTopic = fileMatch ? fileMatch[2] : "Report";
-                    compileAndDownloadUniversalFile(fileExt, fileTopic, accumulatedText, currentAttachedImg);
+                    prepareAndPreviewUniversalFile(fileExt, fileTopic, accumulatedText, currentAttachedImg);
                 } else if (accumulatedText.includes("[GENERATING_PDF:")) {
                     const match = accumulatedText.match(/\[GENERATING_PDF:([^\]]+)\]/);
                     const topic = match ? match[1] : "Report";
-                    compileAndDownloadUniversalFile("pdf", topic, accumulatedText, currentAttachedImg);
+                    prepareAndPreviewUniversalFile("pdf", topic, accumulatedText, currentAttachedImg);
+                } else if (clientFileIntent && !isStreamError) {
+                    prepareAndPreviewUniversalFile(clientFileIntent.ext, clientFileIntent.topic, accumulatedText, currentAttachedImg);
                 }
 
                 let finalCleaned = stripSlashesFromText(executeAIActionTags(accumulatedText))
