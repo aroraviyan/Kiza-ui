@@ -852,7 +852,7 @@
             <div id="ownerUpdatePublisher" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:10px; background:var(--chip-bg); border:1px dashed var(--chip-border);">
                 <div style="font-family:'Orbitron', sans-serif; font-size:10.5px; font-weight:700; color:var(--accent-primary);">👑 PUBLISH NEW LIVE UPDATE (OWNER ONLY)</div>
                 <div style="display:flex; gap:8px;">
-                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v5.0)" style="width:140px;">
+                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v5.1)" style="width:140px;">
                     <input type="text" id="newUpdateTitle" placeholder="Update Headline...">
                 </div>
                 <input type="text" id="newUpdateDesc" placeholder="Short description of what was added or fixed...">
@@ -1036,7 +1036,7 @@
                     <div class="diag-bar-bg"><div id="memSyncBar" class="diag-bar-fill" style="width: 100%;"></div></div>
                 </div>
                 <div class="diag-item">
-                    <div class="diag-header"><span>FILE & VISION ENGINE</span><span id="secShieldText">PDF • PPTX • OCR</span></div>
+                    <div class="diag-header"><span>VISUAL INFOGRAPHIC ENGINE</span><span id="secShieldText">PDF • PPTX • CHARTS</span></div>
                     <div class="diag-bar-bg"><div class="diag-bar-fill" style="width: 100%; background: var(--success);"></div></div>
                 </div>
             </div>
@@ -1138,7 +1138,7 @@
                 </div>
             </div>
             <div id="actionLog" class="log-box">
-                <div>> [KIZA SYSTEM]: HUD online. Universal PDF/PPTX/File compiler & Image Attachment Vision armed.</div>
+                <div>> [KIZA SYSTEM]: HUD online. Decorative Infographic PDF/PPTX Compiler & Image Vision armed.</div>
             </div>
         </div>
     </div>
@@ -1224,6 +1224,9 @@
         let isScanningAttachment = false;
         let attachmentScanPromise = null;
 
+        // Store last generated file so user can re-download with 1 click from the visual card
+        let lastCompiledFileCache = null;
+
         const PERSONA_VOICE_CONFIG = {
             normal: { label: "UK • DRY WIT", rate: 1.04 },
             energetic: { label: "US • FAST WIT", rate: 1.16 },
@@ -1232,10 +1235,9 @@
         };
 
         const DEFAULT_UPDATES_FALLBACK = [
-            { version: "v5.0", title: "Universal File Generator (PDF, PPTX, Any File) & Image Attachment", description: "Added 1-command generation for PDF dossiers, PowerPoint (.pptx) slide decks, DOC/CSV/Code files, and full image attachment analysis.", author: "Viyan Arora", date: "LIVE" },
-            { version: "v4.9", title: "Real-Time Token Streaming Engine", description: "Implemented asynchronous SSE token streaming so responses type out character-by-character the millisecond Groq generates them.", author: "Viyan Arora", date: "ACTIVE" },
-            { version: "v4.8", title: "Multi-Persona Dynamic Voice Synthesizer", description: "Added 4 distinct AI personas (Normal, Energetic, Security Protocol, and Executive Assistant) with dynamic voice accent and cadence tuning.", author: "Viyan Arora", date: "ACTIVE" },
-            { version: "v4.7", title: "Biometric Face-Match & Mandatory Backup PIN", description: "Added mandatory operative Security PINs, real-time Face ID similarity verification with PIN fallback, and silent 2nd-strike intruder mugshots.", author: "Viyan Arora", date: "ACTIVE" }
+            { version: "v5.1", title: "Decorative Infographic PDFs, Visual PPTX & Live Preview Canvas", description: "Upgraded file compiler with visual KPI stat cards, dynamic bar charts, comparison tables, 2-column PPTX slide graphics, and an in-chat visual document card.", author: "Viyan Arora", date: "LIVE" },
+            { version: "v5.0", title: "Universal File Generator (PDF, PPTX, Any File) & Image Attachment", description: "Added 1-command generation for PDF dossiers, PowerPoint (.pptx) slide decks, DOC/CSV/Code files, and full image attachment analysis.", author: "Viyan Arora", date: "ACTIVE" },
+            { version: "v4.9", title: "Real-Time Token Streaming Engine", description: "Implemented asynchronous SSE token streaming so responses type out character-by-character the millisecond Groq generates them.", author: "Viyan Arora", date: "ACTIVE" }
         ];
 
         function handlePersonaChange() {
@@ -1390,73 +1392,253 @@
         }
 
         // ==========================================================
-        // UNIVERSAL FILE GENERATOR (PDF, PPTX, DOC, CSV, PY, HTML, TXT)
+        // DECORATIVE INFOGRAPHIC COMPILER (KPI CARDS, BAR CHARTS, TABLES)
         // ==========================================================
-        function compileAndDownloadDetailedPDF(topicTitle, rawContent, embeddedImgBase64 = null) {
+        function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = null) {
             const cleanTopic = (topicTitle || "Intelligence Dossier").toUpperCase();
-            const cleanBody = stripSlashesFromText(rawContent)
+            const rawLines = stripSlashesFromText(rawContent)
                 .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
                 .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
-                .replace(/\n\n/g, '<br><br>')
-                .replace(/\n/g, '<br>');
+                .replace(/\*\*/g, '')
+                .split('\n');
 
-            const pdfContainer = document.createElement('div');
-            pdfContainer.style.padding = '35px 40px';
-            pdfContainer.style.fontFamily = "'Inter', Arial, sans-serif";
-            pdfContainer.style.color = '#0f172a';
-            pdfContainer.style.lineHeight = '1.6';
-            pdfContainer.style.background = '#ffffff';
+            let subtitle = "EXECUTIVE INTELLIGENCE BRIEFING & VISUAL TELEMETRY";
+            const kpis = [];
+            const charts = [];
+            let tableHeaders = [];
+            const tableRows = [];
+            const bodyBlocks = [];
 
-            const imgBlockHtml = embeddedImgBase64
-                ? `<div style="margin-bottom:20px; text-align:center;"><img src="${embeddedImgBase64}" style="max-width:85%; max-height:240px; border-radius:8px; border:2px solid #0284c7;"></div>`
-                : '';
+            rawLines.forEach(line => {
+                const t = line.trim();
+                if (!t) return;
+                if (/^SUBTITLE:/i.test(t)) {
+                    subtitle = t.replace(/^SUBTITLE:\s*/i, '').trim();
+                } else if (/^KPI:/i.test(t)) {
+                    const parts = t.replace(/^KPI:\s*/i, '').split('|').map(s => s.trim());
+                    if (parts.length >= 2) {
+                        kpis.push({ label: parts[0], value: parts[1], sub: parts[2] || "Verified Metric" });
+                    }
+                } else if (/^CHART:/i.test(t)) {
+                    const parts = t.replace(/^CHART:\s*/i, '').split('|').map(s => s.trim());
+                    if (parts.length >= 2) {
+                        let pct = parseInt(parts[1].replace(/[^0-9]/g, ''), 10);
+                        if (isNaN(pct) || pct < 5) pct = 78;
+                        if (pct > 100) pct = 100;
+                        charts.push({ label: parts[0], pct });
+                    }
+                } else if (/^TABLE_HEADER:/i.test(t)) {
+                    tableHeaders = t.replace(/^TABLE_HEADER:\s*/i, '').split('|').map(s => s.trim());
+                } else if (/^TABLE_ROW:/i.test(t)) {
+                    tableRows.push(t.replace(/^TABLE_ROW:\s*/i, '').split('|').map(s => s.trim()));
+                } else if (/^SECTION:/i.test(t)) {
+                    bodyBlocks.push({ type: 'section', text: t.replace(/^SECTION:\s*/i, '').trim() });
+                } else if (/^CALLOUT:/i.test(t)) {
+                    bodyBlocks.push({ type: 'callout', text: t.replace(/^CALLOUT:\s*/i, '').trim() });
+                } else if (/^[-•*]\s+/.test(t)) {
+                    bodyBlocks.push({ type: 'bullet', text: t.replace(/^[-•*]\s+/, '').trim() });
+                } else {
+                    bodyBlocks.push({ type: 'p', text: t });
+                }
+            });
 
-            pdfContainer.innerHTML = `
-                <div style="border-bottom: 2px solid #0284c7; padding-bottom: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end;">
+            const kpiHtml = kpis.length > 0 ? `
+                <div style="display:flex; gap:14px; margin-bottom:24px;">
+                    ${kpis.slice(0, 3).map((k, idx) => {
+                        const colors = ['#0284c7', '#7c3aed', '#059669'];
+                        const bgColors = ['#f0f9ff', '#f5f3ff', '#ecfdf5'];
+                        const c = colors[idx % 3];
+                        const bg = bgColors[idx % 3];
+                        return `
+                            <div style="flex:1; background:${bg}; border:1px solid ${c}40; border-top:4px solid ${c}; border-radius:10px; padding:14px 16px;">
+                                <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:1px;">${k.label}</div>
+                                <div style="font-size:24px; font-weight:800; color:${c}; margin:4px 0;">${k.value}</div>
+                                <div style="font-size:10.5px; color:#64748b;">${k.sub}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            ` : '';
+
+            const chartHtml = charts.length > 0 ? `
+                <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:12px; padding:18px 20px; margin:18px 0;">
+                    <div style="font-size:11px; font-weight:800; color:#0f172a; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:12px;">📊 VISUAL TELEMETRY & BENCHMARK INDEX</div>
+                    ${charts.map((ch, idx) => {
+                        const barColors = ['linear-gradient(90deg, #0284c7, #38bdf8)', 'linear-gradient(90deg, #6366f1, #a855f7)', 'linear-gradient(90deg, #059669, #10b981)', 'linear-gradient(90deg, #d97706, #fbbf24)'];
+                        return `
+                            <div style="margin-bottom:10px;">
+                                <div style="display:flex; justify-content:space-between; font-size:11.5px; font-weight:700; color:#1e293b; margin-bottom:4px;">
+                                    <span>${ch.label}</span>
+                                    <span style="color:#0284c7;">${ch.pct}%</span>
+                                </div>
+                                <div style="width:100%; height:10px; background:#e2e8f0; border-radius:999px; overflow:hidden;">
+                                    <div style="width:${ch.pct}%; height:100%; background:${barColors[idx % 4]}; border-radius:999px;"></div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            ` : '';
+
+            const tableHtml = tableRows.length > 0 ? `
+                <table style="width:100%; border-collapse:collapse; margin:18px 0; font-size:11.5px; border-radius:8px; overflow:hidden;">
+                    <thead>
+                        <tr style="background:#0f172a; color:#ffffff; text-align:left;">
+                            ${(tableHeaders.length ? tableHeaders : ['Dimension', 'Baseline', 'Target Benchmark']).map(h => `<th style="padding:10px 12px; font-weight:700;">${h}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows.map((row, rIdx) => `
+                            <tr style="background:${rIdx % 2 === 0 ? '#ffffff' : '#f1f5f9'}; border-bottom:1px solid #cbd5e1;">
+                                ${row.map((cell, cIdx) => `<td style="padding:9px 12px; color:#1e293b; ${cIdx === 0 ? 'font-weight:700; color:#0284c7;' : ''}">${cell}</td>`).join('')}
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            ` : '';
+
+            const imgBlockHtml = embeddedImgBase64 ? `
+                <div style="margin:16px 0 22px 0; text-align:center; background:#f8fafc; padding:14px; border-radius:12px; border:1px dashed #38bdf8;">
+                    <img src="${embeddedImgBase64}" style="max-width:82%; max-height:220px; border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,0.12);">
+                    <div style="font-size:10px; color:#64748b; margin-top:6px; font-weight:600;">ATTACHED VISUAL EVIDENCE // ANALYZED BY KIZA</div>
+                </div>
+            ` : '';
+
+            let renderedBody = "";
+            let insertedCharts = false;
+            bodyBlocks.forEach(b => {
+                if (b.type === 'section') {
+                    if (!insertedCharts && /TELEMETRY|BENCHMARK|ANALYSIS/i.test(b.text) && chartHtml) {
+                        renderedBody += `<h2 style="font-size:14px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:1.2px; border-left:4px solid #0284c7; padding-left:10px; margin:22px 0 10px 0;">${b.text}</h2>` + chartHtml;
+                        insertedCharts = true;
+                    } else {
+                        renderedBody += `<h2 style="font-size:14px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:1.2px; border-left:4px solid #0284c7; padding-left:10px; margin:22px 0 10px 0;">${b.text}</h2>`;
+                    }
+                } else if (b.type === 'callout') {
+                    renderedBody += `
+                        <div style="background:linear-gradient(90deg, #eff6ff, #f8fafc); border-left:4px solid #2563eb; padding:12px 16px; border-radius:0 8px 8px 0; margin:14px 0; font-size:12px; font-weight:600; color:#1e3a8a;">
+                            💡 <b>KEY INTELLIGENCE TAKEAWAY:</b> ${b.text}
+                        </div>
+                    `;
+                } else if (b.type === 'bullet') {
+                    renderedBody += `
+                        <div style="display:flex; align-items:flex-start; gap:8px; margin:6px 0 6px 8px; font-size:12.5px; color:#1e293b;">
+                            <span style="color:#0284c7; font-weight:bold;">◆</span>
+                            <span>${b.text}</span>
+                        </div>
+                    `;
+                } else {
+                    renderedBody += `<p style="font-size:12.5px; color:#334155; margin:8px 0; line-height:1.65; text-align:justify;">${b.text}</p>`;
+                }
+            });
+
+            if (!insertedCharts && chartHtml) renderedBody += chartHtml;
+            if (tableHtml) renderedBody += tableHtml;
+
+            return {
+                cleanTopic,
+                subtitle,
+                kpis,
+                charts,
+                html: `
+                    <div style="font-family:'Inter', Arial, sans-serif; color:#0f172a; background:#ffffff; padding:30px 36px;">
+                        <!-- DECORATIVE GRADIENT HERO BANNER -->
+                        <div style="background:linear-gradient(135deg, #090d16 0%, #0f172a 55%, #0284c7 100%); color:#ffffff; padding:24px 28px; border-radius:14px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <div style="font-size:10px; font-weight:700; color:#38bdf8; letter-spacing:2px; text-transform:uppercase;">KIZA QUANTUM INTELLIGENCE DOSSIER</div>
+                                <h1 style="margin:6px 0 4px 0; font-size:22px; font-weight:800; letter-spacing:0.5px; color:#ffffff;">${cleanTopic}</h1>
+                                <div style="font-size:11.5px; color:#cbd5e1;">${subtitle}</div>
+                            </div>
+                            <div style="text-align:right; font-family:monospace; font-size:10px; color:#94a3b8; border-left:1px solid rgba(255,255,255,0.2); padding-left:16px;">
+                                <div style="color:#ffffff; font-weight:bold;">AUTHOR: ${cleanDisplayNameOnly(currentUser).toUpperCase()}</div>
+                                <div>CLEARANCE: ${currentRole}</div>
+                                <div>DATE: ${new Date().toLocaleDateString('en-IN')}</div>
+                            </div>
+                        </div>
+
+                        ${kpiHtml}
+                        ${imgBlockHtml}
+                        ${renderedBody}
+
+                        <div style="margin-top:34px; border-top:2px solid #e2e8f0; padding-top:10px; font-size:9.5px; color:#64748b; display:flex; justify-content:space-between; font-family:monospace;">
+                            <span>GENERATED BY KIZA AI COMMAND HUB • INFOGRAPHIC ENGINE v5.1</span>
+                            <span>CLASSIFIED // AUTHORIZED OPERATIVE USE ONLY</span>
+                        </div>
+                    </div>
+                `
+            };
+        }
+
+        function renderInChatVisualFileCard(ext, topic, rawContent, embeddedImgBase64 = null) {
+            lastCompiledFileCache = { ext, topic, rawContent, embeddedImgBase64 };
+            const parsed = buildDecorativeReportHTML(topic, rawContent, embeddedImgBase64);
+            const logBox = document.getElementById('actionLog');
+            const card = document.createElement('div');
+            card.style.background = "var(--card-bg)";
+            card.style.border = "1px solid var(--accent-primary)";
+            card.style.borderRadius = "12px";
+            card.style.padding = "14px";
+            card.style.marginTop = "6px";
+
+            const kpiBadges = parsed.kpis.slice(0, 3).map(k =>
+                `<div style="flex:1; min-width:80px; background:var(--chip-bg); border:1px solid var(--chip-border); border-radius:8px; padding:6px 8px; text-align:center;">
+                    <div style="font-size:9px; color:var(--text-muted);">${k.label}</div>
+                    <div style="font-size:14px; font-weight:800; color:var(--accent-primary);">${k.value}</div>
+                </div>`
+            ).join('');
+
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--card-border); padding-bottom:8px; margin-bottom:10px;">
                     <div>
-                        <h1 style="font-family:'Orbitron', sans-serif; margin: 0; color: #0284c7; font-size: 22px; letter-spacing: 1.5px;">KIZA INTELLIGENCE DOSSIER</h1>
-                        <div style="font-size: 11px; color: #64748b; margin-top: 4px; font-weight: 600;">OFFICIAL SYSTEM GENERATED DOCUMENT</div>
+                        <span style="font-family:'Orbitron', sans-serif; font-size:10px; font-weight:800; color:var(--accent-primary); background:var(--chip-bg); padding:3px 8px; border-radius:5px;">🎨 VISUAL ${ext.toUpperCase()} CANVAS</span>
+                        <div style="font-weight:700; font-size:13px; margin-top:5px;">${parsed.cleanTopic}</div>
                     </div>
-                    <div style="text-align: right; font-size: 10px; color: #475569; font-family: monospace;">
-                        <div>AUTHOR: ${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole})</div>
-                        <div>DATE: ${new Date().toLocaleDateString('en-IN')}</div>
-                    </div>
+                    <button type="button" class="send-btn" style="padding:6px 12px; font-size:10px;" onclick="redownloadLastCompiledFile()">⬇️ DOWNLOAD .${ext.toUpperCase()}</button>
                 </div>
-                <div style="background: #f0f9ff; border-left: 4px solid #0284c7; padding: 10px 16px; margin-bottom: 20px; font-size: 13px; font-weight: bold; color: #0369a1;">
-                    TOPIC: ${cleanTopic}
-                </div>
-                ${imgBlockHtml}
-                <div style="font-size: 12.5px; text-align: justify; color: #1e293b;">
-                    ${cleanBody}
-                </div>
-                <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 9px; color: #94a3b8; display: flex; justify-content: space-between; font-family: monospace;">
-                    <span>KIZA AI HUB • SECURE EXPORT</span>
-                    <span>CLASSIFIED • AUTHORIZED OPERATIVE USE ONLY</span>
-                </div>
+                ${kpiBadges ? `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">${kpiBadges}</div>` : ''}
+                <div style="font-size:11px; color:var(--text-muted);">${parsed.subtitle}</div>
             `;
+            logBox.appendChild(card);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
 
+        function redownloadLastCompiledFile() {
+            if (!lastCompiledFileCache) return;
+            compileAndDownloadUniversalFile(
+                lastCompiledFileCache.ext,
+                lastCompiledFileCache.topic,
+                lastCompiledFileCache.rawContent,
+                lastCompiledFileCache.embeddedImgBase64,
+                true
+            );
+        }
+
+        function compileAndDownloadDetailedPDF(topicTitle, rawContent, embeddedImgBase64 = null) {
+            const reportObj = buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64);
+            const pdfContainer = document.createElement('div');
+            pdfContainer.innerHTML = reportObj.html;
             document.body.appendChild(pdfContainer);
 
             const opt = {
-                margin: [10, 10, 10, 10],
-                filename: `KIZA_Dossier_${cleanTopic.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 35)}.pdf`,
+                margin: [8, 8, 8, 8],
+                filename: `KIZA_Infographic_${reportObj.cleanTopic.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 32)}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            showNotification("COMPILING PDF", `Generating PDF dossier on ${cleanTopic}...`, false, { skipStore: true });
+            showNotification("COMPILING VISUAL PDF", `Rendering infographic cards & charts for ${reportObj.cleanTopic}...`, false, { skipStore: true });
 
             if (typeof html2pdf !== "undefined") {
                 html2pdf().set(opt).from(pdfContainer).save().then(() => {
                     document.body.removeChild(pdfContainer);
-                    showNotification("PDF DOWNLOADED", `Saved ${opt.filename}`, false, { skipStore: true });
+                    showNotification("PDF DOWNLOADED", `Saved decorative dossier: ${opt.filename}`, false, { skipStore: true });
                 }).catch(() => {
                     document.body.removeChild(pdfContainer);
                 });
             } else {
                 document.body.removeChild(pdfContainer);
-                triggerTextDownload(`KIZA_Dossier_${Date.now()}.txt`, cleanBody);
+                triggerTextDownload(`KIZA_Dossier_${Date.now()}.txt`, rawContent);
             }
         }
 
@@ -1472,7 +1654,7 @@
                 return;
             }
 
-            showNotification("COMPILING PPTX", `Building PowerPoint deck for ${cleanTopic}...`, false, { skipStore: true });
+            showNotification("COMPILING VISUAL PPTX", `Designing widescreen slide deck for ${cleanTopic}...`, false, { skipStore: true });
 
             try {
                 const pptx = new PptxGenJS();
@@ -1481,26 +1663,30 @@
                 pptx.company = "KIZA AI Command Hub";
                 pptx.title = cleanTopic;
 
+                // Decorative Cover Slide
                 let titleSlide = pptx.addSlide();
                 titleSlide.background = { color: "060A17" };
-                titleSlide.addText("KIZA AI COMMAND HUB • INTELLIGENCE DECK", {
-                    x: 0.6, y: 0.6, w: 8.8, h: 0.4,
+                titleSlide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 10, h: 0.18, fill: { color: "00F2FE" } });
+                titleSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.1, w: 0.12, h: 2.6, fill: { color: "A855F7" } });
+                titleSlide.addText("KIZA QUANTUM HUB // VISUAL BRIEFING DECK", {
+                    x: 0.8, y: 0.65, w: 8.5, h: 0.4,
                     fontSize: 11, color: "00F2FE", bold: true, fontFace: "Courier New"
                 });
                 titleSlide.addText(cleanTopic, {
-                    x: 0.6, y: 1.5, w: embeddedImgBase64 ? 5.5 : 8.8, h: 1.8,
-                    fontSize: 28, color: "FFFFFF", bold: true, fontFace: "Arial"
+                    x: 0.8, y: 1.25, w: embeddedImgBase64 ? 5.3 : 8.5, h: 2.1,
+                    fontSize: 30, color: "FFFFFF", bold: true, fontFace: "Arial"
                 });
-                titleSlide.addText(`Prepared by: ${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole})  |  ${new Date().toLocaleDateString('en-IN')}`, {
-                    x: 0.6, y: 4.6, w: 8.8, h: 0.4,
-                    fontSize: 12, color: "94A3B8", fontFace: "Arial"
+                titleSlide.addText(`AUTHOR: ${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole})   |   ${new Date().toLocaleDateString('en-IN')}`, {
+                    x: 0.8, y: 4.7, w: 8.5, h: 0.4,
+                    fontSize: 11, color: "94A3B8", fontFace: "Courier New"
                 });
                 if (embeddedImgBase64) {
                     try {
-                        titleSlide.addImage({ data: embeddedImgBase64, x: 6.3, y: 1.3, w: 3.1, h: 2.6 });
+                        titleSlide.addImage({ data: embeddedImgBase64, x: 6.3, y: 1.15, w: 3.1, h: 2.8 });
                     } catch (imgErr) {}
                 }
 
+                // Parse SLIDE blocks with STAT callouts
                 const slideRegex = /SLIDE\s*\d+\s*:\s*([^\n]+)\n([\s\S]*?)(?=SLIDE\s*\d+\s*:|$)/gi;
                 let match;
                 let slideCount = 0;
@@ -1509,27 +1695,67 @@
                     slideCount++;
                     const sTitle = match[1].trim();
                     const sBodyRaw = match[2].trim();
-                    const bullets = sBodyRaw
-                        .split(/\n+/)
-                        .map(line => line.replace(/^[-•*\d.)\s]+/, '').trim())
-                        .filter(Boolean);
+                    const lines = sBodyRaw.split(/\n+/).map(l => l.trim()).filter(Boolean);
+
+                    let statValue = `0${slideCount}`;
+                    let statLabel = "KEY PILLAR";
+                    const bullets = [];
+
+                    lines.forEach(l => {
+                        if (/^STAT:/i.test(l)) {
+                            const sp = l.replace(/^STAT:\s*/i, '').split('|').map(x => x.trim());
+                            if (sp[0]) statValue = sp[0];
+                            if (sp[1]) statLabel = sp[1];
+                        } else {
+                            bullets.push(l.replace(/^[-•*\d.)\s]+/, '').trim());
+                        }
+                    });
 
                     let slide = pptx.addSlide();
                     slide.background = { color: "0B1120" };
-                    slide.addText(`SLIDE 0${slideCount} • ${sTitle.toUpperCase()}`, {
-                        x: 0.6, y: 0.5, w: 8.8, h: 0.6,
+
+                    // Top Cyber Header Bar
+                    slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 10, h: 0.1, fill: { color: "38BDF8" } });
+                    slide.addText(`0${slideCount} // ${sTitle.toUpperCase()}`, {
+                        x: 0.5, y: 0.35, w: 9.0, h: 0.55,
                         fontSize: 20, color: "38BDF8", bold: true, fontFace: "Arial"
+                    });
+
+                    // Left Content Card
+                    slide.addShape(pptx.ShapeType.rect, {
+                        x: 0.5, y: 1.1, w: 6.1, h: 3.8,
+                        fill: { color: "111827" },
+                        line: { color: "1E293B", width: 1.5 }
                     });
 
                     if (bullets.length > 0) {
                         const bulletObjs = bullets.map(b => ({
                             text: b,
-                            options: { bullet: true, color: "F1F5F9", fontSize: 15, breakLine: true, paraSpaceAfter: 12 }
+                            options: { bullet: true, color: "F1F5F9", fontSize: 14, breakLine: true, paraSpaceAfter: 12 }
                         }));
-                        slide.addText(bulletObjs, { x: 0.7, y: 1.4, w: 8.6, h: 3.6, valign: "top" });
-                    } else if (sBodyRaw) {
-                        slide.addText(sBodyRaw, { x: 0.7, y: 1.4, w: 8.6, h: 3.6, fontSize: 15, color: "F1F5F9", valign: "top" });
+                        slide.addText(bulletObjs, { x: 0.7, y: 1.3, w: 5.7, h: 3.4, valign: "top" });
                     }
+
+                    // Right Visual Metric Highlight Card
+                    slide.addShape(pptx.ShapeType.rect, {
+                        x: 6.85, y: 1.1, w: 2.65, h: 3.8,
+                        fill: { color: "1E1B4B" },
+                        line: { color: "A855F7", width: 2 }
+                    });
+                    slide.addText(statValue, {
+                        x: 6.95, y: 1.85, w: 2.45, h: 1.1,
+                        fontSize: 34, color: "00F2FE", bold: true, align: "center", fontFace: "Arial"
+                    });
+                    slide.addText(statLabel.toUpperCase(), {
+                        x: 6.95, y: 3.0, w: 2.45, h: 0.8,
+                        fontSize: 11, color: "E2E8F0", bold: true, align: "center", fontFace: "Courier New"
+                    });
+
+                    // Footer
+                    slide.addText(`KIZA AI COMMAND HUB  •  ${cleanTopic}  •  SLIDE 0${slideCount}`, {
+                        x: 0.5, y: 5.15, w: 9.0, h: 0.3,
+                        fontSize: 9, color: "64748B", fontFace: "Courier New"
+                    });
                 }
 
                 if (slideCount === 0) {
@@ -1548,22 +1774,26 @@
                     });
                 }
 
-                const fileName = `KIZA_Deck_${cleanTopic.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30)}.pptx`;
+                const fileName = `KIZA_VisualDeck_${cleanTopic.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30)}.pptx`;
                 pptx.writeFile({ fileName }).then(() => {
-                    showNotification("PPTX DOWNLOADED", `Saved presentation: ${fileName}`, false, { skipStore: true });
+                    showNotification("PPTX DOWNLOADED", `Saved visual presentation: ${fileName}`, false, { skipStore: true });
                 });
             } catch (err) {
                 triggerTextDownload(`KIZA_Presentation_${Date.now()}.txt`, cleanBody);
             }
         }
 
-        function compileAndDownloadUniversalFile(ext, topic, rawContent, embeddedImgBase64 = null) {
+        function compileAndDownloadUniversalFile(ext, topic, rawContent, embeddedImgBase64 = null, isRedownload = false) {
             const cleanExt = (ext || "txt").toLowerCase().trim();
             const safeTopic = (topic || "KIZA_Export").replace(/[^a-zA-Z0-9]/g, '_').slice(0, 32);
             const cleanBody = stripSlashesFromText(rawContent)
                 .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
                 .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
                 .trim();
+
+            if (!isRedownload) {
+                renderInChatVisualFileCard(cleanExt, topic, rawContent, embeddedImgBase64);
+            }
 
             if (cleanExt === "pdf") {
                 compileAndDownloadDetailedPDF(topic, cleanBody, embeddedImgBase64);
@@ -1574,7 +1804,8 @@
                 return;
             }
             if (cleanExt === "doc" || cleanExt === "docx") {
-                const htmlDoc = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>${topic}</title></head><body style="font-family:Arial,sans-serif;line-height:1.6;"><h1>${topic.toUpperCase()}</h1><p><b>Generated by KIZA AI Hub</b></p><hr>${cleanBody.replace(/\n/g, '<br>')}</body></html>`;
+                const reportObj = buildDecorativeReportHTML(topic, cleanBody, embeddedImgBase64);
+                const htmlDoc = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>${topic}</title></head><body>${reportObj.html}</body></html>`;
                 const blob = new Blob(['\ufeff', htmlDoc], { type: 'application/msword' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -1584,7 +1815,7 @@
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                showNotification("DOC DOWNLOADED", `Saved Word document: KIZA_${safeTopic}.doc`, false, { skipStore: true });
+                showNotification("DOC DOWNLOADED", `Saved decorative Word document: KIZA_${safeTopic}.doc`, false, { skipStore: true });
                 return;
             }
 
@@ -1743,8 +1974,8 @@
         // ==========================================================
         const SLASH_COMMANDS_CATALOG = [
             { cmd: "/cmds", desc: "Show available commands for your rank", minRank: 4 },
-            { cmd: "/pdf ", desc: "Generate & download a detailed PDF dossier: /pdf [topic]", minRank: 4 },
-            { cmd: "/pptx ", desc: "Generate & download a PowerPoint deck: /pptx [topic]", minRank: 4 },
+            { cmd: "/pdf ", desc: "Generate a decorative Infographic PDF dossier: /pdf [topic]", minRank: 4 },
+            { cmd: "/pptx ", desc: "Generate a visual 2-column PowerPoint deck: /pptx [topic]", minRank: 4 },
             { cmd: "/file ", desc: "Generate any file (doc, csv, py, html, txt): /file [ext] [topic]", minRank: 4 },
             { cmd: "/ping", desc: "Test server latency & shield status", minRank: 4 },
             { cmd: "/logs", desc: "Open encrypted Memory Archive", minRank: 4 },
@@ -3059,7 +3290,7 @@
             } else {
                 logAction(`[SYSTEM]: Identity active: ${cleanNameUpper}`, "#007BFF");
             }
-            document.getElementById('actionLog').innerHTML = '<div>> [KIZA SYSTEM]: HUD online. Universal PDF/PPTX/File compiler & Image Attachment Vision armed.</div>';
+            document.getElementById('actionLog').innerHTML = '<div>> [KIZA SYSTEM]: HUD online. Decorative Infographic PDF/PPTX Compiler & Image Vision armed.</div>';
             initWebSocket();
         }
 
@@ -3114,7 +3345,7 @@
             document.getElementById('authModal').style.display = "flex";
             document.getElementById('cancelAuthBtn').style.display = "none";
             document.getElementById('masterCmds').style.display = "none";
-            document.getElementById('actionLog').innerHTML = '<div>> [KIZA SYSTEM]: HUD online. Universal PDF/PPTX/File compiler & Image Attachment Vision armed.</div>';
+            document.getElementById('actionLog').innerHTML = '<div>> [KIZA SYSTEM]: HUD online. Decorative Infographic PDF/PPTX Compiler & Image Vision armed.</div>';
             closeSettings();
         }
         function logoutUser() { forceLogout(); document.getElementById('authUser').value = ""; document.getElementById('authPass').value = ""; document.getElementById('authError').innerText = ""; }
@@ -3807,7 +4038,6 @@
             inputField.value = "";
             clearTimeout(typingTimer); clearIndicator();
 
-            // Wait up to 2.5s if user clicked Transmit while image OCR/telemetry is still scanning
             if (isScanningAttachment && attachmentScanPromise) {
                 document.getElementById('uiStatus').innerText = "🔍 FINISHING IMAGE SCAN...";
                 try { await attachmentScanPromise; } catch (e) {}
@@ -3918,7 +4148,6 @@
                     }
                 }
 
-                // Automatic Fallback to /api/chat if /api/chat/stream returned empty or 404 during Render deploy
                 const visibleCheck = stripSlashesFromText(accumulatedText).trim();
                 if (!visibleCheck) {
                     let syncRes = await fetch(`${SERVER_URL}/api/chat`, {
@@ -3949,7 +4178,7 @@
                 } else if (accumulatedText.includes("[GENERATING_PDF:")) {
                     const match = accumulatedText.match(/\[GENERATING_PDF:([^\]]+)\]/);
                     const topic = match ? match[1] : "Report";
-                    compileAndDownloadDetailedPDF(topic, accumulatedText, currentAttachedImg);
+                    compileAndDownloadUniversalFile("pdf", topic, accumulatedText, currentAttachedImg);
                 }
 
                 let finalCleaned = stripSlashesFromText(executeAIActionTags(accumulatedText))
