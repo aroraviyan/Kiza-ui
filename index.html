@@ -247,6 +247,28 @@
             color: #fff;
         }
 
+        .live-call-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            color: #ffffff;
+            padding: 5px 13px;
+            border-radius: 999px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.45);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .live-call-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 22px rgba(16, 185, 129, 0.75);
+        }
+
         .camera-box { 
             width: 100%; height: 132px; background: #070b14; 
             border: 1px solid var(--card-border); border-radius: 12px; 
@@ -288,8 +310,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            padding: 8px 18px;
+            gap: 11px;
+            padding: 7px 16px;
             background: var(--card-bg);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
@@ -396,7 +418,6 @@
             border-radius: 6px; border: 1.5px solid var(--accent-primary); flex-shrink: 0;
         }
 
-        /* Task Planner & Web Search Cards inside Feed */
         .planner-card {
             background: var(--card-bg);
             border: 1px solid var(--accent-primary);
@@ -430,11 +451,7 @@
             font-family: 'JetBrains Mono', monospace;
         }
 
-        /* Slide Preview Card in Preview Studio */
         .ppt-slide-preview {
-            background: linear-gradient(135deg, #0b1120 0%, #111827 100%);
-            color: #f8fafc;
-            border: 1px solid #38bdf8;
             border-radius: 12px;
             padding: 18px 20px;
             margin-bottom: 14px;
@@ -544,7 +561,7 @@
             border-left: 4px solid var(--accent-primary); position: relative;
         }
         .notif-item.unread { background: var(--chip-bg); }
-        .notif-item.type-error, .notif-item.type-lockdown { border-left-color: var(--danger); }
+        .notif-item.type-error, .notif-item.type-lockdown, .notif-item.type-security_owner { border-left-color: var(--danger); }
         .notif-item.type-update { border-left-color: var(--success); }
 
         .notif-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
@@ -553,7 +570,7 @@
             padding: 2px 7px; border-radius: 5px;
             background: rgba(14, 165, 233, 0.15); color: var(--accent-primary);
         }
-        .notif-tag.error, .notif-tag.lockdown { background: rgba(244, 63, 94, 0.18); color: var(--danger); }
+        .notif-tag.error, .notif-tag.lockdown, .notif-tag.security_owner { background: rgba(244, 63, 94, 0.18); color: var(--danger); }
         .notif-tag.update { background: rgba(16, 185, 129, 0.18); color: var(--success); }
         .notif-meta { display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; color: var(--text-muted); margin-top: 2px; }
 
@@ -648,7 +665,7 @@
         <div class="notify-msg" id="notifMsg">Notification details...</div>
     </div>
 
-    <!-- INTERACTIVE DOCUMENT & SLIDE PREVIEW STUDIO MODAL (PREVIEW FIRST BEFORE DOWNLOADING) -->
+    <!-- INTERACTIVE DOCUMENT & SLIDE PREVIEW STUDIO MODAL -->
     <div id="filePreviewModal" class="modal-overlay" style="display:none; z-index: 620;">
         <div class="logs-card" style="max-width: 860px; width: 95%;">
             <div class="section-title">
@@ -789,7 +806,7 @@
             <div id="ownerUpdatePublisher" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:10px; background:var(--chip-bg); border:1px dashed var(--chip-border);">
                 <div style="font-family:'Orbitron', sans-serif; font-size:10.5px; font-weight:700; color:var(--accent-primary);">👑 PUBLISH NEW LIVE UPDATE (OWNER ONLY)</div>
                 <div style="display:flex; gap:8px;">
-                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v5.2)" style="width:140px;">
+                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v5.4)" style="width:140px;">
                     <input type="text" id="newUpdateTitle" placeholder="Update Headline...">
                 </div>
                 <input type="text" id="newUpdateDesc" placeholder="Short description of what was added or fixed...">
@@ -973,7 +990,7 @@
                     <div class="diag-bar-bg"><div id="memSyncBar" class="diag-bar-fill" style="width: 100%;"></div></div>
                 </div>
                 <div class="diag-item">
-                    <div class="diag-header"><span>ACTIVE MODULES</span><span id="secShieldText">WEB • PDF • PPTX</span></div>
+                    <div class="diag-header"><span>ACTIVE MODULES</span><span id="secShieldText">LIVE • WEB • PPTX</span></div>
                     <div class="diag-bar-bg"><div class="diag-bar-fill" style="width: 100%; background: var(--success);"></div></div>
                 </div>
             </div>
@@ -987,6 +1004,8 @@
                 <span class="hud-stat">🕒 <span id="hudClock">--:--:-- IST</span></span>
                 <span class="hud-divider"></span>
                 <span class="hud-stat">⚡ PING: <span id="hudPing" style="color:var(--success);">22ms</span></span>
+                <span class="hud-divider"></span>
+                <button type="button" class="live-call-btn" onclick="launchLiveCallMode()" title="Open Full-Screen Gemini-Style Live Video & Voice Call">📞 KIZA LIVE</button>
                 <span class="hud-divider"></span>
                 <button type="button" id="quickThemeBtn" class="hud-theme-btn" onclick="toggleQuickTheme()">🌙 DARK MODE</button>
             </div>
@@ -1003,6 +1022,7 @@
                 <!-- EASY-TO-UNDERSTAND QUICK TOOLS FOR EVERYONE -->
                 <div id="publicCmds" style="display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; max-width: 680px;">
                     <button type="button" class="chip-btn" style="width:auto;" onclick="startNewSession()">➕ New Chat</button>
+                    <button type="button" class="chip-btn" style="width:auto; border-color:var(--success); color:var(--success);" onclick="launchLiveCallMode()">📞 Live Call</button>
                     <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/search ')">🌐 Web Search</button>
                     <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/pdf ')">📄 Make PDF</button>
                     <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/pptx ')">📊 Make PPTX</button>
@@ -1078,11 +1098,10 @@
                 </div>
             </div>
             <div id="actionLog" class="log-box">
-                <div>> [KIZA]: Ready! Ask me anything, search the web, attach an image (📎), or ask me to create a PDF or PowerPoint presentation.</div>
+                <div>> [KIZA]: Ready! Ask me anything, click 📞 Live Call for hands-free video chat, attach an image (📎), or ask me to create a PDF or PowerPoint presentation.</div>
             </div>
         </div>
     </div>
-
     <script>
         const SERVER_URL = "https://kiza-brain.onrender.com";
         const WS_URL = "wss://kiza-brain.onrender.com/api/ws";
@@ -1164,7 +1183,6 @@
         let isScanningAttachment = false;
         let attachmentScanPromise = null;
 
-        // Stores the generated file so user can preview it first and download only when ready
         let lastCompiledFileCache = null;
 
         const PERSONA_VOICE_CONFIG = {
@@ -1174,11 +1192,32 @@
             helpful: { label: "IN • EXECUTIVE", rate: 1.06 }
         };
 
+        const THEME_PALETTES = {
+            black: { bgHex: "000000", cardHex: "0A0A0A", accentHex: "00F2FE", secHex: "A855F7", textHex: "FFFFFF", subHex: "94A3B8", pdfHero: "linear-gradient(135deg, #000000 0%, #111111 70%, #1e293b 100%)", pdfPageBg: "#090d16", pdfText: "#f8fafc", pdfCardBg: "#111827" },
+            cyber_dark: { bgHex: "060A17", cardHex: "111827", accentHex: "38BDF8", secHex: "A855F7", textHex: "F8FAFC", subHex: "94A3B8", pdfHero: "linear-gradient(135deg, #090d16 0%, #0f172a 55%, #0284c7 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#f8fafc" },
+            light: { bgHex: "F8FAFC", cardHex: "FFFFFF", accentHex: "0284C7", secHex: "2563EB", textHex: "0F172A", subHex: "475569", pdfHero: "linear-gradient(135deg, #0284c7 0%, #2563eb 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#f1f5f9" },
+            blue: { bgHex: "071936", cardHex: "0C264E", accentHex: "38BDF8", secHex: "60A5FA", textHex: "FFFFFF", subHex: "93C5FD", pdfHero: "linear-gradient(135deg, #071936 0%, #1d4ed8 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#eff6ff" },
+            purple: { bgHex: "130726", cardHex: "210E3D", accentHex: "C084FC", secHex: "F472B6", textHex: "FFFFFF", subHex: "D8B4FE", pdfHero: "linear-gradient(135deg, #130726 0%, #7e22ce 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#faf5ff" },
+            green: { bgHex: "041E16", cardHex: "062E22", accentHex: "10B981", secHex: "34D399", textHex: "FFFFFF", subHex: "A7F3D0", pdfHero: "linear-gradient(135deg, #041e16 0%, #059669 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#ecfdf5" },
+            red: { bgHex: "28070C", cardHex: "3F0B13", accentHex: "FB7185", secHex: "F43F5E", textHex: "FFFFFF", subHex: "FDA4AF", pdfHero: "linear-gradient(135deg, #28070c 0%, #e11d48 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#fff1f2" },
+            gold: { bgHex: "1C1605", cardHex: "2E2408", accentHex: "FBBF24", secHex: "F59E0B", textHex: "FFFFFF", subHex: "FDE68A", pdfHero: "linear-gradient(135deg, #1c1605 0%, #d97706 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#fffbeb" }
+        };
+
         const DEFAULT_UPDATES_FALLBACK = [
-            { version: "v5.2", title: "Live Web Search, Task Planner & File Preview Studio", description: "Added real-time web search (/search), animated multi-step task planner (/plan), typo-tolerant PPTX/PDF creation, and interactive preview-before-download.", author: "Viyan Arora", date: "LIVE" },
-            { version: "v5.1", title: "Decorative Infographic PDFs & Visual 2-Column PPTX", description: "Upgraded file compiler with visual KPI stat cards, dynamic bar charts, comparison tables, and 2-column PPTX slide graphics.", author: "Viyan Arora", date: "ACTIVE" },
-            { version: "v5.0", title: "Universal File Generator & Image Attachment Vision", description: "Added 1-command generation for PDF dossiers, PowerPoint (.pptx) slide decks, DOC/CSV/Code files, and full image attachment analysis.", author: "Viyan Arora", date: "ACTIVE" }
+            { version: "v5.4", title: "KIZA Live Video Call Mode & Voice Barge-In", description: "Added a dedicated full-screen Gemini-style Live Call page (live.html) with continuous camera vision, natural voice turn-taking, and instant voice interruption.", author: "Viyan Arora", date: "LIVE" },
+            { version: "v5.3", title: "Smart Topic/Style Separation & True AI Assistant Flow", description: "Automatically separates presentation/document topics from background color/theme instructions (e.g. 'with a black background') and replies with a natural conversational summary.", author: "Viyan Arora", date: "ACTIVE" },
+            { version: "v5.2", title: "Live Web Search, Task Planner & File Preview Studio", description: "Added real-time web search (/search), animated multi-step task planner (/plan), typo-tolerant PPTX/PDF creation, and interactive preview-before-download.", author: "Viyan Arora", date: "ACTIVE" }
         ];
+
+        function launchLiveCallMode() {
+            if (isPinLocked) {
+                openPinGate(pinGateMode);
+                return;
+            }
+            const persona = document.getElementById('personaSelect')?.value || "normal";
+            const url = `live.html?user=${encodeURIComponent(currentUser)}&role=${encodeURIComponent(currentRole)}&persona=${encodeURIComponent(persona)}`;
+            window.location.href = url;
+        }
 
         function prefillInput(prefixStr) {
             const inp = document.getElementById('textInput');
@@ -1224,6 +1263,26 @@
                 .replace(/\s*\/\/\s*/g, ' • ');
         }
 
+        function extractFriendlyAssistantMessage(fullText) {
+            const cleaned = stripSlashesFromText(fullText)
+                .replace(/\[ACTION:[A-Z_]+\]/g, '')
+                .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
+                .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
+                .replace(/\[SYSTEM[^\]]*\]/gi, '')
+                .replace(/\*/g, '')
+                .trim();
+
+            const introMatch = cleaned.match(/AI_INTRO:\s*([^\n]+)/i);
+            if (introMatch) {
+                return introMatch[1].trim();
+            }
+            if (/SLIDE\s*1\s*:|SUBTITLE:|KPI:|SECTION:/i.test(cleaned)) {
+                const beforeTags = cleaned.split(/SLIDE\s*1\s*:|SUBTITLE:|KPI:|SECTION:/i)[0].trim();
+                return beforeTags || "I've compiled your visual document and opened it in the Preview Studio! Inspect it and click Confirm & Download when ready.";
+            }
+            return cleaned;
+        }
+
         function resolveDBUser(nameStr) {
             if (!nameStr || nameStr === "undefined") return "guest";
             let d = String(nameStr).toLowerCase().trim();
@@ -1234,12 +1293,41 @@
         }
 
         // ==========================================================
-        // CLIENT-SIDE TYPO-TOLERANT FILE INTENT DETECTOR (SAFETY NET)
+        // CLIENT-SIDE SMART TOPIC VS. VISUAL THEME EXTRACTOR
         // ==========================================================
+        function extractClientTopicAndStyle(rawStr) {
+            let s = (rawStr || "").trim();
+            const low = s.toLowerCase();
+            let styleTheme = "cyber_dark";
+
+            const themeRules = [
+                { rx: /\b(black|obsidian|onyx|pitch\s*black|dark\s*mode|dark)\b/i, theme: "black" },
+                { rx: /\b(white|light|minimal|clean\s*white|bright)\b/i, theme: "light" },
+                { rx: /\b(blue|navy|ocean|sky|cyan)\b/i, theme: "blue" },
+                { rx: /\b(purple|violet|neon|cyberpunk|magenta)\b/i, theme: "purple" },
+                { rx: /\b(green|emerald|forest|matrix)\b/i, theme: "green" },
+                { rx: /\b(red|crimson|ruby)\b/i, theme: "red" },
+                { rx: /\b(gold|amber|yellow|warm)\b/i, theme: "gold" }
+            ];
+
+            for (const item of themeRules) {
+                if (item.rx.test(low) && /(background|bg|theme|style|color|design|template|mode|with a |in a )/i.test(low)) {
+                    styleTheme = item.theme;
+                    break;
+                }
+            }
+
+            s = s.replace(/\s+(?:with|in|using|having|featuring|and)\s+(?:a\s+|an\s+|the\s+)?(?:[a-z]+\s+){0,2}(?:background|bg|theme|style|color|design|template|layout|mode)\b.*$/i, '').trim();
+            s = s.replace(/\s+(?:with|in|having|for)\s+\d+\s+(?:slides|pages|sections|points|bullets)\b.*$/i, '').trim();
+            s = s.replace(/^(a|an|the|topic|subject)\s+/i, '').replace(/[.,;:-]+$/, '').trim();
+
+            return { cleanTopic: s || "KIZA Intelligence Briefing", styleTheme };
+        }
+
         function detectClientSideFileIntent(rawCmd) {
             const clean = rawCmd.trim();
             const low = clean.toLowerCase();
-            if (low.startswith && low.startsWith("/")) return null;
+            if (low.startsWith("/")) return null;
 
             const extPatterns = [
                 { regex: /\b(pptx|ppt|powerpoint|slide\s*deck|presentation|slides)\b/i, ext: 'pptx' },
@@ -1250,8 +1338,9 @@
             for (const item of extPatterns) {
                 if (item.regex.test(low)) {
                     const m = clean.match(/\b(?:on|about|for|titled|called|regarding|of)\s+(.+)$/i);
-                    let topic = m ? m[1].trim() : clean.replace(/\b(please|can\s+you|could\s+you|gen\w*|mak\w*|creat\w*|buld\w*|build\w*|export\w*|download\w*|writ\w*|prepar\w*|a|an|the|file|pptx|ppt|powerpoint|slide\s*deck|presentation|slides|pdf|dossier|docx|doc|csv)\b/gi, ' ').replace(/\s+/g, ' ').trim();
-                    return { ext: item.ext, topic: topic || "KIZA AI Command Hub" };
+                    let rawTopic = m ? m[1].trim() : clean.replace(/\b(please|can\s+you|could\s+you|gen\w*|mak\w*|creat\w*|buld\w*|build\w*|export\w*|download\w*|writ\w*|prepar\w*|a|an|the|file|pptx|ppt|powerpoint|slide\s*deck|presentation|slides|pdf|dossier|docx|doc|csv)\b/gi, ' ').replace(/\s+/g, ' ').trim();
+                    const parsed = extractClientTopicAndStyle(rawTopic);
+                    return { ext: item.ext, topic: parsed.cleanTopic, styleTheme: parsed.styleTheme, fullRawTopic: rawTopic };
                 }
             }
             return null;
@@ -1365,11 +1454,17 @@
         // ==========================================================
         // DECORATIVE INFOGRAPHIC COMPILER & PREVIEW STUDIO ENGINE
         // ==========================================================
-        function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = null) {
-            const cleanTopic = (topicTitle || "Intelligence Dossier").toUpperCase();
+        function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark") {
+            const parsedTopic = extractClientTopicAndStyle(topicTitle);
+            const cleanTopic = parsedTopic.cleanTopic.toUpperCase();
+            const activeTheme = (styleTheme && styleTheme !== "cyber_dark") ? styleTheme : parsedTopic.styleTheme;
+            const pal = THEME_PALETTES[activeTheme] || THEME_PALETTES.cyber_dark;
+            const isDarkDoc = (activeTheme === "black");
+
             const rawLines = stripSlashesFromText(rawContent)
                 .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
                 .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
+                .replace(/AI_INTRO:[^\n]*/gi, '')
                 .replace(/\*\*/g, '')
                 .split('\n');
 
@@ -1417,14 +1512,14 @@
                 <div style="display:flex; gap:14px; margin-bottom:24px; flex-wrap:wrap;">
                     ${kpis.slice(0, 3).map((k, idx) => {
                         const colors = ['#0284c7', '#7c3aed', '#059669'];
-                        const bgColors = ['#f0f9ff', '#f5f3ff', '#ecfdf5'];
+                        const bgColors = isDarkDoc ? ['#111827', '#1e1b4b', '#062e22'] : ['#f0f9ff', '#f5f3ff', '#ecfdf5'];
                         const c = colors[idx % 3];
                         const bg = bgColors[idx % 3];
                         return `
-                            <div style="flex:1; min-width:150px; background:${bg}; border:1px solid ${c}40; border-top:4px solid ${c}; border-radius:10px; padding:14px 16px;">
-                                <div style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:1px;">${k.label}</div>
-                                <div style="font-size:24px; font-weight:800; color:${c}; margin:4px 0;">${k.value}</div>
-                                <div style="font-size:10.5px; color:#64748b;">${k.sub}</div>
+                            <div style="flex:1; min-width:150px; background:${bg}; border:1px solid ${c}55; border-top:4px solid ${c}; border-radius:10px; padding:14px 16px;">
+                                <div style="font-size:10px; font-weight:700; color:${isDarkDoc ? '#cbd5e1' : '#475569'}; text-transform:uppercase; letter-spacing:1px;">${k.label}</div>
+                                <div style="font-size:24px; font-weight:800; color:${isDarkDoc ? '#38bdf8' : c}; margin:4px 0;">${k.value}</div>
+                                <div style="font-size:10.5px; color:${isDarkDoc ? '#94a3b8' : '#64748b'};">${k.sub}</div>
                             </div>
                         `;
                     }).join('')}
@@ -1432,17 +1527,17 @@
             ` : '';
 
             const chartHtml = charts.length > 0 ? `
-                <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:12px; padding:18px 20px; margin:18px 0;">
-                    <div style="font-size:11px; font-weight:800; color:#0f172a; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:12px;">📊 VISUAL TELEMETRY & BENCHMARK INDEX</div>
+                <div style="background:${pal.pdfCardBg}; border:1px solid ${isDarkDoc ? '#334155' : '#cbd5e1'}; border-radius:12px; padding:18px 20px; margin:18px 0;">
+                    <div style="font-size:11px; font-weight:800; color:${pal.pdfText}; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:12px;">📊 VISUAL TELEMETRY & BENCHMARK INDEX</div>
                     ${charts.map((ch, idx) => {
                         const barColors = ['linear-gradient(90deg, #0284c7, #38bdf8)', 'linear-gradient(90deg, #6366f1, #a855f7)', 'linear-gradient(90deg, #059669, #10b981)', 'linear-gradient(90deg, #d97706, #fbbf24)'];
                         return `
                             <div style="margin-bottom:10px;">
-                                <div style="display:flex; justify-content:space-between; font-size:11.5px; font-weight:700; color:#1e293b; margin-bottom:4px;">
+                                <div style="display:flex; justify-content:space-between; font-size:11.5px; font-weight:700; color:${pal.pdfText}; margin-bottom:4px;">
                                     <span>${ch.label}</span>
                                     <span style="color:#0284c7;">${ch.pct}%</span>
                                 </div>
-                                <div style="width:100%; height:10px; background:#e2e8f0; border-radius:999px; overflow:hidden;">
+                                <div style="width:100%; height:10px; background:${isDarkDoc ? '#1e293b' : '#e2e8f0'}; border-radius:999px; overflow:hidden;">
                                     <div style="width:${ch.pct}%; height:100%; background:${barColors[idx % 4]}; border-radius:999px;"></div>
                                 </div>
                             </div>
@@ -1460,8 +1555,8 @@
                     </thead>
                     <tbody>
                         ${tableRows.map((row, rIdx) => `
-                            <tr style="background:${rIdx % 2 === 0 ? '#ffffff' : '#f1f5f9'}; border-bottom:1px solid #cbd5e1;">
-                                ${row.map((cell, cIdx) => `<td style="padding:9px 12px; color:#1e293b; ${cIdx === 0 ? 'font-weight:700; color:#0284c7;' : ''}">${cell}</td>`).join('')}
+                            <tr style="background:${isDarkDoc ? (rIdx % 2 === 0 ? '#111827' : '#1e293b') : (rIdx % 2 === 0 ? '#ffffff' : '#f1f5f9')}; border-bottom:1px solid #334155;">
+                                ${row.map((cell, cIdx) => `<td style="padding:9px 12px; color:${pal.pdfText}; ${cIdx === 0 ? 'font-weight:700; color:#38bdf8;' : ''}">${cell}</td>`).join('')}
                             </tr>
                         `).join('')}
                     </tbody>
@@ -1469,7 +1564,7 @@
             ` : '';
 
             const imgBlockHtml = embeddedImgBase64 ? `
-                <div style="margin:16px 0 22px 0; text-align:center; background:#f8fafc; padding:14px; border-radius:12px; border:1px dashed #38bdf8;">
+                <div style="margin:16px 0 22px 0; text-align:center; background:${pal.pdfCardBg}; padding:14px; border-radius:12px; border:1px dashed #38bdf8;">
                     <img src="${embeddedImgBase64}" style="max-width:82%; max-height:220px; border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,0.12);">
                     <div style="font-size:10px; color:#64748b; margin-top:6px; font-weight:600;">ATTACHED VISUAL EVIDENCE • ANALYZED BY KIZA</div>
                 </div>
@@ -1480,26 +1575,26 @@
             bodyBlocks.forEach(b => {
                 if (b.type === 'section') {
                     if (!insertedCharts && /TELEMETRY|BENCHMARK|ANALYSIS/i.test(b.text) && chartHtml) {
-                        renderedBody += `<h2 style="font-size:14px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:1.2px; border-left:4px solid #0284c7; padding-left:10px; margin:22px 0 10px 0;">${b.text}</h2>` + chartHtml;
+                        renderedBody += `<h2 style="font-size:14px; font-weight:800; color:${pal.pdfText}; text-transform:uppercase; letter-spacing:1.2px; border-left:4px solid #0284c7; padding-left:10px; margin:22px 0 10px 0;">${b.text}</h2>` + chartHtml;
                         insertedCharts = true;
                     } else {
-                        renderedBody += `<h2 style="font-size:14px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:1.2px; border-left:4px solid #0284c7; padding-left:10px; margin:22px 0 10px 0;">${b.text}</h2>`;
+                        renderedBody += `<h2 style="font-size:14px; font-weight:800; color:${pal.pdfText}; text-transform:uppercase; letter-spacing:1.2px; border-left:4px solid #0284c7; padding-left:10px; margin:22px 0 10px 0;">${b.text}</h2>`;
                     }
                 } else if (b.type === 'callout') {
                     renderedBody += `
-                        <div style="background:linear-gradient(90deg, #eff6ff, #f8fafc); border-left:4px solid #2563eb; padding:12px 16px; border-radius:0 8px 8px 0; margin:14px 0; font-size:12px; font-weight:600; color:#1e3a8a;">
+                        <div style="background:${pal.pdfCardBg}; border-left:4px solid #2563eb; padding:12px 16px; border-radius:0 8px 8px 0; margin:14px 0; font-size:12px; font-weight:600; color:${pal.pdfText};">
                             💡 <b>KEY INTELLIGENCE TAKEAWAY:</b> ${b.text}
                         </div>
                     `;
                 } else if (b.type === 'bullet') {
                     renderedBody += `
-                        <div style="display:flex; align-items:flex-start; gap:8px; margin:6px 0 6px 8px; font-size:12.5px; color:#1e293b;">
+                        <div style="display:flex; align-items:flex-start; gap:8px; margin:6px 0 6px 8px; font-size:12.5px; color:${pal.pdfText};">
                             <span style="color:#0284c7; font-weight:bold;">◆</span>
                             <span>${b.text}</span>
                         </div>
                     `;
                 } else {
-                    renderedBody += `<p style="font-size:12.5px; color:#334155; margin:8px 0; line-height:1.65; text-align:justify;">${b.text}</p>`;
+                    renderedBody += `<p style="font-size:12.5px; color:${pal.pdfText}; margin:8px 0; line-height:1.65; text-align:justify;">${b.text}</p>`;
                 }
             });
 
@@ -1511,11 +1606,12 @@
                 subtitle,
                 kpis,
                 charts,
+                activeTheme,
                 html: `
-                    <div style="font-family:'Inter', Arial, sans-serif; color:#0f172a; background:#ffffff; padding:30px 36px; border-radius:10px;">
-                        <div style="background:linear-gradient(135deg, #090d16 0%, #0f172a 55%, #0284c7 100%); color:#ffffff; padding:24px 28px; border-radius:14px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div style="font-family:'Inter', Arial, sans-serif; color:${pal.pdfText}; background:${pal.pdfPageBg}; padding:30px 36px; border-radius:10px;">
+                        <div style="background:${pal.pdfHero}; color:#ffffff; padding:24px 28px; border-radius:14px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                             <div>
-                                <div style="font-size:10px; font-weight:700; color:#38bdf8; letter-spacing:2px; text-transform:uppercase;">KIZA QUANTUM INTELLIGENCE DOSSIER</div>
+                                <div style="font-size:10px; font-weight:700; color:#38bdf8; letter-spacing:2px; text-transform:uppercase;">KIZA QUANTUM INTELLIGENCE DOSSIER • ${activeTheme.toUpperCase()} THEME</div>
                                 <h1 style="margin:6px 0 4px 0; font-size:22px; font-weight:800; letter-spacing:0.5px; color:#ffffff;">${cleanTopic}</h1>
                                 <div style="font-size:11.5px; color:#cbd5e1;">${subtitle}</div>
                             </div>
@@ -1530,8 +1626,8 @@
                         ${imgBlockHtml}
                         ${renderedBody}
 
-                        <div style="margin-top:34px; border-top:2px solid #e2e8f0; padding-top:10px; font-size:9.5px; color:#64748b; display:flex; justify-content:space-between; font-family:monospace;">
-                            <span>GENERATED BY KIZA AI COMMAND HUB • INFOGRAPHIC ENGINE v5.2</span>
+                        <div style="margin-top:34px; border-top:2px solid #334155; padding-top:10px; font-size:9.5px; color:#64748b; display:flex; justify-content:space-between; font-family:monospace;">
+                            <span>GENERATED BY KIZA AI COMMAND HUB • INFOGRAPHIC ENGINE v5.4</span>
                             <span>CLASSIFIED • AUTHORIZED OPERATIVE USE ONLY</span>
                         </div>
                     </div>
@@ -1539,10 +1635,15 @@
             };
         }
 
-        function buildPPTXSlidePreviewHTML(topicTitle, rawContent, embeddedImgBase64 = null) {
-            const cleanTopic = (topicTitle || "Executive Presentation").toUpperCase();
+        function buildPPTXSlidePreviewHTML(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark") {
+            const parsedTopic = extractClientTopicAndStyle(topicTitle);
+            const cleanTopic = parsedTopic.cleanTopic.toUpperCase();
+            const activeTheme = (styleTheme && styleTheme !== "cyber_dark") ? styleTheme : parsedTopic.styleTheme;
+            const pal = THEME_PALETTES[activeTheme] || THEME_PALETTES.cyber_dark;
+
             const cleanBody = stripSlashesFromText(rawContent)
                 .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
+                .replace(/AI_INTRO:[^\n]*/gi, '')
                 .replace(/\*/g, '')
                 .trim();
 
@@ -1571,16 +1672,16 @@
                 });
 
                 slideCards.push(`
-                    <div class="ppt-slide-preview">
-                        <div style="font-size:10px; color:#38bdf8; font-family:monospace; letter-spacing:1.5px; margin-bottom:4px;">SLIDE 0${count} // WIDESCREEN 16:9 PREVIEW</div>
-                        <div style="font-size:18px; font-weight:800; color:#ffffff; margin-bottom:12px; border-bottom:1px solid #1e293b; padding-bottom:8px;">${sTitle.toUpperCase()}</div>
+                    <div class="ppt-slide-preview" style="background:#${pal.bgHex}; color:#${pal.textHex}; border:2px solid #${pal.accentHex};">
+                        <div style="font-size:10px; color:#${pal.accentHex}; font-family:monospace; letter-spacing:1.5px; margin-bottom:4px;">SLIDE 0${count} // THEME: ${activeTheme.toUpperCase()}</div>
+                        <div style="font-size:18px; font-weight:800; color:#${pal.textHex}; margin-bottom:12px; border-bottom:1px solid #${pal.accentHex}44; padding-bottom:8px;">${sTitle.toUpperCase()}</div>
                         <div style="display:flex; gap:14px; align-items:stretch; flex-wrap:wrap;">
-                            <div style="flex:2; min-width:220px; background:#111827; border:1px solid #1e293b; border-radius:8px; padding:12px;">
-                                ${bullets.map(b => `<div style="margin-bottom:8px; font-size:12.5px; color:#e2e8f0; display:flex; gap:8px;"><span style="color:#38bdf8;">▸</span><span>${b}</span></div>`).join('')}
+                            <div style="flex:2; min-width:220px; background:#${pal.cardHex}; border:1px solid #${pal.accentHex}33; border-radius:8px; padding:12px;">
+                                ${bullets.map(b => `<div style="margin-bottom:8px; font-size:12.5px; color:#${pal.textHex}; display:flex; gap:8px;"><span style="color:#${pal.accentHex};">▸</span><span>${b}</span></div>`).join('')}
                             </div>
-                            <div style="flex:1; min-width:130px; background:#1e1b4b; border:2px solid #a855f7; border-radius:8px; padding:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
-                                <div style="font-size:26px; font-weight:800; color:#00f2fe;">${statValue}</div>
-                                <div style="font-size:10px; font-weight:700; color:#e2e8f0; margin-top:4px; font-family:monospace;">${statLabel.toUpperCase()}</div>
+                            <div style="flex:1; min-width:130px; background:#${pal.cardHex}; border:2px solid #${pal.secHex}; border-radius:8px; padding:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                                <div style="font-size:26px; font-weight:800; color:#${pal.accentHex};">${statValue}</div>
+                                <div style="font-size:10px; font-weight:700; color:#${pal.subHex}; margin-top:4px; font-family:monospace;">${statLabel.toUpperCase()}</div>
                             </div>
                         </div>
                     </div>
@@ -1588,49 +1689,52 @@
             }
 
             if (slideCards.length === 0) {
-                slideCards.push(`<div class="ppt-slide-preview"><div style="font-size:16px; font-weight:700; color:#38bdf8; margin-bottom:8px;">${cleanTopic}</div><div style="font-size:12.5px; white-space:pre-wrap;">${cleanBody}</div></div>`);
+                slideCards.push(`<div class="ppt-slide-preview" style="background:#${pal.bgHex}; color:#${pal.textHex}; border:2px solid #${pal.accentHex};"><div style="font-size:16px; font-weight:700; color:#${pal.accentHex}; margin-bottom:8px;">${cleanTopic}</div><div style="font-size:12.5px; white-space:pre-wrap;">${cleanBody}</div></div>`);
             }
 
             return `
                 <div style="padding:10px;">
-                    <div class="ppt-slide-preview" style="border-color:#00f2fe; background:linear-gradient(135deg, #060a17 0%, #1e1b4b 100%);">
-                        <div style="font-size:10px; color:#00f2fe; font-family:monospace; letter-spacing:2px;">COVER SLIDE // KIZA QUANTUM BRIEFING DECK</div>
-                        <div style="font-size:24px; font-weight:800; color:#ffffff; margin:10px 0;">${cleanTopic}</div>
-                        <div style="font-size:11px; color:#94a3b8; font-family:monospace;">Prepared by ${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole}) • ${new Date().toLocaleDateString('en-IN')}</div>
+                    <div class="ppt-slide-preview" style="background:#${pal.bgHex}; color:#${pal.textHex}; border:2px solid #${pal.accentHex};">
+                        <div style="font-size:10px; color:#${pal.accentHex}; font-family:monospace; letter-spacing:2px;">COVER SLIDE // ${activeTheme.toUpperCase()} THEME</div>
+                        <div style="font-size:24px; font-weight:800; color:#${pal.textHex}; margin:10px 0;">${cleanTopic}</div>
+                        <div style="font-size:11px; color:#${pal.subHex}; font-family:monospace;">Prepared by ${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole}) • ${new Date().toLocaleDateString('en-IN')}</div>
                     </div>
                     ${slideCards.join('')}
                 </div>
             `;
         }
 
-        // Opens the interactive Preview Studio first (NO automatic download until user clicks Confirm & Download)
-        function prepareAndPreviewUniversalFile(ext, topic, rawContent, embeddedImgBase64 = null) {
+        function prepareAndPreviewUniversalFile(ext, topic, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark") {
             const cleanExt = (ext || "pdf").toLowerCase().trim();
-            lastCompiledFileCache = { ext: cleanExt, topic, rawContent, embeddedImgBase64 };
+            const parsed = extractClientTopicAndStyle(topic);
+            const finalTopic = parsed.cleanTopic;
+            const finalTheme = (styleTheme && styleTheme !== "cyber_dark") ? styleTheme : parsed.styleTheme;
 
-            renderInChatVisualFileCard(cleanExt, topic, rawContent, embeddedImgBase64);
+            lastCompiledFileCache = { ext: cleanExt, topic: finalTopic, rawContent, embeddedImgBase64, styleTheme: finalTheme };
+
+            renderInChatVisualFileCard(cleanExt, finalTopic, rawContent, embeddedImgBase64, finalTheme);
             openFilePreviewModal();
-            showNotification("PREVIEW READY", `Inspect your ${cleanExt.toUpperCase()} in the Preview Studio. Click Download when ready!`, false, { skipStore: true });
+            showNotification("PREVIEW READY", `Inspect your ${cleanExt.toUpperCase()} (${finalTheme.toUpperCase()} theme) in the Preview Studio!`, false, { skipStore: true });
         }
 
         function openFilePreviewModal() {
             if (!lastCompiledFileCache) return;
-            const { ext, topic, rawContent, embeddedImgBase64 } = lastCompiledFileCache;
+            const { ext, topic, rawContent, embeddedImgBase64, styleTheme } = lastCompiledFileCache;
             const modal = document.getElementById('filePreviewModal');
             const titleEl = document.getElementById('filePreviewModalTitle');
             const btnEl = document.getElementById('confirmDownloadBtn');
             const viewport = document.getElementById('filePreviewViewport');
 
-            titleEl.innerText = `🎨 PREVIEW STUDIO • ${(topic || 'Document').toUpperCase()} (.${ext.toUpperCase()})`;
+            titleEl.innerText = `🎨 PREVIEW STUDIO • ${(topic || 'Document').toUpperCase()} (.${ext.toUpperCase()} • ${(styleTheme || 'DEFAULT').toUpperCase()} THEME)`;
             btnEl.innerText = `⬇️ CONFIRM & DOWNLOAD .${ext.toUpperCase()}`;
 
             if (ext === "pptx" || ext === "ppt") {
-                viewport.innerHTML = buildPPTXSlidePreviewHTML(topic, rawContent, embeddedImgBase64);
+                viewport.innerHTML = buildPPTXSlidePreviewHTML(topic, rawContent, embeddedImgBase64, styleTheme);
             } else if (ext === "pdf" || ext === "doc" || ext === "docx") {
-                const reportObj = buildDecorativeReportHTML(topic, rawContent, embeddedImgBase64);
+                const reportObj = buildDecorativeReportHTML(topic, rawContent, embeddedImgBase64, styleTheme);
                 viewport.innerHTML = reportObj.html;
             } else {
-                const cleanBody = stripSlashesFromText(rawContent).replace(/\[GENERATE_FILE:[^\]]+\]/g, '').trim();
+                const cleanBody = stripSlashesFromText(rawContent).replace(/\[GENERATE_FILE:[^\]]+\]/g, '').replace(/AI_INTRO:[^\n]*/gi, '').trim();
                 viewport.innerHTML = `<pre style="background:#0f172a; color:#f8fafc; padding:18px; border-radius:10px; overflow-x:auto; font-family:'JetBrains Mono', monospace; font-size:12px;">${cleanBody.replace(/</g, '&lt;')}</pre>`;
             }
             modal.style.display = "flex";
@@ -1642,24 +1746,25 @@
 
         function confirmAndDownloadPreviewedFile() {
             if (!lastCompiledFileCache) return;
-            const { ext, topic, rawContent, embeddedImgBase64 } = lastCompiledFileCache;
+            const { ext, topic, rawContent, embeddedImgBase64, styleTheme } = lastCompiledFileCache;
             const cleanExt = (ext || "txt").toLowerCase().trim();
             const safeTopic = (topic || "KIZA_Export").replace(/[^a-zA-Z0-9]/g, '_').slice(0, 32);
             const cleanBody = stripSlashesFromText(rawContent)
                 .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
                 .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
+                .replace(/AI_INTRO:[^\n]*/gi, '')
                 .trim();
 
             if (cleanExt === "pdf") {
-                compileAndDownloadDetailedPDF(topic, cleanBody, embeddedImgBase64);
+                compileAndDownloadDetailedPDF(topic, cleanBody, embeddedImgBase64, styleTheme);
                 return;
             }
             if (cleanExt === "pptx" || cleanExt === "ppt") {
-                compileAndDownloadPPTX(topic, cleanBody, embeddedImgBase64);
+                compileAndDownloadPPTX(topic, cleanBody, embeddedImgBase64, styleTheme);
                 return;
             }
             if (cleanExt === "doc" || cleanExt === "docx") {
-                const reportObj = buildDecorativeReportHTML(topic, cleanBody, embeddedImgBase64);
+                const reportObj = buildDecorativeReportHTML(topic, cleanBody, embeddedImgBase64, styleTheme);
                 const htmlDoc = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>${topic}</title></head><body>${reportObj.html}</body></html>`;
                 const blob = new Blob(['\ufeff', htmlDoc], { type: 'application/msword' });
                 const url = URL.createObjectURL(blob);
@@ -1670,7 +1775,7 @@
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                showNotification("DOC DOWNLOADED", `Saved decorative Word document: KIZA_${safeTopic}.doc`, false, { skipStore: true });
+                showNotification("DOC DOWNLOADED", `Saved Word document: KIZA_${safeTopic}.doc`, false, { skipStore: true });
                 return;
             }
 
@@ -1679,8 +1784,8 @@
             showNotification("FILE DOWNLOADED", `Saved ${filename}`, false, { skipStore: true });
         }
 
-        function renderInChatVisualFileCard(ext, topic, rawContent, embeddedImgBase64 = null) {
-            const parsed = buildDecorativeReportHTML(topic, rawContent, embeddedImgBase64);
+        function renderInChatVisualFileCard(ext, topic, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark") {
+            const parsed = buildDecorativeReportHTML(topic, rawContent, embeddedImgBase64, styleTheme);
             const logBox = document.getElementById('actionLog');
             const card = document.createElement('div');
             card.style.background = "var(--card-bg)";
@@ -1699,7 +1804,7 @@
             card.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--card-border); padding-bottom:8px; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
                     <div>
-                        <span style="font-family:'Orbitron', sans-serif; font-size:10px; font-weight:800; color:var(--accent-primary); background:var(--chip-bg); padding:3px 8px; border-radius:5px;">🎨 ${ext.toUpperCase()} READY FOR PREVIEW</span>
+                        <span style="font-family:'Orbitron', sans-serif; font-size:10px; font-weight:800; color:var(--accent-primary); background:var(--chip-bg); padding:3px 8px; border-radius:5px;">🎨 ${ext.toUpperCase()} READY • ${(styleTheme || 'DEFAULT').toUpperCase()} THEME</span>
                         <div style="font-weight:700; font-size:13px; margin-top:5px;">${parsed.cleanTopic}</div>
                     </div>
                     <div style="display:flex; gap:6px;">
@@ -1714,8 +1819,8 @@
             logBox.scrollTop = logBox.scrollHeight;
         }
 
-        function compileAndDownloadDetailedPDF(topicTitle, rawContent, embeddedImgBase64 = null) {
-            const reportObj = buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64);
+        function compileAndDownloadDetailedPDF(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark") {
+            const reportObj = buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64, styleTheme);
             const pdfContainer = document.createElement('div');
             pdfContainer.innerHTML = reportObj.html;
             document.body.appendChild(pdfContainer);
@@ -1743,10 +1848,15 @@
             }
         }
 
-        function compileAndDownloadPPTX(topicTitle, rawContent, embeddedImgBase64 = null) {
-            const cleanTopic = (topicTitle || "Executive Presentation").toUpperCase();
+        function compileAndDownloadPPTX(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark") {
+            const parsed = extractClientTopicAndStyle(topicTitle);
+            const cleanTopic = parsed.cleanTopic.toUpperCase();
+            const activeTheme = (styleTheme && styleTheme !== "cyber_dark") ? styleTheme : parsed.styleTheme;
+            const pal = THEME_PALETTES[activeTheme] || THEME_PALETTES.cyber_dark;
+
             const cleanBody = stripSlashesFromText(rawContent)
                 .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
+                .replace(/AI_INTRO:[^\n]*/gi, '')
                 .replace(/\*/g, '')
                 .trim();
 
@@ -1755,7 +1865,7 @@
                 return;
             }
 
-            showNotification("DOWNLOADING PPTX", `Building PowerPoint file for ${cleanTopic}...`, false, { skipStore: true });
+            showNotification("DOWNLOADING PPTX", `Building PowerPoint (${activeTheme.toUpperCase()} theme) for ${cleanTopic}...`, false, { skipStore: true });
 
             try {
                 const pptx = new PptxGenJS();
@@ -1765,20 +1875,20 @@
                 pptx.title = cleanTopic;
 
                 let titleSlide = pptx.addSlide();
-                titleSlide.background = { color: "060A17" };
-                titleSlide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 10, h: 0.18, fill: { color: "00F2FE" } });
-                titleSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.1, w: 0.12, h: 2.6, fill: { color: "A855F7" } });
-                titleSlide.addText("KIZA QUANTUM HUB // VISUAL BRIEFING DECK", {
+                titleSlide.background = { color: pal.bgHex };
+                titleSlide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 10, h: 0.18, fill: { color: pal.accentHex } });
+                titleSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.1, w: 0.12, h: 2.6, fill: { color: pal.secHex } });
+                titleSlide.addText(`KIZA QUANTUM HUB // ${activeTheme.toUpperCase()} EDITION`, {
                     x: 0.8, y: 0.65, w: 8.5, h: 0.4,
-                    fontSize: 11, color: "00F2FE", bold: true, fontFace: "Courier New"
+                    fontSize: 11, color: pal.accentHex, bold: true, fontFace: "Courier New"
                 });
                 titleSlide.addText(cleanTopic, {
                     x: 0.8, y: 1.25, w: embeddedImgBase64 ? 5.3 : 8.5, h: 2.1,
-                    fontSize: 30, color: "FFFFFF", bold: true, fontFace: "Arial"
+                    fontSize: 30, color: pal.textHex, bold: true, fontFace: "Arial"
                 });
                 titleSlide.addText(`AUTHOR: ${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole})   |   ${new Date().toLocaleDateString('en-IN')}`, {
                     x: 0.8, y: 4.7, w: 8.5, h: 0.4,
-                    fontSize: 11, color: "94A3B8", fontFace: "Courier New"
+                    fontSize: 11, color: pal.subHex, fontFace: "Courier New"
                 });
                 if (embeddedImgBase64) {
                     try {
@@ -1811,45 +1921,45 @@
                     });
 
                     let slide = pptx.addSlide();
-                    slide.background = { color: "0B1120" };
+                    slide.background = { color: pal.bgHex };
 
-                    slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 10, h: 0.1, fill: { color: "38BDF8" } });
+                    slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 10, h: 0.1, fill: { color: pal.accentHex } });
                     slide.addText(`0${slideCount} // ${sTitle.toUpperCase()}`, {
                         x: 0.5, y: 0.35, w: 9.0, h: 0.55,
-                        fontSize: 20, color: "38BDF8", bold: true, fontFace: "Arial"
+                        fontSize: 20, color: pal.accentHex, bold: true, fontFace: "Arial"
                     });
 
                     slide.addShape(pptx.ShapeType.rect, {
                         x: 0.5, y: 1.1, w: 6.1, h: 3.8,
-                        fill: { color: "111827" },
-                        line: { color: "1E293B", width: 1.5 }
+                        fill: { color: pal.cardHex },
+                        line: { color: pal.accentHex, width: 1 }
                     });
 
                     if (bullets.length > 0) {
                         const bulletObjs = bullets.map(b => ({
                             text: b,
-                            options: { bullet: true, color: "F1F5F9", fontSize: 14, breakLine: true, paraSpaceAfter: 12 }
+                            options: { bullet: true, color: pal.textHex, fontSize: 14, breakLine: true, paraSpaceAfter: 12 }
                         }));
                         slide.addText(bulletObjs, { x: 0.7, y: 1.3, w: 5.7, h: 3.4, valign: "top" });
                     }
 
                     slide.addShape(pptx.ShapeType.rect, {
                         x: 6.85, y: 1.1, w: 2.65, h: 3.8,
-                        fill: { color: "1E1B4B" },
-                        line: { color: "A855F7", width: 2 }
+                        fill: { color: pal.cardHex },
+                        line: { color: pal.secHex, width: 2 }
                     });
                     slide.addText(statValue, {
                         x: 6.95, y: 1.85, w: 2.45, h: 1.1,
-                        fontSize: 34, color: "00F2FE", bold: true, align: "center", fontFace: "Arial"
+                        fontSize: 32, color: pal.accentHex, bold: true, align: "center", fontFace: "Arial"
                     });
                     slide.addText(statLabel.toUpperCase(), {
                         x: 6.95, y: 3.0, w: 2.45, h: 0.8,
-                        fontSize: 11, color: "E2E8F0", bold: true, align: "center", fontFace: "Courier New"
+                        fontSize: 11, color: pal.subHex, bold: true, align: "center", fontFace: "Courier New"
                     });
 
                     slide.addText(`KIZA AI COMMAND HUB  •  ${cleanTopic}  •  SLIDE 0${slideCount}`, {
                         x: 0.5, y: 5.15, w: 9.0, h: 0.3,
-                        fontSize: 9, color: "64748B", fontFace: "Courier New"
+                        fontSize: 9, color: pal.subHex, fontFace: "Courier New"
                     });
                 }
 
@@ -1857,19 +1967,19 @@
                     const paragraphs = cleanBody.split(/\n\n+/).filter(Boolean);
                     paragraphs.slice(0, 5).forEach((para, idx) => {
                         let slide = pptx.addSlide();
-                        slide.background = { color: "0B1120" };
+                        slide.background = { color: pal.bgHex };
                         slide.addText(`${cleanTopic} — SECTION ${idx + 1}`, {
                             x: 0.6, y: 0.5, w: 8.8, h: 0.6,
-                            fontSize: 20, color: "38BDF8", bold: true
+                            fontSize: 20, color: pal.accentHex, bold: true
                         });
                         slide.addText(para, {
                             x: 0.7, y: 1.4, w: 8.6, h: 3.6,
-                            fontSize: 15, color: "F1F5F9", valign: "top"
+                            fontSize: 15, color: pal.textHex, valign: "top"
                         });
                     });
                 }
 
-                const fileName = `KIZA_VisualDeck_${cleanTopic.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30)}.pptx`;
+                const fileName = `KIZA_${cleanTopic.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 28)}.pptx`;
                 pptx.writeFile({ fileName }).then(() => {
                     showNotification("PPTX SAVED", `Downloaded presentation: ${fileName}`, false, { skipStore: true });
                 });
@@ -1900,7 +2010,7 @@
                 </div>
                 <div class="planner-steps-list" style="display:flex; flex-direction:column; gap:5px;">
                     ${stepsArray.map((st, i) => `
-                        <div class="planner-step" id="planStep_${Date.now()}_${i}">
+                        <div class="planner-step">
                             <span style="color:var(--success); font-weight:800;">[✓]</span>
                             <span><b>Phase ${i + 1}:</b> ${st}</span>
                         </div>
@@ -2584,7 +2694,7 @@
         }
 
         // ==========================================================
-        // PER-USER NOTIFICATION CENTRE ENGINE
+        // PER-USER NOTIFICATION CENTRE ENGINE (WITH OPERATIVE SCRUBBER)
         // ==========================================================
         function getNotifStorageKey(dbUser = currentDBUser) {
             const safeKey = (dbUser && dbUser !== "undefined") ? dbUser : resolveDBUser(currentUser);
@@ -2629,7 +2739,13 @@
         function getUserNotifications(dbUser = currentDBUser) {
             let list = safeGetJSON(getNotifStorageKey(dbUser), []);
             const now = Date.now();
+            const isOperativeRank = (dbUser === currentDBUser && currentRole === "OPERATIVE");
+
             const filtered = list.filter(n => {
+                // Scrub any leaked Owner-only security/mugshot alerts from Operative accounts
+                if (isOperativeRank && (n.category === "security_owner" || /MUGSHOT|FAILED LOGIN|WRONG PASSWORD|BRUTE-FORCE|HACKING ATTEMPT|UNAUTHORIZED RESET/i.test((n.title || "") + " " + (n.message || "")))) {
+                    return false;
+                }
                 if (!n.read) return true;
                 if (!n.readAt) return true;
                 return (now - n.readAt) < TWO_DAYS_MS;
@@ -2796,7 +2912,7 @@
             if (currentNotifFilter === "unread") {
                 list = list.filter(n => !n.read);
             } else if (currentNotifFilter === "lockdown") {
-                list = list.filter(n => n.category === "lockdown" || n.category === "broadcast" || n.category === "update");
+                list = list.filter(n => n.category === "lockdown" || n.category === "security_owner" || n.category === "broadcast" || n.category === "update");
             } else if (currentNotifFilter === "error") {
                 list = list.filter(n => n.category === "error");
             }
@@ -2811,7 +2927,7 @@
                 const div = document.createElement('div');
                 div.className = `notif-item ${!n.read ? 'unread' : ''} type-${n.category}`;
                 const dateStr = new Date(n.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-                const catLabel = n.category === "lockdown" ? "🚨 SECURITY / LOCKDOWN" : (n.category === "error" ? "⚠️ PERSONAL ERROR" : (n.category === "update" ? "🚀 UPDATE" : "📡 BROADCAST"));
+                const catLabel = (n.category === "lockdown" || n.category === "security_owner") ? "🚨 SECURITY / LOCKDOWN" : (n.category === "error" ? "⚠️ PERSONAL ERROR" : (n.category === "update" ? "🚀 UPDATE" : "📡 BROADCAST"));
                 const statusBadge = !n.read
                     ? `<span style="color:var(--danger); font-weight:700;">● UNREAD (Stays until read)</span>`
                     : `<span style="color:var(--success);">✓ READ • ${formatRemainingTime(n.readAt)}</span>`;
@@ -2943,13 +3059,17 @@
             const low = rawText.toLowerCase().trim();
             const words = low.split(/[\s,?.!]+/);
 
-            // Do not intercept locally if user is asking for a PDF, PPTX, DOC, or CSV file!
             if (/\b(pptx|ppt|powerpoint|slide|slides|presentation|pdf|dossier|docx|doc|csv)\b/i.test(low)) {
                 const detected = detectClientSideFileIntent(rawText);
                 if (detected) {
-                    return { handledLocally: false, mappedText: `/${detected.ext} ${detected.topic}` };
+                    return { handledLocally: false, mappedText: `/${detected.ext} ${detected.fullRawTopic}` };
                 }
                 return { handledLocally: false, mappedText: rawText };
+            }
+
+            if ((words.includes("live") && (words.includes("call") || words.includes("mode") || words.includes("video"))) || low === "call kiza") {
+                launchLiveCallMode();
+                return { handledLocally: true };
             }
 
             if (words.includes("persona") || words.includes("personality")) {
@@ -3138,11 +3258,16 @@
                     if (hasUserSeenOrDeletedAlert(uniqueAlertId, currentDBUser)) {
                         return;
                     }
+                    // Block owner-only security/mugshot alerts if current user is not Owner
+                    if ((alert.target === "owner" || alert.category === "security_owner") && !currentRole.includes("OWNER")) {
+                        return;
+                    }
                     const cat = alert.category || (String(alert.title).includes("LOCKDOWN") ? "lockdown" : "broadcast");
-                    if (cat === "lockdown") {
+                    // ONLY copy to all stored profiles if the alert is a true global broadcast (target === "all")
+                    if (cat === "lockdown" && alert.target === "all") {
                         recordGlobalLockdownToEveryone(alert.title, alert.message, uniqueAlertId);
                     }
-                    showNotification(alert.title, alert.message, cat === "lockdown", {
+                    showNotification(alert.title, alert.message, cat === "lockdown" || cat === "security_owner", {
                         category: cat,
                         serverId: uniqueAlertId,
                         timestamp: alert.timestamp
@@ -3388,7 +3513,7 @@
             } else {
                 logAction(`[SYSTEM]: Identity active: ${cleanNameUpper}`, "#007BFF");
             }
-            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Ready! Ask me anything, search the web, attach an image (📎), or ask me to create a PDF or PowerPoint presentation.</div>';
+            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Ready! Ask me anything, click 📞 Live Call for hands-free video chat, attach an image (📎), or ask me to create a PDF or PowerPoint presentation.</div>';
             initWebSocket();
         }
 
@@ -3443,7 +3568,7 @@
             document.getElementById('authModal').style.display = "flex";
             document.getElementById('cancelAuthBtn').style.display = "none";
             document.getElementById('masterCmds').style.display = "none";
-            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Ready! Ask me anything, search the web, attach an image (📎), or ask me to create a PDF or PowerPoint presentation.</div>';
+            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Ready! Ask me anything, click 📞 Live Call for hands-free video chat, attach an image (📎), or ask me to create a PDF or PowerPoint presentation.</div>';
             closeSettings();
         }
         function logoutUser() { forceLogout(); document.getElementById('authUser').value = ""; document.getElementById('authPass').value = ""; document.getElementById('authError').innerText = ""; }
@@ -3574,7 +3699,7 @@
                         let ts = String(log.timestamp || "");
                         let timeMatch = ts.match(/(\d{2}:\d{2}:\d{2})/);
                         let timeStr = timeMatch ? timeMatch[1] : "";
-                        let cleanMsg = stripSlashesFromText(log.message);
+                        let cleanMsg = extractFriendlyAssistantMessage(log.message);
                         let senderName = log.role === "USER" ? displayLabel : "KIZA";
                         currentArchiveExportData.push({ time: timeStr, sender: senderName, message: cleanMsg });
 
@@ -4146,8 +4271,6 @@
 
             let text = intent.mappedText;
             const cleanSpeaker = cleanDisplayNameOnly(currentUser).toUpperCase();
-
-            // Client-side safety detection for PDF/PPTX/DOC requests (even if server is running an older build)
             const clientFileIntent = detectClientSideFileIntent(rawText);
 
             const currentAttachedImg = attachedImageBase64;
@@ -4241,12 +4364,7 @@
                                 } else if (payload.type === "token") {
                                     if (payload.is_error) isStreamError = true;
                                     accumulatedText += payload.text;
-                                    const visibleClean = stripSlashesFromText(accumulatedText)
-                                        .replace(/\[ACTION:[A-Z_]+\]/g, '')
-                                        .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
-                                        .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
-                                        .replace(/\[SYSTEM[^\]]*\]/gi, '')
-                                        .replace(/\*/g, '');
+                                    const visibleClean = extractFriendlyAssistantMessage(accumulatedText);
                                     streamEntry.innerText = `> [KIZA]: ${visibleClean}`;
                                     logBox.scrollTop = logBox.scrollHeight;
                                     orbEl.style.transform = `scale(${(1.03 + Math.random() * 0.08).toFixed(3)})`;
@@ -4284,26 +4402,23 @@
                 isChatActive = false;
                 setCoreLoadSpike(false);
 
-                // Preview-First File Trigger (Never auto-downloads; opens Preview Studio first!)
+                // Parse [GENERATE_FILE:EXT:Clean Topic:Theme]
                 if (accumulatedText.includes("[GENERATE_FILE:")) {
-                    const fileMatch = accumulatedText.match(/\[GENERATE_FILE:([^:]+):([^\]]+)\]/);
+                    const fileMatch = accumulatedText.match(/\[GENERATE_FILE:([^:]+):([^:\]]+)(?::([^\]]+))?\]/);
                     const fileExt = fileMatch ? fileMatch[1] : "pdf";
                     const fileTopic = fileMatch ? fileMatch[2] : "Report";
-                    prepareAndPreviewUniversalFile(fileExt, fileTopic, accumulatedText, currentAttachedImg);
+                    const fileTheme = (fileMatch && fileMatch[3]) ? fileMatch[3] : (clientFileIntent ? clientFileIntent.styleTheme : "cyber_dark");
+                    prepareAndPreviewUniversalFile(fileExt, fileTopic, accumulatedText, currentAttachedImg, fileTheme);
                 } else if (accumulatedText.includes("[GENERATING_PDF:")) {
                     const match = accumulatedText.match(/\[GENERATING_PDF:([^\]]+)\]/);
                     const topic = match ? match[1] : "Report";
-                    prepareAndPreviewUniversalFile("pdf", topic, accumulatedText, currentAttachedImg);
+                    prepareAndPreviewUniversalFile("pdf", topic, accumulatedText, currentAttachedImg, "cyber_dark");
                 } else if (clientFileIntent && !isStreamError) {
-                    prepareAndPreviewUniversalFile(clientFileIntent.ext, clientFileIntent.topic, accumulatedText, currentAttachedImg);
+                    prepareAndPreviewUniversalFile(clientFileIntent.ext, clientFileIntent.topic, accumulatedText, currentAttachedImg, clientFileIntent.styleTheme);
                 }
 
-                let finalCleaned = stripSlashesFromText(executeAIActionTags(accumulatedText))
-                    .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
-                    .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
-                    .replace(/\[SYSTEM[^\]]*\]/gi, '')
-                    .replace(/\*/g, '')
-                    .trim();
+                executeAIActionTags(accumulatedText);
+                let finalCleaned = extractFriendlyAssistantMessage(accumulatedText);
 
                 if (!finalCleaned) {
                     finalCleaned = "I am online and ready. Tell me what you'd like to do next!";
