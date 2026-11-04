@@ -87,6 +87,94 @@
                 linear-gradient(to bottom, rgba(0, 242, 254, 0.04) 1px, transparent 1px);
         }
 
+        /* FEATURE #2: AUDIO-REACTIVE AMBIENT NEON CANVAS BACKDROP */
+        #ambientAudioGlow {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 0.12s ease-out, transform 0.12s ease-out;
+            background: radial-gradient(circle at 50% 42%, rgba(0, 242, 254, 0.24) 0%, rgba(168, 85, 247, 0.16) 38%, transparent 72%);
+        }
+
+        /* FEATURE #3: VOICE-TO-TEXT LIVE FLOATING HOLOGRAM */
+        #voiceHologramBox {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: 999px;
+            background: rgba(2, 132, 199, 0.14);
+            border: 1.5px solid var(--accent-primary);
+            box-shadow: 0 0 24px rgba(56, 189, 248, 0.45);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            max-width: 560px;
+            text-align: center;
+            animation: pulseHolo 1.2s infinite alternate;
+        }
+        @keyframes pulseHolo {
+            from { box-shadow: 0 0 14px rgba(56, 189, 248, 0.3); transform: translateY(0); }
+            to { box-shadow: 0 0 28px rgba(56, 189, 248, 0.75); transform: translateY(-2px); }
+        }
+
+        /* FEATURE #1: SMART DYNAMIC FOLLOW-UP CHIPS */
+        .followup-chips-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+            padding: 4px 2px !important;
+            background: transparent !important;
+            border-left: none !important;
+        }
+        .followup-chip {
+            background: var(--chip-bg);
+            border: 1px solid var(--chip-border);
+            color: var(--accent-primary);
+            padding: 5px 11px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        .followup-chip:hover {
+            background: var(--chip-hover);
+            transform: translateY(-1px) scale(1.02);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.22);
+        }
+
+        /* FEATURE #6: ONE-CLICK SMART ACTION BADGES FOR ATTACHMENTS */
+        .attach-smart-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            width: 100%;
+            padding-top: 6px;
+            border-top: 1px dashed var(--card-border);
+        }
+        .attach-action-pill {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid var(--success);
+            color: var(--success);
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 10.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        .attach-action-pill:hover {
+            background: rgba(16, 185, 129, 0.24);
+            transform: translateY(-1px);
+        }
+
         .container { 
             display: flex; width: 100%; height: 100%; padding: 16px; gap: 16px; 
             z-index: 10; position: relative; max-width: 1700px; margin: 0 auto;
@@ -344,7 +432,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 12px;
+            gap: 10px;
             width: 100%;
         }
 
@@ -403,10 +491,9 @@
 
         #attachmentPreviewBar {
             display: none;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            padding: 8px 12px;
+            flex-direction: column;
+            gap: 8px;
+            padding: 9px 12px;
             border-radius: 10px;
             background: var(--chip-bg);
             border: 1px dashed var(--accent-primary);
@@ -659,13 +746,16 @@
 </head>
 <body>
 
+    <!-- FEATURE #2: AUDIO-REACTIVE AMBIENT BACKGROUND GLOW -->
+    <div id="ambientAudioGlow"></div>
+
     <!-- FLOATING TOAST POPUP -->
     <div id="notificationBox" onclick="openNotifCenter()" title="Click to open Notification Centre">
         <div class="notify-title" id="notifTitle">SYSTEM ALERT</div>
         <div class="notify-msg" id="notifMsg">Notification details...</div>
     </div>
 
-    <!-- INTERACTIVE DOCUMENT & SLIDE PREVIEW STUDIO MODAL (MULTI-FORMAT + AI REVISION BAR) -->
+    <!-- INTERACTIVE DOCUMENT & SLIDE PREVIEW STUDIO MODAL (LOCKED VIEWPORT + AI REVISION BAR) -->
     <div id="filePreviewModal" class="modal-overlay" style="display:none; z-index: 620;">
         <div class="logs-card" style="max-width: 940px; width: 96%;">
             <div class="section-title">
@@ -704,11 +794,11 @@
                 <button type="button" id="aiReviseBtn" class="send-btn" style="padding:8px 14px; font-size:11px; background:linear-gradient(135deg, #10b981 0%, #059669 100%);" onclick="submitFileRevisionPrompt()">✨ AI REVISE</button>
             </div>
 
-            <div id="filePreviewViewport" contenteditable="true" spellcheck="false" style="max-height: 62vh; overflow-y: auto; border: 1px solid var(--card-border); border-radius: 12px; background: #cbd5e1; padding: 16px; outline: none;" title="Tip: You can also click any text inside this preview to edit it directly before downloading!"></div>
+            <div id="filePreviewViewport" style="max-height: 62vh; overflow-y: auto; border: 1px solid var(--card-border); border-radius: 12px; background: #cbd5e1; padding: 16px; outline: none;"></div>
         </div>
     </div>
 
-    <!-- SAFE SINGLE-TARGET PURGE MODAL WITH MASTER OWNER PIN GATE (GLOBAL PURGE REMOVED) -->
+    <!-- SAFE SINGLE-TARGET PURGE MODAL WITH MASTER OWNER PIN GATE (RANKS 1-4 PROTECTED) -->
     <div id="purgeModal" class="modal-overlay" style="display:none; z-index: 640;">
         <div class="auth-card">
             <div class="section-title">
@@ -716,10 +806,11 @@
                 <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closePurgeModal()">✕</button>
             </div>
             <div style="font-size:11.5px; color:var(--text-muted); line-height:1.45;">
-                Top 3 Ranks (Rank 1 Master Owner, Rank 2 Owner, Rank 3 Moderator) must enter the <b>Master Owner Purge PIN</b> created by Viyan Arora to purge a specific user. (Global purge is disabled to protect userdata).
+                • Ranks 1, 2, 3, and 4 are strictly protected (only Rank 1 Master Owner Viyan Arora can purge Ranks 2–4).<br>
+                • Top 3 Ranks must enter the <b>Master Owner Purge PIN</b> to remove a user.
             </div>
             <label style="font-size:11.5px; font-weight:600; margin-top:4px;">1. Search or Select Target User to Remove:</label>
-            <input type="text" id="purgeSearchInput" placeholder="🔍 Filter user list (e.g. ownertrial)..." autocomplete="off" oninput="filterPurgeUsersDropdown()">
+            <input type="text" id="purgeSearchInput" placeholder="🔍 Filter user list..." autocomplete="off" oninput="filterPurgeUsersDropdown()">
             <select id="purgeTargetSelect" style="margin-bottom:4px;">
                 <option value="">-- SELECT USER TO PURGE --</option>
             </select>
@@ -862,7 +953,7 @@
             <div id="ownerUpdatePublisher" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:10px; background:var(--chip-bg); border:1px dashed var(--chip-border);">
                 <div style="font-family:'Orbitron', sans-serif; font-size:10.5px; font-weight:700; color:var(--accent-primary);">👑 PUBLISH NEW LIVE UPDATE (RANKS 1 & 2)</div>
                 <div style="display:flex; gap:8px;">
-                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v5.9)" style="width:140px;">
+                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v6.1)" style="width:140px;">
                     <input type="text" id="newUpdateTitle" placeholder="Update Headline...">
                 </div>
                 <input type="text" id="newUpdateDesc" placeholder="Short description of what was added or fixed...">
@@ -901,7 +992,6 @@
 
             <button type="button" class="chip-btn" style="margin-top:4px;" onclick="closeSettings(); openPinGate('setup');">🔢 UPDATE SECURITY BACKUP PIN</button>
 
-            <!-- REMOTE LOGOUT FROM ALL PREVIOUS DEVICES USING FACE ID OR BACKUP PIN -->
             <div class="section-title" style="margin-top:8px;">
                 <span>📲 LOG OUT FROM OTHER DEVICES</span>
             </div>
@@ -1071,7 +1161,7 @@
             <button type="button" class="chip-btn" onclick="openSettings()" style="margin-top: auto; background: var(--chip-hover);">⚙️ SETTINGS & DEVICES</button>
         </div>
 
-        <!-- CENTER PANEL: TOP HUD BAR, QUANTUM CORE & EASY COMMAND DOCK -->
+        <!-- CENTER PANEL: TOP HUD BAR, QUANTUM CORE, VOICE HOLOGRAM & EASY COMMAND DOCK -->
         <div class="center-panel">
             <div class="top-hud-bar">
                 <span class="hud-stat">🕒 <span id="hudClock">--:--:-- IST</span></span>
@@ -1079,6 +1169,8 @@
                 <span class="hud-stat">⚡ PING: <span id="hudPing" style="color:var(--success);">22ms</span></span>
                 <span class="hud-divider"></span>
                 <button type="button" class="live-call-btn" onclick="launchLiveCallMode()" title="Open Full-Screen Gemini-Style Live Video & Voice Call">📞 KIZA LIVE</button>
+                <span class="hud-divider"></span>
+                <button type="button" id="sfxToggleBtn" class="hud-theme-btn" onclick="toggleTacticalSFX()" title="Toggle Sci-Fi Tactical UI Sound Effects">🎛️ SFX: ON</button>
                 <span class="hud-divider"></span>
                 <button type="button" id="quickThemeBtn" class="hud-theme-btn" onclick="toggleQuickTheme()">🌙 DARK MODE</button>
             </div>
@@ -1090,6 +1182,10 @@
                     <div class="core-ring ring-3"></div>
                     <div id="orb" class="core-orb"></div>
                 </div>
+
+                <!-- FEATURE #3: LIVE VOICE-TO-TEXT FLOATING HOLOGRAM -->
+                <div id="voiceHologramBox">🎙️ <span id="voiceHologramText">Listening...</span></div>
+
                 <div id="uiStatus" class="status-text">AWAITING IDENTITY...</div>
                 
                 <!-- EASY-TO-UNDERSTAND QUICK TOOLS FOR EVERYONE -->
@@ -1125,16 +1221,25 @@
             <div class="input-container">
                 <div id="slashAutocomplete"></div>
 
-                <!-- ATTACHED IMAGE PREVIEW & OCR STATUS BAR -->
+                <!-- ATTACHED IMAGE PREVIEW, OCR STATUS & FEATURE #6 ONE-CLICK SMART ACTIONS -->
                 <div id="attachmentPreviewBar">
-                    <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
-                        <img id="attachmentThumb" src="" alt="Attached">
-                        <div style="display:flex; flex-direction:column; gap:2px; overflow:hidden;">
-                            <span id="attachmentName" style="font-weight:700; color:var(--accent-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">image.png</span>
-                            <span id="attachmentOcrStatus" style="font-size:10px; color:var(--text-muted);">Scanning image contents...</span>
+                    <div style="display:flex; align-items:center; justify-content:space-between; width:100%; gap:10px;">
+                        <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+                            <img id="attachmentThumb" src="" alt="Attached">
+                            <div style="display:flex; flex-direction:column; gap:2px; overflow:hidden;">
+                                <span id="attachmentName" style="font-weight:700; color:var(--accent-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">image.png</span>
+                                <span id="attachmentOcrStatus" style="font-size:10px; color:var(--text-muted);">Scanning image contents...</span>
+                            </div>
                         </div>
+                        <button type="button" class="chip-btn" style="width:auto; padding:4px 8px; border-color:var(--danger); color:var(--danger);" onclick="clearImageAttachment()" title="Remove Image">✕</button>
                     </div>
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 8px; border-color:var(--danger); color:var(--danger);" onclick="clearImageAttachment()" title="Remove Image">✕</button>
+                    <!-- FEATURE #6: ONE-CLICK ATTACHMENT ACTION BADGES -->
+                    <div class="attach-smart-actions">
+                        <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('Extract all visible text (OCR) from this image accurately.')">🔍 Extract Text (OCR)</button>
+                        <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('Explain and summarize everything shown in this image clearly.')">🧠 Explain & Summarize</button>
+                        <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('/pptx Visual Presentation based on this attached image')">📊 Turn into PPTX</button>
+                        <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('/pdf Detailed Report based on this attached image')">📄 Make PDF Dossier</button>
+                    </div>
                 </div>
 
                 <!-- MULTI-PERSONA DYNAMIC VOICE SYNTHESIZER DROPDOWN -->
@@ -1203,7 +1308,7 @@
         }
 
         let storedProfiles = safeGetJSON('kiza_profiles', []);
-        let userSettings = safeGetJSON('kiza_settings', { theme: 'light', voiceDefault: 'off', showNotifs: 'on' });
+        let userSettings = safeGetJSON('kiza_settings', { theme: 'light', voiceDefault: 'off', showNotifs: 'on', sfx: 'on' });
 
         let currentUser = "Guest";
         let currentDBUser = "guest";
@@ -1236,6 +1341,7 @@
         const WAKE_WORD_VARIATIONS = ["hello", "helo", "listen", "lissen", "listening"];
 
         let voiceEnabled = false;
+        let sfxEnabled = (userSettings.sfx !== 'off');
         let currentAudio = null;
         let audioCtx = null;
         let analyserAnimFrame = null;
@@ -1279,10 +1385,153 @@
         };
 
         const DEFAULT_UPDATES_FALLBACK = [
-            { version: "v5.9", title: "Biometric/PIN Remote Device Logout & Safe Targeted Purge", description: "Added remote logout from all other devices using Face ID or Backup PIN, preserved all existing userdata, and removed Global Purge for maximum database safety.", author: "Viyan Arora", date: "LIVE" },
-            { version: "v5.7", title: "5-Tier Rank System (Rank 1 Master Owner to Rank 5 User)", description: "Updated hierarchy to Rank 1 (Master Owner - Viyan Arora), Rank 2 (Owner), Rank 3 (Moderator), Rank 4 (Admin), Rank 5 (User), and added Master Purge PIN protection.", author: "Viyan Arora", date: "ACTIVE" },
-            { version: "v5.5", title: "Multi-Format PDF/PPTX Templates, Web Visuals & Live AI Editor", description: "Added 4 selectable PDF/DOC layouts (Infographic, Academic/NCERT, Magazine, Minimal), live web diagram embedding, native PPTX bar charts/tables, and an AI Revise prompt bar.", author: "Viyan Arora", date: "ACTIVE" }
+            { version: "v6.1", title: "Rank 1–4 Purge Immunity, Smart Follow-Up Chips & Hologram Mic", description: "Protected Ranks 1–4 from unauthorized purge, restored historical users from logs, added clickable follow-up chips, audio-reactive ambient glow, live voice hologram, and tactical UI SFX.", author: "Viyan Arora", date: "LIVE" },
+            { version: "v5.9", title: "Biometric/PIN Remote Device Logout & Safe Targeted Purge", description: "Added remote logout from all other devices using Face ID or Backup PIN, preserved all existing userdata, and removed Global Purge for maximum database safety.", author: "Viyan Arora", date: "ACTIVE" },
+            { version: "v5.7", title: "5-Tier Rank System (Rank 1 Master Owner to Rank 5 User)", description: "Updated hierarchy to Rank 1 (Master Owner - Viyan Arora), Rank 2 (Owner), Rank 3 (Moderator), Rank 4 (Admin), Rank 5 (User), and added Master Purge PIN protection.", author: "Viyan Arora", date: "ACTIVE" }
         ];
+
+        // ==========================================================
+        // FEATURE #5: SCI-FI TACTICAL UI SOUND EFFECTS (HAPTIC AUDIO)
+        // ==========================================================
+        function playTacticalSFX(type = "click") {
+            if (!sfxEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === "click") {
+                    osc.type = "sine";
+                    osc.frequency.setValueAtTime(1100, now);
+                    osc.frequency.exponentialRampToValueAtTime(520, now + 0.035);
+                    gain.gain.setValueAtTime(0.035, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+                    osc.start(now);
+                    osc.stop(now + 0.04);
+                } else if (type === "sonar") {
+                    osc.type = "sine";
+                    osc.frequency.setValueAtTime(740, now);
+                    osc.frequency.exponentialRampToValueAtTime(1480, now + 0.14);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+                    osc.start(now);
+                    osc.stop(now + 0.16);
+                } else if (type === "complete") {
+                    osc.type = "triangle";
+                    osc.frequency.setValueAtTime(587.33, now);
+                    osc.frequency.setValueAtTime(880, now + 0.07);
+                    gain.gain.setValueAtTime(0.045, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+                    osc.start(now);
+                    osc.stop(now + 0.18);
+                } else if (type === "alert") {
+                    osc.type = "sawtooth";
+                    osc.frequency.setValueAtTime(240, now);
+                    osc.frequency.setValueAtTime(180, now + 0.09);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                    osc.start(now);
+                    osc.stop(now + 0.22);
+                }
+            } catch (e) {}
+        }
+
+        function toggleTacticalSFX() {
+            sfxEnabled = !sfxEnabled;
+            userSettings.sfx = sfxEnabled ? 'on' : 'off';
+            safeSetItem('kiza_settings', JSON.stringify(userSettings));
+            const btn = document.getElementById('sfxToggleBtn');
+            if (btn) btn.innerText = sfxEnabled ? "🎛️ SFX: ON" : "🔇 SFX: OFF";
+            if (sfxEnabled) playTacticalSFX("complete");
+        }
+
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('button') || e.target.closest('.followup-chip') || e.target.closest('.attach-action-pill')) {
+                playTacticalSFX("click");
+            }
+        });
+
+        // ==========================================================
+        // FEATURE #1: SMART DYNAMIC FOLLOW-UP CHIPS GENERATOR
+        // ==========================================================
+        function renderDynamicFollowUpChips(userQuery, aiReply, fileIntent) {
+            const cleanQ = String(userQuery || "").replace(/\[ATTACHED IMAGE TELEMETRY:[\s\S]*$/i, '').trim();
+            if (!cleanQ || cleanQ.startsWith("/")) return;
+
+            const logBox = document.getElementById('actionLog');
+            const oldRows = logBox.querySelectorAll('.followup-chips-row');
+            oldRows.forEach(r => r.remove());
+
+            const shortTopic = cleanQ
+                .replace(/^(what is|what are|explain|tell me about|how does|how do|who is|define|describe|make a|create a|generate a)\s+/i, '')
+                .replace(/[?.!]+$/, '')
+                .trim()
+                .slice(0, 38) || "this topic";
+
+            let suggestions = [];
+            if (fileIntent) {
+                suggestions = [
+                    { label: "👁️ Open Preview Studio", action: () => openFilePreviewModal() },
+                    { label: `🌐 Search Web on ${shortTopic.slice(0, 18)}`, cmd: `/search ${shortTopic}` },
+                    { label: `📝 Quiz Me on ${shortTopic.slice(0, 18)}`, cmd: `Give me a quick 3-question quiz on ${shortTopic}` }
+                ];
+            } else {
+                suggestions = [
+                    { label: `📊 Make PPTX on ${shortTopic.slice(0, 18)}`, cmd: `/pptx ${shortTopic}` },
+                    { label: `📄 Make PDF Dossier`, cmd: `/pdf ${shortTopic}` },
+                    { label: `🧠 Explain Simply & Examples`, cmd: `Give me real-world examples and a simple summary of ${shortTopic}` }
+                ];
+            }
+
+            const row = document.createElement('div');
+            row.className = "followup-chips-row";
+            suggestions.forEach(s => {
+                const btn = document.createElement('button');
+                btn.type = "button";
+                btn.className = "followup-chip";
+                btn.innerText = s.label;
+                btn.onclick = () => {
+                    if (s.action) {
+                        s.action();
+                    } else if (s.cmd) {
+                        document.getElementById('textInput').value = s.cmd;
+                        submitCommand();
+                    }
+                };
+                row.appendChild(btn);
+            });
+            logBox.appendChild(row);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        // ==========================================================
+        // FEATURE #6: ONE-CLICK SMART ATTACHMENT ACTIONS
+        // ==========================================================
+        function triggerAttachmentQuickAction(promptStr) {
+            if (!attachedImageBase64) return;
+            document.getElementById('textInput').value = promptStr;
+            submitCommand();
+        }
+
+        // ==========================================================
+        // FEATURE #3: VOICE HOLOGRAM DISPLAY HELPER
+        // ==========================================================
+        function showVoiceHologram(textStr) {
+            const box = document.getElementById('voiceHologramBox');
+            const span = document.getElementById('voiceHologramText');
+            if (!box || !span) return;
+            span.innerText = textStr || "Listening...";
+            box.style.display = "inline-flex";
+        }
+
+        function hideVoiceHologram() {
+            const box = document.getElementById('voiceHologramBox');
+            if (box) box.style.display = "none";
+        }
 
         function launchLiveCallMode() {
             if (isPinLocked) {
@@ -1352,7 +1601,8 @@
             return String(textStr)
                 .replace(/<think>[\s\S]*?<\/think>/gi, '')
                 .replace(/<\/?think>/gi, '')
-                .replace(/\[IMG:[^\]]+\]/gi, '')
+                .replace(/\[IMG\s*:[^\]]*\]/gi, '')
+                .replace(/\[IMAGE\s*:[^\]]*\]/gi, '')
                 .replace(/\s*\/\/\s*(MASTER|COMMANDER|OVERSEER)/gi, '')
                 .replace(/\s*\/\/\s*/g, ' • ');
         }
@@ -1391,9 +1641,6 @@
             return `kiza_tok_ver_${safeKey}`;
         }
 
-        // ==========================================================
-        // CLIENT-SIDE SMART TOPIC VS. VISUAL THEME EXTRACTOR
-        // ==========================================================
         function extractClientTopicAndStyle(rawStr) {
             let s = (rawStr || "").trim();
             const low = s.toLowerCase();
@@ -1445,9 +1692,6 @@
             return null;
         }
 
-        // ==========================================================
-        // IMAGE ATTACHMENT UPLOADER & IN-BROWSER OCR / METADATA SCANNER
-        // ==========================================================
         function analyzeImageVisualTelemetry(imgEl, filename) {
             try {
                 const c = document.createElement('canvas');
@@ -1478,6 +1722,7 @@
             const file = event.target.files[0];
             if (!file) return;
 
+            playTacticalSFX("sonar");
             isScanningAttachment = true;
             attachmentScanPromise = new Promise((resolveScan) => {
                 const reader = new FileReader();
@@ -1517,15 +1762,15 @@
                                 const extractedText = (ocrResult?.data?.text || "").replace(/\s+/g, ' ').trim();
                                 if (extractedText && extractedText.length > 1) {
                                     attachedImageExtractedContext = `[ATTACHED IMAGE TELEMETRY: ${visualMeta} | VISIBLE TEXT IN IMAGE (OCR): "${extractedText.slice(0, 600)}"]`;
-                                    document.getElementById('attachmentOcrStatus').innerText = "✓ Visual & OCR text locked — Ready";
+                                    document.getElementById('attachmentOcrStatus').innerText = "✓ Visual & OCR text locked — Tap a quick action below!";
                                 } else {
-                                    document.getElementById('attachmentOcrStatus').innerText = "✓ Visual logo/graphic locked — Ready";
+                                    document.getElementById('attachmentOcrStatus').innerText = "✓ Visual graphic locked — Tap a quick action below!";
                                 }
                             } catch (ocrErr) {
-                                document.getElementById('attachmentOcrStatus').innerText = "✓ Visual telemetry locked — Ready";
+                                document.getElementById('attachmentOcrStatus').innerText = "✓ Visual telemetry locked — Tap a quick action below!";
                             }
                         } else {
-                            document.getElementById('attachmentOcrStatus').innerText = "✓ Image locked — Ready";
+                            document.getElementById('attachmentOcrStatus').innerText = "✓ Image locked — Tap a quick action below!";
                         }
                         isScanningAttachment = false;
                         resolveScan();
@@ -1550,9 +1795,6 @@
             document.getElementById('attachmentPreviewBar').style.display = "none";
         }
 
-        // ==========================================================
-        // LIVE WEB IMAGE FETCHER & MULTI-FORMAT COMPILER ENGINE
-        // ==========================================================
         const webImageCache = {};
 
         async function fetchTopicWebImageUrl(queryStr) {
@@ -1987,6 +2229,7 @@
             const themeDropdown = document.getElementById('previewThemeSelect');
             if (themeDropdown) themeDropdown.value = finalTheme;
 
+            playTacticalSFX("complete");
             renderInChatVisualFileCard(cleanExt, finalTopic, rawContent, embeddedImgBase64, finalTheme);
             openFilePreviewModal();
             showNotification("PREVIEW STUDIO READY", `Inspect, switch formats, or prompt KIZA to edit your ${cleanExt.toUpperCase()} before downloading!`, false, { skipStore: true });
@@ -2035,6 +2278,7 @@
                         document.getElementById('previewThemeSelect').value = data.style_theme;
                     }
                     await preloadAllQueryImagesInContent(data.updated_content);
+                    playTacticalSFX("complete");
                     openFilePreviewModal();
                     showNotification("FILE UPDATED", "KIZA revised your document in the Preview Studio!", false, { skipStore: true });
                 } else {
@@ -2144,7 +2388,7 @@
                         <div style="font-weight:700; font-size:13px; margin-top:5px;">${parsed.cleanTopic}</div>
                     </div>
                     <div style="display:flex; gap:6px;">
-                        <button type="button" class="chip-btn" style="width:auto; padding:6px 11px; font-size:10.5px;" onclick="openFilePreviewModal()">👁️ PREVIEW & EDIT</button>
+                        <button type="button" class="chip-btn" style="width:auto; padding:6px 11px; font-size:10.5px;" onclick="openFilePreviewModal()">👁️ PREVIEW & REVISE</button>
                         <button type="button" class="send-btn" style="padding:6px 12px; font-size:10.5px;" onclick="confirmAndDownloadPreviewedFile()">⬇️ DOWNLOAD .${ext.toUpperCase()}</button>
                     </div>
                 </div>
@@ -2275,6 +2519,7 @@
         }
 
         function renderWebSearchBadgeInFeed(queryStr) {
+            playTacticalSFX("sonar");
             const logBox = document.getElementById('actionLog');
             const badge = document.createElement('div');
             badge.innerHTML = `<span class="web-search-pill">🌐 LIVE WEB SEARCH EXECUTED: "${queryStr}"</span>`;
@@ -2305,7 +2550,7 @@
         }
 
         // ==========================================================
-        // SAFE SINGLE-TARGET PURGE MODAL & MASTER PURGE PIN GATE
+        // SAFE SINGLE-TARGET PURGE MODAL (RANKS 1-4 PROTECTED)
         // ==========================================================
         async function openPurgeModal() {
             if (isPinLocked) { openPinGate(pinGateMode); return; }
@@ -2327,16 +2572,20 @@
             const q = (filterText || "").toLowerCase().trim();
             selectEl.innerHTML = '<option value="">-- SELECT SINGLE USER TO PURGE --</option>';
 
+            const isRank1Master = isMasterOwnerUser(currentUser);
+
             const removable = cachedOperatives.filter(u => {
                 if (isMasterOwnerUser(u.username) || isMasterOwnerUser(u.display)) return false;
                 if (u.username.toLowerCase() === currentDBUser.toLowerCase()) return false;
+                // Strictly protect Ranks 1, 2, 3, and 4 from everyone EXCEPT Rank 1 Master Owner!
+                if (!isRank1Master && (u.rank_num || 5) <= 4) return false;
                 return !q || u.display.toLowerCase().includes(q) || u.username.toLowerCase().includes(q);
             });
 
             removable.forEach(u => {
                 const opt = document.createElement('option');
                 opt.value = u.username;
-                opt.innerText = `👤 ${cleanDisplayNameOnly(u.display).toUpperCase()} (${u.username})`;
+                opt.innerText = `👤 ${cleanDisplayNameOnly(u.display).toUpperCase()} [RANK ${u.rank_num || 5} • ${u.role || 'USER'}]`;
                 selectEl.appendChild(opt);
             });
 
@@ -2446,9 +2695,6 @@
             }
         }
 
-        // ==========================================================
-        // BIOMETRIC FACE SIMILARITY ENGINE & MANDATORY PIN GATE
-        // ==========================================================
         function compareFacesSimilarity(base64A, base64B) {
             return new Promise((resolve) => {
                 if (!base64A || !base64B) return resolve(0);
@@ -2591,9 +2837,6 @@
             if (e.key === "Enter") submitPinGate();
         });
 
-        // ==========================================================
-        // SLASH COMMAND AUTOCOMPLETE ENGINE (5-TIER RANKS 1 TO 5)
-        // ==========================================================
         const SLASH_COMMANDS_CATALOG = [
             { cmd: "/cmds", desc: "Show available commands for your rank", maxRank: 5 },
             { cmd: "/search ", desc: "Search live web & Wikipedia: /search [query]", maxRank: 5 },
@@ -2617,6 +2860,7 @@
             { cmd: "/purgelog", desc: "Inspect historical purge records", maxRank: 3 },
             { cmd: "/unban ", desc: "Clear brute-force IP ban: /unban [ip or all]", maxRank: 3 },
             { cmd: "/purge ", desc: "Purge single user (Requires Master PIN): /purge [user] | [pin]", maxRank: 3 },
+            { cmd: "/recoverusers", desc: "Restore historical users from chat archives (Ranks 1 & 2)", maxRank: 2 },
             { cmd: "/removelock", desc: "Lift active system lockdown (Ranks 1 & 2)", maxRank: 2 },
             { cmd: "/clearthreats", desc: "Wipe all security logs & mugshots (Ranks 1 & 2)", maxRank: 2 },
             { cmd: "/update ", desc: "Publish live update: /update Title | Details (Ranks 1 & 2)", maxRank: 2 },
@@ -2662,9 +2906,6 @@
             }
         });
 
-        // ==========================================================
-        // TACTICAL MISSION BOARD ENGINE
-        // ==========================================================
         async function openMissionsModal() {
             if (isPinLocked) { openPinGate(pinGateMode); return; }
             document.getElementById('missionsModal').style.display = "flex";
@@ -2756,9 +2997,6 @@
             } catch (e) {}
         }
 
-        // ==========================================================
-        // INTRUDER MUGSHOT VIEWER & SECURITY THREATS MODAL
-        // ==========================================================
         async function openThreatsModal() {
             if (isPinLocked) { openPinGate(pinGateMode); return; }
             if (currentRankNum > 4) {
@@ -3023,9 +3261,6 @@
             saveSettings();
         }
 
-        // ==========================================================
-        // SEARCHABLE BROADCAST TRANSMITTER MODAL
-        // ==========================================================
         const BASE_BROADCAST_GROUPS = [
             { value: "all", label: "🌐 ALL USERS (GLOBAL BROADCAST)", searchKey: "all users global broadcast everyone" },
             { value: "admin", label: "⚡ ADMINS ONLY (RANK 4)", searchKey: "admins only admin" },
@@ -3105,9 +3340,6 @@
             submitCommand();
         }
 
-        // ==========================================================
-        // PER-USER NOTIFICATION CENTRE ENGINE (WITH RANK 5 SCRUBBER)
-        // ==========================================================
         function getNotifStorageKey(dbUser = currentDBUser) {
             const safeKey = (dbUser && dbUser !== "undefined") ? dbUser : resolveDBUser(currentUser);
             return `kiza_notifs_v2_${safeKey}`;
@@ -3373,9 +3605,6 @@
             }
         }, 60000);
 
-        // ==========================================================
-        // SYSTEM UPDATES & CHANGELOG SECTION
-        // ==========================================================
         async function openUpdatesModal() {
             if (isPinLocked) { openPinGate(pinGateMode); return; }
             document.getElementById('updatesModal').style.display = "flex";
@@ -3451,14 +3680,16 @@
         function normalizeUserEntry(u) {
             if (!u) return null;
             if (typeof u === "string") {
-                return { display: u, username: resolveDBUser(u) };
+                return { display: u, username: resolveDBUser(u), role: "USER", rank_num: 5 };
             }
             if (typeof u === "object") {
                 let disp = u.display || u.display_name || u.username || u.name || "";
                 let uname = u.username || resolveDBUser(disp);
+                let role = u.role || "USER";
+                let rNum = u.rank_num || computeRankNumber(role, uname);
                 if (!disp) disp = uname;
                 if (!disp) return null;
-                return { display: String(disp), username: String(uname) };
+                return { display: String(disp), username: String(uname), role: String(role), rank_num: rNum };
             }
             return null;
         }
@@ -3556,7 +3787,6 @@
         function handleServerStatusPayload(data) {
             if (!data) return;
 
-            // Check if another device triggered a remote all-device logout
             if (data.force_logout_token_version && data.force_logout_token_version > currentTokenVersion) {
                 forceLogout();
                 showNotification("REMOTE LOGOUT", "Your account was remotely logged out from another device.", true, { skipStore: true });
@@ -3679,6 +3909,7 @@
 
         function applySettings() {
             const quickBtn = document.getElementById('quickThemeBtn');
+            const sfxBtn = document.getElementById('sfxToggleBtn');
             if (userSettings.theme === 'dark') {
                 document.body.classList.add('dark-mode');
                 document.getElementById('themeSelect').value = 'dark';
@@ -3688,6 +3919,8 @@
                 document.getElementById('themeSelect').value = 'light';
                 if (quickBtn) quickBtn.innerText = "🌙 DARK MODE";
             }
+            sfxEnabled = (userSettings.sfx !== 'off');
+            if (sfxBtn) sfxBtn.innerText = sfxEnabled ? "🎛️ SFX: ON" : "🔇 SFX: OFF";
             document.getElementById('voiceDefaultSelect').value = userSettings.voiceDefault || 'off';
             document.getElementById('notifToggleSelect').value = userSettings.showNotifs || 'on';
         }
@@ -4089,8 +4322,15 @@
         function updateVoiceUI() {
             const btn = document.getElementById('voiceToggleBtn');
             const mobileBtn = document.getElementById('mobileVoiceBtn');
+            const ambientEl = document.getElementById('ambientAudioGlow');
             if (voiceEnabled) { if(btn) btn.innerText = "🔊 VOICE: ON"; if(mobileBtn) mobileBtn.innerText = "🔊"; }
-            else { if(btn) btn.innerText = "🔇 VOICE: MUTED"; if(mobileBtn) mobileBtn.innerText = "🔇"; if (currentAudio) { currentAudio.pause(); currentAudio = null; } isKizaSpeaking = false; }
+            else {
+                if(btn) btn.innerText = "🔇 VOICE: MUTED";
+                if(mobileBtn) mobileBtn.innerText = "🔇";
+                if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+                isKizaSpeaking = false;
+                if (ambientEl) ambientEl.style.opacity = "0";
+            }
         }
 
         function toggleVoiceMute() {
@@ -4107,15 +4347,8 @@
                 }
             }
 
-            if (voiceEnabled) {
-                try {
-                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                    const osc = ctx.createOscillator(); const gain = ctx.createGain();
-                    osc.type = isError ? 'sawtooth' : 'sine'; osc.frequency.setValueAtTime(isError ? 200 : 900, ctx.currentTime);
-                    gain.gain.setValueAtTime(0.05, ctx.currentTime); osc.connect(gain); gain.connect(ctx.destination);
-                    osc.start(); osc.stop(ctx.currentTime + (isError ? 0.2 : 0.1));
-                } catch(e) {}
-            }
+            playTacticalSFX(isError ? "alert" : "sonar");
+
             if (userSettings.showNotifs === 'off' && !isError) return; 
             const cleanToastTitle = stripSlashesFromText(title).replace(/\s*\((MASTER OWNER|OWNER|ADMIN|MOD|USER)\)/gi, '');
             if (document.hidden) {
@@ -4139,6 +4372,9 @@
             logBox.scrollTop = logBox.scrollHeight;
         }
 
+        // ==========================================================
+        // FEATURE #2: AUDIO-REACTIVE ORB + FULL-SCREEN AMBIENT CANVAS
+        // ==========================================================
         function playKizaAudio(base64Data) {
             if (!voiceEnabled || !base64Data) return;
             if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
@@ -4152,6 +4388,7 @@
             currentAudio.playbackRate = voiceCfg.rate;
 
             const orbEl = document.getElementById('orb');
+            const ambientEl = document.getElementById('ambientAudioGlow');
 
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -4163,9 +4400,10 @@
                 analyser.connect(audioCtx.destination);
                 const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-                function animateOrbVoice() {
+                function animateOrbAndAmbientVoice() {
                     if (!isKizaSpeaking) {
-                        orbEl.style.transform = "";
+                        if (orbEl) orbEl.style.transform = "";
+                        if (ambientEl) ambientEl.style.opacity = "0";
                         return;
                     }
                     analyser.getByteFrequencyData(dataArray);
@@ -4173,23 +4411,31 @@
                     for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
                     let avg = sum / dataArray.length;
                     let scale = 1 + (avg / 255) * 0.28;
-                    orbEl.style.transform = `scale(${scale.toFixed(3)})`;
-                    analyserAnimFrame = requestAnimationFrame(animateOrbVoice);
+                    if (orbEl) orbEl.style.transform = `scale(${scale.toFixed(3)})`;
+                    if (ambientEl) {
+                        const glowOpacity = Math.min(0.95, (avg / 180));
+                        ambientEl.style.opacity = glowOpacity.toFixed(2);
+                        ambientEl.style.transform = `scale(${(1 + (avg / 255) * 0.14).toFixed(3)})`;
+                    }
+                    analyserAnimFrame = requestAnimationFrame(animateOrbAndAmbientVoice);
                 }
-                animateOrbVoice();
+                animateOrbAndAmbientVoice();
             } catch (e) {}
 
             currentAudio.onended = () => {
                 isKizaSpeaking = false;
                 if (orbEl) orbEl.style.transform = "";
+                if (ambientEl) ambientEl.style.opacity = "0";
             };
             currentAudio.onerror = () => {
                 isKizaSpeaking = false;
                 if (orbEl) orbEl.style.transform = "";
+                if (ambientEl) ambientEl.style.opacity = "0";
             };
             currentAudio.play().catch(e => {
                 isKizaSpeaking = false;
                 if (orbEl) orbEl.style.transform = "";
+                if (ambientEl) ambientEl.style.opacity = "0";
             });
         }
 
@@ -4231,21 +4477,7 @@
         }
 
         function playWakeChime() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const now = ctx.currentTime;
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(600, now);
-                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.12);
-                gain.gain.setValueAtTime(0.08, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(now);
-                osc.stop(now + 0.15);
-            } catch (e) {}
+            playTacticalSFX("sonar");
         }
 
         function initWakeWordEngine() {
@@ -4254,19 +4486,32 @@
 
             const rec = new SpeechRecognition();
             rec.continuous = true;
-            rec.interimResults = false;
+            rec.interimResults = true;
             rec.lang = 'en-US';
 
             rec.onresult = (event) => {
                 if (isChatActive || isKizaSpeaking || isPinLocked) return;
 
-                const lastResultIdx = event.results.length - 1;
-                const transcript = event.results[lastResultIdx][0].transcript.trim();
+                let interimStr = "";
+                let finalStr = "";
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const t = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) finalStr += t;
+                    else interimStr += t;
+                }
+
+                if (awaitingWakeCommand && interimStr.trim()) {
+                    showVoiceHologram(`"${interimStr.trim()}..."`);
+                }
+
+                const transcript = finalStr.trim();
+                if (!transcript) return;
                 const lowerText = transcript.toLowerCase();
 
                 if (awaitingWakeCommand) {
                     clearTimeout(wakeCommandTimeout);
                     awaitingWakeCommand = false;
+                    hideVoiceHologram();
                     document.getElementById('textInput').value = transcript;
                     submitCommand();
                     return;
@@ -4287,10 +4532,12 @@
                     playWakeChime();
 
                     if (commandPart.length > 2) {
+                        hideVoiceHologram();
                         document.getElementById('textInput').value = commandPart;
                         submitCommand();
                     } else {
                         awaitingWakeCommand = true;
+                        showVoiceHologram("Wake Word Detected • Speak Command Now...");
                         document.getElementById('uiStatus').innerText = "🟢 WAKE DETECTED • SPEAK NOW...";
                         document.getElementById('orb').classList.add('processing');
 
@@ -4298,6 +4545,7 @@
                         wakeCommandTimeout = setTimeout(() => {
                             if (awaitingWakeCommand) {
                                 awaitingWakeCommand = false;
+                                hideVoiceHologram();
                                 document.getElementById('orb').classList.remove('processing');
                                 document.getElementById('uiStatus').innerText = `ONLINE • ${cleanDisplayNameOnly(currentUser).toUpperCase()} (RANK ${currentRankNum})`;
                             }
@@ -4330,6 +4578,7 @@
                 showNotification("WAKE WORD ON", "Say 'Hello' anytime to speak hands-free!", false, { skipStore: true });
             } else {
                 awaitingWakeCommand = false;
+                hideVoiceHologram();
                 try { wakeRecognition.stop(); } catch (e) {}
                 logAction("[SYSTEM]: Hands-free wake word DISABLED.", "#ff0055");
             }
@@ -4351,15 +4600,41 @@
             }
         }
 
+        // ==========================================================
+        // FEATURE #3: SPEECH RECOGNITION WITH FLOATING HOLOGRAM PREVIEW
+        // ==========================================================
         function initSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) return null;
-            const rec = new SpeechRecognition(); rec.continuous = false; rec.interimResults = false; rec.lang = 'en-GB';
-            rec.onstart = function() { isRecording = true; document.getElementById('uiStatus').innerText = "LISTENING..."; };
-            rec.onresult = function(event) {
-                document.getElementById('textInput').value = event.results[0][0].transcript; submitCommand();
+            const rec = new SpeechRecognition();
+            rec.continuous = false;
+            rec.interimResults = true;
+            rec.lang = 'en-US';
+
+            rec.onstart = function() {
+                isRecording = true;
+                showVoiceHologram("Listening... Speak now");
+                document.getElementById('uiStatus').innerText = "🎙️ LISTENING...";
             };
-            rec.onerror = function() { resetMicState(); }; rec.onend = function() { resetMicState(); };
+            rec.onresult = function(event) {
+                let interimText = "";
+                let finalText = "";
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const t = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) finalText += t;
+                    else interimText += t;
+                }
+                if (interimText.trim()) {
+                    showVoiceHologram(`"${interimText.trim()}..."`);
+                }
+                if (finalText.trim()) {
+                    hideVoiceHologram();
+                    document.getElementById('textInput').value = finalText.trim();
+                    submitCommand();
+                }
+            };
+            rec.onerror = function() { resetMicState(); };
+            rec.onend = function() { resetMicState(); };
             return rec;
         }
 
@@ -4372,6 +4647,7 @@
         }
         function resetMicState() {
             isRecording = false;
+            hideVoiceHologram();
             if (wakeWordEnabled && wakeRecognition) { try { wakeRecognition.start(); } catch (e) {} }
         }
 
@@ -4583,9 +4859,6 @@
             return visualWords.some(w => low.includes(w));
         }
 
-        // ==========================================================
-        // REAL-TIME SSE TOKEN STREAMING + PREVIEW STUDIO + WEB & PLANNER
-        // ==========================================================
         async function submitCommand() {
             if (isPinLocked) {
                 openPinGate(pinGateMode);
@@ -4601,7 +4874,6 @@
             }
             if (!rawText || isChatActive) return;
 
-            // If user typed /purge without the Master Purge PIN, open the Purge PIN Modal
             if (rawText.toLowerCase().startsWith("/purge") && !rawText.includes("|") && !/\d{4,8}$/.test(rawText.trim())) {
                 const possibleTarget = rawText.slice(6).trim();
                 inputField.value = "";
@@ -4765,17 +5037,21 @@
                     openPurgeModal();
                 }
 
+                let wasFileGenerated = false;
                 if (accumulatedText.includes("[GENERATE_FILE:")) {
+                    wasFileGenerated = true;
                     const fileMatch = accumulatedText.match(/\[GENERATE_FILE:([^:]+):([^:\]]+)(?::([^\]]+))?\]/);
                     const fileExt = fileMatch ? fileMatch[1] : "pdf";
                     const fileTopic = fileMatch ? fileMatch[2] : "Report";
                     const fileTheme = (fileMatch && fileMatch[3]) ? fileMatch[3] : (clientFileIntent ? clientFileIntent.styleTheme : "cyber_dark");
                     await prepareAndPreviewUniversalFile(fileExt, fileTopic, accumulatedText, currentAttachedImg, fileTheme);
                 } else if (accumulatedText.includes("[GENERATING_PDF:")) {
+                    wasFileGenerated = true;
                     const match = accumulatedText.match(/\[GENERATING_PDF:([^\]]+)\]/);
                     const topic = match ? match[1] : "Report";
                     await prepareAndPreviewUniversalFile("pdf", topic, accumulatedText, currentAttachedImg, "cyber_dark");
                 } else if (clientFileIntent && !isStreamError) {
+                    wasFileGenerated = true;
                     await prepareAndPreviewUniversalFile(clientFileIntent.ext, clientFileIntent.topic, accumulatedText, currentAttachedImg, clientFileIntent.styleTheme);
                 }
 
@@ -4787,6 +5063,11 @@
                 }
                 streamEntry.innerText = `> [KIZA]: ${finalCleaned}`;
                 logBox.scrollTop = logBox.scrollHeight;
+
+                if (!isStreamError) {
+                    playTacticalSFX("complete");
+                    renderDynamicFollowUpChips(rawText, finalCleaned, wasFileGenerated);
+                }
 
                 if (isStreamError) {
                     streamEntry.style.borderLeftColor = "var(--danger)";
