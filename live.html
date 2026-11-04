@@ -36,7 +36,6 @@
             user-select: none;
         }
 
-        /* Subtle Tactical Grid Overlay */
         body::before {
             content: "";
             position: fixed;
@@ -49,7 +48,6 @@
             z-index: 1;
         }
 
-        /* TOP CALL STATUS BAR */
         .top-bar {
             width: 100%;
             max-width: 960px;
@@ -112,7 +110,6 @@
             cursor: pointer;
         }
 
-        /* FLOATING PICTURE-IN-PICTURE CAMERA PREVIEW */
         .pip-camera-card {
             position: fixed;
             top: 82px;
@@ -168,7 +165,6 @@
             100% { top: 5%; opacity: 0.2; }
         }
 
-        /* CENTER STAGE: AUDIO-REACTIVE QUANTUM ORB & SUBTITLES */
         .center-stage {
             flex: 1;
             display: flex;
@@ -234,7 +230,6 @@
             z-index: 5;
         }
 
-        /* Orb States */
         .live-orb.state-listening {
             background: radial-gradient(circle at 32% 32%, #ecfdf5 0%, #34d399 30%, #059669 65%, #022c22 100%);
             box-shadow: 0 0 65px rgba(16, 185, 129, 0.8), 0 0 110px rgba(0, 242, 254, 0.35), inset 0 0 24px #ffffff;
@@ -302,7 +297,6 @@
             font-family: 'JetBrains Mono', monospace;
         }
 
-        /* BOTTOM CALL DOCK */
         .bottom-dock {
             width: 100%;
             max-width: 720px;
@@ -419,7 +413,6 @@
 </head>
 <body>
 
-    <!-- TOP CALL BAR -->
     <div class="top-bar">
         <div class="call-badge">
             <span class="live-dot" id="connDot"></span>
@@ -436,7 +429,6 @@
         </div>
     </div>
 
-    <!-- PICTURE-IN-PICTURE LIVE CAMERA VISION FEED -->
     <div class="pip-camera-card" id="pipCard">
         <video id="liveVideo" autoplay playsinline muted></video>
         <canvas id="captureCanvas" width="480" height="360" style="display:none;"></canvas>
@@ -444,7 +436,6 @@
         <div class="pip-label" id="camBadgeLabel">👁️ VISION ACTIVE</div>
     </div>
 
-    <!-- CENTER STAGE: AUDIO-REACTIVE ORB & LIVE CAPTIONS -->
     <div class="center-stage">
         <div class="orb-wrapper" onclick="triggerManualBargeIn()" title="Tap Orb anytime to interrupt KIZA and speak immediately">
             <div class="live-ring l-ring-1"></div>
@@ -465,7 +456,6 @@
         </div>
     </div>
 
-    <!-- BOTTOM CALL CONTROLS -->
     <div class="bottom-dock">
         <div class="quick-text-row">
             <input type="text" id="fallbackTextInput" placeholder="Or type a message during the call and press Enter...">
@@ -486,8 +476,8 @@
         const WS_LIVE_URL = "wss://kiza-brain.onrender.com/api/live/call";
 
         const urlParams = new URLSearchParams(window.location.search);
-        const currentUser = urlParams.get('user') || localStorage.getItem('kiza_user') || "Operative";
-        const currentRole = urlParams.get('role') || localStorage.getItem('kiza_role') || "OPERATIVE";
+        const currentUser = urlParams.get('user') || localStorage.getItem('kiza_user') || "User";
+        const currentRole = urlParams.get('role') || localStorage.getItem('kiza_role') || "USER";
         const initialPersona = urlParams.get('persona') || "normal";
 
         document.getElementById('livePersonaSelect').value = initialPersona;
@@ -511,7 +501,6 @@
         let kizaAnalyserFrame = null;
         let micVadContext = null;
         let micVadAnalyser = null;
-        let bargeInSpeechStreak = 0;
 
         let latestFrameBase64 = null;
         let liveSessionId = "live_call_" + Date.now();
@@ -523,18 +512,14 @@
             security: 0.96
         };
 
-        // Call Duration Timer
         setInterval(() => {
             callSeconds++;
             const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
             const secs = String(callSeconds % 60).padStart(2, '0');
-            const cleanName = currentUser.replace(/\s*\((owner|admin|mod|moderator|you)\)/gi, '').trim().toUpperCase();
+            const cleanName = currentUser.replace(/\s*\((master owner|owner|admin|mod|moderator|user|operative|you)\)/gi, '').trim().toUpperCase();
             document.getElementById('callHeaderTitle').innerText = `KIZA LIVE • ${cleanName} • ${mins}:${secs}`;
         }, 1000);
 
-        // ==========================================================
-        // 1. CAMERA & CONTINUOUS VISION FRAME SAMPLER
-        // ==========================================================
         async function initLiveCamera() {
             try {
                 if (mediaStream) {
@@ -573,7 +558,6 @@
             }
         }
 
-        // Stream continuous background vision frame every 2.5 seconds
         setInterval(() => {
             if (!isCamOn) return;
             const frame = captureCurrentVideoFrame();
@@ -609,9 +593,6 @@
             }
         }
 
-        // ==========================================================
-        // 2. VOICE INTERRUPTION & BARGE-IN ENGINE (NATURAL TURN-TAKING)
-        // ==========================================================
         async function initMicrophoneBargeInDetector() {
             try {
                 const micStream = await navigator.mediaDevices.getUserMedia({
@@ -633,7 +614,6 @@
                     for (let i = 2; i < 40; i++) sum += data[i];
                     const avgVoiceBand = sum / 38;
 
-                    // Pulse orb gently to user's own voice when listening
                     if (!isKizaSpeaking && !isKizaThinking) {
                         const orb = document.getElementById('liveOrb');
                         const scale = 1 + Math.min(0.25, (avgVoiceBand / 255) * 0.32);
@@ -670,9 +650,6 @@
             setOrbState("listening", "🟢 LISTENING (INTERRUPTED)...");
         }
 
-        // ==========================================================
-        // 3. CONTINUOUS SPEECH RECOGNITION WITH BARGE-IN HOOKS
-        // ==========================================================
         function initContinuousSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
@@ -700,7 +677,6 @@
                     }
                 }
 
-                // Instant Barge-In: If user starts speaking while KIZA is talking, cut KIZA off immediately!
                 if (interimTranscript.trim().length > 2 && (isKizaSpeaking || isKizaThinking)) {
                     executeInstantBargeIn("User started speaking");
                 }
@@ -744,9 +720,6 @@
             }
         }
 
-        // ==========================================================
-        // 4. WEBSOCKET + AUTOMATIC HTTP FALLBACK ENGINE
-        // ==========================================================
         function connectLiveWebSocket() {
             const persona = document.getElementById('livePersonaSelect').value || "normal";
             try {
@@ -807,7 +780,6 @@
                 return;
             }
 
-            // Seamless HTTP Fallback if Render WebSocket hasn't finished deploying yet
             try {
                 const res = await fetch(`${HTTP_SERVER}/api/chat`, {
                     method: "POST",
@@ -844,11 +816,18 @@
             if (e.key === 'Enter') sendTypedLiveMessage();
         });
 
+        // ==========================================================
+        // SCRUBS ALL [IMG: ...] & METADATA TAGS FROM LIVE CAPTIONS
+        // ==========================================================
         function handleKizaLiveReply(replyText, audioBase64) {
             const cleanText = String(replyText || "")
                 .replace(/<think>[\s\S]*?<\/think>/gi, '')
-                .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
-                .replace(/\[ACTION:[^\]]+\]/g, '')
+                .replace(/<\/?think>/gi, '')
+                .replace(/\[IMG\s*:[^\]]*\]/gi, '')
+                .replace(/\[IMAGE\s*:[^\]]*\]/gi, '')
+                .replace(/\[GENERATE_FILE:[^\]]+\]/gi, '')
+                .replace(/\[ACTION:[^\]]+\]/gi, '')
+                .replace(/\[SYSTEM[^\]]*\]/gi, '')
                 .replace(/\*/g, '')
                 .trim();
 
