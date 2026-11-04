@@ -612,7 +612,7 @@
             display: flex; align-items: center; justify-content: center; 
             z-index: 500; padding: 16px; 
         }
-        .auth-card, .logs-card { width: 100%; max-width: 430px; }
+        .auth-card, .logs-card { width: 100%; max-width: 440px; }
         .logs-card { max-width: 720px; max-height: 92vh; overflow-y: auto; }
         
         .auth-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -665,20 +665,76 @@
         <div class="notify-msg" id="notifMsg">Notification details...</div>
     </div>
 
-    <!-- INTERACTIVE DOCUMENT & SLIDE PREVIEW STUDIO MODAL -->
+    <!-- INTERACTIVE DOCUMENT & SLIDE PREVIEW STUDIO MODAL (MULTI-FORMAT + AI REVISION BAR) -->
     <div id="filePreviewModal" class="modal-overlay" style="display:none; z-index: 620;">
-        <div class="logs-card" style="max-width: 860px; width: 95%;">
+        <div class="logs-card" style="max-width: 940px; width: 96%;">
             <div class="section-title">
                 <span id="filePreviewModalTitle">🎨 VISUAL DOCUMENT & SLIDE PREVIEW STUDIO</span>
                 <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeFilePreviewModal()">✕ CLOSE</button>
             </div>
-            <div style="font-size:12px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:4px;">
-                <span>Inspect your generated document or slides below. Click <b>Confirm & Download</b> when ready.</span>
-                <div style="display:flex; gap:8px;">
-                    <button type="button" id="confirmDownloadBtn" class="send-btn" style="padding:7px 16px; font-size:11px;" onclick="confirmAndDownloadPreviewedFile()">⬇️ CONFIRM & DOWNLOAD FILE</button>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:var(--chip-bg); padding:8px 12px; border-radius:10px; border:1px solid var(--card-border);">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <label style="font-size:11px; font-weight:700; color:var(--accent-primary);">📐 Layout Format:</label>
+                    <select id="previewLayoutFormatSelect" style="width:auto; padding:5px 28px 5px 10px; font-size:11.5px; font-weight:700;" onchange="changePreviewLayoutOrTheme()">
+                        <option value="infographic">📊 Infographic Dossier (KPIs + Charts)</option>
+                        <option value="academic">📚 Academic / NCERT Textbook (2-Col + Q&A)</option>
+                        <option value="magazine">📰 Modern Editorial Magazine (Hero Visuals)</option>
+                        <option value="minimal">💼 Executive Minimalist (Clean Corporate)</option>
+                    </select>
+
+                    <label style="font-size:11px; font-weight:700; color:var(--accent-primary);">🎨 Color Theme:</label>
+                    <select id="previewThemeSelect" style="width:auto; padding:5px 28px 5px 10px; font-size:11.5px; font-weight:700;" onchange="changePreviewLayoutOrTheme()">
+                        <option value="cyber_dark">Cyber Dark</option>
+                        <option value="black">Obsidian Black</option>
+                        <option value="light">Clean White / Light</option>
+                        <option value="blue">Ocean Blue</option>
+                        <option value="purple">Neon Purple</option>
+                        <option value="green">Emerald Green</option>
+                        <option value="red">Crimson Red</option>
+                        <option value="gold">Royal Gold</option>
+                    </select>
+                </div>
+
+                <button type="button" id="confirmDownloadBtn" class="send-btn" style="padding:7px 16px; font-size:11px;" onclick="confirmAndDownloadPreviewedFile()">⬇️ CONFIRM & DOWNLOAD</button>
+            </div>
+
+            <div style="display:flex; gap:8px; align-items:center; width:100%;">
+                <input type="text" id="aiRevisePromptInput" placeholder="✨ Prompt KIZA to edit/improve this file (e.g. 'Add a slide on Pollination with a table', 'Make it simpler', 'Add more graphs')..." style="flex:1; font-size:12.5px; padding:8px 12px;">
+                <button type="button" id="aiReviseBtn" class="send-btn" style="padding:8px 14px; font-size:11px; background:linear-gradient(135deg, #10b981 0%, #059669 100%);" onclick="submitFileRevisionPrompt()">✨ AI REVISE</button>
+            </div>
+
+            <div id="filePreviewViewport" contenteditable="true" spellcheck="false" style="max-height: 62vh; overflow-y: auto; border: 1px solid var(--card-border); border-radius: 12px; background: #cbd5e1; padding: 16px; outline: none;" title="Tip: You can also click any text inside this preview to edit it directly before downloading!"></div>
+        </div>
+    </div>
+
+    <!-- SAFE SINGLE-TARGET PURGE MODAL WITH MASTER OWNER PIN GATE (GLOBAL PURGE REMOVED) -->
+    <div id="purgeModal" class="modal-overlay" style="display:none; z-index: 640;">
+        <div class="auth-card">
+            <div class="section-title">
+                <span>🗑️ PURGE SINGLE USER • MASTER PIN GATE</span>
+                <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closePurgeModal()">✕</button>
+            </div>
+            <div style="font-size:11.5px; color:var(--text-muted); line-height:1.45;">
+                Top 3 Ranks (Rank 1 Master Owner, Rank 2 Owner, Rank 3 Moderator) must enter the <b>Master Owner Purge PIN</b> created by Viyan Arora to purge a specific user. (Global purge is disabled to protect userdata).
+            </div>
+            <label style="font-size:11.5px; font-weight:600; margin-top:4px;">1. Search or Select Target User to Remove:</label>
+            <input type="text" id="purgeSearchInput" placeholder="🔍 Filter user list (e.g. ownertrial)..." autocomplete="off" oninput="filterPurgeUsersDropdown()">
+            <select id="purgeTargetSelect" style="margin-bottom:4px;">
+                <option value="">-- SELECT USER TO PURGE --</option>
+            </select>
+            <label style="font-size:11.5px; font-weight:600; margin-top:4px;">2. Enter Master Owner Purge PIN:</label>
+            <input type="password" id="purgeMasterPinInput" placeholder="Enter Master Purge PIN..." maxlength="8" inputmode="numeric" autocomplete="off" style="text-align:center; font-family:'Orbitron', sans-serif; letter-spacing:4px;">
+            <button type="button" class="send-btn" style="width:100%; background:linear-gradient(135deg, #f43f5e 0%, #be123c 100%); margin-top:6px;" onclick="submitPurgeWithMasterPin()">🗑️ VERIFY PIN & PURGE SELECTED USER</button>
+
+            <!-- ONLY VISIBLE TO RANK 1 MASTER OWNER VIYAN ARORA -->
+            <div id="masterOwnerSetPurgePinBox" style="display:none; flex-direction:column; gap:6px; margin-top:10px; padding-top:10px; border-top:1px dashed var(--card-border);">
+                <div style="font-family:'Orbitron', sans-serif; font-size:10px; font-weight:700; color:var(--accent-primary);">👑 RANK 1 MASTER OWNER: CHANGE MASTER PURGE PIN</div>
+                <div style="display:flex; gap:6px;">
+                    <input type="password" id="newMasterPurgePinInput" placeholder="New 4-8 digit Purge PIN..." maxlength="8" inputmode="numeric">
+                    <button type="button" class="chip-btn" style="width:auto; white-space:nowrap;" onclick="updateMasterOwnerPurgePin()">UPDATE PIN</button>
                 </div>
             </div>
-            <div id="filePreviewViewport" style="max-height: 68vh; overflow-y: auto; border: 1px solid var(--card-border); border-radius: 12px; background: #e2e8f0; padding: 16px;"></div>
         </div>
     </div>
 
@@ -689,7 +745,7 @@
                 <span id="pinGateTitle">🔢 SECURITY BACKUP PIN</span>
             </div>
             <div id="pinGateSubtitle" style="font-size:12px; color:var(--text-muted); line-height:1.45;">
-                Every operative is required to set a 4 to 6 digit Security Backup PIN to access KIZA when Biometric Face ID is unavailable or does not match.
+                Every user is required to set a 4 to 6 digit Security Backup PIN to access KIZA when Biometric Face ID is unavailable or does not match.
             </div>
             <input type="password" id="pinGateInput" placeholder="Enter 4 to 6 digit numeric PIN..." maxlength="6" inputmode="numeric" autocomplete="off" style="text-align:center; font-family:'Orbitron', sans-serif; font-size:16px; letter-spacing:6px;">
             <div id="pinGateError" style="color: var(--danger); font-size: 11.5px; min-height: 16px; font-weight:600; text-align:center;"></div>
@@ -707,10 +763,10 @@
             </div>
 
             <div id="missionAssignBox" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:10px; background:var(--chip-bg); border:1px dashed var(--chip-border);">
-                <div style="font-family:'Orbitron', sans-serif; font-size:10.5px; font-weight:700; color:var(--accent-primary);">🎯 ASSIGN NEW TACTICAL TASK (OWNER / MOD)</div>
+                <div style="font-family:'Orbitron', sans-serif; font-size:10.5px; font-weight:700; color:var(--accent-primary);">🎯 ASSIGN NEW TACTICAL TASK (RANKS 1, 2, 3)</div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
                     <select id="missionAssigneeSelect" style="flex:1; min-width:180px;">
-                        <option value="all">🌐 ALL OPERATIVES</option>
+                        <option value="all">🌐 ALL USERS</option>
                     </select>
                     <input type="text" id="missionTitleInput" placeholder="Enter mission objective..." style="flex:2; min-width:220px;">
                 </div>
@@ -730,11 +786,11 @@
             </div>
 
             <div style="font-size:11px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-                <span id="threatsClearanceInfo">• Viewing Clearance: Ranks 1, 2, 3 • Delete Clearance: Rank 1 (Owner)</span>
+                <span id="threatsClearanceInfo">• Viewing Clearance: Ranks 1–4 • Delete Clearance: Ranks 1 & 2</span>
                 <div style="display:flex; gap:6px; flex-wrap:wrap;">
                     <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px;" onclick="exportSecurityReportTXT()">📄 EXPORT .TXT</button>
                     <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px;" onclick="exportSecurityReportPDF()">🖨️ EXPORT PDF</button>
-                    <button type="button" id="wipeAllThreatsBtn" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px; border-color:var(--danger); color:var(--danger); display:none;" onclick="deleteSecurityThreatLog(null)">🧹 WIPE ALL (RANK 1)</button>
+                    <button type="button" id="wipeAllThreatsBtn" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px; border-color:var(--danger); color:var(--danger); display:none;" onclick="deleteSecurityThreatLog(null)">🧹 WIPE ALL (RANKS 1–2)</button>
                 </div>
             </div>
 
@@ -779,13 +835,13 @@
                 <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeBroadcastModal()">✕</button>
             </div>
             
-            <label style="font-size:11.5px; font-weight:600; margin-top:6px;">1. Search or Select Target Audience / Operative:</label>
-            <input type="text" id="broadcastSearchInput" placeholder="🔍 Type to search target or operative..." autocomplete="off" oninput="filterBroadcastTargets()">
+            <label style="font-size:11.5px; font-weight:600; margin-top:6px;">1. Search or Select Target Audience / User:</label>
+            <input type="text" id="broadcastSearchInput" placeholder="🔍 Type to search target or user..." autocomplete="off" oninput="filterBroadcastTargets()">
             <select id="broadcastTargetSelect" style="margin-bottom:8px;">
-                <option value="all">🌐 ALL OPERATIVES (GLOBAL BROADCAST)</option>
-                <option value="admin">⚡ ADMINS ONLY</option>
-                <option value="mod">🛡️ MODERATORS ONLY</option>
-                <option value="owner">👑 OWNERS ONLY</option>
+                <option value="all">🌐 ALL USERS (GLOBAL BROADCAST)</option>
+                <option value="admin">⚡ ADMINS ONLY (RANK 4)</option>
+                <option value="mod">🛡️ MODERATORS ONLY (RANK 3)</option>
+                <option value="owner">👑 OWNERS ONLY (RANKS 1 & 2)</option>
             </select>
 
             <label style="font-size:11.5px; font-weight:600; margin-top:6px;">2. Broadcast Alert Message:</label>
@@ -804,76 +860,93 @@
             </div>
 
             <div id="ownerUpdatePublisher" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:10px; background:var(--chip-bg); border:1px dashed var(--chip-border);">
-                <div style="font-family:'Orbitron', sans-serif; font-size:10.5px; font-weight:700; color:var(--accent-primary);">👑 PUBLISH NEW LIVE UPDATE (OWNER ONLY)</div>
+                <div style="font-family:'Orbitron', sans-serif; font-size:10.5px; font-weight:700; color:var(--accent-primary);">👑 PUBLISH NEW LIVE UPDATE (RANKS 1 & 2)</div>
                 <div style="display:flex; gap:8px;">
-                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v5.4)" style="width:140px;">
+                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v5.9)" style="width:140px;">
                     <input type="text" id="newUpdateTitle" placeholder="Update Headline...">
                 </div>
                 <input type="text" id="newUpdateDesc" placeholder="Short description of what was added or fixed...">
-                <button type="button" class="send-btn" style="width:100%; padding:8px;" onclick="publishSystemUpdate()">🚀 PUBLISH & NOTIFY ALL OPERATIVES</button>
+                <button type="button" class="send-btn" style="width:100%; padding:8px;" onclick="publishSystemUpdate()">🚀 PUBLISH & NOTIFY ALL USERS</button>
             </div>
 
             <div id="updatesListContainer" class="logs-viewer" style="max-height: 380px; min-height: 220px;"></div>
         </div>
     </div>
 
-    <!-- SETTINGS MODAL -->
+    <!-- SETTINGS & BIOMETRIC/PIN REMOTE ALL-DEVICE LOGOUT MODAL -->
     <div id="settingsModal" class="modal-overlay" style="display:none;">
-        <div class="auth-card">
+        <div class="auth-card" style="max-height:92vh; overflow-y:auto;">
             <div class="section-title">
-                <span>⚙️ SYSTEM SETTINGS</span>
+                <span>⚙️ SYSTEM SETTINGS & DEVICES</span>
                 <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeSettings()">✕</button>
             </div>
             
-            <label style="font-size:11.5px; font-weight:600; margin-top:6px;">UI Theme:</label>
+            <label style="font-size:11.5px; font-weight:600; margin-top:4px;">UI Theme:</label>
             <select id="themeSelect" onchange="saveSettings()">
                 <option value="light">Default (Light • Sky Blue)</option>
                 <option value="dark">Cyberpunk (Dark • Neon Quantum)</option>
             </select>
             
-            <label style="font-size:11.5px; font-weight:600; margin-top:6px;">Voice Default on Startup:</label>
+            <label style="font-size:11.5px; font-weight:600; margin-top:4px;">Voice Default on Startup:</label>
             <select id="voiceDefaultSelect" onchange="saveSettings()">
                 <option value="off">Always Off (Muted)</option>
                 <option value="on">Always On (Speaking)</option>
             </select>
 
-            <label style="font-size:11.5px; font-weight:600; margin-top:6px;">Pop-up Toast Banners:</label>
+            <label style="font-size:11.5px; font-weight:600; margin-top:4px;">Pop-up Toast Banners:</label>
             <select id="notifToggleSelect" onchange="saveSettings()">
                 <option value="on">Enabled (Show Pop-ups)</option>
                 <option value="off">Silent (Save to Notification Centre Only)</option>
             </select>
 
-            <button type="button" class="chip-btn" style="margin-top:6px;" onclick="closeSettings(); openPinGate('setup');">🔢 UPDATE SECURITY BACKUP PIN</button>
+            <button type="button" class="chip-btn" style="margin-top:4px;" onclick="closeSettings(); openPinGate('setup');">🔢 UPDATE SECURITY BACKUP PIN</button>
 
-            <div class="section-title" style="margin-top:10px;">
-                <span>👥 STORED IDENTITIES</span>
+            <!-- REMOTE LOGOUT FROM ALL PREVIOUS DEVICES USING FACE ID OR BACKUP PIN -->
+            <div class="section-title" style="margin-top:8px;">
+                <span>📲 LOG OUT FROM OTHER DEVICES</span>
             </div>
-            <div id="profileListContainer" style="max-height: 120px; overflow-y: auto;"></div>
-            <button class="chip-btn" onclick="addIdentity()" style="width:100%; margin-top:4px;">+ ADD OR SWITCH IDENTITY</button>
-            <button class="chip-btn" onclick="logoutUser()" style="width:100%; border-color:var(--danger); color:var(--danger); margin-top:6px;">LOGOUT CURRENT USER</button>
+            <div style="font-size:11px; color:var(--text-muted); line-height:1.4;">
+                Use your <b>Biometric Face ID</b> or enter your <b>4–6 Digit Backup PIN</b> to remotely sign out all other phones, tablets, or PCs where you previously logged in:
+            </div>
+            <button type="button" class="chip-btn" style="border-color:var(--success); color:var(--success); margin-top:2px;" onclick="logoutOtherDevicesViaFaceID()">🧬 SCAN FACE ID TO LOGOUT OTHER DEVICES</button>
+            <div style="display:flex; gap:6px; margin-top:4px;">
+                <input type="password" id="remoteLogoutPinInput" placeholder="Or enter 4-6 digit Backup PIN..." maxlength="6" inputmode="numeric" style="flex:1; text-align:center; letter-spacing:3px;">
+                <button type="button" class="send-btn" style="padding:8px 12px; font-size:10px; background:linear-gradient(135deg, #f43f5e 0%, #be123c 100%);" onclick="logoutOtherDevicesViaPin()">USE PIN</button>
+            </div>
+
+            <div class="section-title" style="margin-top:8px;">
+                <span>👥 STORED IDENTITIES ON THIS DEVICE</span>
+            </div>
+            <div id="profileListContainer" style="max-height: 110px; overflow-y: auto;"></div>
+            <button class="chip-btn" onclick="addIdentity()" style="width:100%; margin-top:2px;">+ ADD OR SWITCH IDENTITY</button>
+            <button class="chip-btn" onclick="logoutUser()" style="width:100%; border-color:var(--danger); color:var(--danger); margin-top:4px;">LOGOUT THIS DEVICE</button>
         </div>
     </div>
 
-    <!-- RANK ASSIGNMENT MODAL -->
+    <!-- 5-TIER RANK ASSIGNMENT MODAL -->
     <div id="rankModal" class="modal-overlay" style="display:none;">
         <div class="auth-card">
             <div class="section-title">
-                <span>⭐ ASSIGN CLEARANCE RANK</span>
+                <span>⭐ ASSIGN CLEARANCE RANK (5-TIER)</span>
                 <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeRankModal()">✕</button>
             </div>
+            <div style="font-size:11px; color:var(--text-muted);">
+                • Rank 1 (Master Owner) is locked to Viyan Arora in code.<br>
+                • Only Rank 1 can assign Rank 2 (Owner) to anyone.
+            </div>
             
-            <label style="font-size:11.5px; font-weight:600; margin-top:6px;">1. Search or Select Operative:</label>
-            <input type="text" id="rankSearchInput" placeholder="🔍 Type to search operative..." autocomplete="off" oninput="filterRankOperatives()">
+            <label style="font-size:11.5px; font-weight:600; margin-top:6px;">1. Search or Select User:</label>
+            <input type="text" id="rankSearchInput" placeholder="🔍 Type to search user..." autocomplete="off" oninput="filterRankOperatives()">
             <select id="rankSearchSelect" style="margin-bottom:8px;">
-                <option value="">-- SELECT TARGET OPERATIVE --</option>
+                <option value="">-- SELECT TARGET USER --</option>
             </select>
 
             <label style="font-size:11.5px; font-weight:600; margin-top:6px;">2. Select New Clearance Rank:</label>
             <select id="rankSelectDropdown" style="margin-bottom:14px;">
-                <option value="operative">OPERATIVE</option>
-                <option value="admin">ADMIN</option>
-                <option value="mod">MOD</option>
-                <option value="owner">OWNER</option>
+                <option value="user">RANK 5 • GENERAL USER</option>
+                <option value="admin">RANK 4 • ADMIN</option>
+                <option value="mod">RANK 3 • MODERATOR</option>
+                <option value="owner">RANK 2 • OWNER (Master Owner Only)</option>
             </select>
             <button type="button" class="send-btn" style="width:100%;" onclick="submitRankAssignment()">EXECUTE RANK ASSIGNMENT</button>
         </div>
@@ -888,10 +961,10 @@
             </div>
             
             <div id="archiveAdminControls" style="display: none; flex-direction: column; gap: 8px;">
-                <label style="font-size:11.5px; font-weight:600; margin-top:4px;">Search or Select Operative:</label>
-                <input type="text" id="logSearchInput" placeholder="🔍 Type to filter operative dropdown..." autocomplete="off" oninput="filterArchiveOperatives()">
+                <label style="font-size:11.5px; font-weight:600; margin-top:4px;">Search or Select User:</label>
+                <input type="text" id="logSearchInput" placeholder="🔍 Type to filter user dropdown..." autocomplete="off" oninput="filterArchiveOperatives()">
                 <select id="logOperativeSelect" onchange="handleUserSelect()">
-                    <option value="">-- SELECT OPERATIVE --</option>
+                    <option value="">-- SELECT USER --</option>
                 </select>
             </div>
 
@@ -995,7 +1068,7 @@
                 </div>
             </div>
             
-            <button type="button" class="chip-btn" onclick="openSettings()" style="margin-top: auto; background: var(--chip-hover);">⚙️ SETTINGS & ACCOUNTS</button>
+            <button type="button" class="chip-btn" onclick="openSettings()" style="margin-top: auto; background: var(--chip-hover);">⚙️ SETTINGS & DEVICES</button>
         </div>
 
         <!-- CENTER PANEL: TOP HUD BAR, QUANTUM CORE & EASY COMMAND DOCK -->
@@ -1035,17 +1108,17 @@
                     <button type="button" class="chip-btn" style="width:auto;" onclick="openUpdatesModal()">🚀 Updates</button>
                 </div>
 
-                <!-- ADMIN / MOD / OWNER CONTROLS -->
+                <!-- HIGH COMMAND CONTROLS (RANKS 1, 2, 3, 4) -->
                 <div id="masterCmds" style="display: none; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 680px;">
                     <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/operative')">🟢 Online Users</button>
                     <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/userdata')">👥 All Users</button>
                     <button type="button" class="chip-btn" style="width:auto;" onclick="openBroadcastModal()">📢 Broadcast</button>
                     <button type="button" class="chip-btn" style="width:auto; border-color:var(--warning); color:var(--warning);" onclick="openThreatsModal()">🛡️ Security & Mugshots</button>
-                    <button type="button" class="chip-btn mod-owner-only" style="width:auto; display:none;" onclick="openRankModal()">⭐ Promote/Demote</button>
-                    <button type="button" class="chip-btn mod-owner-only" style="width:auto; display:none;" onclick="sendQuickCmd('/purgelog')">📜 Purge History</button>
+                    <button type="button" class="chip-btn top3-only" style="width:auto; display:none;" onclick="openRankModal()">⭐ Assign Rank</button>
+                    <button type="button" class="chip-btn top3-only" style="width:auto; display:none;" onclick="sendQuickCmd('/purgelog')">📜 Purge History</button>
                     <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/lockdown')">🔒 Lockdown</button>
-                    <button type="button" class="chip-btn owner-only" style="width:auto;" onclick="sendQuickCmd('/removelock')">🔓 Unlock</button>
-                    <button type="button" class="chip-btn owner-only" style="width:auto; border-color:var(--danger); color:var(--danger);" onclick="sendQuickCmd('/purge')">🗑️ Purge</button>
+                    <button type="button" class="chip-btn owner-only" style="width:auto; display:none;" onclick="sendQuickCmd('/removelock')">🔓 Unlock</button>
+                    <button type="button" class="chip-btn top3-only" style="width:auto; display:none; border-color:var(--danger); color:var(--danger);" onclick="openPurgeModal()">🗑️ Purge User (PIN)</button>
                 </div>
             </div>
 
@@ -1098,7 +1171,7 @@
                 </div>
             </div>
             <div id="actionLog" class="log-box">
-                <div>> [KIZA]: Ready! Ask me anything, click 📞 Live Call for hands-free video chat, attach an image (📎), or ask me to create a PDF or PowerPoint presentation.</div>
+                <div>> [KIZA]: Ready! Ask me anything, click 📞 Live Call for hands-free video chat, attach an image (📎), or ask me to create a multi-format PDF or PowerPoint presentation.</div>
             </div>
         </div>
     </div>
@@ -1135,6 +1208,8 @@
         let currentUser = "Guest";
         let currentDBUser = "guest";
         let currentRole = "LOCKED";
+        let currentRankNum = 5;
+        let currentTokenVersion = 1;
         let authMode = "login";
         let alertIndex = 0;
         let isChatActive = false;
@@ -1204,9 +1279,9 @@
         };
 
         const DEFAULT_UPDATES_FALLBACK = [
-            { version: "v5.4", title: "KIZA Live Video Call Mode & Voice Barge-In", description: "Added a dedicated full-screen Gemini-style Live Call page (live.html) with continuous camera vision, natural voice turn-taking, and instant voice interruption.", author: "Viyan Arora", date: "LIVE" },
-            { version: "v5.3", title: "Smart Topic/Style Separation & True AI Assistant Flow", description: "Automatically separates presentation/document topics from background color/theme instructions (e.g. 'with a black background') and replies with a natural conversational summary.", author: "Viyan Arora", date: "ACTIVE" },
-            { version: "v5.2", title: "Live Web Search, Task Planner & File Preview Studio", description: "Added real-time web search (/search), animated multi-step task planner (/plan), typo-tolerant PPTX/PDF creation, and interactive preview-before-download.", author: "Viyan Arora", date: "ACTIVE" }
+            { version: "v5.9", title: "Biometric/PIN Remote Device Logout & Safe Targeted Purge", description: "Added remote logout from all other devices using Face ID or Backup PIN, preserved all existing userdata, and removed Global Purge for maximum database safety.", author: "Viyan Arora", date: "LIVE" },
+            { version: "v5.7", title: "5-Tier Rank System (Rank 1 Master Owner to Rank 5 User)", description: "Updated hierarchy to Rank 1 (Master Owner - Viyan Arora), Rank 2 (Owner), Rank 3 (Moderator), Rank 4 (Admin), Rank 5 (User), and added Master Purge PIN protection.", author: "Viyan Arora", date: "ACTIVE" },
+            { version: "v5.5", title: "Multi-Format PDF/PPTX Templates, Web Visuals & Live AI Editor", description: "Added 4 selectable PDF/DOC layouts (Infographic, Academic/NCERT, Magazine, Minimal), live web diagram embedding, native PPTX bar charts/tables, and an AI Revise prompt bar.", author: "Viyan Arora", date: "ACTIVE" }
         ];
 
         function launchLiveCallMode() {
@@ -1238,20 +1313,38 @@
             return 'sess_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
         }
 
+        function isMasterOwnerUser(nameStr) {
+            if (!nameStr) return false;
+            const s = String(nameStr).toLowerCase().trim();
+            return s.includes("viyan");
+        }
+
         function cleanDisplayNameOnly(nameStr) {
             if (!nameStr) return "USER";
             return String(nameStr)
-                .replace(/\s*\((owner|admin|mod|moderator|you)\)/gi, '')
+                .replace(/\s*\((master owner|owner|admin|mod|moderator|user|operative|you)\)/gi, '')
                 .trim();
         }
 
         function formatCleanRole(roleStr, usernameHint = "") {
-            const combined = `${roleStr || ""} ${usernameHint || ""}`.toUpperCase();
-            if (combined.includes("VIYAN") || combined.includes("OWNER")) return "OWNER";
-            if (combined.includes("MOD")) return "MODERATOR";
-            if (combined.includes("ADMIN")) return "ADMIN";
-            if (combined.includes("LOCKED")) return "LOCKED";
-            return String(roleStr || "OPERATIVE").toUpperCase().split("/")[0].trim() || "OPERATIVE";
+            if (isMasterOwnerUser(usernameHint)) return "MASTER OWNER";
+            const r = String(roleStr || "USER").toUpperCase().split("/")[0].trim();
+            if (r.includes("MASTER")) return isMasterOwnerUser(usernameHint) ? "MASTER OWNER" : "OWNER";
+            if (r.includes("OWNER")) return "OWNER";
+            if (r.includes("MOD")) return "MODERATOR";
+            if (r.includes("ADMIN")) return "ADMIN";
+            if (r.includes("LOCKED")) return "LOCKED";
+            return "USER";
+        }
+
+        function computeRankNumber(roleStr, usernameHint = "") {
+            if (isMasterOwnerUser(usernameHint)) return 1;
+            const cleanR = formatCleanRole(roleStr, usernameHint);
+            if (cleanR === "MASTER OWNER") return 1;
+            if (cleanR === "OWNER") return 2;
+            if (cleanR === "MODERATOR") return 3;
+            if (cleanR === "ADMIN") return 4;
+            return 5;
         }
 
         function stripSlashesFromText(textStr) {
@@ -1259,6 +1352,7 @@
             return String(textStr)
                 .replace(/<think>[\s\S]*?<\/think>/gi, '')
                 .replace(/<\/?think>/gi, '')
+                .replace(/\[IMG:[^\]]+\]/gi, '')
                 .replace(/\s*\/\/\s*(MASTER|COMMANDER|OVERSEER)/gi, '')
                 .replace(/\s*\/\/\s*/g, ' • ');
         }
@@ -1278,7 +1372,7 @@
             }
             if (/SLIDE\s*1\s*:|SUBTITLE:|KPI:|SECTION:/i.test(cleaned)) {
                 const beforeTags = cleaned.split(/SLIDE\s*1\s*:|SUBTITLE:|KPI:|SECTION:/i)[0].trim();
-                return beforeTags || "I've compiled your visual document and opened it in the Preview Studio! Inspect it and click Confirm & Download when ready.";
+                return beforeTags || "I've compiled your visual document and opened it in the Preview Studio! Inspect, switch templates, or use the AI Revise bar before downloading.";
             }
             return cleaned;
         }
@@ -1286,10 +1380,15 @@
         function resolveDBUser(nameStr) {
             if (!nameStr || nameStr === "undefined") return "guest";
             let d = String(nameStr).toLowerCase().trim();
-            if (d.includes("viyan") || d.includes("owner")) return "viyan_arora_owner";
+            if (d.includes("viyan")) return "viyan_arora_owner";
             if (d === "admin1" || d.startsWith("admin1 ")) return "admin1";
             if (d === "mod1" || d.startsWith("mod1 ")) return "mod1";
-            return d.replace(" (owner)", "").replace(" (admin)", "").replace(" (mod)", "").trim();
+            return d.replace(/\s*\((master owner|owner|admin|mod|moderator|user|you)\)/gi, "").trim();
+        }
+
+        function getTokenVerStorageKey(dbUser = currentDBUser) {
+            const safeKey = (dbUser && dbUser !== "undefined") ? dbUser : resolveDBUser(currentUser);
+            return `kiza_tok_ver_${safeKey}`;
         }
 
         // ==========================================================
@@ -1452,9 +1551,49 @@
         }
 
         // ==========================================================
-        // DECORATIVE INFOGRAPHIC COMPILER & PREVIEW STUDIO ENGINE
+        // LIVE WEB IMAGE FETCHER & MULTI-FORMAT COMPILER ENGINE
         // ==========================================================
-        function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark") {
+        const webImageCache = {};
+
+        async function fetchTopicWebImageUrl(queryStr) {
+            const cleanQ = (queryStr || "science technology").replace(/[^a-zA-Z0-9\s]/g, '').trim();
+            if (!cleanQ) return null;
+            if (webImageCache[cleanQ]) return webImageCache[cleanQ];
+
+            try {
+                const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(cleanQ)}&gsrlimit=1&prop=pageimages&pithumbsize=600&format=json&origin=*`;
+                const res = await fetch(wikiUrl);
+                const data = await res.json();
+                if (data && data.query && data.query.pages) {
+                    const pages = Object.values(data.query.pages);
+                    if (pages[0] && pages[0].thumbnail && pages[0].thumbnail.source) {
+                        webImageCache[cleanQ] = pages[0].thumbnail.source;
+                        return pages[0].thumbnail.source;
+                    }
+                }
+            } catch (e) {}
+
+            const fallbackUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanQ + " clean educational diagram illustration high quality")}?width=640&height=380&nologo=true`;
+            webImageCache[cleanQ] = fallbackUrl;
+            return fallbackUrl;
+        }
+
+        async function preloadAllQueryImagesInContent(rawContent) {
+            const regex = /IMAGE_QUERY:\s*([^\n]+)/gi;
+            let m;
+            const queries = [];
+            while ((m = regex.exec(rawContent)) !== null) {
+                queries.push(m[1].trim());
+            }
+            await Promise.all(queries.map(q => fetchTopicWebImageUrl(q)));
+        }
+
+        function getVisualImageUrlSync(queryStr) {
+            const cleanQ = (queryStr || "science diagram").replace(/[^a-zA-Z0-9\s]/g, '').trim();
+            return webImageCache[cleanQ] || `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanQ + " clean educational illustration")}?width=640&height=380&nologo=true`;
+        }
+
+        function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark", layoutFormat = "infographic") {
             const parsedTopic = extractClientTopicAndStyle(topicTitle);
             const cleanTopic = parsedTopic.cleanTopic.toUpperCase();
             const activeTheme = (styleTheme && styleTheme !== "cyber_dark") ? styleTheme : parsedTopic.styleTheme;
@@ -1468,9 +1607,10 @@
                 .replace(/\*\*/g, '')
                 .split('\n');
 
-            let subtitle = "EXECUTIVE INTELLIGENCE BRIEFING & VISUAL TELEMETRY";
+            let subtitle = "COMPREHENSIVE VISUAL DOSSIER & DATA ANALYSIS";
             const kpis = [];
             const charts = [];
+            const webImages = [];
             let tableHeaders = [];
             const tableRows = [];
             const bodyBlocks = [];
@@ -1480,16 +1620,21 @@
                 if (!t) return;
                 if (/^SUBTITLE:/i.test(t)) {
                     subtitle = t.replace(/^SUBTITLE:\s*/i, '').trim();
+                } else if (/^IMAGE_QUERY:/i.test(t)) {
+                    const q = t.replace(/^IMAGE_QUERY:\s*/i, '').trim();
+                    const url = getVisualImageUrlSync(q);
+                    webImages.push({ query: q, url });
+                    bodyBlocks.push({ type: 'web_image', query: q, url });
                 } else if (/^KPI:/i.test(t)) {
                     const parts = t.replace(/^KPI:\s*/i, '').split('|').map(s => s.trim());
                     if (parts.length >= 2) {
-                        kpis.push({ label: parts[0], value: parts[1], sub: parts[2] || "Verified Metric" });
+                        kpis.push({ label: parts[0], value: parts[1], sub: parts[2] || "Key Indicator" });
                     }
                 } else if (/^CHART:/i.test(t)) {
                     const parts = t.replace(/^CHART:\s*/i, '').split('|').map(s => s.trim());
                     if (parts.length >= 2) {
                         let pct = parseInt(parts[1].replace(/[^0-9]/g, ''), 10);
-                        if (isNaN(pct) || pct < 5) pct = 82;
+                        if (isNaN(pct) || pct < 5) pct = 80;
                         if (pct > 100) pct = 100;
                         charts.push({ label: parts[0], pct });
                     }
@@ -1509,16 +1654,16 @@
             });
 
             const kpiHtml = kpis.length > 0 ? `
-                <div style="display:flex; gap:14px; margin-bottom:24px; flex-wrap:wrap;">
+                <div style="display:flex; gap:14px; margin-bottom:22px; flex-wrap:wrap;">
                     ${kpis.slice(0, 3).map((k, idx) => {
                         const colors = ['#0284c7', '#7c3aed', '#059669'];
                         const bgColors = isDarkDoc ? ['#111827', '#1e1b4b', '#062e22'] : ['#f0f9ff', '#f5f3ff', '#ecfdf5'];
                         const c = colors[idx % 3];
                         const bg = bgColors[idx % 3];
                         return `
-                            <div style="flex:1; min-width:150px; background:${bg}; border:1px solid ${c}55; border-top:4px solid ${c}; border-radius:10px; padding:14px 16px;">
+                            <div style="flex:1; min-width:150px; background:${bg}; border:1px solid ${c}55; border-top:4px solid ${c}; border-radius:10px; padding:13px 15px;">
                                 <div style="font-size:10px; font-weight:700; color:${isDarkDoc ? '#cbd5e1' : '#475569'}; text-transform:uppercase; letter-spacing:1px;">${k.label}</div>
-                                <div style="font-size:24px; font-weight:800; color:${isDarkDoc ? '#38bdf8' : c}; margin:4px 0;">${k.value}</div>
+                                <div style="font-size:22px; font-weight:800; color:${isDarkDoc ? '#38bdf8' : c}; margin:4px 0;">${k.value}</div>
                                 <div style="font-size:10.5px; color:${isDarkDoc ? '#94a3b8' : '#64748b'};">${k.sub}</div>
                             </div>
                         `;
@@ -1527,8 +1672,8 @@
             ` : '';
 
             const chartHtml = charts.length > 0 ? `
-                <div style="background:${pal.pdfCardBg}; border:1px solid ${isDarkDoc ? '#334155' : '#cbd5e1'}; border-radius:12px; padding:18px 20px; margin:18px 0;">
-                    <div style="font-size:11px; font-weight:800; color:${pal.pdfText}; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:12px;">📊 VISUAL TELEMETRY & BENCHMARK INDEX</div>
+                <div style="background:${pal.pdfCardBg}; border:1px solid ${isDarkDoc ? '#334155' : '#cbd5e1'}; border-radius:12px; padding:16px 20px; margin:16px 0;">
+                    <div style="font-size:11px; font-weight:800; color:${pal.pdfText}; letter-spacing:1.4px; text-transform:uppercase; margin-bottom:12px;">📊 QUANTITATIVE TELEMETRY & BENCHMARK GRAPH</div>
                     ${charts.map((ch, idx) => {
                         const barColors = ['linear-gradient(90deg, #0284c7, #38bdf8)', 'linear-gradient(90deg, #6366f1, #a855f7)', 'linear-gradient(90deg, #059669, #10b981)', 'linear-gradient(90deg, #d97706, #fbbf24)'];
                         return `
@@ -1537,7 +1682,7 @@
                                     <span>${ch.label}</span>
                                     <span style="color:#0284c7;">${ch.pct}%</span>
                                 </div>
-                                <div style="width:100%; height:10px; background:${isDarkDoc ? '#1e293b' : '#e2e8f0'}; border-radius:999px; overflow:hidden;">
+                                <div style="width:100%; height:11px; background:${isDarkDoc ? '#1e293b' : '#e2e8f0'}; border-radius:999px; overflow:hidden;">
                                     <div style="width:${ch.pct}%; height:100%; background:${barColors[idx % 4]}; border-radius:999px;"></div>
                                 </div>
                             </div>
@@ -1547,16 +1692,16 @@
             ` : '';
 
             const tableHtml = tableRows.length > 0 ? `
-                <table style="width:100%; border-collapse:collapse; margin:18px 0; font-size:11.5px; border-radius:8px; overflow:hidden;">
+                <table style="width:100%; border-collapse:collapse; margin:18px 0; font-size:11.5px; border-radius:8px; overflow:hidden; border:1px solid #334155;">
                     <thead>
-                        <tr style="background:#0f172a; color:#ffffff; text-align:left;">
-                            ${(tableHeaders.length ? tableHeaders : ['Dimension', 'Baseline', 'Target Benchmark']).map(h => `<th style="padding:10px 12px; font-weight:700;">${h}</th>`).join('')}
+                        <tr style="background:#${pal.bgHex === 'F8FAFC' ? '0f172a' : pal.bgHex}; color:#ffffff; text-align:left;">
+                            ${(tableHeaders.length ? tableHeaders : ['Parameter', 'Category A', 'Category B']).map(h => `<th style="padding:10px 12px; font-weight:700; border-bottom:2px solid #38bdf8;">${h}</th>`).join('')}
                         </tr>
                     </thead>
                     <tbody>
                         ${tableRows.map((row, rIdx) => `
-                            <tr style="background:${isDarkDoc ? (rIdx % 2 === 0 ? '#111827' : '#1e293b') : (rIdx % 2 === 0 ? '#ffffff' : '#f1f5f9')}; border-bottom:1px solid #334155;">
-                                ${row.map((cell, cIdx) => `<td style="padding:9px 12px; color:${pal.pdfText}; ${cIdx === 0 ? 'font-weight:700; color:#38bdf8;' : ''}">${cell}</td>`).join('')}
+                            <tr style="background:${isDarkDoc ? (rIdx % 2 === 0 ? '#111827' : '#1e293b') : (rIdx % 2 === 0 ? '#ffffff' : '#f1f5f9')}; border-bottom:1px solid #cbd5e1;">
+                                ${row.map((cell, cIdx) => `<td style="padding:9px 12px; color:${pal.pdfText}; ${cIdx === 0 ? 'font-weight:700; color:#0284c7;' : ''}">${cell}</td>`).join('')}
                             </tr>
                         `).join('')}
                     </tbody>
@@ -1564,26 +1709,34 @@
             ` : '';
 
             const imgBlockHtml = embeddedImgBase64 ? `
-                <div style="margin:16px 0 22px 0; text-align:center; background:${pal.pdfCardBg}; padding:14px; border-radius:12px; border:1px dashed #38bdf8;">
-                    <img src="${embeddedImgBase64}" style="max-width:82%; max-height:220px; border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,0.12);">
-                    <div style="font-size:10px; color:#64748b; margin-top:6px; font-weight:600;">ATTACHED VISUAL EVIDENCE • ANALYZED BY KIZA</div>
+                <div style="margin:14px 0 20px 0; text-align:center; background:${pal.pdfCardBg}; padding:14px; border-radius:12px; border:1px dashed #38bdf8;">
+                    <img src="${embeddedImgBase64}" crossorigin="anonymous" style="max-width:82%; max-height:220px; border-radius:8px;">
+                    <div style="font-size:10px; color:#64748b; margin-top:6px; font-weight:600;">ATTACHED VISUAL FIGURE</div>
                 </div>
             ` : '';
 
             let renderedBody = "";
             let insertedCharts = false;
+
             bodyBlocks.forEach(b => {
-                if (b.type === 'section') {
-                    if (!insertedCharts && /TELEMETRY|BENCHMARK|ANALYSIS/i.test(b.text) && chartHtml) {
-                        renderedBody += `<h2 style="font-size:14px; font-weight:800; color:${pal.pdfText}; text-transform:uppercase; letter-spacing:1.2px; border-left:4px solid #0284c7; padding-left:10px; margin:22px 0 10px 0;">${b.text}</h2>` + chartHtml;
+                if (b.type === 'web_image') {
+                    renderedBody += `
+                        <div style="margin:14px 0; text-align:center; background:${pal.pdfCardBg}; padding:12px; border-radius:10px; border:1px solid ${isDarkDoc ? '#334155' : '#e2e8f0'};">
+                            <img src="${b.url}" crossorigin="anonymous" style="max-width:88%; max-height:210px; object-fit:cover; border-radius:8px;" onerror="this.style.display='none'">
+                            <div style="font-size:10px; color:#64748b; margin-top:5px; font-weight:600; text-transform:uppercase;">FIGURE: ${b.query}</div>
+                        </div>
+                    `;
+                } else if (b.type === 'section') {
+                    if (!insertedCharts && /TELEMETRY|BENCHMARK|DATA|GRAPH|METRIC/i.test(b.text) && chartHtml) {
+                        renderedBody += `<h2 style="font-size:14px; font-weight:800; color:${pal.pdfText}; text-transform:uppercase; letter-spacing:1px; border-left:4px solid #0284c7; padding-left:10px; margin:20px 0 10px 0;">${b.text}</h2>` + chartHtml;
                         insertedCharts = true;
                     } else {
-                        renderedBody += `<h2 style="font-size:14px; font-weight:800; color:${pal.pdfText}; text-transform:uppercase; letter-spacing:1.2px; border-left:4px solid #0284c7; padding-left:10px; margin:22px 0 10px 0;">${b.text}</h2>`;
+                        renderedBody += `<h2 style="font-size:14px; font-weight:800; color:${pal.pdfText}; text-transform:uppercase; letter-spacing:1px; border-left:4px solid #0284c7; padding-left:10px; margin:20px 0 10px 0;">${b.text}</h2>`;
                     }
                 } else if (b.type === 'callout') {
                     renderedBody += `
-                        <div style="background:${pal.pdfCardBg}; border-left:4px solid #2563eb; padding:12px 16px; border-radius:0 8px 8px 0; margin:14px 0; font-size:12px; font-weight:600; color:${pal.pdfText};">
-                            💡 <b>KEY INTELLIGENCE TAKEAWAY:</b> ${b.text}
+                        <div style="background:${pal.pdfCardBg}; border-left:4px solid #7c3aed; padding:12px 16px; border-radius:0 8px 8px 0; margin:14px 0; font-size:12px; font-weight:600; color:${pal.pdfText};">
+                            📌 <b>KEY CONCEPT / FORMULA:</b> ${b.text}
                         </div>
                     `;
                 } else if (b.type === 'bullet') {
@@ -1601,6 +1754,61 @@
             if (!insertedCharts && chartHtml) renderedBody += chartHtml;
             if (tableHtml) renderedBody += tableHtml;
 
+            let headerBannerHTML = "";
+            let mainContentWrapperHTML = `${kpiHtml}${imgBlockHtml}${renderedBody}`;
+
+            if (layoutFormat === "academic") {
+                headerBannerHTML = `
+                    <div style="border-bottom:3px double #0284c7; padding-bottom:14px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:flex-end;">
+                        <div>
+                            <div style="font-size:10px; font-weight:800; color:#0284c7; letter-spacing:1.5px;">ACADEMIC STUDY & RESEARCH MODULE // NCERT & CBSE ALIGNED</div>
+                            <h1 style="margin:4px 0; font-size:24px; font-weight:800; color:${pal.pdfText}; font-family:Georgia, serif;">${cleanTopic}</h1>
+                            <div style="font-size:12px; font-style:italic; color:#64748b;">${subtitle}</div>
+                        </div>
+                        <div style="text-align:right; font-size:10px; color:#475569; font-family:monospace;">
+                            <div>Prepared for: ${cleanDisplayNameOnly(currentUser)}</div>
+                            <div>Date: ${new Date().toLocaleDateString('en-IN')}</div>
+                        </div>
+                    </div>
+                `;
+                mainContentWrapperHTML = `${kpiHtml}<div style="column-count: 2; column-gap: 24px; text-align:justify;">${imgBlockHtml}${renderedBody}</div>`;
+            } else if (layoutFormat === "magazine") {
+                const heroImgUrl = webImages.length > 0 ? webImages[0].url : getVisualImageUrlSync(cleanTopic);
+                headerBannerHTML = `
+                    <div style="position:relative; border-radius:14px; overflow:hidden; margin-bottom:22px; background:#090d16; color:#fff;">
+                        <img src="${heroImgUrl}" crossorigin="anonymous" style="width:100%; height:190px; object-fit:cover; opacity:0.45;" onerror="this.style.display='none'">
+                        <div style="padding:22px 26px; background:linear-gradient(0deg, rgba(9,13,22,0.95) 0%, rgba(9,13,22,0.3) 100%);">
+                            <span style="background:#f43f5e; color:#fff; font-size:9.5px; font-weight:800; padding:3px 8px; border-radius:4px; letter-spacing:1.5px;">FEATURED EDITORIAL</span>
+                            <h1 style="margin:8px 0 4px 0; font-size:26px; font-weight:800; letter-spacing:0.5px;">${cleanTopic}</h1>
+                            <div style="font-size:12px; color:#e2e8f0;">${subtitle}</div>
+                        </div>
+                    </div>
+                `;
+            } else if (layoutFormat === "minimal") {
+                headerBannerHTML = `
+                    <div style="border-left:6px solid #0f172a; padding-left:16px; margin-bottom:22px;">
+                        <div style="font-size:10px; font-weight:700; color:#64748b; letter-spacing:1.5px;">EXECUTIVE BRIEFING MEMORANDUM</div>
+                        <h1 style="margin:4px 0; font-size:22px; font-weight:800; color:${pal.pdfText};">${cleanTopic}</h1>
+                        <div style="font-size:11.5px; color:#475569;">${subtitle} • Author: ${cleanDisplayNameOnly(currentUser).toUpperCase()}</div>
+                    </div>
+                `;
+            } else {
+                headerBannerHTML = `
+                    <div style="background:${pal.pdfHero}; color:#ffffff; padding:24px 28px; border-radius:14px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                        <div>
+                            <div style="font-size:10px; font-weight:700; color:#38bdf8; letter-spacing:2px; text-transform:uppercase;">KIZA QUANTUM INTELLIGENCE DOSSIER • ${activeTheme.toUpperCase()} THEME</div>
+                            <h1 style="margin:6px 0 4px 0; font-size:22px; font-weight:800; letter-spacing:0.5px; color:#ffffff;">${cleanTopic}</h1>
+                            <div style="font-size:11.5px; color:#cbd5e1;">${subtitle}</div>
+                        </div>
+                        <div style="text-align:right; font-family:monospace; font-size:10px; color:#94a3b8; border-left:1px solid rgba(255,255,255,0.2); padding-left:16px;">
+                            <div style="color:#ffffff; font-weight:bold;">AUTHOR: ${cleanDisplayNameOnly(currentUser).toUpperCase()}</div>
+                            <div>CLEARANCE: RANK ${currentRankNum} (${currentRole})</div>
+                            <div>DATE: ${new Date().toLocaleDateString('en-IN')}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
             return {
                 cleanTopic,
                 subtitle,
@@ -1609,38 +1817,18 @@
                 activeTheme,
                 html: `
                     <div style="font-family:'Inter', Arial, sans-serif; color:${pal.pdfText}; background:${pal.pdfPageBg}; padding:30px 36px; border-radius:10px;">
-                        <div style="background:${pal.pdfHero}; color:#ffffff; padding:24px 28px; border-radius:14px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-                            <div>
-                                <div style="font-size:10px; font-weight:700; color:#38bdf8; letter-spacing:2px; text-transform:uppercase;">KIZA QUANTUM INTELLIGENCE DOSSIER • ${activeTheme.toUpperCase()} THEME</div>
-                                <h1 style="margin:6px 0 4px 0; font-size:22px; font-weight:800; letter-spacing:0.5px; color:#ffffff;">${cleanTopic}</h1>
-                                <div style="font-size:11.5px; color:#cbd5e1;">${subtitle}</div>
-                            </div>
-                            <div style="text-align:right; font-family:monospace; font-size:10px; color:#94a3b8; border-left:1px solid rgba(255,255,255,0.2); padding-left:16px;">
-                                <div style="color:#ffffff; font-weight:bold;">AUTHOR: ${cleanDisplayNameOnly(currentUser).toUpperCase()}</div>
-                                <div>CLEARANCE: ${currentRole}</div>
-                                <div>DATE: ${new Date().toLocaleDateString('en-IN')}</div>
-                            </div>
-                        </div>
-
-                        ${kpiHtml}
-                        ${imgBlockHtml}
-                        ${renderedBody}
-
+                        ${headerBannerHTML}
+                        ${mainContentWrapperHTML}
                         <div style="margin-top:34px; border-top:2px solid #334155; padding-top:10px; font-size:9.5px; color:#64748b; display:flex; justify-content:space-between; font-family:monospace;">
-                            <span>GENERATED BY KIZA AI COMMAND HUB • INFOGRAPHIC ENGINE v5.4</span>
-                            <span>CLASSIFIED • AUTHORIZED OPERATIVE USE ONLY</span>
+                            <span>GENERATED BY KIZA AI COMMAND HUB • FORMAT: ${layoutFormat.toUpperCase()}</span>
+                            <span>CLASSIFIED • AUTHORIZED USER ACCESS ONLY</span>
                         </div>
                     </div>
                 `
             };
         }
 
-        function buildPPTXSlidePreviewHTML(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark") {
-            const parsedTopic = extractClientTopicAndStyle(topicTitle);
-            const cleanTopic = parsedTopic.cleanTopic.toUpperCase();
-            const activeTheme = (styleTheme && styleTheme !== "cyber_dark") ? styleTheme : parsedTopic.styleTheme;
-            const pal = THEME_PALETTES[activeTheme] || THEME_PALETTES.cyber_dark;
-
+        function parseSlideBlocksFromContent(rawContent) {
             const cleanBody = stripSlashesFromText(rawContent)
                 .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
                 .replace(/AI_INTRO:[^\n]*/gi, '')
@@ -1649,89 +1837,232 @@
 
             const slideRegex = /SLIDE\s*\d+\s*:\s*([^\n]+)\n([\s\S]*?)(?=SLIDE\s*\d+\s*:|$)/gi;
             let match;
-            let slideCards = [];
-            let count = 0;
+            const slides = [];
+            let idx = 0;
 
             while ((match = slideRegex.exec(cleanBody)) !== null) {
-                count++;
-                const sTitle = match[1].trim();
-                const sBodyRaw = match[2].trim();
-                const lines = sBodyRaw.split(/\n+/).map(l => l.trim()).filter(Boolean);
-                let statValue = `0${count}`;
+                idx++;
+                const title = match[1].trim();
+                const lines = match[2].trim().split(/\n+/).map(l => l.trim()).filter(Boolean);
+
+                let layout = "SPLIT_STAT";
+                let imageQuery = "";
+                let statValue = `0${idx}`;
                 let statLabel = "KEY METRIC";
+                const chartItems = [];
+                let tableHeaders = [];
+                const tableRows = [];
                 const bullets = [];
 
                 lines.forEach(l => {
-                    if (/^STAT:/i.test(l)) {
+                    if (/^LAYOUT:/i.test(l)) {
+                        layout = l.replace(/^LAYOUT:\s*/i, '').trim().toUpperCase();
+                    } else if (/^IMAGE_QUERY:/i.test(l)) {
+                        imageQuery = l.replace(/^IMAGE_QUERY:\s*/i, '').trim();
+                    } else if (/^STAT:/i.test(l)) {
                         const sp = l.replace(/^STAT:\s*/i, '').split('|').map(x => x.trim());
                         if (sp[0]) statValue = sp[0];
                         if (sp[1]) statLabel = sp[1];
+                    } else if (/^SLIDE_CHART:/i.test(l)) {
+                        const pairs = l.replace(/^SLIDE_CHART:\s*/i, '').split('|').map(x => x.trim());
+                        pairs.forEach(p => {
+                            const [k, v] = p.split(':').map(s => s.trim());
+                            const num = parseInt((v || '75').replace(/[^0-9]/g, ''), 10) || 75;
+                            if (k) chartItems.push({ label: k, val: Math.min(100, Math.max(5, num)) });
+                        });
+                    } else if (/^TABLE_HEADER:/i.test(l)) {
+                        tableHeaders = l.replace(/^TABLE_HEADER:\s*/i, '').split('|').map(x => x.trim());
+                    } else if (/^TABLE_ROW:/i.test(l)) {
+                        tableRows.push(l.replace(/^TABLE_ROW:\s*/i, '').split('|').map(x => x.trim()));
                     } else {
                         bullets.push(l.replace(/^[-•*\d.)\s]+/, '').trim());
                     }
                 });
 
-                slideCards.push(`
+                slides.push({ idx, title, layout, imageQuery, statValue, statLabel, chartItems, tableHeaders, tableRows, bullets });
+            }
+            return slides;
+        }
+
+        function buildPPTXSlidePreviewHTML(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark") {
+            const parsedTopic = extractClientTopicAndStyle(topicTitle);
+            const cleanTopic = parsedTopic.cleanTopic.toUpperCase();
+            const activeTheme = (styleTheme && styleTheme !== "cyber_dark") ? styleTheme : parsedTopic.styleTheme;
+            const pal = THEME_PALETTES[activeTheme] || THEME_PALETTES.cyber_dark;
+
+            const slides = parseSlideBlocksFromContent(rawContent);
+            const slideCards = slides.map(s => {
+                let rightWidgetHTML = "";
+
+                if (s.chartItems.length > 0) {
+                    rightWidgetHTML = `
+                        <div style="flex:1.2; min-width:200px; background:#${pal.cardHex}; border:1.5px solid #${pal.accentHex}; border-radius:8px; padding:12px;">
+                            <div style="font-size:10px; font-weight:800; color:#${pal.accentHex}; margin-bottom:8px; font-family:monospace;">📊 SLIDE DATA CHART</div>
+                            ${s.chartItems.map(c => `
+                                <div style="margin-bottom:7px;">
+                                    <div style="display:flex; justify-content:space-between; font-size:10.5px; color:#${pal.textHex}; margin-bottom:2px;">
+                                        <span>${c.label}</span><span style="color:#${pal.accentHex}; font-weight:700;">${c.val}%</span>
+                                    </div>
+                                    <div style="width:100%; height:8px; background:#1e293b; border-radius:99px; overflow:hidden;">
+                                        <div style="width:${c.val}%; height:100%; background:#${pal.accentHex};"></div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else if (s.imageQuery) {
+                    const imgUrl = getVisualImageUrlSync(s.imageQuery);
+                    rightWidgetHTML = `
+                        <div style="flex:1; min-width:180px; background:#${pal.cardHex}; border:1.5px solid #${pal.secHex}; border-radius:8px; padding:8px; text-align:center;">
+                            <img src="${imgUrl}" crossorigin="anonymous" style="width:100%; height:135px; object-fit:cover; border-radius:6px;" onerror="this.style.display='none'">
+                            <div style="font-size:9.5px; color:#${pal.subHex}; margin-top:5px; font-family:monospace;">📸 ${s.imageQuery.toUpperCase()}</div>
+                        </div>
+                    `;
+                } else {
+                    rightWidgetHTML = `
+                        <div style="flex:1; min-width:130px; background:#${pal.cardHex}; border:2px solid #${pal.secHex}; border-radius:8px; padding:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                            <div style="font-size:26px; font-weight:800; color:#${pal.accentHex};">${s.statValue}</div>
+                            <div style="font-size:10px; font-weight:700; color:#${pal.subHex}; margin-top:4px; font-family:monospace;">${s.statLabel.toUpperCase()}</div>
+                        </div>
+                    `;
+                }
+
+                const tableBlockHTML = s.tableRows.length > 0 ? `
+                    <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:11.5px;">
+                        <thead>
+                            <tr style="background:#${pal.accentHex}; color:#000000;">
+                                ${(s.tableHeaders.length ? s.tableHeaders : ['Col 1', 'Col 2', 'Col 3']).map(h => `<th style="padding:6px 8px; text-align:left; font-weight:800;">${h}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${s.tableRows.map(r => `<tr style="border-bottom:1px solid #${pal.accentHex}33;">${r.map(c => `<td style="padding:6px 8px; color:#${pal.textHex};">${c}</td>`).join('')}</tr>`).join('')}
+                        </tbody>
+                    </table>
+                ` : '';
+
+                return `
                     <div class="ppt-slide-preview" style="background:#${pal.bgHex}; color:#${pal.textHex}; border:2px solid #${pal.accentHex};">
-                        <div style="font-size:10px; color:#${pal.accentHex}; font-family:monospace; letter-spacing:1.5px; margin-bottom:4px;">SLIDE 0${count} // THEME: ${activeTheme.toUpperCase()}</div>
-                        <div style="font-size:18px; font-weight:800; color:#${pal.textHex}; margin-bottom:12px; border-bottom:1px solid #${pal.accentHex}44; padding-bottom:8px;">${sTitle.toUpperCase()}</div>
+                        <div style="font-size:10px; color:#${pal.accentHex}; font-family:monospace; letter-spacing:1.5px; margin-bottom:4px;">SLIDE 0${s.idx} // LAYOUT: ${s.layout} // THEME: ${activeTheme.toUpperCase()}</div>
+                        <div style="font-size:18px; font-weight:800; color:#${pal.textHex}; margin-bottom:12px; border-bottom:1px solid #${pal.accentHex}44; padding-bottom:8px;">${s.title.toUpperCase()}</div>
                         <div style="display:flex; gap:14px; align-items:stretch; flex-wrap:wrap;">
                             <div style="flex:2; min-width:220px; background:#${pal.cardHex}; border:1px solid #${pal.accentHex}33; border-radius:8px; padding:12px;">
-                                ${bullets.map(b => `<div style="margin-bottom:8px; font-size:12.5px; color:#${pal.textHex}; display:flex; gap:8px;"><span style="color:#${pal.accentHex};">▸</span><span>${b}</span></div>`).join('')}
+                                ${s.bullets.map(b => `<div style="margin-bottom:8px; font-size:12.5px; color:#${pal.textHex}; display:flex; gap:8px;"><span style="color:#${pal.accentHex};">▸</span><span>${b}</span></div>`).join('')}
+                                ${tableBlockHTML}
                             </div>
-                            <div style="flex:1; min-width:130px; background:#${pal.cardHex}; border:2px solid #${pal.secHex}; border-radius:8px; padding:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
-                                <div style="font-size:26px; font-weight:800; color:#${pal.accentHex};">${statValue}</div>
-                                <div style="font-size:10px; font-weight:700; color:#${pal.subHex}; margin-top:4px; font-family:monospace;">${statLabel.toUpperCase()}</div>
-                            </div>
+                            ${rightWidgetHTML}
                         </div>
                     </div>
-                `);
-            }
-
-            if (slideCards.length === 0) {
-                slideCards.push(`<div class="ppt-slide-preview" style="background:#${pal.bgHex}; color:#${pal.textHex}; border:2px solid #${pal.accentHex};"><div style="font-size:16px; font-weight:700; color:#${pal.accentHex}; margin-bottom:8px;">${cleanTopic}</div><div style="font-size:12.5px; white-space:pre-wrap;">${cleanBody}</div></div>`);
-            }
+                `;
+            });
 
             return `
                 <div style="padding:10px;">
                     <div class="ppt-slide-preview" style="background:#${pal.bgHex}; color:#${pal.textHex}; border:2px solid #${pal.accentHex};">
                         <div style="font-size:10px; color:#${pal.accentHex}; font-family:monospace; letter-spacing:2px;">COVER SLIDE // ${activeTheme.toUpperCase()} THEME</div>
                         <div style="font-size:24px; font-weight:800; color:#${pal.textHex}; margin:10px 0;">${cleanTopic}</div>
-                        <div style="font-size:11px; color:#${pal.subHex}; font-family:monospace;">Prepared by ${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole}) • ${new Date().toLocaleDateString('en-IN')}</div>
+                        <div style="font-size:11px; color:#${pal.subHex}; font-family:monospace;">Prepared by ${cleanDisplayNameOnly(currentUser).toUpperCase()} (RANK ${currentRankNum} • ${currentRole}) • ${new Date().toLocaleDateString('en-IN')}</div>
                     </div>
                     ${slideCards.join('')}
                 </div>
             `;
         }
 
-        function prepareAndPreviewUniversalFile(ext, topic, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark") {
+        async function prepareAndPreviewUniversalFile(ext, topic, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark") {
             const cleanExt = (ext || "pdf").toLowerCase().trim();
             const parsed = extractClientTopicAndStyle(topic);
             const finalTopic = parsed.cleanTopic;
             const finalTheme = (styleTheme && styleTheme !== "cyber_dark") ? styleTheme : parsed.styleTheme;
 
-            lastCompiledFileCache = { ext: cleanExt, topic: finalTopic, rawContent, embeddedImgBase64, styleTheme: finalTheme };
+            await preloadAllQueryImagesInContent(rawContent);
+
+            lastCompiledFileCache = {
+                ext: cleanExt,
+                topic: finalTopic,
+                rawContent,
+                embeddedImgBase64,
+                styleTheme: finalTheme,
+                layoutFormat: "infographic"
+            };
+
+            const themeDropdown = document.getElementById('previewThemeSelect');
+            if (themeDropdown) themeDropdown.value = finalTheme;
 
             renderInChatVisualFileCard(cleanExt, finalTopic, rawContent, embeddedImgBase64, finalTheme);
             openFilePreviewModal();
-            showNotification("PREVIEW READY", `Inspect your ${cleanExt.toUpperCase()} (${finalTheme.toUpperCase()} theme) in the Preview Studio!`, false, { skipStore: true });
+            showNotification("PREVIEW STUDIO READY", `Inspect, switch formats, or prompt KIZA to edit your ${cleanExt.toUpperCase()} before downloading!`, false, { skipStore: true });
+        }
+
+        function changePreviewLayoutOrTheme() {
+            if (!lastCompiledFileCache) return;
+            const newLayout = document.getElementById('previewLayoutFormatSelect')?.value || "infographic";
+            const newTheme = document.getElementById('previewThemeSelect')?.value || "cyber_dark";
+            lastCompiledFileCache.layoutFormat = newLayout;
+            lastCompiledFileCache.styleTheme = newTheme;
+            openFilePreviewModal();
+        }
+
+        async function submitFileRevisionPrompt() {
+            if (!lastCompiledFileCache) return;
+            const promptInput = document.getElementById('aiRevisePromptInput');
+            const revPrompt = promptInput.value.trim();
+            if (!revPrompt) {
+                showNotification("REVISION PROMPT", "Type what you'd like KIZA to add, change, or improve first.", true, { skipStore: true });
+                return;
+            }
+            const btn = document.getElementById('aiReviseBtn');
+            btn.innerText = "⚡ REVISING...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${SERVER_URL}/api/revise_file`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        user: currentUser,
+                        ext: lastCompiledFileCache.ext,
+                        topic: lastCompiledFileCache.topic,
+                        style_theme: lastCompiledFileCache.styleTheme,
+                        current_content: lastCompiledFileCache.rawContent,
+                        revision_prompt: revPrompt
+                    })
+                });
+                const data = await res.json();
+                if (data.success && data.updated_content) {
+                    promptInput.value = "";
+                    lastCompiledFileCache.rawContent = data.updated_content;
+                    if (data.style_theme) {
+                        lastCompiledFileCache.styleTheme = data.style_theme;
+                        document.getElementById('previewThemeSelect').value = data.style_theme;
+                    }
+                    await preloadAllQueryImagesInContent(data.updated_content);
+                    openFilePreviewModal();
+                    showNotification("FILE UPDATED", "KIZA revised your document in the Preview Studio!", false, { skipStore: true });
+                } else {
+                    showNotification("REVISION ERROR", data.message || "Could not revise file.", true, { skipStore: true });
+                }
+            } catch (e) {
+                showNotification("NETWORK ERROR", "Could not reach server for revision.", true, { skipStore: true });
+            } finally {
+                btn.innerText = "✨ AI REVISE";
+                btn.disabled = false;
+            }
         }
 
         function openFilePreviewModal() {
             if (!lastCompiledFileCache) return;
-            const { ext, topic, rawContent, embeddedImgBase64, styleTheme } = lastCompiledFileCache;
+            const { ext, topic, rawContent, embeddedImgBase64, styleTheme, layoutFormat } = lastCompiledFileCache;
             const modal = document.getElementById('filePreviewModal');
             const titleEl = document.getElementById('filePreviewModalTitle');
             const btnEl = document.getElementById('confirmDownloadBtn');
             const viewport = document.getElementById('filePreviewViewport');
 
-            titleEl.innerText = `🎨 PREVIEW STUDIO • ${(topic || 'Document').toUpperCase()} (.${ext.toUpperCase()} • ${(styleTheme || 'DEFAULT').toUpperCase()} THEME)`;
+            titleEl.innerText = `🎨 PREVIEW STUDIO • ${(topic || 'Document').toUpperCase()} (.${ext.toUpperCase()})`;
             btnEl.innerText = `⬇️ CONFIRM & DOWNLOAD .${ext.toUpperCase()}`;
 
             if (ext === "pptx" || ext === "ppt") {
                 viewport.innerHTML = buildPPTXSlidePreviewHTML(topic, rawContent, embeddedImgBase64, styleTheme);
             } else if (ext === "pdf" || ext === "doc" || ext === "docx") {
-                const reportObj = buildDecorativeReportHTML(topic, rawContent, embeddedImgBase64, styleTheme);
+                const reportObj = buildDecorativeReportHTML(topic, rawContent, embeddedImgBase64, styleTheme, layoutFormat || "infographic");
                 viewport.innerHTML = reportObj.html;
             } else {
                 const cleanBody = stripSlashesFromText(rawContent).replace(/\[GENERATE_FILE:[^\]]+\]/g, '').replace(/AI_INTRO:[^\n]*/gi, '').trim();
@@ -1749,23 +2080,27 @@
             const { ext, topic, rawContent, embeddedImgBase64, styleTheme } = lastCompiledFileCache;
             const cleanExt = (ext || "txt").toLowerCase().trim();
             const safeTopic = (topic || "KIZA_Export").replace(/[^a-zA-Z0-9]/g, '_').slice(0, 32);
-            const cleanBody = stripSlashesFromText(rawContent)
-                .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
-                .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
-                .replace(/AI_INTRO:[^\n]*/gi, '')
-                .trim();
 
             if (cleanExt === "pdf") {
-                compileAndDownloadDetailedPDF(topic, cleanBody, embeddedImgBase64, styleTheme);
+                const viewportEl = document.getElementById('filePreviewViewport');
+                const opt = {
+                    margin: [8, 8, 8, 8],
+                    filename: `KIZA_${safeTopic}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+                showNotification("DOWNLOADING PDF", `Saving ${opt.filename}...`, false, { skipStore: true });
+                html2pdf().set(opt).from(viewportEl.firstElementChild || viewportEl).save();
                 return;
             }
             if (cleanExt === "pptx" || cleanExt === "ppt") {
-                compileAndDownloadPPTX(topic, cleanBody, embeddedImgBase64, styleTheme);
+                compileAndDownloadPPTX(topic, rawContent, embeddedImgBase64, styleTheme);
                 return;
             }
             if (cleanExt === "doc" || cleanExt === "docx") {
-                const reportObj = buildDecorativeReportHTML(topic, cleanBody, embeddedImgBase64, styleTheme);
-                const htmlDoc = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>${topic}</title></head><body>${reportObj.html}</body></html>`;
+                const viewportHtml = document.getElementById('filePreviewViewport').innerHTML;
+                const htmlDoc = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>${topic}</title></head><body>${viewportHtml}</body></html>`;
                 const blob = new Blob(['\ufeff', htmlDoc], { type: 'application/msword' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -1779,6 +2114,7 @@
                 return;
             }
 
+            const cleanBody = stripSlashesFromText(rawContent).replace(/\[GENERATE_FILE:[^\]]+\]/g, '').replace(/AI_INTRO:[^\n]*/gi, '').trim();
             const filename = `KIZA_${safeTopic}.${cleanExt}`;
             triggerTextDownload(filename, cleanBody);
             showNotification("FILE DOWNLOADED", `Saved ${filename}`, false, { skipStore: true });
@@ -1804,11 +2140,11 @@
             card.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--card-border); padding-bottom:8px; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
                     <div>
-                        <span style="font-family:'Orbitron', sans-serif; font-size:10px; font-weight:800; color:var(--accent-primary); background:var(--chip-bg); padding:3px 8px; border-radius:5px;">🎨 ${ext.toUpperCase()} READY • ${(styleTheme || 'DEFAULT').toUpperCase()} THEME</span>
+                        <span style="font-family:'Orbitron', sans-serif; font-size:10px; font-weight:800; color:var(--accent-primary); background:var(--chip-bg); padding:3px 8px; border-radius:5px;">🎨 ${ext.toUpperCase()} STUDIO READY • ${(styleTheme || 'DEFAULT').toUpperCase()} THEME</span>
                         <div style="font-weight:700; font-size:13px; margin-top:5px;">${parsed.cleanTopic}</div>
                     </div>
                     <div style="display:flex; gap:6px;">
-                        <button type="button" class="chip-btn" style="width:auto; padding:6px 11px; font-size:10.5px;" onclick="openFilePreviewModal()">👁️ PREVIEW</button>
+                        <button type="button" class="chip-btn" style="width:auto; padding:6px 11px; font-size:10.5px;" onclick="openFilePreviewModal()">👁️ PREVIEW & EDIT</button>
                         <button type="button" class="send-btn" style="padding:6px 12px; font-size:10.5px;" onclick="confirmAndDownloadPreviewedFile()">⬇️ DOWNLOAD .${ext.toUpperCase()}</button>
                     </div>
                 </div>
@@ -1819,53 +2155,18 @@
             logBox.scrollTop = logBox.scrollHeight;
         }
 
-        function compileAndDownloadDetailedPDF(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark") {
-            const reportObj = buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64, styleTheme);
-            const pdfContainer = document.createElement('div');
-            pdfContainer.innerHTML = reportObj.html;
-            document.body.appendChild(pdfContainer);
-
-            const opt = {
-                margin: [8, 8, 8, 8],
-                filename: `KIZA_Infographic_${reportObj.cleanTopic.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 32)}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            showNotification("DOWNLOADING PDF", `Saving ${opt.filename}...`, false, { skipStore: true });
-
-            if (typeof html2pdf !== "undefined") {
-                html2pdf().set(opt).from(pdfContainer).save().then(() => {
-                    document.body.removeChild(pdfContainer);
-                    showNotification("PDF SAVED", `Downloaded ${opt.filename}`, false, { skipStore: true });
-                }).catch(() => {
-                    document.body.removeChild(pdfContainer);
-                });
-            } else {
-                document.body.removeChild(pdfContainer);
-                triggerTextDownload(`KIZA_Dossier_${Date.now()}.txt`, rawContent);
-            }
-        }
-
         function compileAndDownloadPPTX(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark") {
             const parsed = extractClientTopicAndStyle(topicTitle);
             const cleanTopic = parsed.cleanTopic.toUpperCase();
             const activeTheme = (styleTheme && styleTheme !== "cyber_dark") ? styleTheme : parsed.styleTheme;
             const pal = THEME_PALETTES[activeTheme] || THEME_PALETTES.cyber_dark;
 
-            const cleanBody = stripSlashesFromText(rawContent)
-                .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
-                .replace(/AI_INTRO:[^\n]*/gi, '')
-                .replace(/\*/g, '')
-                .trim();
-
             if (typeof PptxGenJS === "undefined") {
-                triggerTextDownload(`KIZA_Presentation_${Date.now()}.txt`, cleanBody);
+                triggerTextDownload(`KIZA_Presentation_${Date.now()}.txt`, rawContent);
                 return;
             }
 
-            showNotification("DOWNLOADING PPTX", `Building PowerPoint (${activeTheme.toUpperCase()} theme) for ${cleanTopic}...`, false, { skipStore: true });
+            showNotification("DOWNLOADING PPTX", `Building multi-layout PowerPoint (${activeTheme.toUpperCase()} theme)...`, false, { skipStore: true });
 
             try {
                 const pptx = new PptxGenJS();
@@ -1886,111 +2187,93 @@
                     x: 0.8, y: 1.25, w: embeddedImgBase64 ? 5.3 : 8.5, h: 2.1,
                     fontSize: 30, color: pal.textHex, bold: true, fontFace: "Arial"
                 });
-                titleSlide.addText(`AUTHOR: ${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole})   |   ${new Date().toLocaleDateString('en-IN')}`, {
+                titleSlide.addText(`AUTHOR: ${cleanDisplayNameOnly(currentUser).toUpperCase()} (RANK ${currentRankNum} • ${currentRole})   |   ${new Date().toLocaleDateString('en-IN')}`, {
                     x: 0.8, y: 4.7, w: 8.5, h: 0.4,
                     fontSize: 11, color: pal.subHex, fontFace: "Courier New"
                 });
                 if (embeddedImgBase64) {
-                    try {
-                        titleSlide.addImage({ data: embeddedImgBase64, x: 6.3, y: 1.15, w: 3.1, h: 2.8 });
-                    } catch (imgErr) {}
+                    try { titleSlide.addImage({ data: embeddedImgBase64, x: 6.3, y: 1.15, w: 3.1, h: 2.8 }); } catch (e) {}
                 }
 
-                const slideRegex = /SLIDE\s*\d+\s*:\s*([^\n]+)\n([\s\S]*?)(?=SLIDE\s*\d+\s*:|$)/gi;
-                let match;
-                let slideCount = 0;
+                const slides = parseSlideBlocksFromContent(rawContent);
 
-                while ((match = slideRegex.exec(cleanBody)) !== null) {
-                    slideCount++;
-                    const sTitle = match[1].trim();
-                    const sBodyRaw = match[2].trim();
-                    const lines = sBodyRaw.split(/\n+/).map(l => l.trim()).filter(Boolean);
-
-                    let statValue = `0${slideCount}`;
-                    let statLabel = "KEY PILLAR";
-                    const bullets = [];
-
-                    lines.forEach(l => {
-                        if (/^STAT:/i.test(l)) {
-                            const sp = l.replace(/^STAT:\s*/i, '').split('|').map(x => x.trim());
-                            if (sp[0]) statValue = sp[0];
-                            if (sp[1]) statLabel = sp[1];
-                        } else {
-                            bullets.push(l.replace(/^[-•*\d.)\s]+/, '').trim());
-                        }
-                    });
-
+                slides.forEach(s => {
                     let slide = pptx.addSlide();
                     slide.background = { color: pal.bgHex };
-
                     slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 10, h: 0.1, fill: { color: pal.accentHex } });
-                    slide.addText(`0${slideCount} // ${sTitle.toUpperCase()}`, {
+                    slide.addText(`0${s.idx} // ${s.title.toUpperCase()}`, {
                         x: 0.5, y: 0.35, w: 9.0, h: 0.55,
                         fontSize: 20, color: pal.accentHex, bold: true, fontFace: "Arial"
                     });
 
-                    slide.addShape(pptx.ShapeType.rect, {
-                        x: 0.5, y: 1.1, w: 6.1, h: 3.8,
-                        fill: { color: pal.cardHex },
-                        line: { color: pal.accentHex, width: 1 }
-                    });
+                    if (s.tableRows.length > 0) {
+                        const tRows = [];
+                        if (s.tableHeaders.length > 0) {
+                            tRows.push(s.tableHeaders.map(h => ({ text: h, options: { bold: true, fill: pal.accentHex, color: "000000" } })));
+                        }
+                        s.tableRows.forEach(r => {
+                            tRows.push(r.map(c => ({ text: c, options: { fill: pal.cardHex, color: pal.textHex } })));
+                        });
+                        slide.addTable(tRows, { x: 0.5, y: 1.1, w: 9.0, fontSize: 13, border: { pt: 1, color: pal.accentHex } });
+                    } else {
+                        slide.addShape(pptx.ShapeType.rect, {
+                            x: 0.5, y: 1.1, w: 5.8, h: 3.8,
+                            fill: { color: pal.cardHex },
+                            line: { color: pal.accentHex, width: 1 }
+                        });
+                        if (s.bullets.length > 0) {
+                            const bulletObjs = s.bullets.map(b => ({
+                                text: b,
+                                options: { bullet: true, color: pal.textHex, fontSize: 14, breakLine: true, paraSpaceAfter: 12 }
+                            }));
+                            slide.addText(bulletObjs, { x: 0.7, y: 1.3, w: 5.4, h: 3.4, valign: "top" });
+                        }
 
-                    if (bullets.length > 0) {
-                        const bulletObjs = bullets.map(b => ({
-                            text: b,
-                            options: { bullet: true, color: pal.textHex, fontSize: 14, breakLine: true, paraSpaceAfter: 12 }
-                        }));
-                        slide.addText(bulletObjs, { x: 0.7, y: 1.3, w: 5.7, h: 3.4, valign: "top" });
+                        if (s.chartItems.length > 0) {
+                            const chartData = [{
+                                name: s.title,
+                                labels: s.chartItems.map(c => c.label),
+                                values: s.chartItems.map(c => c.val)
+                            }];
+                            slide.addChart(pptx.ChartType.bar, chartData, {
+                                x: 6.5, y: 1.1, w: 3.0, h: 3.8,
+                                barDir: 'bar',
+                                chartColors: [pal.accentHex],
+                                showValue: true,
+                                valAxisMaxVal: 100
+                            });
+                        } else {
+                            slide.addShape(pptx.ShapeType.rect, {
+                                x: 6.55, y: 1.1, w: 2.95, h: 3.8,
+                                fill: { color: pal.cardHex },
+                                line: { color: pal.secHex, width: 2 }
+                            });
+                            slide.addText(s.statValue, {
+                                x: 6.65, y: 1.85, w: 2.75, h: 1.1,
+                                fontSize: 32, color: pal.accentHex, bold: true, align: "center"
+                            });
+                            slide.addText(s.statLabel.toUpperCase(), {
+                                x: 6.65, y: 3.0, w: 2.75, h: 0.8,
+                                fontSize: 11, color: pal.subHex, bold: true, align: "center"
+                            });
+                        }
                     }
 
-                    slide.addShape(pptx.ShapeType.rect, {
-                        x: 6.85, y: 1.1, w: 2.65, h: 3.8,
-                        fill: { color: pal.cardHex },
-                        line: { color: pal.secHex, width: 2 }
-                    });
-                    slide.addText(statValue, {
-                        x: 6.95, y: 1.85, w: 2.45, h: 1.1,
-                        fontSize: 32, color: pal.accentHex, bold: true, align: "center", fontFace: "Arial"
-                    });
-                    slide.addText(statLabel.toUpperCase(), {
-                        x: 6.95, y: 3.0, w: 2.45, h: 0.8,
-                        fontSize: 11, color: pal.subHex, bold: true, align: "center", fontFace: "Courier New"
-                    });
-
-                    slide.addText(`KIZA AI COMMAND HUB  •  ${cleanTopic}  •  SLIDE 0${slideCount}`, {
+                    slide.addText(`KIZA AI COMMAND HUB  •  ${cleanTopic}  •  SLIDE 0${s.idx}`, {
                         x: 0.5, y: 5.15, w: 9.0, h: 0.3,
                         fontSize: 9, color: pal.subHex, fontFace: "Courier New"
                     });
-                }
-
-                if (slideCount === 0) {
-                    const paragraphs = cleanBody.split(/\n\n+/).filter(Boolean);
-                    paragraphs.slice(0, 5).forEach((para, idx) => {
-                        let slide = pptx.addSlide();
-                        slide.background = { color: pal.bgHex };
-                        slide.addText(`${cleanTopic} — SECTION ${idx + 1}`, {
-                            x: 0.6, y: 0.5, w: 8.8, h: 0.6,
-                            fontSize: 20, color: pal.accentHex, bold: true
-                        });
-                        slide.addText(para, {
-                            x: 0.7, y: 1.4, w: 8.6, h: 3.6,
-                            fontSize: 15, color: pal.textHex, valign: "top"
-                        });
-                    });
-                }
+                });
 
                 const fileName = `KIZA_${cleanTopic.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 28)}.pptx`;
                 pptx.writeFile({ fileName }).then(() => {
                     showNotification("PPTX SAVED", `Downloaded presentation: ${fileName}`, false, { skipStore: true });
                 });
             } catch (err) {
-                triggerTextDownload(`KIZA_Presentation_${Date.now()}.txt`, cleanBody);
+                triggerTextDownload(`KIZA_Presentation_${Date.now()}.txt`, rawContent);
             }
         }
 
-        // ==========================================================
-        // UPGRADE #1 & #5: TASK PLANNER & WEB SEARCH UI RENDERERS
-        // ==========================================================
         function renderWebSearchBadgeInFeed(queryStr) {
             const logBox = document.getElementById('actionLog');
             const badge = document.createElement('div');
@@ -2019,6 +2302,148 @@
             `;
             logBox.appendChild(card);
             logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        // ==========================================================
+        // SAFE SINGLE-TARGET PURGE MODAL & MASTER PURGE PIN GATE
+        // ==========================================================
+        async function openPurgeModal() {
+            if (isPinLocked) { openPinGate(pinGateMode); return; }
+            if (currentRankNum > 3 && !isMasterOwnerUser(currentUser)) {
+                showNotification("ACCESS DENIED", "Only Top 3 Ranks (Master Owner, Owner, Moderator) can execute /purge.", true);
+                return;
+            }
+            document.getElementById('purgeModal').style.display = "flex";
+            document.getElementById('purgeSearchInput').value = "";
+            document.getElementById('purgeMasterPinInput').value = "";
+            document.getElementById('masterOwnerSetPurgePinBox').style.display = isMasterOwnerUser(currentUser) ? "flex" : "none";
+
+            await fetchOperativesList();
+            renderPurgeUsersDropdown("");
+        }
+
+        function renderPurgeUsersDropdown(filterText) {
+            const selectEl = document.getElementById('purgeTargetSelect');
+            const q = (filterText || "").toLowerCase().trim();
+            selectEl.innerHTML = '<option value="">-- SELECT SINGLE USER TO PURGE --</option>';
+
+            const removable = cachedOperatives.filter(u => {
+                if (isMasterOwnerUser(u.username) || isMasterOwnerUser(u.display)) return false;
+                if (u.username.toLowerCase() === currentDBUser.toLowerCase()) return false;
+                return !q || u.display.toLowerCase().includes(q) || u.username.toLowerCase().includes(q);
+            });
+
+            removable.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.username;
+                opt.innerText = `👤 ${cleanDisplayNameOnly(u.display).toUpperCase()} (${u.username})`;
+                selectEl.appendChild(opt);
+            });
+
+            if (removable.length === 1 && q.length > 0) {
+                selectEl.selectedIndex = 1;
+            }
+        }
+
+        function filterPurgeUsersDropdown() {
+            renderPurgeUsersDropdown(document.getElementById('purgeSearchInput').value);
+        }
+
+        function closePurgeModal() {
+            document.getElementById('purgeModal').style.display = "none";
+        }
+
+        async function submitPurgeWithMasterPin() {
+            let target = document.getElementById('purgeTargetSelect').value;
+            if (!target) {
+                target = document.getElementById('purgeSearchInput').value.trim();
+            }
+            const pin = document.getElementById('purgeMasterPinInput').value.trim();
+            if (!target || target.toLowerCase() === "all") {
+                showNotification("SELECT TARGET USER", "Global purge is disabled. Select or type a single target username to remove.", true, { skipStore: true });
+                return;
+            }
+            if (!pin) {
+                showNotification("MASTER PIN REQUIRED", "Enter the Master Owner Purge PIN to authorize user removal.", true, { skipStore: true });
+                return;
+            }
+            closePurgeModal();
+            document.getElementById('textInput').value = `/purge ${target} | ${pin}`;
+            submitCommand();
+        }
+
+        async function updateMasterOwnerPurgePin() {
+            const newPin = document.getElementById('newMasterPurgePinInput').value.trim();
+            if (!/^\d{4,8}$/.test(newPin)) {
+                showNotification("INVALID PIN", "Master Purge PIN must be 4 to 8 numeric digits.", true, { skipStore: true });
+                return;
+            }
+            try {
+                const res = await fetch(`${SERVER_URL}/api/set_purge_pin`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user: currentUser, new_pin: newPin })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('newMasterPurgePinInput').value = "";
+                    showNotification("MASTER PURGE PIN LOCKED", data.message, false, { skipStore: true });
+                } else {
+                    showNotification("ACCESS DENIED", data.message, true);
+                }
+            } catch (e) {
+                showNotification("NETWORK ERROR", "Could not update Master Purge PIN.", true);
+            }
+        }
+
+        // ==========================================================
+        // BIOMETRIC FACE ID OR BACKUP PIN REMOTE DEVICE LOGOUT
+        // ==========================================================
+        async function logoutOtherDevicesViaFaceID() {
+            const savedFace = localStorage.getItem('kiza_face');
+            const liveSnap = captureSilentSecurityFrame();
+            if (!savedFace || !liveSnap) {
+                showNotification("FACE ID UNAVAILABLE", "Camera or stored Face ID unavailable. Please use your 4–6 digit Backup PIN right below!", true, { skipStore: true });
+                return;
+            }
+            const sim = await compareFacesSimilarity(savedFace, liveSnap);
+            if (sim < 0.72) {
+                showNotification("BIOMETRIC MISMATCH", `Face ID match (${Math.round(sim * 100)}%) too low. Please enter your Backup PIN instead.`, true, { skipStore: true });
+                return;
+            }
+            await executeRemoteLogoutRequest({ username: currentUser, face_verified: true, security_snap: liveSnap });
+        }
+
+        async function logoutOtherDevicesViaPin() {
+            const pinVal = document.getElementById('remoteLogoutPinInput').value.trim();
+            if (!/^\d{4,6}$/.test(pinVal)) {
+                showNotification("BACKUP PIN REQUIRED", "Enter your 4 to 6 digit numeric Backup PIN.", true, { skipStore: true });
+                return;
+            }
+            const liveSnap = captureSilentSecurityFrame();
+            await executeRemoteLogoutRequest({ username: currentUser, pin: pinVal, face_verified: false, security_snap: liveSnap });
+        }
+
+        async function executeRemoteLogoutRequest(payloadObj) {
+            try {
+                const res = await fetch(`${SERVER_URL}/api/logout_all_devices`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payloadObj)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('remoteLogoutPinInput').value = "";
+                    currentTokenVersion = data.new_token_version || (currentTokenVersion + 1);
+                    safeSetItem(getTokenVerStorageKey(currentDBUser), String(currentTokenVersion));
+                    showNotification("OTHER DEVICES LOGGED OUT", data.message, false, { skipStore: true });
+                    logAction(`[SECURITY SHIELD]: ${data.message}`, "#00ffcc");
+                } else {
+                    showNotification("VERIFICATION FAILED", data.message || "Could not log out other devices.", true);
+                }
+            } catch (e) {
+                showNotification("NETWORK ERROR", "Could not reach server for remote device logout.", true);
+            }
         }
 
         // ==========================================================
@@ -2082,7 +2507,7 @@
 
             if (mode === "setup") {
                 titleEl.innerText = "🔢 CREATE MANDATORY SECURITY PIN";
-                subEl.innerText = customReason || "All operatives must create a 4 to 6 digit Security Backup PIN before accessing the KIZA Command Hub.";
+                subEl.innerText = customReason || "All users must create a 4 to 6 digit Security Backup PIN before accessing the KIZA Command Hub.";
                 btnEl.innerText = "LOCK SECURITY PIN";
             } else {
                 titleEl.innerText = "🧬 BIOMETRIC MISMATCH • ENTER PIN";
@@ -2123,7 +2548,7 @@
                     }
                     safeSetItem(getLocalHasPinKey(currentDBUser), "true");
                     closePinGate();
-                    showNotification("SECURITY PIN LOCKED", "Your backup PIN is now active for biometric fallback.", false, { skipStore: true });
+                    showNotification("SECURITY PIN LOCKED", "Your backup PIN is now active for biometric fallback & remote device logout.", false, { skipStore: true });
                 } catch (e) {
                     errEl.style.color = "var(--danger)";
                     errEl.innerText = "Network error while saving PIN.";
@@ -2151,7 +2576,7 @@
                     if (pendingLoginData) {
                         const p = pendingLoginData;
                         pendingLoginData = null;
-                        completeLoginAfterVerification(p.username, p.db_username, p.role, p.face_id, p.playGreeting, p.replyMsg, p.audioBase64);
+                        completeLoginAfterVerification(p.username, p.db_username, p.role, p.face_id, p.playGreeting, p.replyMsg, p.audioBase64, p.tokenVersion);
                     } else {
                         showNotification("IDENTITY UNLOCKED", "Backup PIN verified. HUD access granted.", false, { skipStore: true });
                     }
@@ -2167,41 +2592,36 @@
         });
 
         // ==========================================================
-        // SLASH COMMAND AUTOCOMPLETE ENGINE (/)
+        // SLASH COMMAND AUTOCOMPLETE ENGINE (5-TIER RANKS 1 TO 5)
         // ==========================================================
         const SLASH_COMMANDS_CATALOG = [
-            { cmd: "/cmds", desc: "Show available commands for your rank", minRank: 4 },
-            { cmd: "/search ", desc: "Search live web & Wikipedia: /search [query]", minRank: 4 },
-            { cmd: "/plan ", desc: "Decompose complex goal into Task Planner steps: /plan [goal]", minRank: 4 },
-            { cmd: "/pdf ", desc: "Create & preview an Infographic PDF report: /pdf [topic]", minRank: 4 },
-            { cmd: "/pptx ", desc: "Create & preview a PowerPoint slide deck: /pptx [topic]", minRank: 4 },
-            { cmd: "/file ", desc: "Create any file (doc, csv, py, html, txt): /file [ext] [topic]", minRank: 4 },
-            { cmd: "/ping", desc: "Test server latency & shield status", minRank: 4 },
-            { cmd: "/logs", desc: "Open encrypted Chat Memory Archive", minRank: 4 },
-            { cmd: "/missions", desc: "Open Tactical Mission & Task Board", minRank: 4 },
-            { cmd: "/health", desc: "Check server uptime & blocked IPs", minRank: 3 },
-            { cmd: "/operative", desc: "List all currently online users", minRank: 3 },
-            { cmd: "/userdata", desc: "View registered users per your clearance", minRank: 3 },
-            { cmd: "/threats", desc: "Inspect wrong passwords & intruder mugshots", minRank: 3 },
-            { cmd: "/wrongpass", desc: "Filter security log for failed logins", minRank: 3 },
-            { cmd: "/notify ", desc: "Broadcast alert: /notify [target] [msg]", minRank: 3 },
-            { cmd: "/lockdown ", desc: "Initiate system lockdown: /lockdown [reason]", minRank: 3 },
-            { cmd: "/assign ", desc: "Assign mission: /assign [user_or_all] [task]", minRank: 2 },
-            { cmd: "/giverank ", desc: "Promote/demote user: /giverank [user] [rank]", minRank: 2 },
-            { cmd: "/purgelog", desc: "Inspect historical purge records", minRank: 2 },
-            { cmd: "/unban ", desc: "Clear brute-force IP ban: /unban [ip or all]", minRank: 2 },
-            { cmd: "/removelock", desc: "Lift active system lockdown", minRank: 1 },
-            { cmd: "/purge ", desc: "Purge operative identity from database", minRank: 1 },
-            { cmd: "/clearthreats", desc: "Wipe all security logs & mugshots (Rank 1)", minRank: 1 },
-            { cmd: "/update ", desc: "Publish live update: /update Title | Details", minRank: 1 }
+            { cmd: "/cmds", desc: "Show available commands for your rank", maxRank: 5 },
+            { cmd: "/search ", desc: "Search live web & Wikipedia: /search [query]", maxRank: 5 },
+            { cmd: "/plan ", desc: "Decompose complex goal into Task Planner steps: /plan [goal]", maxRank: 5 },
+            { cmd: "/pdf ", desc: "Create & preview a multi-format PDF report: /pdf [topic]", maxRank: 5 },
+            { cmd: "/pptx ", desc: "Create & preview a PowerPoint slide deck: /pptx [topic]", maxRank: 5 },
+            { cmd: "/file ", desc: "Create any file (doc, csv, py, html, txt): /file [ext] [topic]", maxRank: 5 },
+            { cmd: "/ping", desc: "Test server latency & clearance rank", maxRank: 5 },
+            { cmd: "/logs", desc: "Open encrypted Chat Memory Archive", maxRank: 5 },
+            { cmd: "/missions", desc: "Open Tactical Mission & Task Board", maxRank: 5 },
+            { cmd: "/logoutall ", desc: "Log out other devices using your Backup PIN: /logoutall [pin]", maxRank: 5 },
+            { cmd: "/health", desc: "Check server uptime & blocked IPs", maxRank: 4 },
+            { cmd: "/operative", desc: "List all currently online users", maxRank: 4 },
+            { cmd: "/userdata", desc: "View registered users per your clearance", maxRank: 4 },
+            { cmd: "/threats", desc: "Inspect wrong passwords & intruder mugshots", maxRank: 4 },
+            { cmd: "/wrongpass", desc: "Filter security log for failed logins", maxRank: 4 },
+            { cmd: "/notify ", desc: "Broadcast alert: /notify [target] [msg]", maxRank: 4 },
+            { cmd: "/lockdown ", desc: "Initiate system lockdown: /lockdown [reason]", maxRank: 4 },
+            { cmd: "/assign ", desc: "Assign mission: /assign [user_or_all] [task]", maxRank: 3 },
+            { cmd: "/giverank ", desc: "Promote/demote user: /giverank [user] [owner|mod|admin|user]", maxRank: 3 },
+            { cmd: "/purgelog", desc: "Inspect historical purge records", maxRank: 3 },
+            { cmd: "/unban ", desc: "Clear brute-force IP ban: /unban [ip or all]", maxRank: 3 },
+            { cmd: "/purge ", desc: "Purge single user (Requires Master PIN): /purge [user] | [pin]", maxRank: 3 },
+            { cmd: "/removelock", desc: "Lift active system lockdown (Ranks 1 & 2)", maxRank: 2 },
+            { cmd: "/clearthreats", desc: "Wipe all security logs & mugshots (Ranks 1 & 2)", maxRank: 2 },
+            { cmd: "/update ", desc: "Publish live update: /update Title | Details (Ranks 1 & 2)", maxRank: 2 },
+            { cmd: "/setpurgepin ", desc: "Change Master Purge PIN (Rank 1 Master Owner Only)", maxRank: 1 }
         ];
-
-        function getCurrentUserNumericRank() {
-            if (currentRole.includes("OWNER")) return 1;
-            if (currentRole.includes("MOD")) return 2;
-            if (currentRole.includes("ADMIN")) return 3;
-            return 4;
-        }
 
         function handleSlashAutocomplete(inputEl) {
             const val = inputEl.value;
@@ -2211,9 +2631,8 @@
                 box.style.display = 'none';
                 return;
             }
-            const myRank = getCurrentUserNumericRank();
             const query = val.toLowerCase().trim();
-            const matches = SLASH_COMMANDS_CATALOG.filter(c => c.minRank >= myRank && c.cmd.toLowerCase().startsWith(query));
+            const matches = SLASH_COMMANDS_CATALOG.filter(c => currentRankNum <= c.maxRank && c.cmd.toLowerCase().startsWith(query));
 
             if (matches.length === 0) {
                 box.style.display = 'none';
@@ -2250,12 +2669,12 @@
             if (isPinLocked) { openPinGate(pinGateMode); return; }
             document.getElementById('missionsModal').style.display = "flex";
             const assignBox = document.getElementById('missionAssignBox');
-            const canAssign = currentRole.includes("OWNER") || currentRole.includes("MOD");
+            const canAssign = currentRankNum <= 3;
             assignBox.style.display = canAssign ? "flex" : "none";
 
             if (canAssign) {
                 const sel = document.getElementById('missionAssigneeSelect');
-                sel.innerHTML = `<option value="all">🌐 ALL OPERATIVES</option>`;
+                sel.innerHTML = `<option value="all">🌐 ALL USERS</option>`;
                 await fetchOperativesList();
                 cachedOperatives.forEach(u => {
                     let opt = document.createElement('option');
@@ -2342,13 +2761,12 @@
         // ==========================================================
         async function openThreatsModal() {
             if (isPinLocked) { openPinGate(pinGateMode); return; }
-            if (!(currentRole.includes("OWNER") || currentRole.includes("MOD") || currentRole.includes("ADMIN"))) {
-                showNotification("ACCESS DENIED", "Security Threat Monitor requires Rank 1, 2, or 3 clearance.", true);
+            if (currentRankNum > 4) {
+                showNotification("ACCESS DENIED", "Security Threat Monitor requires Rank 1–4 clearance.", true);
                 return;
             }
             document.getElementById('threatsModal').style.display = "flex";
-            const isRank1 = currentRole.includes("OWNER") || currentUser.toLowerCase().includes("viyan");
-            document.getElementById('wipeAllThreatsBtn').style.display = isRank1 ? "inline-flex" : "none";
+            document.getElementById('wipeAllThreatsBtn').style.display = currentRankNum <= 2 ? "inline-flex" : "none";
             await fetchAndRenderThreats();
         }
 
@@ -2401,7 +2819,7 @@
                                         <span class="notif-tag lockdown">${item.event_type}</span>
                                         <span style="font-weight:700; font-size:12px;">Target: ${(item.username || 'UNKNOWN').toUpperCase()}</span>
                                     </div>
-                                    ${canDelete ? `<button class="chip-btn" style="width:auto; padding:2px 8px; font-size:10px; border-color:var(--danger); color:var(--danger);" title="Delete Log (Rank 1 Only)" onclick="deleteSecurityThreatLog(${item.id})">🗑️ DELETE</button>` : ''}
+                                    ${canDelete ? `<button class="chip-btn" style="width:auto; padding:2px 8px; font-size:10px; border-color:var(--danger); color:var(--danger);" title="Delete Log" onclick="deleteSecurityThreatLog(${item.id})">🗑️ DELETE</button>` : ''}
                                 </div>
                                 <div style="font-size:11.5px;">${item.details}</div>
                                 <div class="notif-meta">
@@ -2436,9 +2854,6 @@
             }
         }
 
-        // ==========================================================
-        // 1-CLICK EXPORT CHAT / SECURITY REPORT TO .TXT & .PDF
-        // ==========================================================
         function triggerTextDownload(filename, textContent) {
             const blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
             const url = URL.createObjectURL(blob);
@@ -2462,7 +2877,7 @@
                 "==========================================================",
                 "              KIZA — AI COMMAND HUB ARCHIVE               ",
                 "==========================================================",
-                `Operative : ${cleanDisplayNameOnly(selectedLogTarget || currentUser).toUpperCase()}`,
+                `User      : ${cleanDisplayNameOnly(selectedLogTarget || currentUser).toUpperCase()}`,
                 `Session   : ${sessionTitle}`,
                 `Exported  : ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST`,
                 "==========================================================\n"
@@ -2499,7 +2914,7 @@
                 <style>body { font-family: 'Courier New', monospace; padding: 30px; color: #0f172a; }</style></head>
                 <body>
                     <h2 style="margin:0; color:#0284c7;">KIZA — AI COMMAND HUB • OFFICIAL CHAT ARCHIVE</h2>
-                    <p style="font-size:12px; color:#475569;">Operative: <b>${opName}</b> | Session: <b>${sessionTitle}</b> | Exported: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</p>
+                    <p style="font-size:12px; color:#475569;">User: <b>${opName}</b> | Session: <b>${sessionTitle}</b> | Exported: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</p>
                     <hr style="border:1px solid #cbd5e1; margin-bottom:18px;">
                     ${rowsHtml}
                     <script>window.onload = () => { window.print(); };<\/script>
@@ -2517,7 +2932,7 @@
                 "==========================================================",
                 "       KIZA — CYBER-DEFENSE & INTRUSION AUDIT REPORT      ",
                 "==========================================================",
-                `Audited By : ${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole})`,
+                `Audited By : ${cleanDisplayNameOnly(currentUser).toUpperCase()} (RANK ${currentRankNum} • ${currentRole})`,
                 `Exported   : ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST`,
                 "==========================================================\n"
             ];
@@ -2554,7 +2969,7 @@
                 <style>body { font-family: 'Courier New', monospace; padding: 30px; color: #0f172a; }</style></head>
                 <body>
                     <h2 style="margin:0; color:#be123c;">KIZA — CYBER-DEFENSE & INTRUDER MUGSHOT REPORT</h2>
-                    <p style="font-size:12px; color:#475569;">Generated by: <b>${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole})</b> | Date: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</p>
+                    <p style="font-size:12px; color:#475569;">Generated by: <b>${cleanDisplayNameOnly(currentUser).toUpperCase()} (RANK ${currentRankNum} • ${currentRole})</b> | Date: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</p>
                     <hr style="border:1px solid #fecdd3; margin-bottom:18px;">
                     ${rowsHtml}
                     <script>window.onload = () => { window.print(); };<\/script>
@@ -2563,9 +2978,6 @@
             printWin.document.close();
         }
 
-        // ==========================================================
-        // TOP HUD CLOCK, PING & LIVE CORE GAUGES
-        // ==========================================================
         function updateTopHudAndGauges() {
             const clockEl = document.getElementById('hudClock');
             if (clockEl) {
@@ -2615,10 +3027,10 @@
         // SEARCHABLE BROADCAST TRANSMITTER MODAL
         // ==========================================================
         const BASE_BROADCAST_GROUPS = [
-            { value: "all", label: "🌐 ALL OPERATIVES (GLOBAL BROADCAST)", searchKey: "all operatives global broadcast everyone" },
-            { value: "admin", label: "⚡ ADMINS ONLY", searchKey: "admins only admin" },
-            { value: "mod", label: "🛡️ MODERATORS ONLY", searchKey: "moderators only mod mods" },
-            { value: "owner", label: "👑 OWNERS ONLY", searchKey: "owners only owner master viyan" }
+            { value: "all", label: "🌐 ALL USERS (GLOBAL BROADCAST)", searchKey: "all users global broadcast everyone" },
+            { value: "admin", label: "⚡ ADMINS ONLY (RANK 4)", searchKey: "admins only admin" },
+            { value: "mod", label: "🛡️ MODERATORS ONLY (RANK 3)", searchKey: "moderators only mod mods" },
+            { value: "owner", label: "👑 OWNERS ONLY (RANKS 1 & 2)", searchKey: "owners only owner master viyan" }
         ];
 
         async function openBroadcastModal() {
@@ -2694,7 +3106,7 @@
         }
 
         // ==========================================================
-        // PER-USER NOTIFICATION CENTRE ENGINE (WITH OPERATIVE SCRUBBER)
+        // PER-USER NOTIFICATION CENTRE ENGINE (WITH RANK 5 SCRUBBER)
         // ==========================================================
         function getNotifStorageKey(dbUser = currentDBUser) {
             const safeKey = (dbUser && dbUser !== "undefined") ? dbUser : resolveDBUser(currentUser);
@@ -2739,11 +3151,10 @@
         function getUserNotifications(dbUser = currentDBUser) {
             let list = safeGetJSON(getNotifStorageKey(dbUser), []);
             const now = Date.now();
-            const isOperativeRank = (dbUser === currentDBUser && currentRole === "OPERATIVE");
+            const isGeneralUser = (dbUser === currentDBUser && currentRankNum > 2);
 
             const filtered = list.filter(n => {
-                // Scrub any leaked Owner-only security/mugshot alerts from Operative accounts
-                if (isOperativeRank && (n.category === "security_owner" || /MUGSHOT|FAILED LOGIN|WRONG PASSWORD|BRUTE-FORCE|HACKING ATTEMPT|UNAUTHORIZED RESET/i.test((n.title || "") + " " + (n.message || "")))) {
+                if (isGeneralUser && (n.category === "security_owner" || /MUGSHOT|FAILED LOGIN|WRONG PASSWORD|BRUTE-FORCE|HACKING ATTEMPT|UNAUTHORIZED RESET|PURGE PIN/i.test((n.title || "") + " " + (n.message || "")))) {
                     return false;
                 }
                 if (!n.read) return true;
@@ -2774,7 +3185,7 @@
             }
 
             let list = getUserNotifications(targetDBUser);
-            const cleanTitle = stripSlashesFromText(title).replace(/\s*\((OWNER|ADMIN|MOD)\)/gi, '');
+            const cleanTitle = stripSlashesFromText(title).replace(/\s*\((MASTER OWNER|OWNER|ADMIN|MOD|USER)\)/gi, '');
             const cleanMsg = stripSlashesFromText(message);
 
             if (serverId && list.some(n => n.id === serverId)) {
@@ -2843,7 +3254,7 @@
         function openNotifCenter() {
             if (isPinLocked) { openPinGate(pinGateMode); return; }
             document.getElementById('notifCenterModal').style.display = "flex";
-            document.getElementById('notifModalUserLabel').innerText = `${cleanDisplayNameOnly(currentUser).toUpperCase()} (${currentRole})`;
+            document.getElementById('notifModalUserLabel').innerText = `${cleanDisplayNameOnly(currentUser).toUpperCase()} (RANK ${currentRankNum} • ${currentRole})`;
             renderNotificationCentre();
         }
 
@@ -2932,7 +3343,7 @@
                     ? `<span style="color:var(--danger); font-weight:700;">● UNREAD (Stays until read)</span>`
                     : `<span style="color:var(--success);">✓ READ • ${formatRemainingTime(n.readAt)}</span>`;
 
-                const displayTitle = String(n.title || "").replace(/\s*\((OWNER|ADMIN|MOD)\)/gi, '');
+                const displayTitle = String(n.title || "").replace(/\s*\((MASTER OWNER|OWNER|ADMIN|MOD|USER)\)/gi, '');
 
                 div.innerHTML = `
                     <div class="notif-header">
@@ -2969,7 +3380,7 @@
             if (isPinLocked) { openPinGate(pinGateMode); return; }
             document.getElementById('updatesModal').style.display = "flex";
             const pubBox = document.getElementById('ownerUpdatePublisher');
-            pubBox.style.display = currentRole.includes("OWNER") ? "flex" : "none";
+            pubBox.style.display = currentRankNum <= 2 ? "flex" : "none";
             await fetchAndRenderUpdates();
         }
 
@@ -3028,7 +3439,7 @@
                     document.getElementById('newUpdateTitle').value = "";
                     document.getElementById('newUpdateDesc').value = "";
                     await fetchAndRenderUpdates();
-                    showNotification("UPDATE PUBLISHED", `${title} is now live for all operatives.`, false, { skipStore: true });
+                    showNotification("UPDATE PUBLISHED", `${title} is now live for all users.`, false, { skipStore: true });
                 } else {
                     showNotification("UPDATE ERROR", data.message || "Failed to publish update.", true);
                 }
@@ -3052,9 +3463,6 @@
             return null;
         }
 
-        // ==========================================================
-        // SMART KIZA NATURAL LANGUAGE & VOICE COMMAND INTERCEPTOR
-        // ==========================================================
         function processNaturalVoiceIntent(rawText) {
             const low = rawText.toLowerCase().trim();
             const words = low.split(/[\s,?.!]+/);
@@ -3070,29 +3478,6 @@
             if ((words.includes("live") && (words.includes("call") || words.includes("mode") || words.includes("video"))) || low === "call kiza") {
                 launchLiveCallMode();
                 return { handledLocally: true };
-            }
-
-            if (words.includes("persona") || words.includes("personality")) {
-                if (words.includes("energetic") || words.includes("hyper")) {
-                    document.getElementById('personaSelect').value = "energetic";
-                    handlePersonaChange();
-                    return { handledLocally: true };
-                }
-                if (words.includes("security") || words.includes("strict") || words.includes("tactical")) {
-                    document.getElementById('personaSelect').value = "security";
-                    handlePersonaChange();
-                    return { handledLocally: true };
-                }
-                if (words.includes("executive") || words.includes("helpful") || words.includes("polite")) {
-                    document.getElementById('personaSelect').value = "helpful";
-                    handlePersonaChange();
-                    return { handledLocally: true };
-                }
-                if (words.includes("normal")) {
-                    document.getElementById('personaSelect').value = "normal";
-                    handlePersonaChange();
-                    return { handledLocally: true };
-                }
             }
 
             if ((words.includes("dark") || words.includes("neon") || words.includes("cyberpunk")) && (words.includes("mode") || words.includes("theme") || words.includes("switch") || words.includes("turn") || words.includes("enable"))) {
@@ -3146,37 +3531,6 @@
                 return { handledLocally: true };
             }
 
-            if (
-                words.includes("threats") || words.includes("threat") || words.includes("wrongpass") || words.includes("mugshot") || words.includes("mugshots") ||
-                words.includes("hacking") || words.includes("hackers") || words.includes("intrusion") ||
-                (words.includes("wrong") && (words.includes("pass") || words.includes("password") || words.includes("passwords") || words.includes("login"))) ||
-                (words.includes("failed") && (words.includes("login") || words.includes("logins") || words.includes("password") || words.includes("attempts"))) ||
-                (words.includes("security") && (words.includes("check") || words.includes("log") || words.includes("logs") || words.includes("threat") || words.includes("report")))
-            ) {
-                return { handledLocally: false, mappedText: "/threats" };
-            }
-
-            if (
-                (words.includes("online") && (words.includes("who") || words.includes("all") || words.includes("anyone") || words.includes("anybody") || words.includes("operative") || words.includes("operatives") || words.includes("users") || words.includes("right"))) ||
-                (words.includes("active") && (words.includes("operative") || words.includes("operatives") || words.includes("users") || words.includes("who"))) ||
-                (words.includes("live") && (words.includes("operative") || words.includes("operatives")))
-            ) {
-                return { handledLocally: false, mappedText: "/operative" };
-            }
-            if (
-                words.includes("userdata") ||
-                (words.includes("user") && words.includes("data")) ||
-                (words.includes("registered") && (words.includes("user") || words.includes("users") || words.includes("operative") || words.includes("operatives") || words.includes("identities"))) ||
-                (words.includes("list") && (words.includes("users") || words.includes("operatives") || words.includes("identities")))
-            ) {
-                return { handledLocally: false, mappedText: "/userdata" };
-            }
-            if (
-                words.includes("purgelog") || words.includes("purgelogs") ||
-                (words.includes("purge") && (words.includes("log") || words.includes("logs") || words.includes("history") || words.includes("show") || words.includes("check") || words.includes("view")))
-            ) {
-                return { handledLocally: false, mappedText: "/purgelog" };
-            }
             if (low === "/cmds") {
                 return { handledLocally: false, mappedText: "/help" };
             }
@@ -3186,56 +3540,41 @@
 
         function executeAIActionTags(replyStr) {
             if (!replyStr) return "";
-            if (replyStr.includes("[ACTION:DARK_MODE]")) {
-                document.getElementById('themeSelect').value = 'dark';
-                saveSettings();
-            }
-            if (replyStr.includes("[ACTION:LIGHT_MODE]")) {
-                document.getElementById('themeSelect').value = 'light';
-                saveSettings();
-            }
-            if (replyStr.includes("[ACTION:OPEN_ARCHIVE]")) {
-                openLogsModal();
-            }
-            if (replyStr.includes("[ACTION:OPEN_SETTINGS]")) {
-                openSettings();
-            }
-            if (replyStr.includes("[ACTION:OPEN_RANK]")) {
-                openRankModal();
-            }
-            if (replyStr.includes("[ACTION:OPEN_NOTIFS]")) {
-                openNotifCenter();
-            }
-            if (replyStr.includes("[ACTION:OPEN_UPDATES]")) {
-                openUpdatesModal();
-            }
-            if (replyStr.includes("[ACTION:OPEN_THREATS]")) {
-                openThreatsModal();
-            }
-            if (replyStr.includes("[ACTION:OPEN_MISSIONS]")) {
-                openMissionsModal();
-            }
-            if (replyStr.includes("[ACTION:NEW_CHAT]")) {
-                startNewSession();
-            }
-            if (replyStr.includes("[ACTION:CAM_FLIP]")) {
-                switchCamera();
-            }
-            if (replyStr.includes("[ACTION:MUTE_VOICE]")) {
-                if (voiceEnabled) toggleVoiceMute();
-            }
+            if (replyStr.includes("[ACTION:DARK_MODE]")) { document.getElementById('themeSelect').value = 'dark'; saveSettings(); }
+            if (replyStr.includes("[ACTION:LIGHT_MODE]")) { document.getElementById('themeSelect').value = 'light'; saveSettings(); }
+            if (replyStr.includes("[ACTION:OPEN_ARCHIVE]")) openLogsModal();
+            if (replyStr.includes("[ACTION:OPEN_SETTINGS]")) openSettings();
+            if (replyStr.includes("[ACTION:OPEN_RANK]")) openRankModal();
+            if (replyStr.includes("[ACTION:OPEN_NOTIFS]")) openNotifCenter();
+            if (replyStr.includes("[ACTION:OPEN_UPDATES]")) openUpdatesModal();
+            if (replyStr.includes("[ACTION:OPEN_THREATS]")) openThreatsModal();
+            if (replyStr.includes("[ACTION:OPEN_MISSIONS]")) openMissionsModal();
+            if (replyStr.includes("[ACTION:NEW_CHAT]")) startNewSession();
             return replyStr.replace(/\[ACTION:[A-Z_]+\]/g, '').trim();
         }
 
         function handleServerStatusPayload(data) {
             if (!data) return;
+
+            // Check if another device triggered a remote all-device logout
+            if (data.force_logout_token_version && data.force_logout_token_version > currentTokenVersion) {
+                forceLogout();
+                showNotification("REMOTE LOGOUT", "Your account was remotely logged out from another device.", true, { skipStore: true });
+                return;
+            }
+            if (data.token_version && data.token_version > currentTokenVersion) {
+                forceLogout();
+                showNotification("SESSION EXPIRED", "Logged out remotely from another device.", true, { skipStore: true });
+                return;
+            }
+
             if (data.next_alert_idx !== undefined) {
                 alertIndex = data.next_alert_idx;
                 safeSetItem(getAlertIdxStorageKey(currentDBUser), String(alertIndex));
             }
             if (data.role && data.role !== "LOCKED" && formatCleanRole(data.role, currentUser) !== currentRole) {
                 applyRoleUI(data.role);
-                showNotification("CLEARANCE UPDATED", `Your clearance is now ${formatCleanRole(data.role, currentUser)}`, false, { category: "broadcast" });
+                showNotification("CLEARANCE UPDATED", `Your clearance is now RANK ${currentRankNum} (${currentRole})`, false, { category: "broadcast" });
             }
             if (data.face_id) {
                 const img = document.getElementById('savedFaceImg');
@@ -3258,12 +3597,10 @@
                     if (hasUserSeenOrDeletedAlert(uniqueAlertId, currentDBUser)) {
                         return;
                     }
-                    // Block owner-only security/mugshot alerts if current user is not Owner
-                    if ((alert.target === "owner" || alert.category === "security_owner") && !currentRole.includes("OWNER")) {
+                    if ((alert.target === "owner" || alert.category === "security_owner") && currentRankNum > 2) {
                         return;
                     }
                     const cat = alert.category || (String(alert.title).includes("LOCKDOWN") ? "lockdown" : "broadcast");
-                    // ONLY copy to all stored profiles if the alert is a true global broadcast (target === "all")
                     if (cat === "lockdown" && alert.target === "all") {
                         recordGlobalLockdownToEveryone(alert.title, alert.message, uniqueAlertId);
                     }
@@ -3280,7 +3617,7 @@
                     lastLockdownSignature = lockSig;
                     recordGlobalLockdownToEveryone("🚨 SECURITY LOCKDOWN ACTIVE", `System Lockdown: ${data.reason}`, `lock_state_${data.reason}`);
                 }
-                if (!(currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD"))) {
+                if (currentRankNum > 4) {
                     forceLogout();
                     showNotification("SECURITY LOCKDOWN", `Owner initiated Lockdown: ${data.reason}`, true, { skipStore: true });
                 }
@@ -3393,7 +3730,7 @@
             document.getElementById('rankModal').style.display = "flex";
             document.getElementById('rankSearchInput').value = "";
             const selectDropdown = document.getElementById('rankSearchSelect');
-            selectDropdown.innerHTML = '<option value="">-- FETCHING OPERATIVES... --</option>';
+            selectDropdown.innerHTML = '<option value="">-- FETCHING USERS... --</option>';
             await fetchOperativesList();
             renderRankOperativesDropdown("");
         }
@@ -3401,8 +3738,8 @@
         function renderRankOperativesDropdown(filterText) {
             const selectDropdown = document.getElementById('rankSearchSelect');
             const q = (filterText || "").toLowerCase().trim();
-            selectDropdown.innerHTML = '<option value="">-- SELECT TARGET OPERATIVE --</option>';
-            const filtered = cachedOperatives.filter(u => u.display.toLowerCase().includes(q) || u.username.toLowerCase().includes(q));
+            selectDropdown.innerHTML = '<option value="">-- SELECT TARGET USER --</option>';
+            const filtered = cachedOperatives.filter(u => !isMasterOwnerUser(u.username) && (u.display.toLowerCase().includes(q) || u.username.toLowerCase().includes(q)));
             filtered.forEach(u => {
                 let opt = document.createElement('option');
                 opt.value = u.username;
@@ -3419,7 +3756,7 @@
             let targetDBName = document.getElementById('rankSearchSelect').value;
             if (!targetDBName) targetDBName = resolveDBUser(document.getElementById('rankSearchInput').value.trim());
             const selectedRank = document.getElementById('rankSelectDropdown').value;
-            if (!targetDBName) { showNotification("ERROR", "Please select or type an operative name.", true); return; }
+            if (!targetDBName) { showNotification("ERROR", "Please select or type a user name.", true); return; }
             closeRankModal();
             document.getElementById('textInput').value = `/giverank ${targetDBName} ${selectedRank}`;
             submitCommand();
@@ -3456,7 +3793,9 @@
         function switchToProfile(idx) {
             let prof = storedProfiles[idx];
             closeSettings();
-            finalizeLogin(prof.username, prof.db_username || resolveDBUser(prof.username), prof.role, prof.face_id, false, "", null, true);
+            const safeDB = prof.db_username || resolveDBUser(prof.username);
+            const savedTokVer = parseInt(localStorage.getItem(getTokenVerStorageKey(safeDB)) || "1", 10) || 1;
+            finalizeLogin(prof.username, safeDB, prof.role, prof.face_id, false, "", null, true, null, false, savedTokVer);
         }
 
         function addIdentity() {
@@ -3472,24 +3811,28 @@
 
         function applyRoleUI(roleStr) {
             currentRole = formatCleanRole(roleStr, currentUser);
+            currentRankNum = computeRankNumber(currentRole, currentUser);
             safeSetItem('kiza_role', currentRole);
             saveCurrentProfileToStorage(currentUser, currentDBUser, currentRole, localStorage.getItem('kiza_face'));
             const roleEl = document.getElementById('roleVal');
-            roleEl.innerText = currentRole;
-            if (currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD")) {
+            roleEl.innerText = `RANK ${currentRankNum} • ${currentRole}`;
+            if (currentRankNum <= 4) {
                 roleEl.classList.add("master");
                 document.getElementById('masterCmds').style.display = "flex";
-                let isOwner = currentRole.includes("OWNER");
-                let isMod = currentRole.includes("MOD");
-                document.querySelectorAll('.owner-only').forEach(el => el.style.display = isOwner ? "inline-block" : "none");
-                document.querySelectorAll('.mod-owner-only').forEach(el => el.style.display = (isOwner || isMod) ? "inline-block" : "none");
+                let isOwnerOrMaster = currentRankNum <= 2;
+                let isTop3 = currentRankNum <= 3;
+                document.querySelectorAll('.owner-only').forEach(el => el.style.display = isOwnerOrMaster ? "inline-block" : "none");
+                document.querySelectorAll('.top3-only').forEach(el => el.style.display = isTop3 ? "inline-block" : "none");
             } else {
                 roleEl.classList.remove("master");
                 document.getElementById('masterCmds').style.display = "none";
             }
         }
 
-        function completeLoginAfterVerification(username, db_username, role, face_id, playGreeting = true, replyMsg = "", audioBase64 = null) {
+        function completeLoginAfterVerification(username, db_username, role, face_id, playGreeting = true, replyMsg = "", audioBase64 = null, tokenVersion = 1) {
+            currentTokenVersion = tokenVersion || 1;
+            safeSetItem(getTokenVerStorageKey(currentDBUser), String(currentTokenVersion));
+
             const cleanNameUpper = cleanDisplayNameOnly(currentUser).toUpperCase();
             document.getElementById('idVal').innerText = cleanNameUpper;
 
@@ -3504,20 +3847,20 @@
                 document.getElementById('faceIdStatus').innerText = "PIN ARMED";
             }
 
-            document.getElementById('uiStatus').innerText = `ONLINE • ${cleanNameUpper}`;
+            document.getElementById('uiStatus').innerText = `ONLINE • ${cleanNameUpper} (RANK ${currentRankNum})`;
             updateUnreadBadges();
 
             if (playGreeting && replyMsg) {
                 showNotification("KIZA ALERT", replyMsg, false, { skipStore: true }); 
                 if (audioBase64) playKizaAudio(audioBase64);
             } else {
-                logAction(`[SYSTEM]: Identity active: ${cleanNameUpper}`, "#007BFF");
+                logAction(`[SYSTEM]: Identity active: ${cleanNameUpper} (RANK ${currentRankNum} • ${currentRole})`, "#007BFF");
             }
-            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Ready! Ask me anything, click 📞 Live Call for hands-free video chat, attach an image (📎), or ask me to create a PDF or PowerPoint presentation.</div>';
+            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Ready! Ask me anything, click 📞 Live Call for hands-free video chat, attach an image (📎), or ask me to create a multi-format PDF or PowerPoint presentation.</div>';
             initWebSocket();
         }
 
-        async function finalizeLogin(username, db_username, role, face_id, playGreeting = true, replyMsg = "", audioBase64 = null, hasPin = true, liveCamSnap = null, isInteractiveLogin = false) {
+        async function finalizeLogin(username, db_username, role, face_id, playGreeting = true, replyMsg = "", audioBase64 = null, hasPin = true, liveCamSnap = null, isInteractiveLogin = false, tokenVersion = 1) {
             const authModalEl = document.getElementById('authModal');
             if (authModalEl) authModalEl.style.display = "none";
             const errBox = document.getElementById('authError');
@@ -3536,39 +3879,39 @@
             applyRoleUI(role);
 
             if (hasPin === false) {
-                completeLoginAfterVerification(username, db_username, role, face_id, false, "", null);
-                openPinGate("setup", "All operatives must create a 4 to 6 digit Security Backup PIN before using KIZA.");
+                completeLoginAfterVerification(username, db_username, role, face_id, false, "", null, tokenVersion);
+                openPinGate("setup", "All users must create a 4 to 6 digit Security Backup PIN before using KIZA.");
                 return;
             }
             safeSetItem(getLocalHasPinKey(currentDBUser), "true");
 
             if (isInteractiveLogin && face_id) {
                 if (!liveCamSnap) {
-                    pendingLoginData = { username, db_username, role, face_id, playGreeting, replyMsg, audioBase64 };
+                    pendingLoginData = { username, db_username, role, face_id, playGreeting, replyMsg, audioBase64, tokenVersion };
                     openPinGate("verify", "Webcam Face ID scan was unavailable during login. Enter your Security Backup PIN to unlock:");
                     return;
                 }
                 const similarity = await compareFacesSimilarity(face_id, liveCamSnap);
                 if (similarity < 0.72) {
-                    pendingLoginData = { username, db_username, role, face_id, playGreeting, replyMsg, audioBase64 };
+                    pendingLoginData = { username, db_username, role, face_id, playGreeting, replyMsg, audioBase64, tokenVersion };
                     openPinGate("verify", `Biometric Face ID similarity (${Math.round(similarity * 100)}%) below threshold. Enter your Security Backup PIN to login without Face ID:`);
                     return;
                 }
             }
 
-            completeLoginAfterVerification(username, db_username, role, face_id, playGreeting, replyMsg, audioBase64);
+            completeLoginAfterVerification(username, db_username, role, face_id, playGreeting, replyMsg, audioBase64, tokenVersion);
         }
 
         function forceLogout() {
             closePinGate();
             localStorage.removeItem('kiza_user'); localStorage.removeItem('kiza_db'); localStorage.removeItem('kiza_role'); localStorage.removeItem('kiza_face');
-            currentUser = "Guest"; currentDBUser = "guest";
+            currentUser = "Guest"; currentDBUser = "guest"; currentRankNum = 5;
             updateUnreadBadges();
             if (ws) { try { ws.onclose = null; ws.close(); } catch(e) {} ws = null; wsConnected = false; }
             document.getElementById('authModal').style.display = "flex";
             document.getElementById('cancelAuthBtn').style.display = "none";
             document.getElementById('masterCmds').style.display = "none";
-            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Ready! Ask me anything, click 📞 Live Call for hands-free video chat, attach an image (📎), or ask me to create a PDF or PowerPoint presentation.</div>';
+            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Ready! Ask me anything, click 📞 Live Call for hands-free video chat, attach an image (📎), or ask me to create a multi-format PDF or PowerPoint presentation.</div>';
             closeSettings();
         }
         function logoutUser() { forceLogout(); document.getElementById('authUser').value = ""; document.getElementById('authPass').value = ""; document.getElementById('authError').innerText = ""; }
@@ -3595,9 +3938,9 @@
             loadedArchiveHTML = "";
             currentArchiveExportData = [];
 
-            if (currentRole.includes("OWNER") || currentRole.includes("ADMIN") || currentRole.includes("MOD")) {
+            if (currentRankNum <= 4) {
                 adminControls.style.display = "flex";
-                opSelect.innerHTML = '<option value="">-- FETCHING OPERATIVES... --</option>';
+                opSelect.innerHTML = '<option value="">-- FETCHING USERS... --</option>';
                 await fetchOperativesList();
                 renderArchiveOperativesDropdown("");
                 opSelect.value = currentDBUser;
@@ -3646,7 +3989,7 @@
             if (selectedLogTarget) fetchLogSessions();
             else {
                 document.getElementById('logSessionSelect').innerHTML = '<option value="">-- SELECT CHAT SESSION --</option>';
-                document.getElementById('logsViewer').innerHTML = '<div style="text-align:center; margin-top:20px;">Select an Operative...</div>';
+                document.getElementById('logsViewer').innerHTML = '<div style="text-align:center; margin-top:20px;">Select a User...</div>';
             }
         }
 
@@ -3669,7 +4012,7 @@
                     sessionSelect.selectedIndex = 1;
                     handleSessionSelect();
                 } else {
-                    viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">No chat sessions found for this operative yet.</div>';
+                    viewer.innerHTML = '<div style="text-align:center; margin-top:20px;">No chat sessions found for this user yet.</div>';
                 }
             } catch(e) {
                 sessionSelect.innerHTML = '<option value="">-- ERROR --</option>';
@@ -3738,7 +4081,8 @@
             if (savedUser && savedRole) { 
                 const safeDB = (savedDB && savedDB !== "undefined") ? savedDB : resolveDBUser(savedUser);
                 const knownHasPin = localStorage.getItem(getLocalHasPinKey(safeDB)) === "true";
-                finalizeLogin(savedUser, safeDB, savedRole, savedFace, false, "", null, knownHasPin, null, false); 
+                const savedTokVer = parseInt(localStorage.getItem(getTokenVerStorageKey(safeDB)) || "1", 10) || 1;
+                finalizeLogin(savedUser, safeDB, savedRole, savedFace, false, "", null, knownHasPin, null, false, savedTokVer); 
             }
         });
 
@@ -3773,7 +4117,7 @@
                 } catch(e) {}
             }
             if (userSettings.showNotifs === 'off' && !isError) return; 
-            const cleanToastTitle = stripSlashesFromText(title).replace(/\s*\((OWNER|ADMIN|MOD)\)/gi, '');
+            const cleanToastTitle = stripSlashesFromText(title).replace(/\s*\((MASTER OWNER|OWNER|ADMIN|MOD|USER)\)/gi, '');
             if (document.hidden) {
                 if ("Notification" in window && Notification.permission === "granted") new Notification(cleanToastTitle, { body: stripSlashesFromText(message) });
             } else {
@@ -3795,9 +4139,6 @@
             logBox.scrollTop = logBox.scrollHeight;
         }
 
-        // ==========================================================
-        // MULTI-PERSONA DYNAMIC VOICE PLAYER & AUDIO-REACTIVE ORB
-        // ==========================================================
         function playKizaAudio(base64Data) {
             if (!voiceEnabled || !base64Data) return;
             if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
@@ -3958,7 +4299,7 @@
                             if (awaitingWakeCommand) {
                                 awaitingWakeCommand = false;
                                 document.getElementById('orb').classList.remove('processing');
-                                document.getElementById('uiStatus').innerText = `ONLINE • ${cleanDisplayNameOnly(currentUser).toUpperCase()}`;
+                                document.getElementById('uiStatus').innerText = `ONLINE • ${cleanDisplayNameOnly(currentUser).toUpperCase()} (RANK ${currentRankNum})`;
                             }
                         }, 7000);
                     }
@@ -4125,18 +4466,19 @@
                     data.audio_base64,
                     Boolean(data.has_pin),
                     silentSnap,
-                    true
+                    true,
+                    data.token_version || 1
                 );
             } catch (err) {
                 if (jwtPayload) {
                     const email = (jwtPayload.email || "").toLowerCase();
-                    const rawName = jwtPayload.name || email.split('@')[0] || "Operative";
+                    const rawName = jwtPayload.name || email.split('@')[0] || "User";
                     const isViyan = rawName.toLowerCase().includes("viyan") || email.includes("viyan");
                     const displayName = isViyan ? "Viyan Arora" : rawName;
                     const dbUser = isViyan ? "viyan_arora_owner" : rawName.replace(/\s+/g, '').toLowerCase();
-                    const role = isViyan ? "OWNER" : "OPERATIVE";
+                    const role = isViyan ? "MASTER OWNER" : "USER";
                     const knownPin = localStorage.getItem(getLocalHasPinKey(dbUser)) === "true";
-                    await finalizeLogin(displayName, dbUser, role, faceSnap, true, `Identity verified. Welcome back, ${displayName}.`, null, knownPin, silentSnap, false);
+                    await finalizeLogin(displayName, dbUser, role, faceSnap, true, `Identity verified. Welcome back, ${displayName}.`, null, knownPin, silentSnap, false, 1);
                 } else {
                     errBox.style.color = "var(--danger)";
                     errBox.innerText = "Network Error: Make sure your server is online.";
@@ -4206,7 +4548,8 @@
                     data.audio_base64,
                     Boolean(data.has_pin),
                     silentSecuritySnap,
-                    authMode === "login"
+                    authMode === "login",
+                    data.token_version || 1
                 );
             } catch (err) {
                 errBox.style.color = "var(--danger)";
@@ -4258,6 +4601,18 @@
             }
             if (!rawText || isChatActive) return;
 
+            // If user typed /purge without the Master Purge PIN, open the Purge PIN Modal
+            if (rawText.toLowerCase().startsWith("/purge") && !rawText.includes("|") && !/\d{4,8}$/.test(rawText.trim())) {
+                const possibleTarget = rawText.slice(6).trim();
+                inputField.value = "";
+                await openPurgeModal();
+                if (possibleTarget && possibleTarget.toLowerCase() !== "all") {
+                    document.getElementById('purgeSearchInput').value = possibleTarget;
+                    filterPurgeUsersDropdown();
+                }
+                return;
+            }
+
             inputField.value = "";
             clearTimeout(typingTimer); clearIndicator();
 
@@ -4278,14 +4633,18 @@
             const currentAttachedContext = attachedImageExtractedContext;
             const hasExplicitAttachment = Boolean(currentAttachedImg);
 
+            const displayUserCmd = rawText.toLowerCase().startsWith("/purge")
+                ? rawText.split("|")[0].trim() + " [MASTER PIN ENCRYPTED]"
+                : rawText;
+
             if (hasExplicitAttachment) {
-                logAction(`[${cleanSpeaker}]: [📎 Attached: ${currentAttachedName}] ${rawText}`);
+                logAction(`[${cleanSpeaker}]: [📎 Attached: ${currentAttachedName}] ${displayUserCmd}`);
                 if (currentAttachedContext && !text.startsWith("/")) {
                     text = `${text}\n\n${currentAttachedContext}`;
                 }
                 clearImageAttachment();
             } else {
-                logAction(`[${cleanSpeaker}]: ${rawText}`);
+                logAction(`[${cleanSpeaker}]: ${displayUserCmd}`);
             }
 
             isChatActive = true;
@@ -4398,27 +4757,30 @@
                 streamEntry.classList.remove("streaming-cursor");
                 orbEl.style.transform = "";
                 orbEl.classList.remove('processing');
-                document.getElementById('uiStatus').innerText = `ONLINE • ${cleanSpeaker}`;
+                document.getElementById('uiStatus').innerText = `ONLINE • ${cleanSpeaker} (RANK ${currentRankNum})`;
                 isChatActive = false;
                 setCoreLoadSpike(false);
 
-                // Parse [GENERATE_FILE:EXT:Clean Topic:Theme]
+                if (accumulatedText.includes("[PURGE_PIN_REQUIRED]")) {
+                    openPurgeModal();
+                }
+
                 if (accumulatedText.includes("[GENERATE_FILE:")) {
                     const fileMatch = accumulatedText.match(/\[GENERATE_FILE:([^:]+):([^:\]]+)(?::([^\]]+))?\]/);
                     const fileExt = fileMatch ? fileMatch[1] : "pdf";
                     const fileTopic = fileMatch ? fileMatch[2] : "Report";
                     const fileTheme = (fileMatch && fileMatch[3]) ? fileMatch[3] : (clientFileIntent ? clientFileIntent.styleTheme : "cyber_dark");
-                    prepareAndPreviewUniversalFile(fileExt, fileTopic, accumulatedText, currentAttachedImg, fileTheme);
+                    await prepareAndPreviewUniversalFile(fileExt, fileTopic, accumulatedText, currentAttachedImg, fileTheme);
                 } else if (accumulatedText.includes("[GENERATING_PDF:")) {
                     const match = accumulatedText.match(/\[GENERATING_PDF:([^\]]+)\]/);
                     const topic = match ? match[1] : "Report";
-                    prepareAndPreviewUniversalFile("pdf", topic, accumulatedText, currentAttachedImg, "cyber_dark");
+                    await prepareAndPreviewUniversalFile("pdf", topic, accumulatedText, currentAttachedImg, "cyber_dark");
                 } else if (clientFileIntent && !isStreamError) {
-                    prepareAndPreviewUniversalFile(clientFileIntent.ext, clientFileIntent.topic, accumulatedText, currentAttachedImg, clientFileIntent.styleTheme);
+                    await prepareAndPreviewUniversalFile(clientFileIntent.ext, clientFileIntent.topic, accumulatedText, currentAttachedImg, clientFileIntent.styleTheme);
                 }
 
                 executeAIActionTags(accumulatedText);
-                let finalCleaned = extractFriendlyAssistantMessage(accumulatedText);
+                let finalCleaned = extractFriendlyAssistantMessage(accumulatedText).replace(/\[PURGE_PIN_REQUIRED\]\s*/g, '');
 
                 if (!finalCleaned) {
                     finalCleaned = "I am online and ready. Tell me what you'd like to do next!";
