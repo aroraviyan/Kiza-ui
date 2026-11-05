@@ -87,7 +87,7 @@
                 linear-gradient(to bottom, rgba(0, 242, 254, 0.04) 1px, transparent 1px);
         }
 
-        /* FEATURE #2: AUDIO-REACTIVE AMBIENT NEON CANVAS BACKDROP */
+        /* AUDIO-REACTIVE AMBIENT NEON CANVAS BACKDROP */
         #ambientAudioGlow {
             position: fixed;
             inset: 0;
@@ -98,7 +98,28 @@
             background: radial-gradient(circle at 50% 42%, rgba(0, 242, 254, 0.24) 0%, rgba(168, 85, 247, 0.16) 38%, transparent 72%);
         }
 
-        /* FEATURE #3: VOICE-TO-TEXT LIVE FLOATING HOLOGRAM */
+        /* DRAG-AND-DROP FULL-SCREEN OVERLAY */
+        #dragDropOverlay {
+            position: fixed;
+            inset: 14px;
+            border: 3px dashed var(--accent-primary);
+            border-radius: 22px;
+            background: rgba(2, 132, 199, 0.16);
+            backdrop-filter: blur(10px);
+            z-index: 9500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--accent-primary);
+        }
+
+        /* VOICE-TO-TEXT LIVE FLOATING HOLOGRAM */
         #voiceHologramBox {
             display: none;
             align-items: center;
@@ -121,7 +142,7 @@
             to { box-shadow: 0 0 28px rgba(56, 189, 248, 0.75); transform: translateY(-2px); }
         }
 
-        /* FEATURE #1: SMART DYNAMIC FOLLOW-UP CHIPS */
+        /* SMART DYNAMIC FOLLOW-UP CHIPS */
         .followup-chips-row {
             display: flex;
             flex-wrap: wrap;
@@ -149,7 +170,89 @@
             box-shadow: 0 4px 12px rgba(14, 165, 233, 0.22);
         }
 
-        /* FEATURE #6: ONE-CLICK SMART ACTION BADGES FOR ATTACHMENTS */
+        /* GEMINI-STYLE CODE SANDBOX CARD IN CHAT */
+        .code-block-card {
+            background: #090d16 !important;
+            border: 1px solid var(--accent-primary) !important;
+            border-radius: 11px !important;
+            padding: 0 !important;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+        .code-block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 12px;
+            background: rgba(14, 165, 233, 0.14);
+            border-bottom: 1px solid rgba(14, 165, 233, 0.28);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10.5px;
+            color: #38bdf8;
+            font-weight: 700;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .code-block-pre {
+            margin: 0;
+            padding: 12px 14px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11.5px;
+            color: #f8fafc;
+            max-height: 250px;
+            line-height: 1.5;
+        }
+
+        /* INTERACTIVE FLASHCARD / QUIZ CARD IN CHAT */
+        .quiz-card {
+            background: var(--card-bg) !important;
+            border: 1.5px solid var(--accent-primary) !important;
+            border-radius: 12px !important;
+            padding: 14px !important;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 6px;
+        }
+        .quiz-question-box {
+            padding: 10px 12px;
+            border-radius: 9px;
+            background: var(--chip-bg);
+            border: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+        .quiz-opt-btn {
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 7px 11px;
+            border-radius: 8px;
+            font-size: 11.5px;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+        .quiz-opt-btn:hover:not(:disabled) {
+            border-color: var(--accent-primary);
+            background: var(--chip-hover);
+        }
+        .quiz-opt-btn.correct {
+            background: rgba(16, 185, 129, 0.22) !important;
+            border-color: var(--success) !important;
+            color: var(--success) !important;
+            font-weight: 800;
+        }
+        .quiz-opt-btn.wrong {
+            background: rgba(244, 63, 94, 0.2) !important;
+            border-color: var(--danger) !important;
+            color: var(--danger) !important;
+        }
+
+        /* ONE-CLICK SMART ACTION BADGES FOR ATTACHMENTS */
         .attach-smart-actions {
             display: flex;
             gap: 6px;
@@ -437,8 +540,17 @@
         }
 
         .core-assembly { 
-            position: relative; width: 175px; height: 175px; 
+            position: relative; width: 190px; height: 190px; 
             display: flex; align-items: center; justify-content: center; 
+        }
+        #orbSpectrumCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 190px;
+            height: 190px;
+            pointer-events: none;
+            z-index: 3;
         }
         .core-orb { 
             width: 86px; height: 86px; 
@@ -722,6 +834,7 @@
             .center-panel { gap: 6px; padding: 2px 6px; }
             .core-center-group { gap: 8px; }
             .core-assembly { width: 130px; height: 130px; }
+            #orbSpectrumCanvas { width: 130px; height: 130px; }
             .core-orb { width: 66px; height: 66px; }
             .ring-1 { width: 90px; height: 90px; }
             .ring-2 { width: 110px; height: 110px; }
@@ -746,8 +859,14 @@
 </head>
 <body>
 
-    <!-- FEATURE #2: AUDIO-REACTIVE AMBIENT BACKGROUND GLOW -->
+    <!-- AUDIO-REACTIVE AMBIENT BACKGROUND GLOW -->
     <div id="ambientAudioGlow"></div>
+
+    <!-- DRAG & DROP ANYWHERE OVERLAY -->
+    <div id="dragDropOverlay">
+        <div>📥 DROP IMAGE ANYWHERE TO ATTACH & SCAN (OCR)</div>
+        <div style="font-size:12px; font-family:'Inter', sans-serif; font-weight:600; color:var(--text-main);">Or press Ctrl + V anytime to paste from clipboard!</div>
+    </div>
 
     <!-- FLOATING TOAST POPUP -->
     <div id="notificationBox" onclick="openNotifCenter()" title="Click to open Notification Centre">
@@ -755,7 +874,22 @@
         <div class="notify-msg" id="notifMsg">Notification details...</div>
     </div>
 
-    <!-- INTERACTIVE DOCUMENT & SLIDE PREVIEW STUDIO MODAL (LOCKED VIEWPORT + AI REVISION BAR) -->
+    <!-- GEMINI-STYLE LIVE CODE SANDBOX MODAL (RUN, COPY & DOWNLOAD) -->
+    <div id="codeSandboxModal" class="modal-overlay" style="display:none; z-index: 635;">
+        <div class="logs-card" style="max-width: 940px; width: 96%;">
+            <div class="section-title">
+                <span id="codeSandboxTitle">💻 KIZA LIVE CODE SANDBOX • INTERACTIVE PLAYBACK</span>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; font-size:10.5px;" onclick="copyCurrentSandboxCode()">📋 COPY CODE</button>
+                    <button type="button" class="send-btn" style="padding:5px 12px; font-size:10.5px;" onclick="downloadCurrentSandboxCode()">⬇️ DOWNLOAD FILE</button>
+                    <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 4px 9px; width:auto;" onclick="closeCodeSandboxModal()">✕</button>
+                </div>
+            </div>
+            <iframe id="codeSandboxIframe" sandbox="allow-scripts allow-modals" style="width:100%; height:62vh; border:1px solid var(--card-border); border-radius:12px; background:#ffffff;"></iframe>
+        </div>
+    </div>
+
+    <!-- INTERACTIVE DOCUMENT, CHAT & SECURITY AUDIT PREVIEW STUDIO MODAL -->
     <div id="filePreviewModal" class="modal-overlay" style="display:none; z-index: 620;">
         <div class="logs-card" style="max-width: 940px; width: 96%;">
             <div class="section-title">
@@ -763,8 +897,8 @@
                 <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeFilePreviewModal()">✕ CLOSE</button>
             </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:var(--chip-bg); padding:8px 12px; border-radius:10px; border:1px solid var(--card-border);">
-                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <div id="previewFormattingToolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:var(--chip-bg); padding:8px 12px; border-radius:10px; border:1px solid var(--card-border);">
+                <div id="previewLayoutThemeSelectors" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                     <label style="font-size:11px; font-weight:700; color:var(--accent-primary);">📐 Layout Format:</label>
                     <select id="previewLayoutFormatSelect" style="width:auto; padding:5px 28px 5px 10px; font-size:11.5px; font-weight:700;" onchange="changePreviewLayoutOrTheme()">
                         <option value="infographic">📊 Infographic Dossier (KPIs + Charts)</option>
@@ -786,10 +920,10 @@
                     </select>
                 </div>
 
-                <button type="button" id="confirmDownloadBtn" class="send-btn" style="padding:7px 16px; font-size:11px;" onclick="confirmAndDownloadPreviewedFile()">⬇️ CONFIRM & DOWNLOAD</button>
+                <button type="button" id="confirmDownloadBtn" class="send-btn" style="padding:7px 16px; font-size:11px; margin-left:auto;" onclick="confirmAndDownloadPreviewedFile()">⬇️ CONFIRM & DOWNLOAD</button>
             </div>
 
-            <div style="display:flex; gap:8px; align-items:center; width:100%;">
+            <div id="aiRevisePromptContainer" style="display:flex; gap:8px; align-items:center; width:100%;">
                 <input type="text" id="aiRevisePromptInput" placeholder="✨ Prompt KIZA to edit/improve this file (e.g. 'Add a slide on Pollination with a table', 'Make it simpler', 'Add more graphs')..." style="flex:1; font-size:12.5px; padding:8px 12px;">
                 <button type="button" id="aiReviseBtn" class="send-btn" style="padding:8px 14px; font-size:11px; background:linear-gradient(135deg, #10b981 0%, #059669 100%);" onclick="submitFileRevisionPrompt()">✨ AI REVISE</button>
             </div>
@@ -818,7 +952,6 @@
             <input type="password" id="purgeMasterPinInput" placeholder="Enter Master Purge PIN..." maxlength="8" inputmode="numeric" autocomplete="off" style="text-align:center; font-family:'Orbitron', sans-serif; letter-spacing:4px;">
             <button type="button" class="send-btn" style="width:100%; background:linear-gradient(135deg, #f43f5e 0%, #be123c 100%); margin-top:6px;" onclick="submitPurgeWithMasterPin()">🗑️ VERIFY PIN & PURGE SELECTED USER</button>
 
-            <!-- ONLY VISIBLE TO RANK 1 MASTER OWNER VIYAN ARORA -->
             <div id="masterOwnerSetPurgePinBox" style="display:none; flex-direction:column; gap:6px; margin-top:10px; padding-top:10px; border-top:1px dashed var(--card-border);">
                 <div style="font-family:'Orbitron', sans-serif; font-size:10px; font-weight:700; color:var(--accent-primary);">👑 RANK 1 MASTER OWNER: CHANGE MASTER PURGE PIN</div>
                 <div style="display:flex; gap:6px;">
@@ -868,7 +1001,7 @@
         </div>
     </div>
 
-    <!-- SECURITY THREATS & INTRUDER MUGSHOTS MODAL -->
+    <!-- SECURITY THREATS & INTRUDER MUGSHOTS MODAL (PREVIEW-FIRST EXPORTS) -->
     <div id="threatsModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
@@ -879,8 +1012,9 @@
             <div style="font-size:11px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                 <span id="threatsClearanceInfo">• Viewing Clearance: Ranks 1–4 • Delete Clearance: Ranks 1 & 2</span>
                 <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px;" onclick="exportSecurityReportTXT()">📄 EXPORT .TXT</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px;" onclick="exportSecurityReportPDF()">🖨️ EXPORT PDF</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px;" onclick="exportSecurityReportCSV()">📊 PREVIEW CSV</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px;" onclick="exportSecurityReportTXT()">📄 PREVIEW .TXT</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px;" onclick="exportSecurityReportPDF()">👁️ PREVIEW PDF</button>
                     <button type="button" id="wipeAllThreatsBtn" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px; border-color:var(--danger); color:var(--danger); display:none;" onclick="deleteSecurityThreatLog(null)">🧹 WIPE ALL (RANKS 1–2)</button>
                 </div>
             </div>
@@ -891,7 +1025,7 @@
         </div>
     </div>
 
-    <!-- NOTIFICATION CENTRE MODAL -->
+    <!-- NOTIFICATION CENTRE MODAL (PERMANENT CROSS-DEVICE DISMISSAL) -->
     <div id="notifCenterModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
@@ -900,10 +1034,11 @@
             </div>
 
             <div style="font-size:11px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-                <span>• Unread stays until read • Read sits for 2 days (48h)</span>
+                <span>• Deleted alerts are permanently synced across all your devices</span>
                 <div style="display:flex; gap:6px;">
                     <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px;" onclick="markAllNotificationsRead()">✓ MARK ALL READ</button>
                     <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px; border-color:var(--danger); color:var(--danger);" onclick="clearReadNotifications()">🗑️ CLEAR READ</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px; border-color:var(--danger); color:var(--danger);" onclick="wipeAllUserNotificationsPermanently()">🧹 WIPE ALL</button>
                 </div>
             </div>
 
@@ -953,7 +1088,7 @@
             <div id="ownerUpdatePublisher" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:10px; background:var(--chip-bg); border:1px dashed var(--chip-border);">
                 <div style="font-family:'Orbitron', sans-serif; font-size:10.5px; font-weight:700; color:var(--accent-primary);">👑 PUBLISH NEW LIVE UPDATE (RANKS 1 & 2)</div>
                 <div style="display:flex; gap:8px;">
-                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v6.1)" style="width:140px;">
+                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v6.2)" style="width:140px;">
                     <input type="text" id="newUpdateTitle" placeholder="Update Headline...">
                 </div>
                 <input type="text" id="newUpdateDesc" placeholder="Short description of what was added or fixed...">
@@ -964,11 +1099,11 @@
         </div>
     </div>
 
-    <!-- SETTINGS & BIOMETRIC/PIN REMOTE ALL-DEVICE LOGOUT MODAL -->
+    <!-- SETTINGS, ACTIVE DEVICE MANAGER & BIOMETRIC/PIN REMOTE LOGOUT MODAL -->
     <div id="settingsModal" class="modal-overlay" style="display:none;">
-        <div class="auth-card" style="max-height:92vh; overflow-y:auto;">
+        <div class="auth-card" style="max-width:480px; max-height:92vh; overflow-y:auto;">
             <div class="section-title">
-                <span>⚙️ SYSTEM SETTINGS & DEVICES</span>
+                <span>⚙️ SYSTEM SETTINGS & DEVICE MANAGER</span>
                 <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeSettings()">✕</button>
             </div>
             
@@ -993,7 +1128,12 @@
             <button type="button" class="chip-btn" style="margin-top:4px;" onclick="closeSettings(); openPinGate('setup');">🔢 UPDATE SECURITY BACKUP PIN</button>
 
             <div class="section-title" style="margin-top:8px;">
-                <span>📲 LOG OUT FROM OTHER DEVICES</span>
+                <span>💻 ACTIVE LOGGED-IN DEVICES</span>
+            </div>
+            <div id="activeDevicesListContainer" style="max-height: 115px; overflow-y: auto; font-size:11px;"></div>
+
+            <div class="section-title" style="margin-top:8px;">
+                <span>📲 LOG OUT ALL OTHER DEVICES</span>
             </div>
             <div style="font-size:11px; color:var(--text-muted); line-height:1.4;">
                 Use your <b>Biometric Face ID</b> or enter your <b>4–6 Digit Backup PIN</b> to remotely sign out all other phones, tablets, or PCs where you previously logged in:
@@ -1005,9 +1145,9 @@
             </div>
 
             <div class="section-title" style="margin-top:8px;">
-                <span>👥 STORED IDENTITIES ON THIS DEVICE</span>
+                <span>👥 STORED IDENTITIES ON THIS BROWSER</span>
             </div>
-            <div id="profileListContainer" style="max-height: 110px; overflow-y: auto;"></div>
+            <div id="profileListContainer" style="max-height: 100px; overflow-y: auto;"></div>
             <button class="chip-btn" onclick="addIdentity()" style="width:100%; margin-top:2px;">+ ADD OR SWITCH IDENTITY</button>
             <button class="chip-btn" onclick="logoutUser()" style="width:100%; border-color:var(--danger); color:var(--danger); margin-top:4px;">LOGOUT THIS DEVICE</button>
         </div>
@@ -1042,7 +1182,7 @@
         </div>
     </div>
 
-    <!-- MEMORY ARCHIVE MODAL -->
+    <!-- MEMORY ARCHIVE MODAL (WITH PREVIEW-FIRST EXPORT & PERMANENT DELETE) -->
     <div id="logsModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
@@ -1060,9 +1200,10 @@
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; flex-wrap:wrap; gap:6px;">
                 <label style="font-size:11.5px; font-weight:600;">Select Chat Session:</label>
-                <div style="display:flex; gap:6px;">
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; font-size:10px;" onclick="exportArchiveTXT()">📄 EXPORT .TXT</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; font-size:10px;" onclick="exportArchivePDF()">🖨️ EXPORT PDF</button>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; font-size:10px;" onclick="exportArchiveTXT()">📄 PREVIEW .TXT</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; font-size:10px;" onclick="exportArchivePDF()">👁️ PREVIEW PDF</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; font-size:10px; border-color:var(--danger); color:var(--danger);" onclick="deleteSelectedArchiveSessionPermanently()">🗑️ DELETE SESSION</button>
                 </div>
             </div>
             <select id="logSessionSelect" onchange="handleSessionSelect()">
@@ -1153,7 +1294,7 @@
                     <div class="diag-bar-bg"><div id="memSyncBar" class="diag-bar-fill" style="width: 100%;"></div></div>
                 </div>
                 <div class="diag-item">
-                    <div class="diag-header"><span>ACTIVE MODULES</span><span id="secShieldText">LIVE • WEB • PPTX</span></div>
+                    <div class="diag-header"><span>ACTIVE MODULES</span><span id="secShieldText">SANDBOX • QUIZ • PPTX</span></div>
                     <div class="diag-bar-bg"><div class="diag-bar-fill" style="width: 100%; background: var(--success);"></div></div>
                 </div>
             </div>
@@ -1161,14 +1302,14 @@
             <button type="button" class="chip-btn" onclick="openSettings()" style="margin-top: auto; background: var(--chip-hover);">⚙️ SETTINGS & DEVICES</button>
         </div>
 
-        <!-- CENTER PANEL: TOP HUD BAR, QUANTUM CORE, VOICE HOLOGRAM & EASY COMMAND DOCK -->
+        <!-- CENTER PANEL: TOP HUD BAR, QUANTUM CORE, FREQUENCY SPECTRUM & COMMAND DOCK -->
         <div class="center-panel">
             <div class="top-hud-bar">
                 <span class="hud-stat">🕒 <span id="hudClock">--:--:-- IST</span></span>
                 <span class="hud-divider"></span>
                 <span class="hud-stat">⚡ PING: <span id="hudPing" style="color:var(--success);">22ms</span></span>
                 <span class="hud-divider"></span>
-                <button type="button" class="live-call-btn" onclick="launchLiveCallMode()" title="Open Full-Screen Gemini-Style Live Video & Voice Call">📞 KIZA LIVE</button>
+                <button type="button" class="live-call-btn" onclick="launchLiveCallMode()" title="Open Full-Screen Gemini-Style Live Video, Voice & Screen-Share Call">📞 KIZA LIVE</button>
                 <span class="hud-divider"></span>
                 <button type="button" id="sfxToggleBtn" class="hud-theme-btn" onclick="toggleTacticalSFX()" title="Toggle Sci-Fi Tactical UI Sound Effects">🎛️ SFX: ON</button>
                 <span class="hud-divider"></span>
@@ -1177,25 +1318,28 @@
 
             <div class="core-center-group">
                 <div class="core-assembly">
+                    <canvas id="orbSpectrumCanvas" width="190" height="190"></canvas>
                     <div class="core-ring ring-1"></div>
                     <div class="core-ring ring-2"></div>
                     <div class="core-ring ring-3"></div>
                     <div id="orb" class="core-orb"></div>
                 </div>
 
-                <!-- FEATURE #3: LIVE VOICE-TO-TEXT FLOATING HOLOGRAM -->
+                <!-- LIVE VOICE-TO-TEXT FLOATING HOLOGRAM -->
                 <div id="voiceHologramBox">🎙️ <span id="voiceHologramText">Listening...</span></div>
 
                 <div id="uiStatus" class="status-text">AWAITING IDENTITY...</div>
                 
                 <!-- EASY-TO-UNDERSTAND QUICK TOOLS FOR EVERYONE -->
-                <div id="publicCmds" style="display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; max-width: 680px;">
+                <div id="publicCmds" style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 690px;">
                     <button type="button" class="chip-btn" style="width:auto;" onclick="startNewSession()">➕ New Chat</button>
                     <button type="button" class="chip-btn" style="width:auto; border-color:var(--success); color:var(--success);" onclick="launchLiveCallMode()">📞 Live Call</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/search ')">🌐 Web Search</button>
+                    <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/research ')">🔬 Deep Research</button>
+                    <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/quiz ')">📝 Quiz Me</button>
+                    <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/code ')">💻 Code Sandbox</button>
                     <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/pdf ')">📄 Make PDF</button>
                     <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/pptx ')">📊 Make PPTX</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="openLogsModal()">📂 Chat History</button>
+                    <button type="button" class="chip-btn" style="width:auto;" onclick="openLogsModal()">📂 History</button>
                     <button type="button" class="chip-btn" style="width:auto;" onclick="openMissionsModal()">📋 Tasks</button>
                     <button type="button" class="chip-btn" style="width:auto;" onclick="openNotifCenter()">
                         <span>🔔 Alerts</span>
@@ -1221,7 +1365,7 @@
             <div class="input-container">
                 <div id="slashAutocomplete"></div>
 
-                <!-- ATTACHED IMAGE PREVIEW, OCR STATUS & FEATURE #6 ONE-CLICK SMART ACTIONS -->
+                <!-- ATTACHED IMAGE PREVIEW, OCR STATUS & ONE-CLICK SMART ACTIONS -->
                 <div id="attachmentPreviewBar">
                     <div style="display:flex; align-items:center; justify-content:space-between; width:100%; gap:10px;">
                         <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
@@ -1233,7 +1377,6 @@
                         </div>
                         <button type="button" class="chip-btn" style="width:auto; padding:4px 8px; border-color:var(--danger); color:var(--danger);" onclick="clearImageAttachment()" title="Remove Image">✕</button>
                     </div>
-                    <!-- FEATURE #6: ONE-CLICK ATTACHMENT ACTION BADGES -->
                     <div class="attach-smart-actions">
                         <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('Extract all visible text (OCR) from this image accurately.')">🔍 Extract Text (OCR)</button>
                         <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('Explain and summarize everything shown in this image clearly.')">🧠 Explain & Summarize</button>
@@ -1252,31 +1395,32 @@
 
                 <div class="input-row">
                     <input type="file" id="imageUploadInput" accept="image/*" style="display:none;" onchange="handleImageAttachment(event)">
-                    <button type="button" class="chip-btn" id="attachImgBtn" onclick="document.getElementById('imageUploadInput').click()" title="Attach Image for AI Analysis or PDF/PPTX" style="width:auto; padding: 9px 12px; font-size: 14px;">📎</button>
+                    <button type="button" class="chip-btn" id="attachImgBtn" onclick="document.getElementById('imageUploadInput').click()" title="Attach Image (or press Ctrl+V / Drag & Drop)" style="width:auto; padding: 9px 12px; font-size: 14px;">📎</button>
                     <button type="button" class="chip-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Spoken Voice" style="width:auto; padding: 9px 12px; font-size: 14px;">🔊</button>
                     <button type="button" class="chip-btn" id="micBtn" style="width:auto; padding: 9px 12px; font-size: 15px;" onclick="toggleSpeechRecognition()" title="Tap to Speak">🎤</button>
                     <button type="button" class="chip-btn" id="wakeToggleBtn" style="width:auto; padding: 9px 12px; font-size: 11px; white-space: nowrap;" onclick="toggleWakeWord()" title="Hands-Free Wake Word: Say 'Hello'">🗣️ WAKE: OFF</button>
-                    <input type="text" id="textInput" placeholder="Ask anything, attach 📎 photo, or say 'Make a PPTX/PDF on...'">
+                    <input type="text" id="textInput" placeholder="Ask anything, Ctrl+V image, /quiz, /code, or 'Make a PPTX/PDF...'">
                     <button type="button" class="send-btn" onclick="submitCommand()">SEND</button>
                 </div>
             </div>
         </div>
 
-        <!-- RIGHT PANEL: LIVE CONVERSATION & ACTIVITY FEED -->
+        <!-- RIGHT PANEL: LIVE CONVERSATION, CHAT EXPORTS & PREVIEWS -->
         <div class="side-panel right-panel">
             <div class="section-title">
-                <span>💬 KIZA LIVE CHAT & PREVIEWS</span>
-                <div style="display:flex; gap:5px;">
-                    <button type="button" class="chip-btn" style="width:auto; padding:3px 8px; font-size:10px;" onclick="openMissionsModal()" title="Tasks & Missions">📋</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:3px 8px; font-size:10px;" onclick="openUpdatesModal()" title="What's New">🚀</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:3px 8px; font-size:10px;" onclick="openNotifCenter()" title="Notifications">
+                <span>💬 LIVE CHAT & PREVIEWS</span>
+                <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                    <button type="button" class="chip-btn" style="width:auto; padding:3px 7px; font-size:9.5px;" onclick="exportCurrentActiveChatTXT()" title="Preview & Export Current Chat as .TXT">📝 .TXT</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:3px 7px; font-size:9.5px;" onclick="exportCurrentActiveChatPDF()" title="Preview & Export Current Chat as PDF">📄 PDF</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:3px 7px; font-size:9.5px; border-color:var(--danger); color:var(--danger);" onclick="clearCurrentActiveChatPermanently()" title="Clear & Permanently Delete Current Chat">🗑️</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:3px 7px; font-size:10px;" onclick="openNotifCenter()" title="Notifications">
                         <span>🔔</span>
                         <span id="unreadBadgeCorner" class="unread-badge">0</span>
                     </button>
                 </div>
             </div>
             <div id="actionLog" class="log-box">
-                <div>> [KIZA]: Ready! Ask me anything, click 📞 Live Call for hands-free video chat, attach an image (📎), or ask me to create a multi-format PDF or PowerPoint presentation.</div>
+                <div>> [KIZA]: Ready! Press Ctrl+V to paste screenshots, try /quiz or /code for interactive widgets, click 📞 Live Call for video & screen sharing, or ask for a multi-format PDF/PPTX.</div>
             </div>
         </div>
     </div>
@@ -1350,6 +1494,7 @@
         let cachedOperatives = [];
         let cachedThreatLogs = [];
         let currentArchiveExportData = [];
+        let currentLiveChatMessages = [];
         let currentSessionId = generateSessionId();
         let currentNotifFilter = "all";
         let lastLockdownSignature = "";
@@ -1365,6 +1510,37 @@
         let attachmentScanPromise = null;
 
         let lastCompiledFileCache = null;
+        let currentSandboxCodeObj = { lang: "html", code: "", filename: "kiza_app.html" };
+        let generatedCodeSnippetsStore = [];
+
+        function getOrCreateBrowserDeviceId() {
+            let devId = localStorage.getItem('kiza_device_id');
+            if (!devId) {
+                devId = 'dev_' + Math.random().toString(36).substr(2, 10) + '_' + Date.now().toString(36);
+                safeSetItem('kiza_device_id', devId);
+            }
+            return devId;
+        }
+
+        function getFriendlyDeviceName() {
+            const ua = navigator.userAgent || "";
+            let os = "Desktop OS";
+            if (/Windows/i.test(ua)) os = "Windows PC";
+            else if (/Android/i.test(ua)) os = "Android Device";
+            else if (/iPhone|iPad|iPod/i.test(ua)) os = "iOS Device";
+            else if (/Mac/i.test(ua)) os = "MacOS";
+            else if (/Linux/i.test(ua)) os = "Linux";
+
+            let browser = "Browser";
+            if (/Edg\//i.test(ua)) browser = "Edge";
+            else if (/Chrome\//i.test(ua)) browser = "Chrome";
+            else if (/Firefox\//i.test(ua)) browser = "Firefox";
+            else if (/Safari\//i.test(ua)) browser = "Safari";
+
+            return `${os} • ${browser}`;
+        }
+
+        const CURRENT_DEVICE_ID = getOrCreateBrowserDeviceId();
 
         const PERSONA_VOICE_CONFIG = {
             normal: { label: "UK • DRY WIT", rate: 1.04 },
@@ -1385,13 +1561,12 @@
         };
 
         const DEFAULT_UPDATES_FALLBACK = [
-            { version: "v6.1", title: "Rank 1–4 Purge Immunity, Smart Follow-Up Chips & Hologram Mic", description: "Protected Ranks 1–4 from unauthorized purge, restored historical users from logs, added clickable follow-up chips, audio-reactive ambient glow, live voice hologram, and tactical UI SFX.", author: "Viyan Arora", date: "LIVE" },
-            { version: "v5.9", title: "Biometric/PIN Remote Device Logout & Safe Targeted Purge", description: "Added remote logout from all other devices using Face ID or Backup PIN, preserved all existing userdata, and removed Global Purge for maximum database safety.", author: "Viyan Arora", date: "ACTIVE" },
-            { version: "v5.7", title: "5-Tier Rank System (Rank 1 Master Owner to Rank 5 User)", description: "Updated hierarchy to Rank 1 (Master Owner - Viyan Arora), Rank 2 (Owner), Rank 3 (Moderator), Rank 4 (Admin), Rank 5 (User), and added Master Purge PIN protection.", author: "Viyan Arora", date: "ACTIVE" }
+            { version: "v6.2", title: "Code Sandbox, Interactive Quiz, Multi-Step Research & Permanent Sync", description: "Added Gemini-style Code Sandbox (Run/Copy/Download), Interactive /quiz flashcards, /research agent, Ctrl+V image paste, Preview-Before-Download for all chats/audits, and permanent cross-device notification deletion.", author: "Viyan Arora", date: "LIVE" },
+            { version: "v6.1", title: "Rank 1–4 Purge Immunity, Smart Follow-Up Chips & Hologram Mic", description: "Protected Ranks 1–4 from unauthorized purge, restored historical users from logs, added clickable follow-up chips, audio-reactive ambient glow, live voice hologram, and tactical UI SFX.", author: "Viyan Arora", date: "ACTIVE" }
         ];
 
         // ==========================================================
-        // FEATURE #5: SCI-FI TACTICAL UI SOUND EFFECTS (HAPTIC AUDIO)
+        // SCI-FI TACTICAL UI SOUND EFFECTS
         // ==========================================================
         function playTacticalSFX(type = "click") {
             if (!sfxEnabled) return;
@@ -1456,34 +1631,88 @@
         });
 
         // ==========================================================
-        // FEATURE #1: SMART DYNAMIC FOLLOW-UP CHIPS GENERATOR
+        // CTRL + V CLIPBOARD PASTE & DRAG-AND-DROP IMAGE ANYWHERE
+        // ==========================================================
+        window.addEventListener('paste', (e) => {
+            if (isPinLocked || currentUser === "Guest") return;
+            const items = (e.clipboardData || e.originalEvent.clipboardData)?.items;
+            if (!items) return;
+            for (const item of items) {
+                if (item.type.indexOf("image") === 0) {
+                    const blob = item.getAsFile();
+                    if (blob) {
+                        e.preventDefault();
+                        processAttachedImageFileObject(blob, `Clipboard_Paste_${Date.now().toString().slice(-4)}.png`);
+                        showNotification("CLIPBOARD IMAGE PASTED", "Screenshot attached! Scanning visual & OCR text...", false, { skipStore: true });
+                        break;
+                    }
+                }
+            }
+        });
+
+        window.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (isPinLocked || currentUser === "Guest") return;
+            document.getElementById('dragDropOverlay').style.display = "flex";
+        });
+
+        window.addEventListener('dragleave', (e) => {
+            if (e.relatedTarget === null || e.clientX <= 0 || e.clientY <= 0) {
+                document.getElementById('dragDropOverlay').style.display = "none";
+            }
+        });
+
+        window.addEventListener('drop', (e) => {
+            e.preventDefault();
+            document.getElementById('dragDropOverlay').style.display = "none";
+            if (isPinLocked || currentUser === "Guest") return;
+            const files = e.dataTransfer?.files;
+            if (files && files.length > 0 && files[0].type.startsWith("image/")) {
+                processAttachedImageFileObject(files[0], files[0].name);
+                showNotification("IMAGE DROPPED", `Attached ${files[0].name} for analysis!`, false, { skipStore: true });
+            }
+        });
+
+        // ==========================================================
+        // SMART DYNAMIC FOLLOW-UP CHIPS (WITH GREETING FILTER)
         // ==========================================================
         function renderDynamicFollowUpChips(userQuery, aiReply, fileIntent) {
             const cleanQ = String(userQuery || "").replace(/\[ATTACHED IMAGE TELEMETRY:[\s\S]*$/i, '').trim();
-            if (!cleanQ || cleanQ.startsWith("/")) return;
+            const lowQ = cleanQ.toLowerCase().replace(/[!?.,]+$/g, '').trim();
+
+            const casualGreetings = [
+                "hi", "hii", "hiii", "hiiii", "hello", "helo", "hey", "heyy", "sup", "yo",
+                "ok", "okay", "kk", "thanks", "thank you", "thx", "ty", "bye", "good morning",
+                "good afternoon", "good evening", "good night", "gm", "gn", "how are you",
+                "how r u", "whats up", "what's up", "who are you", "test", "testing"
+            ];
+            if (!cleanQ || cleanQ.startsWith("/") || cleanQ.length < 4 || casualGreetings.includes(lowQ) || cleanQ.split(/\s+/).length < 2) {
+                return;
+            }
 
             const logBox = document.getElementById('actionLog');
             const oldRows = logBox.querySelectorAll('.followup-chips-row');
             oldRows.forEach(r => r.remove());
 
             const shortTopic = cleanQ
-                .replace(/^(what is|what are|explain|tell me about|how does|how do|who is|define|describe|make a|create a|generate a)\s+/i, '')
+                .replace(/^(what is|what are|explain|tell me about|how does|how do|who is|define|describe|make a|create a|generate a|write a|can you)\s+/i, '')
                 .replace(/[?.!]+$/, '')
                 .trim()
-                .slice(0, 38) || "this topic";
+                .slice(0, 36) || "this topic";
 
             let suggestions = [];
             if (fileIntent) {
                 suggestions = [
                     { label: "👁️ Open Preview Studio", action: () => openFilePreviewModal() },
-                    { label: `🌐 Search Web on ${shortTopic.slice(0, 18)}`, cmd: `/search ${shortTopic}` },
-                    { label: `📝 Quiz Me on ${shortTopic.slice(0, 18)}`, cmd: `Give me a quick 3-question quiz on ${shortTopic}` }
+                    { label: `🔬 Deep Research on ${shortTopic.slice(0, 16)}`, cmd: `/research ${shortTopic}` },
+                    { label: `📝 Quiz Me`, cmd: `/quiz ${shortTopic}` }
                 ];
             } else {
                 suggestions = [
-                    { label: `📊 Make PPTX on ${shortTopic.slice(0, 18)}`, cmd: `/pptx ${shortTopic}` },
+                    { label: `📊 Make PPTX on ${shortTopic.slice(0, 16)}`, cmd: `/pptx ${shortTopic}` },
                     { label: `📄 Make PDF Dossier`, cmd: `/pdf ${shortTopic}` },
-                    { label: `🧠 Explain Simply & Examples`, cmd: `Give me real-world examples and a simple summary of ${shortTopic}` }
+                    { label: `📝 Interactive Quiz`, cmd: `/quiz ${shortTopic}` },
+                    { label: `🔬 Deep Web Research`, cmd: `/research ${shortTopic}` }
                 ];
             }
 
@@ -1509,17 +1738,184 @@
         }
 
         // ==========================================================
-        // FEATURE #6: ONE-CLICK SMART ATTACHMENT ACTIONS
+        // GEMINI-STYLE CODE SANDBOX (RUN LIVE, COPY & DOWNLOAD FILE)
         // ==========================================================
+        function extractAndRenderCodeBlocks(rawText) {
+            const codeRegex = /```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g;
+            let match;
+            const logBox = document.getElementById('actionLog');
+            while ((match = codeRegex.exec(rawText)) !== null) {
+                const lang = (match[1] || "html").toLowerCase().trim();
+                const codeContent = match[2].trim();
+                if (!codeContent) continue;
+
+                const extMap = { html: "html", javascript: "js", js: "js", css: "css", python: "py", py: "py", json: "json", sql: "sql", c: "c", cpp: "cpp" };
+                const fileExt = extMap[lang] || "txt";
+                const filename = `kiza_code_${Date.now().toString().slice(-4)}.${fileExt}`;
+                const snippetIdx = generatedCodeSnippetsStore.length;
+                generatedCodeSnippetsStore.push({ lang, code: codeContent, filename });
+
+                const canRunLive = ["html", "javascript", "js", "svg"].includes(lang) || codeContent.includes("<html") || codeContent.includes("<body") || codeContent.includes("<script");
+
+                const card = document.createElement('div');
+                card.className = "code-block-card";
+                card.innerHTML = `
+                    <div class="code-block-header">
+                        <span>💻 CODE MODULE // ${lang.toUpperCase()} (${filename})</span>
+                        <div style="display:flex; gap:6px;">
+                            ${canRunLive ? `<button type="button" class="chip-btn" style="width:auto; padding:3px 9px; font-size:10px; border-color:var(--success); color:var(--success);" onclick="openCodeSandboxByIndex(${snippetIdx})">▶ RUN LIVE</button>` : ''}
+                            <button type="button" class="chip-btn" style="width:auto; padding:3px 9px; font-size:10px;" onclick="copyCodeSnippetByIndex(${snippetIdx})">📋 COPY</button>
+                            <button type="button" class="chip-btn" style="width:auto; padding:3px 9px; font-size:10px;" onclick="downloadCodeSnippetByIndex(${snippetIdx})">⬇️ DOWNLOAD .${fileExt.toUpperCase()}</button>
+                        </div>
+                    </div>
+                    <pre class="code-block-pre">${codeContent.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+                `;
+                logBox.appendChild(card);
+                logBox.scrollTop = logBox.scrollHeight;
+            }
+        }
+
+        function openCodeSandboxByIndex(idx) {
+            const item = generatedCodeSnippetsStore[idx];
+            if (!item) return;
+            currentSandboxCodeObj = item;
+            document.getElementById('codeSandboxTitle').innerText = `💻 KIZA LIVE CODE SANDBOX • ${item.filename.toUpperCase()}`;
+            const iframe = document.getElementById('codeSandboxIframe');
+            let htmlToRun = item.code;
+            if (item.lang === "javascript" || item.lang === "js") {
+                htmlToRun = `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:20px;"><h3>JavaScript Console Output:</h3><pre id="out"></pre><script>const origLog = console.log; console.log = (...a) => { document.getElementById('out').innerText += a.join(' ') + '\\n'; origLog(...a); }; try { ${item.code} } catch(e) { document.getElementById('out').innerText += 'Error: ' + e.message; }<\/script></body></html>`;
+            }
+            iframe.srcdoc = htmlToRun;
+            document.getElementById('codeSandboxModal').style.display = "flex";
+        }
+
+        function closeCodeSandboxModal() {
+            document.getElementById('codeSandboxModal').style.display = "none";
+            document.getElementById('codeSandboxIframe').srcdoc = "";
+        }
+
+        function copyCodeSnippetByIndex(idx) {
+            const item = generatedCodeSnippetsStore[idx];
+            if (!item) return;
+            navigator.clipboard.writeText(item.code);
+            showNotification("CODE COPIED", `Copied ${item.filename} to clipboard!`, false, { skipStore: true });
+        }
+
+        function downloadCodeSnippetByIndex(idx) {
+            const item = generatedCodeSnippetsStore[idx];
+            if (!item) return;
+            triggerTextDownload(item.filename, item.code);
+            showNotification("CODE DOWNLOADED", `Saved ${item.filename} to your device.`, false, { skipStore: true });
+        }
+
+        function copyCurrentSandboxCode() {
+            if (!currentSandboxCodeObj.code) return;
+            navigator.clipboard.writeText(currentSandboxCodeObj.code);
+            showNotification("CODE COPIED", `Copied ${currentSandboxCodeObj.filename} to clipboard!`, false, { skipStore: true });
+        }
+
+        function downloadCurrentSandboxCode() {
+            if (!currentSandboxCodeObj.code) return;
+            triggerTextDownload(currentSandboxCodeObj.filename, currentSandboxCodeObj.code);
+            showNotification("FILE DOWNLOADED", `Downloaded ${currentSandboxCodeObj.filename}!`, false, { skipStore: true });
+        }
+
+        // ==========================================================
+        // INTERACTIVE QUIZ / FLASHCARD WIDGET ENGINE
+        // ==========================================================
+        function extractAndRenderInteractiveQuiz(rawText) {
+            const quizMatch = rawText.match(/\[QUIZ_DATA\]([\s\S]*?)\[\/QUIZ_DATA\]/i);
+            if (!quizMatch) return;
+            try {
+                const jsonRaw = quizMatch[1].trim();
+                const questions = JSON.parse(jsonRaw);
+                if (!Array.isArray(questions) || questions.length === 0) return;
+
+                const logBox = document.getElementById('actionLog');
+                const quizId = 'quiz_' + Date.now();
+                let score = 0;
+                let answeredCount = 0;
+
+                const card = document.createElement('div');
+                card.className = "quiz-card";
+                card.id = quizId;
+
+                const header = document.createElement('div');
+                header.style.display = "flex";
+                header.style.justifyContent = "space-between";
+                header.style.alignItems = "center";
+                header.innerHTML = `
+                    <span style="font-family:'Orbitron', sans-serif; font-size:11px; font-weight:800; color:var(--accent-primary);">📝 INTERACTIVE FLASHCARD QUIZ (${questions.length} QUESTIONS)</span>
+                    <span id="${quizId}_score" style="font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:700; color:var(--success); background:rgba(16,185,129,0.12); padding:3px 9px; border-radius:999px;">SCORE: 0 / ${questions.length}</span>
+                `;
+                card.appendChild(header);
+
+                questions.forEach((qObj, qIdx) => {
+                    const qBox = document.createElement('div');
+                    qBox.className = "quiz-question-box";
+                    const qTitle = document.createElement('div');
+                    qTitle.style.fontWeight = "700";
+                    qTitle.style.fontSize = "12.5px";
+                    qTitle.innerText = `Q${qIdx + 1}. ${qObj.q}`;
+                    qBox.appendChild(qTitle);
+
+                    const optsContainer = document.createElement('div');
+                    optsContainer.style.display = "flex";
+                    optsContainer.style.flexDirection = "column";
+                    optsContainer.style.gap = "5px";
+
+                    const expBox = document.createElement('div');
+                    expBox.style.display = "none";
+                    expBox.style.fontSize = "11px";
+                    expBox.style.marginTop = "4px";
+                    expBox.style.color = "var(--text-muted)";
+
+                    const letters = ["A", "B", "C", "D"];
+                    (qObj.options || []).forEach((optText, oIdx) => {
+                        const btn = document.createElement('button');
+                        btn.type = "button";
+                        btn.className = "quiz-opt-btn";
+                        btn.innerText = `${letters[oIdx] || (oIdx + 1)}. ${optText}`;
+                        btn.onclick = () => {
+                            const allBtns = optsContainer.querySelectorAll('.quiz-opt-btn');
+                            allBtns.forEach(b => b.disabled = true);
+                            answeredCount++;
+                            if (oIdx === Number(qObj.answer)) {
+                                btn.classList.add('correct');
+                                score++;
+                                playTacticalSFX("complete");
+                            } else {
+                                btn.classList.add('wrong');
+                                if (allBtns[Number(qObj.answer)]) {
+                                    allBtns[Number(qObj.answer)].classList.add('correct');
+                                }
+                                playTacticalSFX("alert");
+                            }
+                            document.getElementById(`${quizId}_score`).innerText = `SCORE: ${score} / ${questions.length}`;
+                            if (qObj.explanation) {
+                                expBox.innerText = `💡 ${qObj.explanation}`;
+                                expBox.style.display = "block";
+                            }
+                        };
+                        optsContainer.appendChild(btn);
+                    });
+
+                    qBox.appendChild(optsContainer);
+                    qBox.appendChild(expBox);
+                    card.appendChild(qBox);
+                });
+
+                logBox.appendChild(card);
+                logBox.scrollTop = logBox.scrollHeight;
+            } catch (e) {}
+        }
+
         function triggerAttachmentQuickAction(promptStr) {
             if (!attachedImageBase64) return;
             document.getElementById('textInput').value = promptStr;
             submitCommand();
         }
 
-        // ==========================================================
-        // FEATURE #3: VOICE HOLOGRAM DISPLAY HELPER
-        // ==========================================================
         function showVoiceHologram(textStr) {
             const box = document.getElementById('voiceHologramBox');
             const span = document.getElementById('voiceHologramText');
@@ -1609,6 +2005,8 @@
 
         function extractFriendlyAssistantMessage(fullText) {
             const cleaned = stripSlashesFromText(fullText)
+                .replace(/\[QUIZ_DATA\][\s\S]*?\[\/QUIZ_DATA\]/gi, '')
+                .replace(/```[\s\S]*?```/g, '')
                 .replace(/\[ACTION:[A-Z_]+\]/g, '')
                 .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
                 .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
@@ -1718,17 +2116,15 @@
             }
         }
 
-        function handleImageAttachment(event) {
-            const file = event.target.files[0];
+        function processAttachedImageFileObject(file, customName = null) {
             if (!file) return;
-
             playTacticalSFX("sonar");
             isScanningAttachment = true;
             attachmentScanPromise = new Promise((resolveScan) => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const rawDataUrl = e.target.result;
-                    attachedImageName = file.name;
+                    attachedImageName = customName || file.name || "attached_image.png";
 
                     const img = new Image();
                     img.onload = async () => {
@@ -1746,11 +2142,11 @@
                         attachedImageBase64 = canvas.toDataURL('image/jpeg', 0.78);
 
                         document.getElementById('attachmentThumb').src = attachedImageBase64;
-                        document.getElementById('attachmentName').innerText = `📎 ${file.name}`;
+                        document.getElementById('attachmentName').innerText = `📎 ${attachedImageName}`;
                         document.getElementById('attachmentOcrStatus').innerText = "🔍 Scanning image text & colors...";
                         document.getElementById('attachmentPreviewBar').style.display = "flex";
 
-                        const visualMeta = analyzeImageVisualTelemetry(img, file.name);
+                        const visualMeta = analyzeImageVisualTelemetry(img, attachedImageName);
                         attachedImageExtractedContext = `[ATTACHED IMAGE TELEMETRY: ${visualMeta}]`;
 
                         if (typeof Tesseract !== "undefined") {
@@ -1783,6 +2179,12 @@
                 };
                 reader.readAsDataURL(file);
             });
+        }
+
+        function handleImageAttachment(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            processAttachedImageFileObject(file, file.name);
         }
 
         function clearImageAttachment() {
@@ -2223,7 +2625,8 @@
                 rawContent,
                 embeddedImgBase64,
                 styleTheme: finalTheme,
-                layoutFormat: "infographic"
+                layoutFormat: "infographic",
+                isPreRenderedAuditHtml: false
             };
 
             const themeDropdown = document.getElementById('previewThemeSelect');
@@ -2233,6 +2636,23 @@
             renderInChatVisualFileCard(cleanExt, finalTopic, rawContent, embeddedImgBase64, finalTheme);
             openFilePreviewModal();
             showNotification("PREVIEW STUDIO READY", `Inspect, switch formats, or prompt KIZA to edit your ${cleanExt.toUpperCase()} before downloading!`, false, { skipStore: true });
+        }
+
+        // ==========================================================
+        // UNIVERSAL PREVIEW-BEFORE-DOWNLOAD FOR CHATS & SECURITY AUDITS
+        // ==========================================================
+        function openAuditOrChatInPreviewStudio(ext, titleStr, rawTextOrHtml, isHtmlPreview = false) {
+            lastCompiledFileCache = {
+                ext: ext.toLowerCase(),
+                topic: titleStr,
+                rawContent: rawTextOrHtml,
+                embeddedImgBase64: null,
+                styleTheme: "cyber_dark",
+                layoutFormat: "infographic",
+                isPreRenderedAuditHtml: isHtmlPreview
+            };
+            openFilePreviewModal();
+            showNotification("PREVIEW READY", `Review ${titleStr} in the Preview Studio, then click Confirm & Download!`, false, { skipStore: true });
         }
 
         function changePreviewLayoutOrTheme() {
@@ -2273,6 +2693,7 @@
                 if (data.success && data.updated_content) {
                     promptInput.value = "";
                     lastCompiledFileCache.rawContent = data.updated_content;
+                    lastCompiledFileCache.isPreRenderedAuditHtml = false;
                     if (data.style_theme) {
                         lastCompiledFileCache.styleTheme = data.style_theme;
                         document.getElementById('previewThemeSelect').value = data.style_theme;
@@ -2294,21 +2715,33 @@
 
         function openFilePreviewModal() {
             if (!lastCompiledFileCache) return;
-            const { ext, topic, rawContent, embeddedImgBase64, styleTheme, layoutFormat } = lastCompiledFileCache;
+            const { ext, topic, rawContent, embeddedImgBase64, styleTheme, layoutFormat, isPreRenderedAuditHtml } = lastCompiledFileCache;
             const modal = document.getElementById('filePreviewModal');
             const titleEl = document.getElementById('filePreviewModalTitle');
             const btnEl = document.getElementById('confirmDownloadBtn');
             const viewport = document.getElementById('filePreviewViewport');
+            const selectorsBox = document.getElementById('previewLayoutThemeSelectors');
+            const reviseBox = document.getElementById('aiRevisePromptContainer');
 
             titleEl.innerText = `🎨 PREVIEW STUDIO • ${(topic || 'Document').toUpperCase()} (.${ext.toUpperCase()})`;
             btnEl.innerText = `⬇️ CONFIRM & DOWNLOAD .${ext.toUpperCase()}`;
 
-            if (ext === "pptx" || ext === "ppt") {
+            if (isPreRenderedAuditHtml) {
+                if (selectorsBox) selectorsBox.style.display = "none";
+                if (reviseBox) reviseBox.style.display = "none";
+                viewport.innerHTML = rawContent;
+            } else if (ext === "pptx" || ext === "ppt") {
+                if (selectorsBox) selectorsBox.style.display = "flex";
+                if (reviseBox) reviseBox.style.display = "flex";
                 viewport.innerHTML = buildPPTXSlidePreviewHTML(topic, rawContent, embeddedImgBase64, styleTheme);
             } else if (ext === "pdf" || ext === "doc" || ext === "docx") {
+                if (selectorsBox) selectorsBox.style.display = "flex";
+                if (reviseBox) reviseBox.style.display = "flex";
                 const reportObj = buildDecorativeReportHTML(topic, rawContent, embeddedImgBase64, styleTheme, layoutFormat || "infographic");
                 viewport.innerHTML = reportObj.html;
             } else {
+                if (selectorsBox) selectorsBox.style.display = "none";
+                if (reviseBox) reviseBox.style.display = "none";
                 const cleanBody = stripSlashesFromText(rawContent).replace(/\[GENERATE_FILE:[^\]]+\]/g, '').replace(/AI_INTRO:[^\n]*/gi, '').trim();
                 viewport.innerHTML = `<pre style="background:#0f172a; color:#f8fafc; padding:18px; border-radius:10px; overflow-x:auto; font-family:'JetBrains Mono', monospace; font-size:12px;">${cleanBody.replace(/</g, '&lt;')}</pre>`;
             }
@@ -2522,7 +2955,7 @@
             playTacticalSFX("sonar");
             const logBox = document.getElementById('actionLog');
             const badge = document.createElement('div');
-            badge.innerHTML = `<span class="web-search-pill">🌐 LIVE WEB SEARCH EXECUTED: "${queryStr}"</span>`;
+            badge.innerHTML = `<span class="web-search-pill">🌐 MULTI-SOURCE WEB RESEARCH EXECUTED: "${queryStr}"</span>`;
             logBox.appendChild(badge);
             logBox.scrollTop = logBox.scrollHeight;
         }
@@ -2577,7 +3010,6 @@
             const removable = cachedOperatives.filter(u => {
                 if (isMasterOwnerUser(u.username) || isMasterOwnerUser(u.display)) return false;
                 if (u.username.toLowerCase() === currentDBUser.toLowerCase()) return false;
-                // Strictly protect Ranks 1, 2, 3, and 4 from everyone EXCEPT Rank 1 Master Owner!
                 if (!isRank1Master && (u.rank_num || 5) <= 4) return false;
                 return !q || u.display.toLowerCase().includes(q) || u.username.toLowerCase().includes(q);
             });
@@ -2646,8 +3078,69 @@
         }
 
         // ==========================================================
-        // BIOMETRIC FACE ID OR BACKUP PIN REMOTE DEVICE LOGOUT
+        // ACTIVE DEVICE SESSION MANAGER & BIOMETRIC/PIN REMOTE LOGOUT
         // ==========================================================
+        async function registerCurrentDeviceOnServer() {
+            if (currentUser === "Guest") return;
+            try {
+                await fetch(`${SERVER_URL}/api/devices/register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        username: currentUser,
+                        device_id: CURRENT_DEVICE_ID,
+                        device_name: getFriendlyDeviceName()
+                    })
+                });
+            } catch (e) {}
+        }
+
+        async function fetchAndRenderActiveDevices() {
+            const container = document.getElementById('activeDevicesListContainer');
+            if (!container) return;
+            container.innerHTML = `<div style="text-align:center; padding:6px;">Scanning active devices...</div>`;
+            try {
+                const res = await fetch(`${SERVER_URL}/api/devices?user=${encodeURIComponent(currentUser)}`);
+                const data = await res.json();
+                container.innerHTML = "";
+                const devs = data.devices || [];
+                if (devs.length === 0) {
+                    container.innerHTML = `<div class="profile-list-item"><span>💻 ${getFriendlyDeviceName()} (THIS DEVICE)</span><span style="color:var(--success); font-weight:700;">ACTIVE</span></div>`;
+                    return;
+                }
+                devs.forEach(d => {
+                    const isThisDev = d.device_id === CURRENT_DEVICE_ID;
+                    const div = document.createElement('div');
+                    div.className = "profile-list-item";
+                    div.innerHTML = `
+                        <div>
+                            <div style="font-weight:700;">💻 ${d.device_name} ${isThisDev ? '<span style="color:var(--success);">(THIS DEVICE)</span>' : ''}</div>
+                            <div style="font-size:10px; color:var(--text-muted);">IP: ${d.ip} • Active: ${d.last_active}</div>
+                        </div>
+                        ${!isThisDev ? `<button type="button" class="chip-btn" style="width:auto; padding:3px 8px; font-size:10px; border-color:var(--danger); color:var(--danger);" onclick="revokeSingleDeviceSession('${d.device_id}')">REVOKE</button>` : ''}
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (e) {
+                container.innerHTML = `<div class="profile-list-item"><span>💻 ${getFriendlyDeviceName()} (THIS DEVICE)</span></div>`;
+            }
+        }
+
+        async function revokeSingleDeviceSession(targetDevId) {
+            try {
+                const res = await fetch(`${SERVER_URL}/api/devices/revoke`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username: currentUser, device_id: targetDevId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showNotification("DEVICE REVOKED", "Remote device session terminated!", false, { skipStore: true });
+                    await fetchAndRenderActiveDevices();
+                }
+            } catch (e) {}
+        }
+
         async function logoutOtherDevicesViaFaceID() {
             const savedFace = localStorage.getItem('kiza_face');
             const liveSnap = captureSilentSecurityFrame();
@@ -2660,7 +3153,7 @@
                 showNotification("BIOMETRIC MISMATCH", `Face ID match (${Math.round(sim * 100)}%) too low. Please enter your Backup PIN instead.`, true, { skipStore: true });
                 return;
             }
-            await executeRemoteLogoutRequest({ username: currentUser, face_verified: true, security_snap: liveSnap });
+            await executeRemoteLogoutRequest({ username: currentUser, face_verified: true, security_snap: liveSnap, keep_device_id: CURRENT_DEVICE_ID });
         }
 
         async function logoutOtherDevicesViaPin() {
@@ -2670,7 +3163,7 @@
                 return;
             }
             const liveSnap = captureSilentSecurityFrame();
-            await executeRemoteLogoutRequest({ username: currentUser, pin: pinVal, face_verified: false, security_snap: liveSnap });
+            await executeRemoteLogoutRequest({ username: currentUser, pin: pinVal, face_verified: false, security_snap: liveSnap, keep_device_id: CURRENT_DEVICE_ID });
         }
 
         async function executeRemoteLogoutRequest(payloadObj) {
@@ -2687,6 +3180,7 @@
                     safeSetItem(getTokenVerStorageKey(currentDBUser), String(currentTokenVersion));
                     showNotification("OTHER DEVICES LOGGED OUT", data.message, false, { skipStore: true });
                     logAction(`[SECURITY SHIELD]: ${data.message}`, "#00ffcc");
+                    await fetchAndRenderActiveDevices();
                 } else {
                     showNotification("VERIFICATION FAILED", data.message || "Could not log out other devices.", true);
                 }
@@ -2840,6 +3334,9 @@
         const SLASH_COMMANDS_CATALOG = [
             { cmd: "/cmds", desc: "Show available commands for your rank", maxRank: 5 },
             { cmd: "/search ", desc: "Search live web & Wikipedia: /search [query]", maxRank: 5 },
+            { cmd: "/research ", desc: "Deep multi-source web research brief: /research [topic]", maxRank: 5 },
+            { cmd: "/quiz ", desc: "Interactive multiple-choice flashcard quiz: /quiz [topic]", maxRank: 5 },
+            { cmd: "/code ", desc: "Generate runnable code in Live Sandbox: /code [app/game]", maxRank: 5 },
             { cmd: "/plan ", desc: "Decompose complex goal into Task Planner steps: /plan [goal]", maxRank: 5 },
             { cmd: "/pdf ", desc: "Create & preview a multi-format PDF report: /pdf [topic]", maxRank: 5 },
             { cmd: "/pptx ", desc: "Create & preview a PowerPoint slide deck: /pptx [topic]", maxRank: 5 },
@@ -3082,7 +3579,7 @@
                 let res = await fetch(url, { method: "DELETE" });
                 let data = await res.json();
                 if (data.success) {
-                    showNotification("SECURITY LOGS", logId ? `Threat log #${logId} deleted.` : "All threat logs wiped clean.", false, { skipStore: true });
+                    showNotification("SECURITY LOGS", logId ? `Threat log #${logId} permanently deleted.` : "All threat logs permanently wiped.", false, { skipStore: true });
                     await fetchAndRenderThreats();
                 } else {
                     showNotification("ACCESS DENIED", data.message, true);
@@ -3104,6 +3601,78 @@
             URL.revokeObjectURL(url);
         }
 
+        // ==========================================================
+        // PREVIEW-FIRST EXPORTS FOR CHATS, ARCHIVES & SECURITY AUDITS
+        // ==========================================================
+        function collectActiveChatMessagesFromDOM() {
+            const logBox = document.getElementById('actionLog');
+            const items = [];
+            Array.from(logBox.children).forEach(el => {
+                if (el.classList.contains('followup-chips-row') || el.id === 'chatIndicator') return;
+                const txt = (el.innerText || "").replace(/^>\s*/, '').trim();
+                if (txt) items.push({ time: new Date().toLocaleTimeString('en-IN', { hour12: false }), sender: txt.startsWith("[KIZA]") ? "KIZA" : cleanDisplayNameOnly(currentUser).toUpperCase(), message: txt });
+            });
+            return items;
+        }
+
+        function exportCurrentActiveChatTXT() {
+            const msgs = collectActiveChatMessagesFromDOM();
+            if (msgs.length === 0) {
+                showNotification("EXPORT NOTICE", "No chat messages to export yet.", true, { skipStore: true });
+                return;
+            }
+            const lines = [
+                "==========================================================",
+                "            KIZA — LIVE CHAT TRANSCRIPT EXPORT            ",
+                "==========================================================",
+                `User      : ${cleanDisplayNameOnly(currentUser).toUpperCase()} (RANK ${currentRankNum} • ${currentRole})`,
+                `Exported  : ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST`,
+                "==========================================================\n"
+            ];
+            msgs.forEach(m => lines.push(`[${m.time}] ${m.message}`));
+            openAuditOrChatInPreviewStudio("txt", "Live_Chat_Transcript", lines.join("\n"), false);
+        }
+
+        function exportCurrentActiveChatPDF() {
+            const msgs = collectActiveChatMessagesFromDOM();
+            if (msgs.length === 0) {
+                showNotification("EXPORT NOTICE", "No chat messages to export yet.", true, { skipStore: true });
+                return;
+            }
+            const opName = cleanDisplayNameOnly(currentUser).toUpperCase();
+            const rowsHtml = msgs.map(m => `
+                <div style="margin-bottom:10px; padding:10px 14px; border-left:4px solid ${m.sender === 'KIZA' ? '#0284c7' : '#7c3aed'}; background:#f8fafc; border-radius:6px; color:#0f172a;">
+                    <div style="font-size:10px; color:#64748b; font-family:monospace;">[${m.time}]</div>
+                    <div style="font-size:12.5px; margin-top:3px;">${m.message.replace(/</g, '&lt;')}</div>
+                </div>
+            `).join("");
+
+            const fullHtml = `
+                <div style="font-family:'Inter', Arial, sans-serif; background:#ffffff; color:#0f172a; padding:28px; border-radius:10px;">
+                    <div style="background:linear-gradient(135deg, #090d16 0%, #0284c7 100%); color:#ffffff; padding:20px 24px; border-radius:12px; margin-bottom:20px;">
+                        <div style="font-size:10px; letter-spacing:2px; color:#38bdf8; font-weight:700;">KIZA OFFICIAL CHAT TRANSCRIPT DOSSIER</div>
+                        <h2 style="margin:6px 0 2px 0; font-size:20px;">LIVE SESSION EXPORT • ${opName}</h2>
+                        <div style="font-size:11px; color:#cbd5e1;">Clearance: RANK ${currentRankNum} (${currentRole}) • Date: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</div>
+                    </div>
+                    ${rowsHtml}
+                </div>
+            `;
+            openAuditOrChatInPreviewStudio("pdf", `Chat_Transcript_${opName}`, fullHtml, true);
+        }
+
+        async function clearCurrentActiveChatPermanently() {
+            try {
+                await fetch(`${SERVER_URL}/api/history/clear`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user: currentUser, session_id: currentSessionId, clear_all_user_sessions: false })
+                });
+            } catch (e) {}
+            currentSessionId = generateSessionId();
+            document.getElementById('actionLog').innerHTML = `<div>> [KIZA]: Current chat permanently deleted from server and screen cleared!</div>`;
+            showNotification("CHAT CLEARED", "Session permanently deleted from database.", false, { skipStore: true });
+        }
+
         function exportArchiveTXT() {
             if (!currentArchiveExportData || currentArchiveExportData.length === 0) {
                 showNotification("EXPORT NOTICE", "Select a chat session with messages first.", true, { skipStore: true });
@@ -3123,8 +3692,7 @@
             currentArchiveExportData.forEach(m => {
                 lines.push(`[${m.time}] [${m.sender}]: ${m.message}`);
             });
-            triggerTextDownload(`KIZA_Chat_${Date.now()}.txt`, lines.join("\n"));
-            showNotification("EXPORT COMPLETE", "Chat archive downloaded as .TXT file.", false, { skipStore: true });
+            openAuditOrChatInPreviewStudio("txt", `Archive_${sessionTitle.slice(0, 18)}`, lines.join("\n"), false);
         }
 
         function exportArchivePDF() {
@@ -3136,29 +3704,54 @@
             const sessionTitle = sessionSelect.options[sessionSelect.selectedIndex]?.text || "Chat Session";
             const opName = cleanDisplayNameOnly(selectedLogTarget || currentUser).toUpperCase();
             let rowsHtml = currentArchiveExportData.map(m => `
-                <div style="margin-bottom:10px; padding:8px 12px; border-left:3px solid ${m.sender === 'KIZA' ? '#0284c7' : '#334155'}; background:#f8fafc; border-radius:4px;">
+                <div style="margin-bottom:10px; padding:8px 12px; border-left:3px solid ${m.sender === 'KIZA' ? '#0284c7' : '#334155'}; background:#f8fafc; border-radius:4px; color:#0f172a;">
                     <div style="font-size:11px; color:#64748b;">[${m.time}] <b>${m.sender}</b></div>
                     <div style="font-size:13px; color:#0f172a; margin-top:3px;">${m.message}</div>
                 </div>
             `).join("");
 
-            const printWin = window.open("", "_blank", "width=850,height=700");
-            if (!printWin) {
-                exportArchiveTXT();
-                return;
-            }
-            printWin.document.write(`
-                <html><head><title>KIZA Chat Report — ${opName}</title>
-                <style>body { font-family: 'Courier New', monospace; padding: 30px; color: #0f172a; }</style></head>
-                <body>
+            const fullHtml = `
+                <div style="font-family:'Inter', Arial, sans-serif; padding:28px; background:#ffffff; color:#0f172a; border-radius:10px;">
                     <h2 style="margin:0; color:#0284c7;">KIZA — AI COMMAND HUB • OFFICIAL CHAT ARCHIVE</h2>
                     <p style="font-size:12px; color:#475569;">User: <b>${opName}</b> | Session: <b>${sessionTitle}</b> | Exported: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</p>
                     <hr style="border:1px solid #cbd5e1; margin-bottom:18px;">
                     ${rowsHtml}
-                    <script>window.onload = () => { window.print(); };<\/script>
-                </body></html>
-            `);
-            printWin.document.close();
+                </div>
+            `;
+            openAuditOrChatInPreviewStudio("pdf", `Archive_${opName}`, fullHtml, true);
+        }
+
+        async function deleteSelectedArchiveSessionPermanently() {
+            const targetSessionId = document.getElementById('logSessionSelect').value;
+            if (!targetSessionId) {
+                showNotification("SELECT SESSION", "Choose a session to delete first.", true, { skipStore: true });
+                return;
+            }
+            try {
+                const res = await fetch(`${SERVER_URL}/api/history/clear`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user: selectedLogTarget || currentUser, session_id: targetSessionId, clear_all_user_sessions: false })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showNotification("SESSION DELETED", "Archived chat session permanently removed from server.", false, { skipStore: true });
+                    await fetchLogSessions();
+                }
+            } catch (e) {}
+        }
+
+        function exportSecurityReportCSV() {
+            if (!cachedThreatLogs || cachedThreatLogs.length === 0) {
+                showNotification("EXPORT NOTICE", "No security threat logs to export.", true, { skipStore: true });
+                return;
+            }
+            const rows = ["ID,Timestamp,Event_Type,Target_User,IP_Address,Mugshot_Captured,Details"];
+            cachedThreatLogs.forEach(t => {
+                const safeDetails = String(t.details || "").replace(/"/g, '""');
+                rows.push(`${t.id},"${t.timestamp}","${t.event_type}","${t.username}","${t.ip_address}","${t.mugshot ? 'YES' : 'NO'}","${safeDetails}"`);
+            });
+            openAuditOrChatInPreviewStudio("csv", "Security_Threat_Audit", rows.join("\n"), false);
         }
 
         function exportSecurityReportTXT() {
@@ -3177,8 +3770,7 @@
             cachedThreatLogs.forEach(t => {
                 lines.push(`[${t.timestamp}] ${t.event_type} | Target: ${t.username} | IP: ${t.ip_address} | Mugshot: ${t.mugshot ? 'YES (2nd+ Strike)' : 'NO (1st Strike)'} | ${t.details}`);
             });
-            triggerTextDownload(`KIZA_Security_Report_${Date.now()}.txt`, lines.join("\n"));
-            showNotification("EXPORT COMPLETE", "Security Audit Report downloaded as .TXT.", false, { skipStore: true });
+            openAuditOrChatInPreviewStudio("txt", "Security_Audit_Report", lines.join("\n"), false);
         }
 
         function exportSecurityReportPDF() {
@@ -3187,7 +3779,7 @@
                 return;
             }
             let rowsHtml = cachedThreatLogs.map(t => `
-                <div style="display:flex; gap:14px; align-items:center; margin-bottom:12px; padding:10px; border:1px solid #fda4af; border-left:4px solid #f43f5e; border-radius:6px; background:#fff1f2;">
+                <div style="display:flex; gap:14px; align-items:center; margin-bottom:12px; padding:10px; border:1px solid #fda4af; border-left:4px solid #f43f5e; border-radius:6px; background:#fff1f2; color:#0f172a;">
                     ${t.mugshot ? `<img src="${t.mugshot}" style="width:70px; height:55px; object-fit:cover; border-radius:6px; border:1px solid #f43f5e;">` : `<div style="width:70px; height:55px; border:1px dashed #94a3b8; display:flex; align-items:center; justify-content:center; font-size:10px;">1ST STRIKE</div>`}
                     <div>
                         <div style="font-size:12px; font-weight:bold; color:#be123c;">[${t.event_type}] Target: ${(t.username || '').toUpperCase()} — IP: ${t.ip_address}</div>
@@ -3197,23 +3789,15 @@
                 </div>
             `).join("");
 
-            const printWin = window.open("", "_blank", "width=850,height=700");
-            if (!printWin) {
-                exportSecurityReportTXT();
-                return;
-            }
-            printWin.document.write(`
-                <html><head><title>KIZA Security Audit Report</title>
-                <style>body { font-family: 'Courier New', monospace; padding: 30px; color: #0f172a; }</style></head>
-                <body>
+            const fullHtml = `
+                <div style="font-family:'Inter', Arial, sans-serif; padding:28px; background:#ffffff; color:#0f172a; border-radius:10px;">
                     <h2 style="margin:0; color:#be123c;">KIZA — CYBER-DEFENSE & INTRUDER MUGSHOT REPORT</h2>
-                    <p style="font-size:12px; color:#475569;">Generated by: <b>${cleanDisplayNameOnly(currentUser).toUpperCase()} (RANK ${currentRankNum} • ${currentRole})</b> | Date: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</p>
+                    <p style="font-size:12px; color:#475569;">Approved by: <b>${cleanDisplayNameOnly(currentUser).toUpperCase()} (RANK ${currentRankNum} • ${currentRole})</b> | Date: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</p>
                     <hr style="border:1px solid #fecdd3; margin-bottom:18px;">
                     ${rowsHtml}
-                    <script>window.onload = () => { window.print(); };<\/script>
-                </body></html>
-            `);
-            printWin.document.close();
+                </div>
+            `;
+            openAuditOrChatInPreviewStudio("pdf", "Security_Intrusion_Audit", fullHtml, true);
         }
 
         function updateTopHudAndGauges() {
@@ -3340,6 +3924,9 @@
             submitCommand();
         }
 
+        // ==========================================================
+        // PERMANENT CROSS-DEVICE NOTIFICATION CENTRE ENGINE
+        // ==========================================================
         function getNotifStorageKey(dbUser = currentDBUser) {
             const safeKey = (dbUser && dbUser !== "undefined") ? dbUser : resolveDBUser(currentUser);
             return `kiza_notifs_v2_${safeKey}`;
@@ -3378,6 +3965,21 @@
                 if (seenIds.length > 400) seenIds = seenIds.slice(-400);
                 safeSetItem(getSeenServerIdsKey(dbUser), JSON.stringify(seenIds));
             }
+        }
+
+        async function syncDismissedNotificationsToServer(notifIdsArray, clearAll = false) {
+            if (currentUser === "Guest") return;
+            try {
+                await fetch(`${SERVER_URL}/api/notifications/dismiss`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        user: currentUser,
+                        notif_ids: notifIdsArray || [],
+                        clear_all_for_user: clearAll
+                    })
+                });
+            } catch (e) {}
         }
 
         function getUserNotifications(dbUser = currentDBUser) {
@@ -3531,6 +4133,7 @@
 
         function deleteNotificationEarly(notifId) {
             markAlertIdAsSeen(notifId, currentDBUser);
+            syncDismissedNotificationsToServer([notifId], false);
             let list = getUserNotifications(currentDBUser);
             list = list.filter(n => n.id !== notifId);
             saveUserNotifications(list, currentDBUser);
@@ -3539,12 +4142,27 @@
 
         function clearReadNotifications() {
             let list = getUserNotifications(currentDBUser);
+            const readIds = [];
             list.forEach(n => {
-                if (n.read) markAlertIdAsSeen(n.id, currentDBUser);
+                if (n.read) {
+                    markAlertIdAsSeen(n.id, currentDBUser);
+                    readIds.push(n.id);
+                }
             });
+            syncDismissedNotificationsToServer(readIds, false);
             list = list.filter(n => !n.read);
             saveUserNotifications(list, currentDBUser);
             renderNotificationCentre();
+        }
+
+        function wipeAllUserNotificationsPermanently() {
+            let list = getUserNotifications(currentDBUser);
+            const allIds = list.map(n => n.id);
+            allIds.forEach(id => markAlertIdAsSeen(id, currentDBUser));
+            syncDismissedNotificationsToServer(allIds, true);
+            saveUserNotifications([], currentDBUser);
+            renderNotificationCentre();
+            showNotification("NOTIFICATIONS WIPED", "All notifications permanently deleted across all devices.", false, { skipStore: true });
         }
 
         function renderNotificationCentre() {
@@ -3585,7 +4203,7 @@
                         </div>
                         <div style="display:flex; gap:6px; align-items:center;">
                             ${!n.read ? `<button class="chip-btn" style="width:auto; padding:2px 8px; font-size:10px;" onclick="markNotificationRead('${n.id}')">MARK READ</button>` : ''}
-                            <button class="chip-btn" style="width:auto; padding:2px 7px; font-size:10px; border-color:var(--danger); color:var(--danger);" title="Delete Early" onclick="deleteNotificationEarly('${n.id}')">✕</button>
+                            <button class="chip-btn" style="width:auto; padding:2px 7px; font-size:10px; border-color:var(--danger); color:var(--danger);" title="Delete Permanently" onclick="deleteNotificationEarly('${n.id}')">✕</button>
                         </div>
                     </div>
                     <div style="font-size:12px; line-height:1.45;">${n.message}</div>
@@ -3787,6 +4405,11 @@
         function handleServerStatusPayload(data) {
             if (!data) return;
 
+            if (data.revoked_device_id && data.revoked_device_id === CURRENT_DEVICE_ID) {
+                forceLogout();
+                showNotification("DEVICE REVOKED", "This device session was revoked from Settings.", true, { skipStore: true });
+                return;
+            }
             if (data.force_logout_token_version && data.force_logout_token_version > currentTokenVersion) {
                 forceLogout();
                 showNotification("REMOTE LOGOUT", "Your account was remotely logged out from another device.", true, { skipStore: true });
@@ -3937,6 +4560,7 @@
             if (isPinLocked) { openPinGate(pinGateMode); return; }
             document.getElementById('settingsModal').style.display = "flex";
             renderProfileList();
+            fetchAndRenderActiveDevices();
         }
         function closeSettings() { document.getElementById('settingsModal').style.display = "none"; }
 
@@ -4082,14 +4706,15 @@
 
             document.getElementById('uiStatus').innerText = `ONLINE • ${cleanNameUpper} (RANK ${currentRankNum})`;
             updateUnreadBadges();
+            registerCurrentDeviceOnServer();
 
             if (playGreeting && replyMsg) {
                 showNotification("KIZA ALERT", replyMsg, false, { skipStore: true }); 
-                if (audioBase64) playKizaAudio(audioBase64);
+                if (audioBase64) playKizaAudio(audioBase64, replyMsg);
             } else {
                 logAction(`[SYSTEM]: Identity active: ${cleanNameUpper} (RANK ${currentRankNum} • ${currentRole})`, "#007BFF");
             }
-            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Ready! Ask me anything, click 📞 Live Call for hands-free video chat, attach an image (📎), or ask me to create a multi-format PDF or PowerPoint presentation.</div>';
+            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Ready! Press Ctrl+V to paste screenshots, try /quiz or /code for interactive widgets, click 📞 Live Call for video & screen sharing, or ask for a multi-format PDF/PPTX.</div>';
             initWebSocket();
         }
 
@@ -4144,7 +4769,7 @@
             document.getElementById('authModal').style.display = "flex";
             document.getElementById('cancelAuthBtn').style.display = "none";
             document.getElementById('masterCmds').style.display = "none";
-            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Ready! Ask me anything, click 📞 Live Call for hands-free video chat, attach an image (📎), or ask me to create a multi-format PDF or PowerPoint presentation.</div>';
+            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Ready! Press Ctrl+V to paste screenshots, try /quiz or /code for interactive widgets, click 📞 Live Call for video & screen sharing, or ask for a multi-format PDF/PPTX.</div>';
             closeSettings();
         }
         function logoutUser() { forceLogout(); document.getElementById('authUser').value = ""; document.getElementById('authPass').value = ""; document.getElementById('authError').innerText = ""; }
@@ -4319,6 +4944,14 @@
             }
         });
 
+        function clearSpectrumCanvas() {
+            const c = document.getElementById('orbSpectrumCanvas');
+            if (c) {
+                const ctx = c.getContext('2d');
+                ctx.clearRect(0, 0, c.width, c.height);
+            }
+        }
+
         function updateVoiceUI() {
             const btn = document.getElementById('voiceToggleBtn');
             const mobileBtn = document.getElementById('mobileVoiceBtn');
@@ -4328,8 +4961,10 @@
                 if(btn) btn.innerText = "🔇 VOICE: MUTED";
                 if(mobileBtn) mobileBtn.innerText = "🔇";
                 if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+                if (window.speechSynthesis) window.speechSynthesis.cancel();
                 isKizaSpeaking = false;
                 if (ambientEl) ambientEl.style.opacity = "0";
+                clearSpectrumCanvas();
             }
         }
 
@@ -4373,10 +5008,59 @@
         }
 
         // ==========================================================
-        // FEATURE #2: AUDIO-REACTIVE ORB + FULL-SCREEN AMBIENT CANVAS
+        // CIRCULAR FREQUENCY SPECTRUM + ZERO-LAG BROWSER TTS FALLBACK
         // ==========================================================
-        function playKizaAudio(base64Data) {
-            if (!voiceEnabled || !base64Data) return;
+        function drawCircularSpectrum(dataArray) {
+            const canvas = document.getElementById('orbSpectrumCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            const baseRadius = 56;
+            ctx.clearRect(0, 0, w, h);
+
+            const bars = 32;
+            const isDark = document.body.classList.contains('dark-mode');
+            for (let i = 0; i < bars; i++) {
+                const val = dataArray[i % dataArray.length] || 0;
+                const barLen = Math.max(2, (val / 255) * 32);
+                const angle = (i / bars) * Math.PI * 2;
+                const x1 = cx + Math.cos(angle) * baseRadius;
+                const y1 = cy + Math.sin(angle) * baseRadius;
+                const x2 = cx + Math.cos(angle) * (baseRadius + barLen);
+                const y2 = cy + Math.sin(angle) * (baseRadius + barLen);
+
+                ctx.strokeStyle = isDark ? (i % 2 === 0 ? '#00f2fe' : '#a855f7') : (i % 2 === 0 ? '#0284c7' : '#2563eb');
+                ctx.lineWidth = 2.5;
+                ctx.lineCap = "round";
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+        }
+
+        function speakZeroLagBrowserFallback(textToSpeak) {
+            if (!voiceEnabled || !window.speechSynthesis || !textToSpeak) return;
+            try {
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(textToSpeak.slice(0, 220));
+                const selectedPersona = document.getElementById('personaSelect')?.value || "normal";
+                utter.rate = (PERSONA_VOICE_CONFIG[selectedPersona] || PERSONA_VOICE_CONFIG.normal).rate;
+                utter.lang = selectedPersona === "helpful" ? "en-IN" : "en-GB";
+                window.speechSynthesis.speak(utter);
+            } catch (e) {}
+        }
+
+        function playKizaAudio(base64Data, fallbackText = "") {
+            if (!voiceEnabled) return;
+            if (!base64Data) {
+                if (fallbackText) speakZeroLagBrowserFallback(fallbackText);
+                return;
+            }
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
             if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
             if (analyserAnimFrame) cancelAnimationFrame(analyserAnimFrame);
 
@@ -4404,9 +5088,11 @@
                     if (!isKizaSpeaking) {
                         if (orbEl) orbEl.style.transform = "";
                         if (ambientEl) ambientEl.style.opacity = "0";
+                        clearSpectrumCanvas();
                         return;
                     }
                     analyser.getByteFrequencyData(dataArray);
+                    drawCircularSpectrum(dataArray);
                     let sum = 0;
                     for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
                     let avg = sum / dataArray.length;
@@ -4426,16 +5112,20 @@
                 isKizaSpeaking = false;
                 if (orbEl) orbEl.style.transform = "";
                 if (ambientEl) ambientEl.style.opacity = "0";
+                clearSpectrumCanvas();
             };
             currentAudio.onerror = () => {
                 isKizaSpeaking = false;
                 if (orbEl) orbEl.style.transform = "";
                 if (ambientEl) ambientEl.style.opacity = "0";
+                clearSpectrumCanvas();
+                if (fallbackText) speakZeroLagBrowserFallback(fallbackText);
             };
             currentAudio.play().catch(e => {
                 isKizaSpeaking = false;
                 if (orbEl) orbEl.style.transform = "";
                 if (ambientEl) ambientEl.style.opacity = "0";
+                clearSpectrumCanvas();
             });
         }
 
@@ -4600,9 +5290,6 @@
             }
         }
 
-        // ==========================================================
-        // FEATURE #3: SPEECH RECOGNITION WITH FLOATING HOLOGRAM PREVIEW
-        // ==========================================================
         function initSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) return null;
@@ -4949,6 +5636,7 @@
             let accumulatedText = "";
             let isStreamError = false;
             let renderedPlanner = false;
+            let playedAudioFromStream = false;
 
             const reqPayload = {
                 user: currentUser,
@@ -5000,7 +5688,8 @@
                                     logBox.scrollTop = logBox.scrollHeight;
                                     orbEl.style.transform = `scale(${(1.03 + Math.random() * 0.08).toFixed(3)})`;
                                 } else if (payload.type === "audio" && payload.audio_base64) {
-                                    playKizaAudio(payload.audio_base64);
+                                    playedAudioFromStream = true;
+                                    playKizaAudio(payload.audio_base64, extractFriendlyAssistantMessage(accumulatedText));
                                 }
                             } catch (parseErr) {}
                         }
@@ -5022,7 +5711,10 @@
                         if (syncData.plan_steps && syncData.plan_steps.length && !renderedPlanner) {
                             renderTaskPlannerQueueInFeed(syncData.plan_steps);
                         }
-                        if (syncData.audio_base64) playKizaAudio(syncData.audio_base64);
+                        if (syncData.audio_base64) {
+                            playedAudioFromStream = true;
+                            playKizaAudio(syncData.audio_base64, extractFriendlyAssistantMessage(accumulatedText));
+                        }
                     }
                 }
 
@@ -5055,14 +5747,25 @@
                     await prepareAndPreviewUniversalFile(clientFileIntent.ext, clientFileIntent.topic, accumulatedText, currentAttachedImg, clientFileIntent.styleTheme);
                 }
 
+                if (accumulatedText.includes("```")) {
+                    extractAndRenderCodeBlocks(accumulatedText);
+                }
+                if (accumulatedText.includes("[QUIZ_DATA]")) {
+                    extractAndRenderInteractiveQuiz(accumulatedText);
+                }
+
                 executeAIActionTags(accumulatedText);
                 let finalCleaned = extractFriendlyAssistantMessage(accumulatedText).replace(/\[PURGE_PIN_REQUIRED\]\s*/g, '');
 
                 if (!finalCleaned) {
-                    finalCleaned = "I am online and ready. Tell me what you'd like to do next!";
+                    finalCleaned = "Interactive module is ready below!";
                 }
                 streamEntry.innerText = `> [KIZA]: ${finalCleaned}`;
                 logBox.scrollTop = logBox.scrollHeight;
+
+                if (!playedAudioFromStream && !isStreamError && voiceEnabled) {
+                    speakZeroLagBrowserFallback(finalCleaned);
+                }
 
                 if (!isStreamError) {
                     playTacticalSFX("complete");
