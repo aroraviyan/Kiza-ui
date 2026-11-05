@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KIZA LIVE — Real-Time AI Video & Voice Call</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>KIZA LIVE — Real-Time Video, Screen Share & Voice Call</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet">
@@ -48,9 +49,19 @@
             z-index: 1;
         }
 
+        #liveAmbientGlow {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 0.12s ease-out, transform 0.12s ease-out;
+            background: radial-gradient(circle at 50% 42%, rgba(0, 242, 254, 0.28) 0%, rgba(168, 85, 247, 0.18) 40%, transparent 74%);
+        }
+
         .top-bar {
             width: 100%;
-            max-width: 960px;
+            max-width: 980px;
             padding: 18px 24px;
             display: flex;
             justify-content: space-between;
@@ -114,8 +125,8 @@
             position: fixed;
             top: 82px;
             right: 24px;
-            width: 210px;
-            height: 150px;
+            width: 230px;
+            height: 158px;
             background: #050811;
             border: 1.5px solid var(--glass-border);
             border-radius: 16px;
@@ -127,20 +138,29 @@
             justify-content: center;
             transition: all 0.3s ease;
         }
+        .pip-camera-card.screen-mode {
+            width: 290px;
+            height: 175px;
+            border-color: var(--accent-green);
+            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.75), 0 0 25px rgba(16, 185, 129, 0.35);
+        }
         .pip-camera-card video {
             width: 100%;
             height: 100%;
             object-fit: cover;
             transform: scaleX(-1);
         }
-        .pip-camera-card.rear-lens video {
+        .pip-camera-card.rear-lens video,
+        .pip-camera-card.screen-mode video {
             transform: scaleX(1);
+            object-fit: contain;
+            background: #02040a;
         }
         .pip-label {
             position: absolute;
             bottom: 8px;
             left: 10px;
-            background: rgba(3, 6, 17, 0.75);
+            background: rgba(3, 6, 17, 0.82);
             backdrop-filter: blur(6px);
             padding: 3px 8px;
             border-radius: 6px;
@@ -171,7 +191,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 24px;
+            gap: 20px;
             z-index: 10;
             width: 100%;
             max-width: 780px;
@@ -181,12 +201,22 @@
 
         .orb-wrapper {
             position: relative;
-            width: 250px;
-            height: 250px;
+            width: 260px;
+            height: 260px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
+        }
+
+        #liveSpectrumCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 260px;
+            pointer-events: none;
+            z-index: 6;
         }
 
         .live-ring {
@@ -299,7 +329,7 @@
 
         .bottom-dock {
             width: 100%;
-            max-width: 720px;
+            max-width: 740px;
             padding: 16px 20px 26px 20px;
             display: flex;
             flex-direction: column;
@@ -339,13 +369,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 16px;
+            gap: 14px;
             flex-wrap: wrap;
         }
 
         .ctrl-btn {
-            width: 56px;
-            height: 56px;
+            width: 54px;
+            height: 54px;
             border-radius: 50%;
             background: var(--glass-bg);
             backdrop-filter: blur(16px);
@@ -364,6 +394,11 @@
             border-color: var(--accent-cyan);
             box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
         }
+        .ctrl-btn.active-screen {
+            background: rgba(16, 185, 129, 0.25);
+            border-color: var(--accent-green);
+            box-shadow: 0 0 22px rgba(16, 185, 129, 0.6);
+        }
         .ctrl-btn.muted {
             background: rgba(244, 63, 94, 0.22);
             border-color: var(--danger);
@@ -371,8 +406,8 @@
         }
 
         .end-call-btn {
-            height: 56px;
-            padding: 0 28px;
+            height: 54px;
+            padding: 0 26px;
             border-radius: 999px;
             background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%);
             border: none;
@@ -394,9 +429,9 @@
         }
 
         @media (max-width: 680px) {
-            .pip-camera-card {
-                width: 130px;
-                height: 96px;
+            .pip-camera-card, .pip-camera-card.screen-mode {
+                width: 140px;
+                height: 100px;
                 top: 74px;
                 right: 14px;
             }
@@ -404,6 +439,7 @@
                 width: 200px;
                 height: 200px;
             }
+            #liveSpectrumCanvas { width: 200px; height: 200px; }
             .live-orb { width: 98px; height: 98px; }
             .l-ring-1 { width: 140px; height: 140px; }
             .l-ring-2 { width: 170px; height: 170px; }
@@ -412,6 +448,8 @@
     </style>
 </head>
 <body>
+
+    <div id="liveAmbientGlow"></div>
 
     <div class="top-bar">
         <div class="call-badge">
@@ -431,13 +469,14 @@
 
     <div class="pip-camera-card" id="pipCard">
         <video id="liveVideo" autoplay playsinline muted></video>
-        <canvas id="captureCanvas" width="480" height="360" style="display:none;"></canvas>
+        <canvas id="captureCanvas" width="800" height="450" style="display:none;"></canvas>
         <div class="vision-scan-line" id="scanLine"></div>
         <div class="pip-label" id="camBadgeLabel">👁️ VISION ACTIVE</div>
     </div>
 
     <div class="center-stage">
         <div class="orb-wrapper" onclick="triggerManualBargeIn()" title="Tap Orb anytime to interrupt KIZA and speak immediately">
+            <canvas id="liveSpectrumCanvas" width="260" height="260"></canvas>
             <div class="live-ring l-ring-1"></div>
             <div class="live-ring l-ring-2"></div>
             <div class="live-ring l-ring-3"></div>
@@ -447,12 +486,12 @@
         <div id="callStateBanner" class="call-state-pill">🟢 LISTENING TO YOU...</div>
 
         <div class="transcript-box">
-            <div class="user-caption" id="userLiveCaption">🎤 Say anything or show an object to your camera...</div>
+            <div class="user-caption" id="userLiveCaption">🎤 Speak anytime, show an object on camera, or click 🖥️ to share your screen...</div>
             <div class="kiza-caption" id="kizaLiveCaption">Connecting to KIZA Live Neural Core...</div>
         </div>
 
         <div class="barge-in-hint">
-            💡 <b>Natural Turn-Taking Active:</b> Just start speaking (or tap the Orb) anytime to interrupt KIZA mid-sentence.
+            💡 <b>Camera + Screen Vision Active:</b> Click <b>🖥️</b> below to let KIZA see your code, browser, or study notes live!
         </div>
     </div>
 
@@ -465,6 +504,7 @@
         <div class="call-controls-row">
             <button type="button" class="ctrl-btn" id="micMuteBtn" onclick="toggleMicMute()" title="Mute / Unmute Microphone">🎤</button>
             <button type="button" class="ctrl-btn" id="camMuteBtn" onclick="toggleCamStream()" title="Toggle Camera Vision">📷</button>
+            <button type="button" class="ctrl-btn" id="screenShareBtn" onclick="toggleScreenShare()" title="Share Your Screen / Window with KIZA">🖥️</button>
             <button type="button" class="ctrl-btn" id="flipCamBtn" onclick="flipLiveCamera()" title="Flip Front / Back Camera">🔄</button>
             <button type="button" class="ctrl-btn" id="bargeInBtn" onclick="triggerManualBargeIn()" title="Interrupt KIZA Speech Now">✋</button>
             <button type="button" class="end-call-btn" onclick="endLiveCall()">📞 END CALL</button>
@@ -487,6 +527,8 @@
         let callSeconds = 0;
 
         let mediaStream = null;
+        let screenStream = null;
+        let isScreenSharing = false;
         let videoDevices = [];
         let currentCamIdx = 0;
         let isCamOn = true;
@@ -496,6 +538,7 @@
         let isKizaSpeaking = false;
         let isKizaThinking = false;
         let kizaAudio = null;
+        let fallbackSpeechTimer = null;
 
         let audioCtx = null;
         let kizaAnalyserFrame = null;
@@ -520,7 +563,11 @@
             document.getElementById('callHeaderTitle').innerText = `KIZA LIVE • ${cleanName} • ${mins}:${secs}`;
         }, 1000);
 
+        // ==========================================================
+        // CAMERA & REAL-TIME SCREEN SHARE VISION ENGINE
+        // ==========================================================
         async function initLiveCamera() {
+            if (isScreenSharing) return;
             try {
                 if (mediaStream) {
                     mediaStream.getTracks().forEach(t => t.stop());
@@ -531,9 +578,12 @@
                 });
                 const videoEl = document.getElementById('liveVideo');
                 videoEl.srcObject = mediaStream;
+                document.getElementById('pipCard').classList.remove('screen-mode');
                 videoDevices = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
-                document.getElementById('camBadgeLabel').innerText = "👁️ VISION ACTIVE";
+                document.getElementById('camBadgeLabel').innerText = "👁️ CAM VISION";
                 document.getElementById('scanLine').style.display = "block";
+                isCamOn = true;
+                document.getElementById('camMuteBtn').classList.remove('muted');
             } catch (e) {
                 isCamOn = false;
                 document.getElementById('camBadgeLabel').innerText = "📷 CAM OFFLINE";
@@ -541,17 +591,86 @@
             }
         }
 
+        async function toggleScreenShare() {
+            const screenBtn = document.getElementById('screenShareBtn');
+            const pipCard = document.getElementById('pipCard');
+            const videoEl = document.getElementById('liveVideo');
+
+            if (isScreenSharing) {
+                stopScreenShareAndRestoreCam();
+                return;
+            }
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+                document.getElementById('userLiveCaption').innerText = "⚠️ Screen sharing is only supported on desktop browsers or supported tablets.";
+                return;
+            }
+
+            try {
+                screenStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { cursor: "always", width: { ideal: 1280 }, height: { ideal: 720 } },
+                    audio: false
+                });
+
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(t => t.stop());
+                }
+
+                isScreenSharing = true;
+                screenBtn.classList.add('active-screen');
+                pipCard.classList.add('screen-mode');
+                videoEl.srcObject = screenStream;
+                document.getElementById('camBadgeLabel').innerText = "🖥️ SCREEN VISION";
+                document.getElementById('scanLine').style.display = "block";
+
+                const videoTrack = screenStream.getVideoTracks()[0];
+                if (videoTrack) {
+                    videoTrack.onended = () => {
+                        stopScreenShareAndRestoreCam();
+                    };
+                }
+
+                setTimeout(() => {
+                    const snap = captureCurrentVideoFrame();
+                    if (snap && wsReady && liveWs && liveWs.readyState === WebSocket.OPEN) {
+                        liveWs.send(JSON.stringify({ type: "frame", image_base64: snap }));
+                    }
+                }, 400);
+            } catch (err) {
+                isScreenSharing = false;
+                screenBtn.classList.remove('active-screen');
+            }
+        }
+
+        function stopScreenShareAndRestoreCam() {
+            if (screenStream) {
+                screenStream.getTracks().forEach(t => t.stop());
+                screenStream = null;
+            }
+            isScreenSharing = false;
+            document.getElementById('screenShareBtn').classList.remove('active-screen');
+            document.getElementById('pipCard').classList.remove('screen-mode');
+            if (isCamOn) {
+                initLiveCamera();
+            } else {
+                document.getElementById('liveVideo').srcObject = null;
+                document.getElementById('camBadgeLabel').innerText = "📷 CAM MUTED";
+                document.getElementById('scanLine').style.display = "none";
+            }
+        }
+
         function captureCurrentVideoFrame() {
-            if (!isCamOn || !mediaStream) return null;
+            const activeVideoStream = isScreenSharing ? screenStream : (isCamOn ? mediaStream : null);
+            if (!activeVideoStream) return null;
             try {
                 const videoEl = document.getElementById('liveVideo');
                 if (!videoEl.videoWidth) return null;
                 const canvas = document.getElementById('captureCanvas');
-                canvas.width = 480;
-                canvas.height = 360;
+                canvas.width = isScreenSharing ? 800 : 480;
+                canvas.height = isScreenSharing ? 450 : 360;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-                latestFrameBase64 = canvas.toDataURL('image/jpeg', 0.65);
+                latestFrameBase64 = canvas.toDataURL('image/jpeg', isScreenSharing ? 0.76 : 0.65);
                 return latestFrameBase64;
             } catch (e) {
                 return null;
@@ -559,14 +678,15 @@
         }
 
         setInterval(() => {
-            if (!isCamOn) return;
+            if (!isCamOn && !isScreenSharing) return;
             const frame = captureCurrentVideoFrame();
             if (frame && wsReady && liveWs && liveWs.readyState === WebSocket.OPEN) {
                 liveWs.send(JSON.stringify({ type: "frame", image_base64: frame }));
             }
-        }, 2500);
+        }, 2400);
 
         async function flipLiveCamera() {
+            if (isScreenSharing) return;
             if (videoDevices.length <= 1) return;
             currentCamIdx = (currentCamIdx + 1) % videoDevices.length;
             if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
@@ -578,6 +698,10 @@
         }
 
         function toggleCamStream() {
+            if (isScreenSharing) {
+                stopScreenShareAndRestoreCam();
+                return;
+            }
             isCamOn = !isCamOn;
             const btn = document.getElementById('camMuteBtn');
             if (isCamOn) {
@@ -590,6 +714,47 @@
                 document.getElementById('camBadgeLabel').innerText = "📷 CAM MUTED";
                 document.getElementById('scanLine').style.display = "none";
                 latestFrameBase64 = null;
+            }
+        }
+
+        // ==========================================================
+        // CIRCULAR FREQUENCY SPECTRUM + MICROPHONE BARGE-IN
+        // ==========================================================
+        function drawLiveCircularSpectrum(dataArray) {
+            const canvas = document.getElementById('liveSpectrumCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            const baseRadius = 74;
+            ctx.clearRect(0, 0, w, h);
+
+            const bars = 36;
+            for (let i = 0; i < bars; i++) {
+                const val = dataArray[i % dataArray.length] || 0;
+                const barLen = Math.max(2, (val / 255) * 42);
+                const angle = (i / bars) * Math.PI * 2;
+                const x1 = cx + Math.cos(angle) * baseRadius;
+                const y1 = cy + Math.sin(angle) * baseRadius;
+                const x2 = cx + Math.cos(angle) * (baseRadius + barLen);
+                const y2 = cy + Math.sin(angle) * (baseRadius + barLen);
+
+                ctx.strokeStyle = i % 2 === 0 ? '#00f2fe' : '#a855f7';
+                ctx.lineWidth = 2.8;
+                ctx.lineCap = "round";
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+        }
+
+        function clearLiveSpectrumCanvas() {
+            const canvas = document.getElementById('liveSpectrumCanvas');
+            if (canvas) {
+                canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
             }
         }
 
@@ -618,6 +783,11 @@
                         const orb = document.getElementById('liveOrb');
                         const scale = 1 + Math.min(0.25, (avgVoiceBand / 255) * 0.32);
                         orb.style.transform = `scale(${scale.toFixed(3)})`;
+                        if (avgVoiceBand > 12) {
+                            drawLiveCircularSpectrum(data);
+                        } else {
+                            clearLiveSpectrumCanvas();
+                        }
                     }
                 }
                 monitorMicVolume();
@@ -631,6 +801,13 @@
         }
 
         function executeInstantBargeIn(reason = "Voice barge-in") {
+            if (fallbackSpeechTimer) {
+                clearInterval(fallbackSpeechTimer);
+                fallbackSpeechTimer = null;
+            }
+            if (window.speechSynthesis) {
+                try { window.speechSynthesis.cancel(); } catch (e) {}
+            }
             if (kizaAudio) {
                 try {
                     kizaAudio.pause();
@@ -641,6 +818,9 @@
             if (kizaAnalyserFrame) cancelAnimationFrame(kizaAnalyserFrame);
             isKizaSpeaking = false;
             isKizaThinking = false;
+            clearLiveSpectrumCanvas();
+            const ambientEl = document.getElementById('liveAmbientGlow');
+            if (ambientEl) ambientEl.style.opacity = "0";
 
             if (wsReady && liveWs && liveWs.readyState === WebSocket.OPEN) {
                 try {
@@ -711,6 +891,7 @@
                 btn.classList.add('muted');
                 btn.innerText = "🔇";
                 setOrbState("listening", "🔇 MICROPHONE MUTED");
+                clearLiveSpectrumCanvas();
                 if (recognition) { try { recognition.stop(); } catch (e) {} }
             } else {
                 btn.classList.remove('muted');
@@ -817,12 +998,14 @@
         });
 
         // ==========================================================
-        // SCRUBS ALL [IMG: ...] & METADATA TAGS FROM LIVE CAPTIONS
+        // SCRUBS ALL [IMG: ...] TAGS + ZERO-LAG BROWSER TTS FALLBACK
         // ==========================================================
         function handleKizaLiveReply(replyText, audioBase64) {
             const cleanText = String(replyText || "")
                 .replace(/<think>[\s\S]*?<\/think>/gi, '')
                 .replace(/<\/?think>/gi, '')
+                .replace(/\[QUIZ_DATA\][\s\S]*?\[\/QUIZ_DATA\]/gi, '')
+                .replace(/```[\s\S]*?```/g, '')
                 .replace(/\[IMG\s*:[^\]]*\]/gi, '')
                 .replace(/\[IMAGE\s*:[^\]]*\]/gi, '')
                 .replace(/\[GENERATE_FILE:[^\]]+\]/gi, '')
@@ -834,13 +1017,63 @@
             document.getElementById('kizaLiveCaption').innerText = cleanText || "I'm listening.";
 
             if (audioBase64) {
-                playLiveKizaVoice(audioBase64);
+                playLiveKizaVoice(audioBase64, cleanText);
             } else {
+                speakZeroLagLiveFallback(cleanText);
+            }
+        }
+
+        function speakZeroLagLiveFallback(textToSpeak) {
+            if (!window.speechSynthesis || !textToSpeak) {
+                setOrbState("listening", "🟢 LISTENING TO YOU...");
+                return;
+            }
+            try {
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(textToSpeak.slice(0, 260));
+                const persona = document.getElementById('livePersonaSelect').value || "normal";
+                utter.rate = PERSONA_RATES[persona] || 1.05;
+                utter.lang = persona === "helpful" ? "en-IN" : "en-GB";
+
+                const orb = document.getElementById('liveOrb');
+                const ambientEl = document.getElementById('liveAmbientGlow');
+
+                utter.onstart = () => {
+                    isKizaSpeaking = true;
+                    setOrbState("speaking", "🔊 KIZA SPEAKING (SPEAK TO INTERRUPT)");
+                    fallbackSpeechTimer = setInterval(() => {
+                        if (!isKizaSpeaking) return;
+                        const fakeData = Array.from({ length: 36 }, () => Math.floor(40 + Math.random() * 140));
+                        drawLiveCircularSpectrum(fakeData);
+                        orb.style.transform = `scale(${(1.06 + Math.random() * 0.18).toFixed(3)})`;
+                        if (ambientEl) ambientEl.style.opacity = "0.55";
+                    }, 90);
+                };
+
+                const finishFallback = () => {
+                    if (fallbackSpeechTimer) {
+                        clearInterval(fallbackSpeechTimer);
+                        fallbackSpeechTimer = null;
+                    }
+                    isKizaSpeaking = false;
+                    orb.style.transform = "";
+                    if (ambientEl) ambientEl.style.opacity = "0";
+                    clearLiveSpectrumCanvas();
+                    setOrbState("listening", "🟢 LISTENING TO YOU...");
+                };
+
+                utter.onend = finishFallback;
+                utter.onerror = finishFallback;
+                window.speechSynthesis.speak(utter);
+            } catch (e) {
                 setOrbState("listening", "🟢 LISTENING TO YOU...");
             }
         }
 
-        function playLiveKizaVoice(base64Audio) {
+        function playLiveKizaVoice(base64Audio, fallbackText = "") {
+            if (window.speechSynthesis) {
+                try { window.speechSynthesis.cancel(); } catch (e) {}
+            }
             if (kizaAudio) {
                 try { kizaAudio.pause(); } catch (e) {}
                 kizaAudio = null;
@@ -855,6 +1088,7 @@
             kizaAudio.playbackRate = PERSONA_RATES[persona] || 1.05;
 
             const orb = document.getElementById('liveOrb');
+            const ambientEl = document.getElementById('liveAmbientGlow');
 
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -869,14 +1103,20 @@
                 function animateKizaOrb() {
                     if (!isKizaSpeaking) {
                         orb.style.transform = "";
+                        if (ambientEl) ambientEl.style.opacity = "0";
+                        clearLiveSpectrumCanvas();
                         return;
                     }
                     analyser.getByteFrequencyData(freqData);
+                    drawLiveCircularSpectrum(freqData);
                     let sum = 0;
                     for (let i = 0; i < freqData.length; i++) sum += freqData[i];
                     const avg = sum / freqData.length;
                     const scale = 1 + (avg / 255) * 0.36;
                     orb.style.transform = `scale(${scale.toFixed(3)})`;
+                    if (ambientEl) {
+                        ambientEl.style.opacity = Math.min(0.95, avg / 170).toFixed(2);
+                    }
                     kizaAnalyserFrame = requestAnimationFrame(animateKizaOrb);
                 }
                 animateKizaOrb();
@@ -885,17 +1125,25 @@
             kizaAudio.onended = () => {
                 isKizaSpeaking = false;
                 orb.style.transform = "";
+                if (ambientEl) ambientEl.style.opacity = "0";
+                clearLiveSpectrumCanvas();
                 setOrbState("listening", "🟢 LISTENING TO YOU...");
             };
             kizaAudio.onerror = () => {
                 isKizaSpeaking = false;
                 orb.style.transform = "";
-                setOrbState("listening", "🟢 LISTENING TO YOU...");
+                if (ambientEl) ambientEl.style.opacity = "0";
+                clearLiveSpectrumCanvas();
+                if (fallbackText) speakZeroLagLiveFallback(fallbackText);
+                else setOrbState("listening", "🟢 LISTENING TO YOU...");
             };
             kizaAudio.play().catch(() => {
                 isKizaSpeaking = false;
                 orb.style.transform = "";
-                setOrbState("listening", "🟢 LISTENING TO YOU...");
+                if (ambientEl) ambientEl.style.opacity = "0";
+                clearLiveSpectrumCanvas();
+                if (fallbackText) speakZeroLagLiveFallback(fallbackText);
+                else setOrbState("listening", "🟢 LISTENING TO YOU...");
             });
         }
 
@@ -909,6 +1157,7 @@
 
         function endLiveCall() {
             executeInstantBargeIn();
+            if (screenStream) screenStream.getTracks().forEach(t => t.stop());
             if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
             if (liveWs) { try { liveWs.close(); } catch (e) {} }
             window.location.href = "index.html";
