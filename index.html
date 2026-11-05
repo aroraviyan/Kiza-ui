@@ -6,106 +6,103 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>KIZA — AI Command Hub</title>
+    <title>KIZA — Your Everyday AI Assistant</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root {
-            --bg-main: #f0f6fc;
-            --bg-gradient: radial-gradient(circle at 50% 15%, #ffffff 0%, #e6f0fa 58%, #d5e6f7 100%);
-            --card-bg: rgba(255, 255, 255, 0.88);
-            --card-border: rgba(14, 165, 233, 0.35);
-            --card-shadow: 0 10px 30px -6px rgba(14, 165, 233, 0.14), 0 0 1px 1px rgba(14, 165, 233, 0.18);
+            --bg-main: #ffffff;
+            --bg-sidebar: #f8fafc;
+            --bg-surface: #f1f5f9;
+            --bg-elevated: #ffffff;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
             --text-main: #0f172a;
-            --text-muted: #475569;
-            --accent-primary: #0284c7;
-            --accent-glow: #38bdf8;
-            --accent-secondary: #2563eb;
-            --danger: #f43f5e;
+            --text-muted: #64748b;
+            --accent-primary: #4f46e5;
+            --accent-glow: #818cf8;
+            --accent-secondary: #0ea5e9;
+            --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #0ea5e9 55%, #ec4899 100%);
+            --danger: #ef4444;
             --warning: #f59e0b;
             --success: #10b981;
-            --chip-bg: rgba(14, 165, 233, 0.09);
-            --chip-hover: rgba(14, 165, 233, 0.18);
-            --chip-border: rgba(14, 165, 233, 0.38);
-            --feed-bg: rgba(248, 250, 252, 0.94);
-            --input-bg: rgba(255, 255, 255, 0.96);
+            --chip-bg: #f1f5f9;
+            --chip-hover: #e2e8f0;
+            --chip-border: #cbd5e1;
+            --feed-bg: #ffffff;
+            --input-bg: #f8fafc;
         }
 
         body.dark-mode {
-            --bg-main: #040711;
-            --bg-gradient: radial-gradient(circle at 50% 25%, #110926 0%, #060814 55%, #020308 100%);
-            --card-bg: rgba(11, 15, 30, 0.84);
-            --card-border: rgba(168, 85, 247, 0.38);
-            --card-shadow: 0 12px 35px -5px rgba(0, 0, 0, 0.7), 0 0 20px rgba(168, 85, 247, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-            --accent-primary: #00f2fe;
-            --accent-glow: #a855f7;
-            --accent-secondary: #c084fc;
-            --danger: #ff0055;
-            --warning: #fbbf24;
-            --success: #00ffcc;
-            --chip-bg: rgba(0, 242, 254, 0.08);
-            --chip-hover: rgba(0, 242, 254, 0.18);
-            --chip-border: rgba(0, 242, 254, 0.4);
-            --feed-bg: rgba(6, 9, 20, 0.78);
-            --input-bg: rgba(9, 13, 28, 0.92);
+            --bg-main: #131314;
+            --bg-sidebar: #1e1f20;
+            --bg-surface: #282a2c;
+            --bg-elevated: #1e1f20;
+            --card-bg: #1e1f20;
+            --card-border: #333537;
+            --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+            --text-main: #e3e3e3;
+            --text-muted: #9aa0a6;
+            --accent-primary: #8ab4f8;
+            --accent-glow: #c58af9;
+            --accent-secondary: #78d9ec;
+            --accent-gradient: linear-gradient(135deg, #8ab4f8 0%, #c58af9 55%, #f28b82 100%);
+            --danger: #f28b82;
+            --warning: #fdd663;
+            --success: #81c995;
+            --chip-bg: #282a2c;
+            --chip-hover: #37393b;
+            --chip-border: #444746;
+            --feed-bg: #131314;
+            --input-bg: #1e1f20;
         }
 
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 999px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
 
-        body { 
-            background: var(--bg-gradient);
+        body {
             background-color: var(--bg-main);
             color: var(--text-main);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden;
-            transition: background 0.35s ease, color 0.35s ease;
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
+            transition: background-color 0.25s ease, color 0.25s ease;
         }
 
-        body::before {
-            content: ""; position: fixed; inset: 0;
-            background-image: 
-                linear-gradient(to right, rgba(14, 165, 233, 0.045) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(14, 165, 233, 0.045) 1px, transparent 1px);
-            background-size: 36px 36px;
-            pointer-events: none; z-index: 1;
-        }
-        body.dark-mode::before {
-            background-image: 
-                linear-gradient(to right, rgba(168, 85, 247, 0.06) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(0, 242, 254, 0.04) 1px, transparent 1px);
-        }
-
-        /* AUDIO-REACTIVE AMBIENT NEON CANVAS BACKDROP */
+        /* SUBTLE AMBIENT AUDIO GLOW */
         #ambientAudioGlow {
             position: fixed;
             inset: 0;
             pointer-events: none;
-            z-index: 2;
+            z-index: 1;
             opacity: 0;
-            transition: opacity 0.12s ease-out, transform 0.12s ease-out;
-            background: radial-gradient(circle at 50% 42%, rgba(0, 242, 254, 0.24) 0%, rgba(168, 85, 247, 0.16) 38%, transparent 72%);
+            transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+            background: radial-gradient(circle at 50% 85%, rgba(79, 70, 229, 0.14) 0%, rgba(14, 165, 233, 0.1) 40%, transparent 75%);
         }
 
         /* DRAG-AND-DROP FULL-SCREEN OVERLAY */
         #dragDropOverlay {
             position: fixed;
-            inset: 14px;
-            border: 3px dashed var(--accent-primary);
-            border-radius: 22px;
-            background: rgba(2, 132, 199, 0.16);
-            backdrop-filter: blur(10px);
+            inset: 16px;
+            border: 2.5px dashed var(--accent-primary);
+            border-radius: 24px;
+            background: rgba(79, 70, 229, 0.12);
+            backdrop-filter: blur(8px);
             z-index: 9500;
             display: none;
             align-items: center;
@@ -113,10 +110,394 @@
             flex-direction: column;
             gap: 10px;
             pointer-events: none;
-            font-family: 'Orbitron', sans-serif;
             font-size: 18px;
-            font-weight: 800;
+            font-weight: 700;
             color: var(--accent-primary);
+        }
+
+        /* ==========================================================
+           MODERN GEMINI-STYLE APP LAYOUT (SIDEBAR + MAIN WORKSPACE)
+           ========================================================== */
+        .app-shell {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            z-index: 10;
+        }
+
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            z-index: 90;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            padding: 14px 12px;
+            gap: 12px;
+            flex-shrink: 0;
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), width 0.28s ease;
+            z-index: 100;
+        }
+
+        .sidebar.collapsed {
+            margin-left: -280px;
+        }
+
+        .sidebar-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2px 4px;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: -0.3px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-sparkle {
+            width: 28px;
+            height: 28px;
+            border-radius: 9px;
+            background: var(--accent-gradient);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 14px;
+            -webkit-text-fill-color: #fff;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+        }
+
+        .new-chat-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 11px 16px;
+            border-radius: 999px;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: var(--card-shadow);
+            transition: all 0.2s ease;
+        }
+        .new-chat-pill:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-1px);
+        }
+
+        .sidebar-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 4px 8px 0 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* SIDEBAR RECENT CHATS LIST */
+        .sidebar-history-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            padding-right: 2px;
+        }
+
+        .sidebar-chat-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 9px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: background 0.15s ease;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .sidebar-chat-item:hover {
+            background: var(--chip-hover);
+        }
+        .sidebar-chat-item.active {
+            background: var(--chip-bg);
+            color: var(--accent-primary);
+            font-weight: 700;
+        }
+        .sidebar-chat-title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+        .sidebar-chat-del {
+            opacity: 0;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 12px;
+            padding: 2px 5px;
+            border-radius: 5px;
+        }
+        .sidebar-chat-item:hover .sidebar-chat-del {
+            opacity: 1;
+        }
+        .sidebar-chat-del:hover {
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.12);
+        }
+
+        /* SIDEBAR COLLAPSIBLE TOOLS & ADMIN DRAWER */
+        .sidebar-section-card {
+            background: var(--bg-surface);
+            border-radius: 12px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .sidebar-grid-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid var(--card-border);
+            padding-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .user-profile-Trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 12px;
+            background: var(--bg-surface);
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .user-profile-Trigger:hover {
+            background: var(--chip-hover);
+        }
+
+        .face-thumb {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-primary);
+            object-fit: cover;
+            display: none;
+            flex-shrink: 0;
+        }
+        .avatar-fallback {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        /* ==========================================================
+           MAIN CHAT WORKSPACE (GEMINI STYLE)
+           ========================================================== */
+        .main-workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg-main);
+        }
+
+        .workspace-header {
+            height: 60px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--card-border);
+            flex-shrink: 0;
+            gap: 10px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: var(--chip-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.18s ease;
+            position: relative;
+        }
+        .icon-btn:hover {
+            background: var(--chip-hover);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* COMPACT FLOATING CAMERA & ORB WIDGET */
+        .floating-vision-widget {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            width: 190px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 10px;
+            box-shadow: var(--card-shadow);
+            z-index: 45;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .floating-vision-widget.open {
+            display: flex;
+        }
+
+        .camera-box {
+            width: 100%;
+            height: 110px;
+            background: #0f172a;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* CENTRAL CHAT STREAM & WELCOME HERO */
+        .chat-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 16px 12px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .chat-max-width {
+            width: 100%;
+            max-width: 820px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .gemini-welcome-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 18px 12px 8px 12px;
+            gap: 10px;
+        }
+
+        .core-assembly {
+            position: relative;
+            width: 78px;
+            height: 78px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #orbSpectrumCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 78px;
+            height: 78px;
+            pointer-events: none;
+            z-index: 3;
+        }
+        .core-orb {
+            width: 44px;
+            height: 44px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            box-shadow: 0 6px 24px rgba(79, 70, 229, 0.35);
+            z-index: 2;
+            transition: transform 0.08s ease-out, box-shadow 0.2s ease;
+        }
+        .core-orb.processing {
+            box-shadow: 0 0 32px var(--accent-secondary);
+        }
+        .core-ring { display: none; }
+
+        .welcome-greeting {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .status-text {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+            background: var(--chip-bg);
+            padding: 4px 12px;
+            border-radius: 999px;
         }
 
         /* VOICE-TO-TEXT LIVE FLOATING HOLOGRAM */
@@ -124,57 +505,215 @@
             display: none;
             align-items: center;
             gap: 8px;
-            padding: 8px 18px;
+            padding: 7px 16px;
             border-radius: 999px;
-            background: rgba(2, 132, 199, 0.14);
-            border: 1.5px solid var(--accent-primary);
-            box-shadow: 0 0 24px rgba(56, 189, 248, 0.45);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            font-weight: 700;
+            background: rgba(79, 70, 229, 0.1);
+            border: 1px solid var(--accent-primary);
+            font-size: 12.5px;
+            font-weight: 600;
             color: var(--accent-primary);
-            max-width: 560px;
+            max-width: 520px;
             text-align: center;
-            animation: pulseHolo 1.2s infinite alternate;
-        }
-        @keyframes pulseHolo {
-            from { box-shadow: 0 0 14px rgba(56, 189, 248, 0.3); transform: translateY(0); }
-            to { box-shadow: 0 0 28px rgba(56, 189, 248, 0.75); transform: translateY(-2px); }
         }
 
-        /* SMART DYNAMIC FOLLOW-UP CHIPS */
+        /* QUICK SUGGESTION PILLS */
+        #publicCmds {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 4px;
+        }
+
+        /* CONVERSATION FEED BUBBLES */
+        .log-box, .logs-viewer {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            font-size: 14.5px;
+            line-height: 1.65;
+            color: var(--text-main);
+        }
+        .logs-viewer {
+            max-height: 360px;
+            overflow-y: auto;
+            background: var(--bg-surface);
+            padding: 14px;
+            border-radius: 14px;
+            border: 1px solid var(--card-border);
+        }
+
+        .log-box > div, .logs-viewer > div {
+            padding: 14px 18px;
+            border-radius: 18px;
+            background: var(--bg-surface);
+            border: 1px solid var(--card-border);
+            word-break: break-word;
+            animation: fadeInMsg 0.2s ease-out;
+        }
+        @keyframes fadeInMsg {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .streaming-cursor::after {
+            content: "●";
+            display: inline-block;
+            margin-left: 5px;
+            color: var(--accent-primary);
+            animation: blinkCursor 0.6s infinite alternate;
+        }
+        @keyframes blinkCursor { from { opacity: 1; } to { opacity: 0.2; } }
+
+        /* ==========================================================
+           BOTTOM FLOATING GEMINI INPUT COMPOSER
+           ========================================================== */
+        .composer-wrapper {
+            width: 100%;
+            padding: 8px 16px 16px 16px;
+            display: flex;
+            justify-content: center;
+            background: linear-gradient(180deg, transparent 0%, var(--bg-main) 30%);
+            flex-shrink: 0;
+        }
+
+        .input-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 820px;
+            gap: 8px;
+            background: var(--input-bg);
+            padding: 10px 14px;
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: var(--card-shadow);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .input-container:focus-within {
+            border-color: var(--accent-primary);
+            box-shadow: 0 6px 25px rgba(79, 70, 229, 0.12);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 6px;
+            width: 100%;
+            align-items: center;
+        }
+
+        .input-row input[type="text"] {
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            padding: 8px 6px;
+            font-size: 15px;
+            color: var(--text-main);
+            flex: 1;
+        }
+
+        /* BUTTONS, CHIPS & INPUTS */
+        .chip-btn {
+            background: var(--chip-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 7px 12px;
+            font-family: inherit;
+            font-size: 12px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            text-align: center;
+            transition: all 0.18s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .chip-btn:hover {
+            background: var(--chip-hover);
+            border-color: var(--chip-border);
+        }
+
+        .send-btn {
+            background: var(--accent-primary);
+            border: none;
+            color: #ffffff;
+            padding: 9px 18px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 999px;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        .send-btn:hover {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+        }
+        body.dark-mode .send-btn {
+            color: #0f172a;
+        }
+
+        .live-call-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            color: #ffffff;
+            padding: 7px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+
+        .unread-badge {
+            background: var(--danger);
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 999px;
+            display: none;
+        }
+        .unread-badge.active { display: inline-block; }
+
+        /* FOLLOW-UP CHIPS, CODE SANDBOX & QUIZ CARDS */
         .followup-chips-row {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 4px;
-            padding: 4px 2px !important;
+            gap: 7px;
+            padding: 2px 0 !important;
             background: transparent !important;
-            border-left: none !important;
+            border: none !important;
         }
         .followup-chip {
             background: var(--chip-bg);
-            border: 1px solid var(--chip-border);
+            border: 1px solid var(--card-border);
             color: var(--accent-primary);
-            padding: 5px 11px;
+            padding: 6px 13px;
             border-radius: 999px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: 'Inter', sans-serif;
+            transition: all 0.18s ease;
         }
         .followup-chip:hover {
             background: var(--chip-hover);
-            transform: translateY(-1px) scale(1.02);
-            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.22);
+            transform: translateY(-1px);
         }
 
-        /* GEMINI-STYLE CODE SANDBOX CARD IN CHAT */
         .code-block-card {
-            background: #090d16 !important;
-            border: 1px solid var(--accent-primary) !important;
-            border-radius: 11px !important;
+            background: #0f172a !important;
+            border: 1px solid #334155 !important;
+            border-radius: 14px !important;
             padding: 0 !important;
             overflow: hidden;
             margin-top: 6px;
@@ -183,459 +722,119 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 7px 12px;
-            background: rgba(14, 165, 233, 0.14);
-            border-bottom: 1px solid rgba(14, 165, 233, 0.28);
+            padding: 8px 14px;
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 10.5px;
+            font-size: 11px;
             color: #38bdf8;
-            font-weight: 700;
+            font-weight: 600;
             flex-wrap: wrap;
             gap: 6px;
         }
         .code-block-pre {
             margin: 0;
-            padding: 12px 14px;
+            padding: 14px;
             overflow-x: auto;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 11.5px;
+            font-size: 12px;
             color: #f8fafc;
-            max-height: 250px;
+            max-height: 260px;
             line-height: 1.5;
         }
 
-        /* INTERACTIVE FLASHCARD / QUIZ CARD IN CHAT */
         .quiz-card {
             background: var(--card-bg) !important;
             border: 1.5px solid var(--accent-primary) !important;
-            border-radius: 12px !important;
-            padding: 14px !important;
+            border-radius: 16px !important;
+            padding: 16px !important;
             display: flex;
             flex-direction: column;
             gap: 12px;
-            margin-top: 6px;
         }
         .quiz-question-box {
-            padding: 10px 12px;
-            border-radius: 9px;
-            background: var(--chip-bg);
+            padding: 12px;
+            border-radius: 12px;
+            background: var(--bg-surface);
             border: 1px solid var(--card-border);
             display: flex;
             flex-direction: column;
-            gap: 7px;
+            gap: 8px;
         }
         .quiz-opt-btn {
-            background: var(--input-bg);
+            background: var(--card-bg);
             border: 1px solid var(--card-border);
             color: var(--text-main);
-            padding: 7px 11px;
-            border-radius: 8px;
-            font-size: 11.5px;
+            padding: 9px 12px;
+            border-radius: 10px;
+            font-size: 12.5px;
             font-weight: 600;
             text-align: left;
             cursor: pointer;
-            transition: all 0.18s ease;
+            transition: all 0.15s ease;
         }
         .quiz-opt-btn:hover:not(:disabled) {
             border-color: var(--accent-primary);
             background: var(--chip-hover);
         }
         .quiz-opt-btn.correct {
-            background: rgba(16, 185, 129, 0.22) !important;
+            background: rgba(16, 185, 129, 0.18) !important;
             border-color: var(--success) !important;
             color: var(--success) !important;
-            font-weight: 800;
         }
         .quiz-opt-btn.wrong {
-            background: rgba(244, 63, 94, 0.2) !important;
+            background: rgba(239, 68, 68, 0.18) !important;
             border-color: var(--danger) !important;
             color: var(--danger) !important;
         }
-
-        /* ONE-CLICK SMART ACTION BADGES FOR ATTACHMENTS */
-        .attach-smart-actions {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            width: 100%;
-            padding-top: 6px;
-            border-top: 1px dashed var(--card-border);
-        }
-        .attach-action-pill {
-            background: rgba(16, 185, 129, 0.12);
-            border: 1px solid var(--success);
-            color: var(--success);
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 10.5px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: 'Inter', sans-serif;
-        }
-        .attach-action-pill:hover {
-            background: rgba(16, 185, 129, 0.24);
-            transform: translateY(-1px);
-        }
-
-        .container { 
-            display: flex; width: 100%; height: 100%; padding: 16px; gap: 16px; 
-            z-index: 10; position: relative; max-width: 1700px; margin: 0 auto;
-        }
-
-        .side-panel, .auth-card, .logs-card { 
-            background: var(--card-bg);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            border: 1px solid var(--card-border);
-            box-shadow: var(--card-shadow);
-            border-radius: 16px;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 9px;
-            transition: all 0.3s ease;
-        }
-
-        .side-panel { overflow-y: auto; max-height: 100%; }
-        .left-panel { width: 310px; flex-shrink: 0; }
-        .right-panel { width: 390px; flex-shrink: 0; }
-
-        .section-title { 
-            font-family: 'Orbitron', sans-serif;
-            font-size: 11px;
-            color: var(--accent-primary);
-            letter-spacing: 1.6px;
-            text-transform: uppercase;
-            border-bottom: 1px solid var(--card-border);
-            padding-bottom: 7px;
-            margin-bottom: 2px;
-            font-weight: 700;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        body.dark-mode .section-title {
-            color: var(--accent-secondary);
-            text-shadow: 0 0 10px rgba(168, 85, 247, 0.45);
-        }
-
-        .telemetry-row { 
-            display: flex; justify-content: space-between; align-items: center;
-            font-size: 11.5px; padding: 6px 10px; border-radius: 8px;
-            background: rgba(14, 165, 233, 0.05);
-            border: 1px solid rgba(14, 165, 233, 0.12);
-            font-family: 'JetBrains Mono', monospace;
-        }
-        body.dark-mode .telemetry-row {
-            background: rgba(255, 255, 255, 0.025);
-            border-color: rgba(255, 255, 255, 0.06);
-        }
-        .telemetry-row span:first-child { color: var(--text-muted); font-weight: 600; font-size: 10.5px; }
-        .telemetry-val { font-weight: 700; color: var(--accent-primary); }
-        .telemetry-val.master { 
-            color: var(--danger); 
-            background: rgba(244, 63, 94, 0.12);
-            padding: 2px 7px; border-radius: 6px; border: 1px solid rgba(244, 63, 94, 0.3);
-        }
-
-        .diagnostics-box {
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-            padding: 10px 12px;
-            border-radius: 11px;
-            background: rgba(14, 165, 233, 0.04);
-            border: 1px solid var(--card-border);
-            margin-top: 2px;
-        }
-        .diag-item { display: flex; flex-direction: column; gap: 4px; }
-        .diag-header {
-            display: flex; justify-content: space-between;
-            font-family: 'JetBrains Mono', monospace; font-size: 10px;
-            color: var(--text-muted); font-weight: 600;
-        }
-        .diag-bar-bg {
-            width: 100%; height: 6px; background: rgba(148, 163, 184, 0.2);
-            border-radius: 999px; overflow: hidden;
-        }
-        .diag-bar-fill {
-            height: 100%; border-radius: 999px;
-            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-            transition: width 0.5s ease;
-        }
-
-        .chip-btn {
-            background: var(--chip-bg);
-            border: 1px solid var(--chip-border);
-            color: var(--accent-primary);
-            padding: 7px 11px;
-            font-family: 'Inter', sans-serif;
-            font-size: 11.5px;
-            border-radius: 9px;
-            cursor: pointer;
-            font-weight: 600;
-            width: 100%;
-            text-align: center;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .chip-btn:hover {
-            background: var(--chip-hover);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.18);
-        }
-        .chip-btn:active { transform: translateY(0); }
-
-        .unread-badge {
-            background: var(--danger);
-            color: #ffffff;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            font-weight: 700;
-            padding: 1px 6px;
-            border-radius: 999px;
-            box-shadow: 0 0 10px rgba(244, 63, 94, 0.7);
-            display: none;
-            line-height: 1.3;
-        }
-        .unread-badge.active {
-            display: inline-block;
-            animation: pulseBadge 1.5s infinite alternate;
-        }
-        @keyframes pulseBadge {
-            from { transform: scale(0.95); }
-            to { transform: scale(1.08); }
-        }
-
-        .send-btn { 
-            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
-            border: none;
-            color: #ffffff; 
-            padding: 10px 18px;
-            cursor: pointer;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 11.5px;
-            letter-spacing: 1.2px;
-            font-weight: 700;
-            border-radius: 10px;
-            white-space: nowrap;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35);
-            transition: all 0.2s ease;
-        }
-        .send-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.5);
-            filter: brightness(1.08);
-        }
-        body.dark-mode .send-btn {
-            background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
-            box-shadow: 0 4px 18px rgba(168, 85, 247, 0.4);
-            color: #fff;
-        }
-
-        .live-call-btn {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            border: none;
-            color: #ffffff;
-            padding: 5px 13px;
-            border-radius: 999px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.45);
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .live-call-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 22px rgba(16, 185, 129, 0.75);
-        }
-
-        .camera-box { 
-            width: 100%; height: 132px; background: #070b14; 
-            border: 1px solid var(--card-border); border-radius: 12px; 
-            display: flex; align-items: center; justify-content: center; 
-            overflow: hidden; position: relative;
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.7);
-            flex-shrink: 0;
-        }
-        .camera-box::before, .camera-box::after {
-            content: ""; position: absolute; width: 14px; height: 14px;
-            border-color: var(--accent-primary); border-style: solid;
-            pointer-events: none; z-index: 4; opacity: 0.8;
-        }
-        .camera-box::before { top: 8px; left: 8px; border-width: 2px 0 0 2px; border-top-left-radius: 4px; }
-        .camera-box::after { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; border-bottom-right-radius: 4px; }
-
-        .face-id-box { 
-            display: flex; align-items: center; gap: 12px; 
-            background: var(--chip-bg); 
-            border: 1px dashed var(--chip-border); 
-            padding: 8px 10px; border-radius: 10px; font-size: 11px; 
-        }
-        .face-thumb { 
-            width: 38px; height: 38px; border-radius: 8px; 
-            border: 2px solid var(--accent-primary); 
-            object-fit: cover; display: none;
-            box-shadow: 0 0 10px rgba(14, 165, 233, 0.35);
-        }
-
-        .center-panel { 
-            flex: 1; display: flex; flex-direction: column; 
-            align-items: center; justify-content: space-between; gap: 10px;
-            padding: 4px 8px;
-            overflow-y: auto;
-            max-height: 100%;
-        }
-
-        .top-hud-bar {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 11px;
-            padding: 7px 16px;
-            background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--card-border);
-            border-radius: 999px;
-            box-shadow: var(--card-shadow);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11.5px;
-            flex-wrap: wrap;
-        }
-        .hud-divider { width: 1px; height: 14px; background: var(--card-border); }
-        .hud-stat { display: inline-flex; align-items: center; gap: 6px; color: var(--text-main); font-weight: 600; }
-        .hud-theme-btn {
-            background: var(--chip-bg);
-            border: 1px solid var(--chip-border);
-            color: var(--accent-primary);
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .hud-theme-btn:hover { background: var(--chip-hover); transform: scale(1.04); }
-
-        .core-center-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-        }
-
-        .core-assembly { 
-            position: relative; width: 190px; height: 190px; 
-            display: flex; align-items: center; justify-content: center; 
-        }
-        #orbSpectrumCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 190px;
-            height: 190px;
-            pointer-events: none;
-            z-index: 3;
-        }
-        .core-orb { 
-            width: 86px; height: 86px; 
-            background: radial-gradient(circle at 35% 35%, #e0f2fe 0%, #38bdf8 30%, #0284c7 65%, #082f49 100%);
-            border-radius: 50%; 
-            box-shadow: 0 0 45px rgba(56, 189, 248, 0.75), inset 0 0 20px rgba(255, 255, 255, 0.6); 
-            animation: pulseOrb 3s ease-in-out infinite alternate; 
-            z-index: 2; 
-            transition: transform 0.08s ease-out, box-shadow 0.2s ease, filter 0.3s ease; 
-        }
-        body.dark-mode .core-orb { 
-            background: radial-gradient(circle at 35% 35%, #f3e8ff 0%, #c084fc 30%, #7e22ce 65%, #1e0536 100%);
-            box-shadow: 0 0 55px rgba(168, 85, 247, 0.85), 0 0 90px rgba(0, 242, 254, 0.3), inset 0 0 22px rgba(255, 255, 255, 0.7); 
-        }
-        .core-orb.processing { 
-            filter: hue-rotate(85deg) brightness(1.15); 
-            box-shadow: 0 0 65px #00ffcc, 0 0 110px rgba(0, 255, 204, 0.5) !important; 
-        }
-        
-        .core-ring { position: absolute; border-radius: 50%; z-index: 1; pointer-events: none; }
-        .ring-1 { width: 116px; height: 116px; border: 1.5px dashed var(--accent-primary); border-top: 2.5px solid var(--accent-secondary); animation: spinRight 7s linear infinite; }
-        .ring-2 { width: 145px; height: 145px; border: 1px solid rgba(56, 189, 248, 0.25); border-bottom: 2.5px dashed var(--accent-primary); border-left: 2px solid var(--accent-glow); animation: spinLeft 11s linear infinite; }
-        .ring-3 { width: 174px; height: 174px; border: 1px dashed rgba(56, 189, 248, 0.3); border-right: 2.5px solid var(--accent-primary); animation: spinRight 16s linear infinite; }
-        body.dark-mode .ring-1 { border-color: rgba(0, 242, 254, 0.5); border-top-color: #00f2fe; }
-        body.dark-mode .ring-2 { border-color: rgba(168, 85, 247, 0.35); border-bottom-color: #c084fc; border-left-color: #00f2fe; }
-        body.dark-mode .ring-3 { border-color: rgba(168, 85, 247, 0.25); border-right-color: #a855f7; }
-
-        @keyframes pulseOrb { 0% { transform: scale(0.94); } 100% { transform: scale(1.06); } }
-        @keyframes spinRight { 100% { transform: rotate(360deg); } }
-        @keyframes spinLeft { 100% { transform: rotate(-360deg); } }
-
-        .status-text { 
-            font-family: 'Orbitron', sans-serif;
-            font-size: 12.5px; letter-spacing: 2px; color: var(--accent-primary); 
-            text-align: center; font-weight: 700;
-            padding: 6px 18px; border-radius: 999px;
-            background: var(--chip-bg); border: 1px solid var(--chip-border);
-        }
-        body.dark-mode .status-text { color: #fff; text-shadow: 0 0 12px var(--accent-glow); }
-
-        .input-container { 
-            position: relative;
-            display: flex; flex-direction: column; width: 100%; max-width: 670px; gap: 9px; 
-            background: var(--card-bg); backdrop-filter: blur(18px);
-            padding: 13px; border: 1px solid var(--card-border); 
-            border-radius: 16px; box-shadow: var(--card-shadow);
-            flex-shrink: 0;
-        }
-        .input-row { display: flex; gap: 7px; width: 100%; align-items: center; }
 
         #attachmentPreviewBar {
             display: none;
             flex-direction: column;
             gap: 8px;
-            padding: 9px 12px;
-            border-radius: 10px;
-            background: var(--chip-bg);
-            border: 1px dashed var(--accent-primary);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
+            padding: 10px 12px;
+            border-radius: 14px;
+            background: var(--bg-surface);
+            border: 1px solid var(--card-border);
+            font-size: 12px;
         }
         #attachmentThumb {
-            width: 42px; height: 42px; object-fit: cover;
-            border-radius: 6px; border: 1.5px solid var(--accent-primary); flex-shrink: 0;
+            width: 42px;
+            height: 42px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--accent-primary);
+        }
+        .attach-smart-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding-top: 6px;
+            border-top: 1px solid var(--card-border);
+        }
+        .attach-action-pill {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--accent-primary);
+            padding: 5px 11px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
         }
 
         .planner-card {
-            background: var(--card-bg);
-            border: 1px solid var(--accent-primary);
-            border-left: 4px solid var(--accent-secondary);
-            border-radius: 10px;
-            padding: 10px 12px;
+            background: var(--bg-surface);
+            border: 1px solid var(--card-border);
+            border-left: 4px solid var(--accent-primary);
+            border-radius: 12px;
+            padding: 12px 14px;
             display: flex;
             flex-direction: column;
             gap: 6px;
-            font-size: 11.5px;
+            font-size: 12.5px;
         }
-        .planner-step {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            transition: opacity 0.3s ease;
-        }
+        .planner-step { display: flex; align-items: center; gap: 8px; }
         .web-search-pill {
             display: inline-flex;
             align-items: center;
@@ -645,16 +844,8 @@
             color: var(--success);
             padding: 6px 12px;
             border-radius: 999px;
-            font-size: 11px;
-            font-weight: 700;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .ppt-slide-preview {
-            border-radius: 12px;
-            padding: 18px 20px;
-            margin-bottom: 14px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+            font-size: 11.5px;
+            font-weight: 600;
         }
 
         #slashAutocomplete {
@@ -663,226 +854,199 @@
             left: 0;
             width: 100%;
             background: var(--card-bg);
-            backdrop-filter: blur(22px);
-            -webkit-backdrop-filter: blur(22px);
-            border: 1px solid var(--accent-primary);
-            border-radius: 12px;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
             max-height: 220px;
             overflow-y: auto;
             display: none;
             flex-direction: column;
             z-index: 900;
             padding: 6px;
-            gap: 4px;
         }
         .slash-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 8px 12px; border-radius: 8px; cursor: pointer;
-            font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
-            transition: background 0.15s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 9px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 12.5px;
         }
         .slash-item:hover { background: var(--chip-hover); }
-        .slash-cmd-name { font-weight: 700; color: var(--accent-primary); }
-        .slash-cmd-desc { font-size: 10.5px; color: var(--text-muted); font-family: 'Inter', sans-serif; }
+        .slash-cmd-name { font-weight: 700; color: var(--accent-primary); font-family: 'JetBrains Mono', monospace; }
+        .slash-cmd-desc { font-size: 11.5px; color: var(--text-muted); }
 
-        input[type="text"], input[type="password"], select, textarea { 
-            background: var(--input-bg);
+        input[type="text"], input[type="password"], select, textarea {
+            background: var(--bg-surface);
             border: 1px solid var(--card-border);
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 10px 14px;
             color: var(--text-main);
             font-size: 13.5px;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
             outline: none;
             width: 100%;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        input[type="text"]:focus, input[type="password"]:focus, select:focus, textarea:focus {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
         }
 
-        select {
-            cursor: pointer;
-            appearance: none; -webkit-appearance: none; -moz-appearance: none;
-            background-image: url('data:image/svg+xml;utf8,<svg fill="%230284c7" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>') !important;
-            background-repeat: no-repeat !important;
-            background-position: right 10px center !important;
-            background-size: 18px 18px !important;
-            padding-right: 34px !important;
-            font-family: 'Inter', sans-serif;
+        /* MODALS & TOASTS */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+            padding: 16px;
+        }
+        .auth-card, .logs-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--card-shadow);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 440px;
+        }
+        .logs-card { max-width: 720px; max-height: 90vh; overflow-y: auto; }
+
+        .section-title {
+            font-size: 13px;
+            color: var(--text-main);
+            font-weight: 700;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 10px;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .auth-tabs { display: flex; gap: 8px; }
+        .tab-btn {
+            flex: 1;
+            padding: 8px 10px;
+            background: var(--bg-surface);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
             font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 10px;
         }
-        body.dark-mode select { 
-            background-image: url('data:image/svg+xml;utf8,<svg fill="%2300f2fe" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>') !important; 
-        }
-
-        .log-box, .logs-viewer { 
-            flex: 1; overflow-y: auto; font-size: 12.5px; color: var(--text-main); 
-            display: flex; flex-direction: column; gap: 10px; line-height: 1.55; 
-            background: var(--feed-bg); padding: 14px; 
-            border: 1px solid var(--card-border); border-radius: 12px; 
-            min-height: 180px; max-height: 320px;
-            font-family: 'Inter', sans-serif;
-        }
-        .log-box { max-height: none; }
-        .log-box > div, .logs-viewer > div {
-            padding: 9px 12px;
-            border-radius: 9px;
-            background: rgba(14, 165, 233, 0.05);
-            border-left: 3px solid var(--accent-primary);
-            word-break: break-word;
-            animation: fadeInMsg 0.25s ease-out;
-        }
-        body.dark-mode .log-box > div, body.dark-mode .logs-viewer > div {
-            background: rgba(255, 255, 255, 0.03);
-            border-left-color: var(--accent-glow);
-        }
-        @keyframes fadeInMsg {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .streaming-cursor::after {
-            content: "▋";
-            display: inline-block;
-            margin-left: 3px;
+        .tab-btn.active {
+            border-color: var(--accent-primary);
             color: var(--accent-primary);
-            animation: blinkCursor 0.6s infinite alternate;
+            background: var(--chip-bg);
         }
-        @keyframes blinkCursor { from { opacity: 1; } to { opacity: 0.1; } }
 
-        .notif-item {
-            display: flex; flex-direction: column; gap: 6px;
-            padding: 12px 14px; border-radius: 10px;
-            background: var(--input-bg); border: 1px solid var(--card-border);
-            border-left: 4px solid var(--accent-primary); position: relative;
+        .notif-item, .update-card, .profile-list-item {
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: var(--bg-surface);
+            border: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
-        .notif-item.unread { background: var(--chip-bg); }
-        .notif-item.type-error, .notif-item.type-lockdown, .notif-item.type-security_owner { border-left-color: var(--danger); }
-        .notif-item.type-update { border-left-color: var(--success); }
-
+        .profile-list-item {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
         .notif-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
         .notif-tag {
-            font-family: 'Orbitron', sans-serif; font-size: 10px; font-weight: 700;
-            padding: 2px 7px; border-radius: 5px;
-            background: rgba(14, 165, 233, 0.15); color: var(--accent-primary);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            background: var(--chip-hover);
+            color: var(--accent-primary);
         }
-        .notif-tag.error, .notif-tag.lockdown, .notif-tag.security_owner { background: rgba(244, 63, 94, 0.18); color: var(--danger); }
-        .notif-tag.update { background: rgba(16, 185, 129, 0.18); color: var(--success); }
-        .notif-meta { display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; color: var(--text-muted); margin-top: 2px; }
-
-        .update-card {
-            padding: 12px 14px; border-radius: 10px; background: var(--input-bg);
-            border: 1px solid var(--card-border); border-left: 4px solid var(--accent-secondary);
-            display: flex; flex-direction: column; gap: 5px;
-        }
-
-        .mugshot-img {
-            width: 68px; height: 54px; object-fit: cover; border-radius: 8px;
-            border: 2px solid var(--danger); box-shadow: 0 0 12px rgba(244, 63, 94, 0.45);
-            flex-shrink: 0; cursor: pointer; transition: transform 0.2s ease;
-        }
-        .mugshot-img:hover { transform: scale(1.8); z-index: 50; }
+        .notif-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); }
+        .mugshot-img { width: 64px; height: 50px; object-fit: cover; border-radius: 8px; border: 2px solid var(--danger); }
+        .ppt-slide-preview { border-radius: 14px; padding: 18px 20px; margin-bottom: 14px; }
 
         #notificationBox {
-            position: fixed; top: 22px; right: -420px; width: 340px; 
-            background: var(--card-bg); backdrop-filter: blur(20px);
-            border: 1px solid var(--accent-primary); 
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25), 0 0 25px rgba(14, 165, 233, 0.25); 
-            padding: 16px; border-radius: 14px; z-index: 9999; 
-            transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
-            font-size: 12.5px; display: flex; flex-direction: column; gap: 8px;
+            position: fixed;
+            top: 20px;
+            right: -420px;
+            width: 330px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--card-shadow);
+            padding: 14px 16px;
+            border-radius: 16px;
+            z-index: 9999;
+            transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
             cursor: pointer;
         }
-        #notificationBox.show { right: 22px; }
-        #notificationBox.notify-error { border-color: var(--danger); }
-        .notify-title { 
-            font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 2px; 
-            color: var(--accent-primary); border-bottom: 1px solid var(--card-border); padding-bottom: 6px;
-        }
-        #notificationBox.notify-error .notify-title { color: var(--danger); }
+        #notificationBox.show { right: 20px; }
+        .notify-title { font-weight: 700; font-size: 12px; color: var(--accent-primary); }
 
-        .modal-overlay { 
-            position: fixed; inset: 0; 
-            background: rgba(15, 23, 42, 0.68); 
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            display: flex; align-items: center; justify-content: center; 
-            z-index: 500; padding: 16px; 
-        }
-        .auth-card, .logs-card { width: 100%; max-width: 440px; }
-        .logs-card { max-width: 720px; max-height: 92vh; overflow-y: auto; }
-        
-        .auth-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
-        .tab-btn { 
-            flex: 1; padding: 8px 10px; background: transparent; 
-            border: 1px solid var(--card-border); color: var(--text-muted); 
-            font-family: 'Orbitron', sans-serif; font-size: 10.5px; letter-spacing: 1px;
-            cursor: pointer; border-radius: 8px; transition: all 0.2s; white-space: nowrap;
-        }
-        .tab-btn.active { border-color: var(--accent-primary); color: var(--accent-primary); background: var(--chip-bg); font-weight: 700; }
-        .profile-list-item { 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 10px 12px; border: 1px solid var(--card-border); 
-            border-radius: 10px; margin-bottom: 6px; background: var(--chip-bg); 
-            font-size: 12px; font-family: 'JetBrains Mono', monospace;
-        }
-
-        @media (max-height: 820px) {
-            .container { padding: 10px; gap: 12px; }
-            .center-panel { gap: 6px; padding: 2px 6px; }
-            .core-center-group { gap: 8px; }
-            .core-assembly { width: 130px; height: 130px; }
-            #orbSpectrumCanvas { width: 130px; height: 130px; }
-            .core-orb { width: 66px; height: 66px; }
-            .ring-1 { width: 90px; height: 90px; }
-            .ring-2 { width: 110px; height: 110px; }
-            .ring-3 { width: 130px; height: 130px; }
-            .top-hud-bar { padding: 5px 14px; font-size: 10.5px; }
-            .status-text { padding: 4px 14px; font-size: 11px; }
-            .chip-btn { padding: 5px 9px; font-size: 10.5px; }
-            .input-container { padding: 9px 12px; gap: 6px; }
-            input[type="text"], select { padding: 7px 10px; font-size: 12.5px; }
-            .send-btn { padding: 8px 14px; font-size: 10.5px; }
-        }
-
-        @media (max-width: 960px) {
-            body { height: 100vh; overflow: auto; }
-            .container { flex-direction: column; padding: 12px; gap: 14px; height: auto; }
-            .left-panel, .right-panel { width: 100%; }
-            .center-panel { order: 1; flex: 0 0 auto; gap: 12px; padding: 10px 0; overflow: visible; }
-            .right-panel { order: 2; min-height: 240px; }
-            .left-panel { order: 3; }
+        /* PHONE & TABLET RESPONSIVE DRAWER */
+        @media (max-width: 860px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                transform: translateX(-100%);
+                margin-left: 0 !important;
+                box-shadow: 10px 0 30px rgba(0, 0, 0, 0.25);
+            }
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            .sidebar-backdrop.mobile-open {
+                display: block;
+            }
+            .workspace-header {
+                padding: 0 12px;
+            }
+            .welcome-greeting {
+                font-size: 20px;
+            }
+            .composer-wrapper {
+                padding: 6px 10px 12px 10px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- AUDIO-REACTIVE AMBIENT BACKGROUND GLOW -->
     <div id="ambientAudioGlow"></div>
 
-    <!-- DRAG & DROP ANYWHERE OVERLAY -->
     <div id="dragDropOverlay">
-        <div>📥 DROP IMAGE ANYWHERE TO ATTACH & SCAN (OCR)</div>
-        <div style="font-size:12px; font-family:'Inter', sans-serif; font-weight:600; color:var(--text-main);">Or press Ctrl + V anytime to paste from clipboard!</div>
+        <div>📥 Drop Image Anywhere to Attach & Scan</div>
+        <div style="font-size:13px; font-weight:500; color:var(--text-muted);">Or press Ctrl + V anytime to paste a screenshot</div>
     </div>
 
     <!-- FLOATING TOAST POPUP -->
     <div id="notificationBox" onclick="openNotifCenter()" title="Click to open Notification Centre">
-        <div class="notify-title" id="notifTitle">SYSTEM ALERT</div>
-        <div class="notify-msg" id="notifMsg">Notification details...</div>
+        <div class="notify-title" id="notifTitle">Notification</div>
+        <div class="notify-msg" id="notifMsg">Details...</div>
     </div>
 
-    <!-- GEMINI-STYLE LIVE CODE SANDBOX MODAL (RUN, COPY & DOWNLOAD) -->
+    <!-- GEMINI-STYLE LIVE CODE SANDBOX MODAL -->
     <div id="codeSandboxModal" class="modal-overlay" style="display:none; z-index: 635;">
         <div class="logs-card" style="max-width: 940px; width: 96%;">
             <div class="section-title">
-                <span id="codeSandboxTitle">💻 KIZA LIVE CODE SANDBOX • INTERACTIVE PLAYBACK</span>
+                <span id="codeSandboxTitle">💻 Live Code Preview</span>
                 <div style="display:flex; gap:6px; align-items:center;">
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; font-size:10.5px;" onclick="copyCurrentSandboxCode()">📋 COPY CODE</button>
-                    <button type="button" class="send-btn" style="padding:5px 12px; font-size:10.5px;" onclick="downloadCurrentSandboxCode()">⬇️ DOWNLOAD FILE</button>
-                    <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 4px 9px; width:auto;" onclick="closeCodeSandboxModal()">✕</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:5px 12px;" onclick="copyCurrentSandboxCode()">📋 Copy Code</button>
+                    <button type="button" class="send-btn" style="padding:6px 14px; font-size:12px;" onclick="downloadCurrentSandboxCode()">⬇️ Download File</button>
+                    <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 5px 10px; width:auto;" onclick="closeCodeSandboxModal()">✕</button>
                 </div>
             </div>
             <iframe id="codeSandboxIframe" sandbox="allow-scripts allow-modals" style="width:100%; height:62vh; border:1px solid var(--card-border); border-radius:12px; background:#ffffff;"></iframe>
@@ -893,22 +1057,22 @@
     <div id="filePreviewModal" class="modal-overlay" style="display:none; z-index: 620;">
         <div class="logs-card" style="max-width: 940px; width: 96%;">
             <div class="section-title">
-                <span id="filePreviewModalTitle">🎨 VISUAL DOCUMENT & SLIDE PREVIEW STUDIO</span>
-                <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeFilePreviewModal()">✕ CLOSE</button>
+                <span id="filePreviewModalTitle">🎨 Document & Slide Preview Studio</span>
+                <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 4px 10px; width:auto;" onclick="closeFilePreviewModal()">✕ Close</button>
             </div>
 
-            <div id="previewFormattingToolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:var(--chip-bg); padding:8px 12px; border-radius:10px; border:1px solid var(--card-border);">
+            <div id="previewFormattingToolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:var(--bg-surface); padding:10px 12px; border-radius:12px; border:1px solid var(--card-border);">
                 <div id="previewLayoutThemeSelectors" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                    <label style="font-size:11px; font-weight:700; color:var(--accent-primary);">📐 Layout Format:</label>
-                    <select id="previewLayoutFormatSelect" style="width:auto; padding:5px 28px 5px 10px; font-size:11.5px; font-weight:700;" onchange="changePreviewLayoutOrTheme()">
-                        <option value="infographic">📊 Infographic Dossier (KPIs + Charts)</option>
-                        <option value="academic">📚 Academic / NCERT Textbook (2-Col + Q&A)</option>
-                        <option value="magazine">📰 Modern Editorial Magazine (Hero Visuals)</option>
-                        <option value="minimal">💼 Executive Minimalist (Clean Corporate)</option>
+                    <label style="font-size:12px; font-weight:600;">Layout:</label>
+                    <select id="previewLayoutFormatSelect" style="width:auto; padding:6px 12px; font-size:12px;" onchange="changePreviewLayoutOrTheme()">
+                        <option value="infographic">📊 Infographic Dossier</option>
+                        <option value="academic">📚 Academic / NCERT</option>
+                        <option value="magazine">📰 Editorial Magazine</option>
+                        <option value="minimal">💼 Clean Minimalist</option>
                     </select>
 
-                    <label style="font-size:11px; font-weight:700; color:var(--accent-primary);">🎨 Color Theme:</label>
-                    <select id="previewThemeSelect" style="width:auto; padding:5px 28px 5px 10px; font-size:11.5px; font-weight:700;" onchange="changePreviewLayoutOrTheme()">
+                    <label style="font-size:12px; font-weight:600;">Theme:</label>
+                    <select id="previewThemeSelect" style="width:auto; padding:6px 12px; font-size:12px;" onchange="changePreviewLayoutOrTheme()">
                         <option value="cyber_dark">Cyber Dark</option>
                         <option value="black">Obsidian Black</option>
                         <option value="light">Clean White / Light</option>
@@ -920,43 +1084,40 @@
                     </select>
                 </div>
 
-                <button type="button" id="confirmDownloadBtn" class="send-btn" style="padding:7px 16px; font-size:11px; margin-left:auto;" onclick="confirmAndDownloadPreviewedFile()">⬇️ CONFIRM & DOWNLOAD</button>
+                <button type="button" id="confirmDownloadBtn" class="send-btn" style="padding:8px 16px; font-size:12px; margin-left:auto;" onclick="confirmAndDownloadPreviewedFile()">⬇️ Confirm & Download</button>
             </div>
 
             <div id="aiRevisePromptContainer" style="display:flex; gap:8px; align-items:center; width:100%;">
-                <input type="text" id="aiRevisePromptInput" placeholder="✨ Prompt KIZA to edit/improve this file (e.g. 'Add a slide on Pollination with a table', 'Make it simpler', 'Add more graphs')..." style="flex:1; font-size:12.5px; padding:8px 12px;">
-                <button type="button" id="aiReviseBtn" class="send-btn" style="padding:8px 14px; font-size:11px; background:linear-gradient(135deg, #10b981 0%, #059669 100%);" onclick="submitFileRevisionPrompt()">✨ AI REVISE</button>
+                <input type="text" id="aiRevisePromptInput" placeholder="✨ Ask KIZA to revise this file (e.g. 'Add a comparison table', 'Make it simpler')..." style="flex:1;">
+                <button type="button" id="aiReviseBtn" class="send-btn" style="background:#10b981; color:#fff;" onclick="submitFileRevisionPrompt()">✨ Revise</button>
             </div>
 
             <div id="filePreviewViewport" style="max-height: 62vh; overflow-y: auto; border: 1px solid var(--card-border); border-radius: 12px; background: #cbd5e1; padding: 16px; outline: none;"></div>
         </div>
     </div>
 
-    <!-- SAFE SINGLE-TARGET PURGE MODAL WITH MASTER OWNER PIN GATE (RANKS 1-4 PROTECTED) -->
+    <!-- SAFE SINGLE-TARGET PURGE MODAL -->
     <div id="purgeModal" class="modal-overlay" style="display:none; z-index: 640;">
         <div class="auth-card">
             <div class="section-title">
-                <span>🗑️ PURGE SINGLE USER • MASTER PIN GATE</span>
+                <span>🗑️ Remove User Account</span>
                 <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closePurgeModal()">✕</button>
             </div>
-            <div style="font-size:11.5px; color:var(--text-muted); line-height:1.45;">
-                • Ranks 1, 2, 3, and 4 are strictly protected (only Rank 1 Master Owner Viyan Arora can purge Ranks 2–4).<br>
-                • Top 3 Ranks must enter the <b>Master Owner Purge PIN</b> to remove a user.
+            <div style="font-size:12px; color:var(--text-muted); line-height:1.45;">
+                Ranks 1–4 are protected. Enter the Master Purge PIN to remove a user account.
             </div>
-            <label style="font-size:11.5px; font-weight:600; margin-top:4px;">1. Search or Select Target User to Remove:</label>
-            <input type="text" id="purgeSearchInput" placeholder="🔍 Filter user list..." autocomplete="off" oninput="filterPurgeUsersDropdown()">
-            <select id="purgeTargetSelect" style="margin-bottom:4px;">
-                <option value="">-- SELECT USER TO PURGE --</option>
+            <input type="text" id="purgeSearchInput" placeholder="🔍 Search user list..." autocomplete="off" oninput="filterPurgeUsersDropdown()">
+            <select id="purgeTargetSelect">
+                <option value="">-- Select User to Remove --</option>
             </select>
-            <label style="font-size:11.5px; font-weight:600; margin-top:4px;">2. Enter Master Owner Purge PIN:</label>
-            <input type="password" id="purgeMasterPinInput" placeholder="Enter Master Purge PIN..." maxlength="8" inputmode="numeric" autocomplete="off" style="text-align:center; font-family:'Orbitron', sans-serif; letter-spacing:4px;">
-            <button type="button" class="send-btn" style="width:100%; background:linear-gradient(135deg, #f43f5e 0%, #be123c 100%); margin-top:6px;" onclick="submitPurgeWithMasterPin()">🗑️ VERIFY PIN & PURGE SELECTED USER</button>
+            <input type="password" id="purgeMasterPinInput" placeholder="Enter Master Purge PIN..." maxlength="8" inputmode="numeric" autocomplete="off" style="text-align:center; letter-spacing:3px;">
+            <button type="button" class="send-btn" style="width:100%; background:var(--danger); color:#fff;" onclick="submitPurgeWithMasterPin()">🗑️ Verify PIN & Remove User</button>
 
-            <div id="masterOwnerSetPurgePinBox" style="display:none; flex-direction:column; gap:6px; margin-top:10px; padding-top:10px; border-top:1px dashed var(--card-border);">
-                <div style="font-family:'Orbitron', sans-serif; font-size:10px; font-weight:700; color:var(--accent-primary);">👑 RANK 1 MASTER OWNER: CHANGE MASTER PURGE PIN</div>
+            <div id="masterOwnerSetPurgePinBox" style="display:none; flex-direction:column; gap:6px; margin-top:8px; padding-top:8px; border-top:1px dashed var(--card-border);">
+                <div style="font-size:11px; font-weight:700; color:var(--accent-primary);">👑 Master Owner: Update Purge PIN</div>
                 <div style="display:flex; gap:6px;">
-                    <input type="password" id="newMasterPurgePinInput" placeholder="New 4-8 digit Purge PIN..." maxlength="8" inputmode="numeric">
-                    <button type="button" class="chip-btn" style="width:auto; white-space:nowrap;" onclick="updateMasterOwnerPurgePin()">UPDATE PIN</button>
+                    <input type="password" id="newMasterPurgePinInput" placeholder="New 4-8 digit PIN..." maxlength="8" inputmode="numeric">
+                    <button type="button" class="chip-btn" style="width:auto;" onclick="updateMasterOwnerPurgePin()">Save</button>
                 </div>
             </div>
         </div>
@@ -966,465 +1127,578 @@
     <div id="pinGateModal" class="modal-overlay" style="display:none; z-index: 650;">
         <div class="auth-card">
             <div class="section-title">
-                <span id="pinGateTitle">🔢 SECURITY BACKUP PIN</span>
+                <span id="pinGateTitle">🔢 Security Backup PIN</span>
             </div>
-            <div id="pinGateSubtitle" style="font-size:12px; color:var(--text-muted); line-height:1.45;">
-                Every user is required to set a 4 to 6 digit Security Backup PIN to access KIZA when Biometric Face ID is unavailable or does not match.
+            <div id="pinGateSubtitle" style="font-size:12.5px; color:var(--text-muted); line-height:1.5;">
+                Enter your 4 to 6 digit backup PIN to verify your account.
             </div>
-            <input type="password" id="pinGateInput" placeholder="Enter 4 to 6 digit numeric PIN..." maxlength="6" inputmode="numeric" autocomplete="off" style="text-align:center; font-family:'Orbitron', sans-serif; font-size:16px; letter-spacing:6px;">
-            <div id="pinGateError" style="color: var(--danger); font-size: 11.5px; min-height: 16px; font-weight:600; text-align:center;"></div>
-            <button type="button" id="pinGateSubmitBtn" class="send-btn" style="width:100%;" onclick="submitPinGate()">LOCK SECURITY PIN</button>
-            <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); margin-top:4px;" onclick="logoutUser()">CANCEL & LOGOUT</button>
+            <input type="password" id="pinGateInput" placeholder="4 to 6 digit PIN..." maxlength="6" inputmode="numeric" autocomplete="off" style="text-align:center; font-size:18px; letter-spacing:6px;">
+            <div id="pinGateError" style="color: var(--danger); font-size: 12px; min-height: 16px; font-weight:600; text-align:center;"></div>
+            <button type="button" id="pinGateSubmitBtn" class="send-btn" style="width:100%;" onclick="submitPinGate()">Verify PIN</button>
+            <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger);" onclick="logoutUser()">Sign Out</button>
         </div>
     </div>
 
-    <!-- TACTICAL MISSION BOARD MODAL -->
+    <!-- TASKS & MISSIONS MODAL -->
     <div id="missionsModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
-                <span>📋 TACTICAL MISSION & TASK BOARD</span>
-                <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeMissionsModal()">✕</button>
+                <span>📋 Tasks & Goals</span>
+                <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeMissionsModal()">✕</button>
             </div>
-
-            <div id="missionAssignBox" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:10px; background:var(--chip-bg); border:1px dashed var(--chip-border);">
-                <div style="font-family:'Orbitron', sans-serif; font-size:10.5px; font-weight:700; color:var(--accent-primary);">🎯 ASSIGN NEW TACTICAL TASK (RANKS 1, 2, 3)</div>
+            <div id="missionAssignBox" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:12px; background:var(--bg-surface);">
+                <div style="font-size:12px; font-weight:700; color:var(--accent-primary);">Assign New Task</div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                    <select id="missionAssigneeSelect" style="flex:1; min-width:180px;">
-                        <option value="all">🌐 ALL USERS</option>
+                    <select id="missionAssigneeSelect" style="flex:1; min-width:160px;">
+                        <option value="all">🌐 All Users</option>
                     </select>
-                    <input type="text" id="missionTitleInput" placeholder="Enter mission objective..." style="flex:2; min-width:220px;">
+                    <input type="text" id="missionTitleInput" placeholder="Task description..." style="flex:2; min-width:200px;">
                 </div>
-                <button type="button" class="send-btn" style="width:100%; padding:8px;" onclick="submitNewMission()">📋 DISPATCH MISSION</button>
+                <button type="button" class="send-btn" style="width:100%;" onclick="submitNewMission()">Assign Task</button>
             </div>
-
-            <div id="missionsListContainer" class="logs-viewer" style="max-height: 360px; min-height: 200px;"></div>
+            <div id="missionsListContainer" class="logs-viewer"></div>
         </div>
     </div>
 
-    <!-- SECURITY THREATS & INTRUDER MUGSHOTS MODAL (PREVIEW-FIRST EXPORTS) -->
+    <!-- SECURITY THREATS & INTRUDER MUGSHOTS MODAL -->
     <div id="threatsModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
-                <span>🛡️ SECURITY THREAT MONITOR & INTRUDER MUGSHOTS</span>
-                <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeThreatsModal()">✕</button>
+                <span>🛡️ Security Activity & Mugshots</span>
+                <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeThreatsModal()">✕</button>
             </div>
-
-            <div style="font-size:11px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-                <span id="threatsClearanceInfo">• Viewing Clearance: Ranks 1–4 • Delete Clearance: Ranks 1 & 2</span>
+            <div style="font-size:11.5px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                <span id="threatsClearanceInfo">Preview reports before downloading</span>
                 <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px;" onclick="exportSecurityReportCSV()">📊 PREVIEW CSV</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px;" onclick="exportSecurityReportTXT()">📄 PREVIEW .TXT</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px;" onclick="exportSecurityReportPDF()">👁️ PREVIEW PDF</button>
-                    <button type="button" id="wipeAllThreatsBtn" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px; border-color:var(--danger); color:var(--danger); display:none;" onclick="deleteSecurityThreatLog(null)">🧹 WIPE ALL (RANKS 1–2)</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px;" onclick="exportSecurityReportCSV()">📊 CSV</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px;" onclick="exportSecurityReportTXT()">📄 .TXT</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px;" onclick="exportSecurityReportPDF()">👁️ PDF</button>
+                    <button type="button" id="wipeAllThreatsBtn" class="chip-btn" style="width:auto; padding:4px 10px; color:var(--danger); display:none;" onclick="deleteSecurityThreatLog(null)">🧹 Clear All</button>
                 </div>
             </div>
-
-            <div id="threatsBannedBanner" style="font-size:11px; font-family:'JetBrains Mono', monospace; padding:8px 12px; border-radius:8px; background:rgba(244, 63, 94, 0.1); border:1px solid rgba(244, 63, 94, 0.3); color:var(--danger); display:none;"></div>
-
-            <div id="threatsListContainer" class="logs-viewer" style="max-height: 400px; min-height: 230px;"></div>
+            <div id="threatsBannedBanner" style="font-size:11.5px; padding:8px 12px; border-radius:10px; background:rgba(239, 68, 68, 0.1); color:var(--danger); display:none;"></div>
+            <div id="threatsListContainer" class="logs-viewer"></div>
         </div>
     </div>
 
-    <!-- NOTIFICATION CENTRE MODAL (PERMANENT CROSS-DEVICE DISMISSAL) -->
+    <!-- NOTIFICATION CENTRE MODAL -->
     <div id="notifCenterModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
-                <span>🔔 NOTIFICATION CENTRE • <span id="notifModalUserLabel">USER</span></span>
-                <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeNotifCenter()">✕</button>
+                <span>🔔 Notifications • <span id="notifModalUserLabel">User</span></span>
+                <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeNotifCenter()">✕</button>
             </div>
-
-            <div style="font-size:11px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-                <span>• Deleted alerts are permanently synced across all your devices</span>
+            <div style="font-size:11.5px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                <span>Synced across all your devices</span>
                 <div style="display:flex; gap:6px;">
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px;" onclick="markAllNotificationsRead()">✓ MARK ALL READ</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px; border-color:var(--danger); color:var(--danger);" onclick="clearReadNotifications()">🗑️ CLEAR READ</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; font-size:10px; border-color:var(--danger); color:var(--danger);" onclick="wipeAllUserNotificationsPermanently()">🧹 WIPE ALL</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px;" onclick="markAllNotificationsRead()">✓ Mark All Read</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px;" onclick="clearReadNotifications()">🗑️ Clear Read</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; color:var(--danger);" onclick="wipeAllUserNotificationsPermanently()">🧹 Clear All</button>
                 </div>
             </div>
-
-            <div class="auth-tabs" style="margin-top:4px;">
-                <button type="button" id="notifTabAll" class="tab-btn active" onclick="setNotifFilter('all')">ALL</button>
-                <button type="button" id="notifTabUnread" class="tab-btn" onclick="setNotifFilter('unread')">UNREAD</button>
-                <button type="button" id="notifTabLockdown" class="tab-btn" onclick="setNotifFilter('lockdown')">LOCKDOWNS & ALERTS</button>
-                <button type="button" id="notifTabError" class="tab-btn" onclick="setNotifFilter('error')">MY ERRORS</button>
+            <div class="auth-tabs">
+                <button type="button" id="notifTabAll" class="tab-btn active" onclick="setNotifFilter('all')">All</button>
+                <button type="button" id="notifTabUnread" class="tab-btn" onclick="setNotifFilter('unread')">Unread</button>
+                <button type="button" id="notifTabLockdown" class="tab-btn" onclick="setNotifFilter('lockdown')">System</button>
+                <button type="button" id="notifTabError" class="tab-btn" onclick="setNotifFilter('error')">Alerts</button>
             </div>
-
-            <div id="notifListContainer" class="logs-viewer" style="max-height: 380px; min-height: 220px;"></div>
+            <div id="notifListContainer" class="logs-viewer"></div>
         </div>
     </div>
 
-    <!-- SEARCHABLE BROADCAST TRANSMITTER MODAL -->
+    <!-- BROADCAST MODAL -->
     <div id="broadcastModal" class="modal-overlay" style="display:none;">
         <div class="auth-card">
             <div class="section-title">
-                <span>📢 TRANSMIT SYSTEM BROADCAST</span>
-                <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeBroadcastModal()">✕</button>
+                <span>📢 Send Announcement</span>
+                <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeBroadcastModal()">✕</button>
             </div>
-            
-            <label style="font-size:11.5px; font-weight:600; margin-top:6px;">1. Search or Select Target Audience / User:</label>
-            <input type="text" id="broadcastSearchInput" placeholder="🔍 Type to search target or user..." autocomplete="off" oninput="filterBroadcastTargets()">
-            <select id="broadcastTargetSelect" style="margin-bottom:8px;">
-                <option value="all">🌐 ALL USERS (GLOBAL BROADCAST)</option>
-                <option value="admin">⚡ ADMINS ONLY (RANK 4)</option>
-                <option value="mod">🛡️ MODERATORS ONLY (RANK 3)</option>
-                <option value="owner">👑 OWNERS ONLY (RANKS 1 & 2)</option>
+            <input type="text" id="broadcastSearchInput" placeholder="🔍 Filter audience or user..." autocomplete="off" oninput="filterBroadcastTargets()">
+            <select id="broadcastTargetSelect">
+                <option value="all">🌐 Everyone</option>
+                <option value="admin">⚡ Admins Only</option>
+                <option value="mod">🛡️ Moderators Only</option>
+                <option value="owner">👑 Owners Only</option>
             </select>
-
-            <label style="font-size:11.5px; font-weight:600; margin-top:6px;">2. Broadcast Alert Message:</label>
-            <input type="text" id="broadcastMsgInput" placeholder="e.g. Server maintenance in 5 minutes..." autocomplete="off" style="margin-bottom:14px;">
-
-            <button type="button" class="send-btn" style="width:100%;" onclick="submitBroadcastModal()">📡 TRANSMIT ALERT NOW</button>
+            <input type="text" id="broadcastMsgInput" placeholder="Type your message..." autocomplete="off">
+            <button type="button" class="send-btn" style="width:100%;" onclick="submitBroadcastModal()">Send Announcement</button>
         </div>
     </div>
 
-    <!-- SYSTEM UPDATES & CHANGELOG MODAL -->
+    <!-- UPDATES MODAL -->
     <div id="updatesModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
-                <span>🚀 KIZA SYSTEM UPDATES & CHANGELOG</span>
-                <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeUpdatesModal()">✕</button>
+                <span>🚀 What's New in KIZA</span>
+                <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeUpdatesModal()">✕</button>
             </div>
-
-            <div id="ownerUpdatePublisher" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:10px; background:var(--chip-bg); border:1px dashed var(--chip-border);">
-                <div style="font-family:'Orbitron', sans-serif; font-size:10.5px; font-weight:700; color:var(--accent-primary);">👑 PUBLISH NEW LIVE UPDATE (RANKS 1 & 2)</div>
+            <div id="ownerUpdatePublisher" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:12px; background:var(--bg-surface);">
+                <div style="font-size:12px; font-weight:700; color:var(--accent-primary);">Publish New Update</div>
                 <div style="display:flex; gap:8px;">
-                    <input type="text" id="newUpdateVersion" placeholder="Version (e.g. v6.2)" style="width:140px;">
-                    <input type="text" id="newUpdateTitle" placeholder="Update Headline...">
+                    <input type="text" id="newUpdateVersion" placeholder="v6.3" style="width:110px;">
+                    <input type="text" id="newUpdateTitle" placeholder="Headline...">
                 </div>
-                <input type="text" id="newUpdateDesc" placeholder="Short description of what was added or fixed...">
-                <button type="button" class="send-btn" style="width:100%; padding:8px;" onclick="publishSystemUpdate()">🚀 PUBLISH & NOTIFY ALL USERS</button>
+                <input type="text" id="newUpdateDesc" placeholder="Details of what changed...">
+                <button type="button" class="send-btn" style="width:100%;" onclick="publishSystemUpdate()">Publish Update</button>
             </div>
-
-            <div id="updatesListContainer" class="logs-viewer" style="max-height: 380px; min-height: 220px;"></div>
+            <div id="updatesListContainer" class="logs-viewer"></div>
         </div>
     </div>
 
-    <!-- SETTINGS, ACTIVE DEVICE MANAGER & BIOMETRIC/PIN REMOTE LOGOUT MODAL -->
+    <!-- SETTINGS & DEVICE MANAGER MODAL -->
     <div id="settingsModal" class="modal-overlay" style="display:none;">
-        <div class="auth-card" style="max-width:480px; max-height:92vh; overflow-y:auto;">
+        <div class="auth-card" style="max-width:480px; max-height:90vh; overflow-y:auto;">
             <div class="section-title">
-                <span>⚙️ SYSTEM SETTINGS & DEVICE MANAGER</span>
-                <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeSettings()">✕</button>
+                <span>⚙️ Settings & Connected Devices</span>
+                <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeSettings()">✕</button>
             </div>
-            
-            <label style="font-size:11.5px; font-weight:600; margin-top:4px;">UI Theme:</label>
+
+            <label style="font-size:12px; font-weight:600;">Appearance:</label>
             <select id="themeSelect" onchange="saveSettings()">
-                <option value="light">Default (Light • Sky Blue)</option>
-                <option value="dark">Cyberpunk (Dark • Neon Quantum)</option>
-            </select>
-            
-            <label style="font-size:11.5px; font-weight:600; margin-top:4px;">Voice Default on Startup:</label>
-            <select id="voiceDefaultSelect" onchange="saveSettings()">
-                <option value="off">Always Off (Muted)</option>
-                <option value="on">Always On (Speaking)</option>
+                <option value="light">☀️ Light Mode (Clean Daylight)</option>
+                <option value="dark">🌙 Dark Mode (Gemini Obsidian)</option>
             </select>
 
-            <label style="font-size:11.5px; font-weight:600; margin-top:4px;">Pop-up Toast Banners:</label>
-            <select id="notifToggleSelect" onchange="saveSettings()">
-                <option value="on">Enabled (Show Pop-ups)</option>
-                <option value="off">Silent (Save to Notification Centre Only)</option>
+            <label style="font-size:12px; font-weight:600;">AI Voice Assistant:</label>
+            <select id="personaSelect" onchange="handlePersonaChange()">
+                <option value="normal" selected>🟢 Default (Witty & Helpful)</option>
+                <option value="helpful">💼 Executive (Polite & Warm)</option>
+                <option value="energetic">⚡ Energetic (Fast & Friendly)</option>
+                <option value="security">🛡️ Direct & Concise</option>
             </select>
 
-            <button type="button" class="chip-btn" style="margin-top:4px;" onclick="closeSettings(); openPinGate('setup');">🔢 UPDATE SECURITY BACKUP PIN</button>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <div>
+                    <label style="font-size:11.5px; font-weight:600;">Startup Voice:</label>
+                    <select id="voiceDefaultSelect" onchange="saveSettings()">
+                        <option value="off">Muted</option>
+                        <option value="on">Speaking</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:11.5px; font-weight:600;">Pop-up Alerts:</label>
+                    <select id="notifToggleSelect" onchange="saveSettings()">
+                        <option value="on">Show</option>
+                        <option value="off">Silent</option>
+                    </select>
+                </div>
+            </div>
 
-            <div class="section-title" style="margin-top:8px;">
-                <span>💻 ACTIVE LOGGED-IN DEVICES</span>
-            </div>
-            <div id="activeDevicesListContainer" style="max-height: 115px; overflow-y: auto; font-size:11px;"></div>
-
-            <div class="section-title" style="margin-top:8px;">
-                <span>📲 LOG OUT ALL OTHER DEVICES</span>
-            </div>
-            <div style="font-size:11px; color:var(--text-muted); line-height:1.4;">
-                Use your <b>Biometric Face ID</b> or enter your <b>4–6 Digit Backup PIN</b> to remotely sign out all other phones, tablets, or PCs where you previously logged in:
-            </div>
-            <button type="button" class="chip-btn" style="border-color:var(--success); color:var(--success); margin-top:2px;" onclick="logoutOtherDevicesViaFaceID()">🧬 SCAN FACE ID TO LOGOUT OTHER DEVICES</button>
             <div style="display:flex; gap:6px; margin-top:4px;">
-                <input type="password" id="remoteLogoutPinInput" placeholder="Or enter 4-6 digit Backup PIN..." maxlength="6" inputmode="numeric" style="flex:1; text-align:center; letter-spacing:3px;">
-                <button type="button" class="send-btn" style="padding:8px 12px; font-size:10px; background:linear-gradient(135deg, #f43f5e 0%, #be123c 100%);" onclick="logoutOtherDevicesViaPin()">USE PIN</button>
+                <button type="button" class="chip-btn" onclick="updateFaceID()">🧬 Update Face ID</button>
+                <button type="button" class="chip-btn" onclick="closeSettings(); openPinGate('setup');">🔢 Change Backup PIN</button>
             </div>
 
             <div class="section-title" style="margin-top:8px;">
-                <span>👥 STORED IDENTITIES ON THIS BROWSER</span>
+                <span>💻 Active Devices</span>
+            </div>
+            <div id="activeDevicesListContainer" style="max-height: 115px; overflow-y: auto; font-size:12px;"></div>
+
+            <div class="section-title" style="margin-top:6px;">
+                <span>📲 Sign Out Other Devices</span>
+            </div>
+            <button type="button" class="chip-btn" style="border-color:var(--success); color:var(--success);" onclick="logoutOtherDevicesViaFaceID()">🧬 Verify Face ID to Sign Out Others</button>
+            <div style="display:flex; gap:6px;">
+                <input type="password" id="remoteLogoutPinInput" placeholder="Or enter 4-6 digit Backup PIN..." maxlength="6" inputmode="numeric" style="flex:1; text-align:center;">
+                <button type="button" class="send-btn" style="background:var(--danger); color:#fff;" onclick="logoutOtherDevicesViaPin()">Sign Out Others</button>
+            </div>
+
+            <div class="section-title" style="margin-top:6px;">
+                <span>👥 Saved Accounts on This Browser</span>
             </div>
             <div id="profileListContainer" style="max-height: 100px; overflow-y: auto;"></div>
-            <button class="chip-btn" onclick="addIdentity()" style="width:100%; margin-top:2px;">+ ADD OR SWITCH IDENTITY</button>
-            <button class="chip-btn" onclick="logoutUser()" style="width:100%; border-color:var(--danger); color:var(--danger); margin-top:4px;">LOGOUT THIS DEVICE</button>
+            <div style="display:flex; gap:6px;">
+                <button class="chip-btn" onclick="addIdentity()">+ Switch / Add Account</button>
+                <button class="chip-btn" style="border-color:var(--danger); color:var(--danger);" onclick="logoutUser()">Sign Out</button>
+            </div>
         </div>
     </div>
 
-    <!-- 5-TIER RANK ASSIGNMENT MODAL -->
+    <!-- RANK ASSIGNMENT MODAL -->
     <div id="rankModal" class="modal-overlay" style="display:none;">
         <div class="auth-card">
             <div class="section-title">
-                <span>⭐ ASSIGN CLEARANCE RANK (5-TIER)</span>
-                <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeRankModal()">✕</button>
+                <span>⭐ Manage User Roles</span>
+                <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeRankModal()">✕</button>
             </div>
-            <div style="font-size:11px; color:var(--text-muted);">
-                • Rank 1 (Master Owner) is locked to Viyan Arora in code.<br>
-                • Only Rank 1 can assign Rank 2 (Owner) to anyone.
-            </div>
-            
-            <label style="font-size:11.5px; font-weight:600; margin-top:6px;">1. Search or Select User:</label>
-            <input type="text" id="rankSearchInput" placeholder="🔍 Type to search user..." autocomplete="off" oninput="filterRankOperatives()">
-            <select id="rankSearchSelect" style="margin-bottom:8px;">
-                <option value="">-- SELECT TARGET USER --</option>
+            <input type="text" id="rankSearchInput" placeholder="🔍 Search user..." autocomplete="off" oninput="filterRankOperatives()">
+            <select id="rankSearchSelect">
+                <option value="">-- Select User --</option>
             </select>
-
-            <label style="font-size:11.5px; font-weight:600; margin-top:6px;">2. Select New Clearance Rank:</label>
-            <select id="rankSelectDropdown" style="margin-bottom:14px;">
-                <option value="user">RANK 5 • GENERAL USER</option>
-                <option value="admin">RANK 4 • ADMIN</option>
-                <option value="mod">RANK 3 • MODERATOR</option>
-                <option value="owner">RANK 2 • OWNER (Master Owner Only)</option>
+            <select id="rankSelectDropdown">
+                <option value="user">Rank 5 • General User</option>
+                <option value="admin">Rank 4 • Admin</option>
+                <option value="mod">Rank 3 • Moderator</option>
+                <option value="owner">Rank 2 • Owner (Master Owner Only)</option>
             </select>
-            <button type="button" class="send-btn" style="width:100%;" onclick="submitRankAssignment()">EXECUTE RANK ASSIGNMENT</button>
+            <button type="button" class="send-btn" style="width:100%;" onclick="submitRankAssignment()">Update Role</button>
         </div>
     </div>
 
-    <!-- MEMORY ARCHIVE MODAL (WITH PREVIEW-FIRST EXPORT & PERMANENT DELETE) -->
+    <!-- FULL CHAT ARCHIVE MODAL -->
     <div id="logsModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
-                <span>📂 CHAT MEMORY ARCHIVE</span>
-                <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closeLogsModal()">✕</button>
+                <span>📂 All Chat History</span>
+                <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeLogsModal()">✕</button>
             </div>
-            
-            <div id="archiveAdminControls" style="display: none; flex-direction: column; gap: 8px;">
-                <label style="font-size:11.5px; font-weight:600; margin-top:4px;">Search or Select User:</label>
-                <input type="text" id="logSearchInput" placeholder="🔍 Type to filter user dropdown..." autocomplete="off" oninput="filterArchiveOperatives()">
+            <div id="archiveAdminControls" style="display: none; flex-direction: column; gap: 6px;">
+                <input type="text" id="logSearchInput" placeholder="🔍 Filter by user..." autocomplete="off" oninput="filterArchiveOperatives()">
                 <select id="logOperativeSelect" onchange="handleUserSelect()">
-                    <option value="">-- SELECT USER --</option>
+                    <option value="">-- Select User --</option>
                 </select>
             </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; flex-wrap:wrap; gap:6px;">
-                <label style="font-size:11.5px; font-weight:600;">Select Chat Session:</label>
-                <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; font-size:10px;" onclick="exportArchiveTXT()">📄 PREVIEW .TXT</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; font-size:10px;" onclick="exportArchivePDF()">👁️ PREVIEW PDF</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; font-size:10px; border-color:var(--danger); color:var(--danger);" onclick="deleteSelectedArchiveSessionPermanently()">🗑️ DELETE SESSION</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                <span style="font-size:12px; font-weight:600;">Select Conversation:</span>
+                <div style="display:flex; gap:6px;">
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px;" onclick="exportArchiveTXT()">📄 Preview .TXT</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px;" onclick="exportArchivePDF()">👁️ Preview PDF</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; color:var(--danger);" onclick="deleteSelectedArchiveSessionPermanently()">🗑️ Delete</button>
                 </div>
             </div>
             <select id="logSessionSelect" onchange="handleSessionSelect()">
-                <option value="">-- SELECT CHAT SESSION --</option>
+                <option value="">-- Select Chat Session --</option>
             </select>
-            
             <div id="logsViewer" class="logs-viewer">
-                <div style="text-align:center; margin-top:20px;">Awaiting session selection...</div>
+                <div style="text-align:center; color:var(--text-muted);">Select a conversation above...</div>
             </div>
-            <button id="resumeArchiveBtn" class="send-btn" style="display: none; width: 100%; margin-top: 6px;" onclick="resumeArchive()">▶ CONTINUE THIS CHAT SESSION</button>
+            <button id="resumeArchiveBtn" class="send-btn" style="display: none; width: 100%;" onclick="resumeArchive()">▶ Continue This Conversation</button>
         </div>
     </div>
 
-    <!-- AUTH MODAL -->
+    <!-- AUTH / SIGN-IN MODAL -->
     <div id="authModal" class="modal-overlay">
         <div class="auth-card">
-            <div class="section-title">
-                <span>🔐 IDENTITY GATE</span>
+            <div style="text-align:center; margin-bottom:4px;">
+                <div class="brand-sparkle" style="width:40px; height:40px; font-size:18px; margin:0 auto 8px auto;">✦</div>
+                <h2 style="margin:0; font-size:20px;">Welcome to KIZA</h2>
+                <div style="font-size:12.5px; color:var(--text-muted); margin-top:2px;">Sign in to access your AI workspace</div>
             </div>
             <div id="g_id_onload" data-client_id="966529845745-0tvmb131iufp9vvkk8df4h7angi4u8p8.apps.googleusercontent.com" data-callback="handleGoogleLogin" data-auto_prompt="false"></div>
             <div style="display: flex; justify-content: center; width: 100%; margin: 4px 0;">
-                <div class="g_id_signin" data-type="standard" data-theme="filled_black" data-size="large" data-width="340"></div>
+                <div class="g_id_signin" data-type="standard" data-theme="filled_blue" data-size="large" data-width="340"></div>
             </div>
-            <div style="text-align:center; font-size:10px; margin: 4px 0; letter-spacing: 2px; font-weight:700; color:var(--text-muted);">— OR MANUAL OVERRIDE —</div>
+            <div style="text-align:center; font-size:11px; color:var(--text-muted); margin: 4px 0;">— or sign in with username —</div>
             <div class="auth-tabs">
-                <button type="button" id="loginTab" class="tab-btn active" onclick="switchAuthMode('login')">LOGIN</button>
-                <button type="button" id="signupTab" class="tab-btn" onclick="switchAuthMode('signup')">SIGN UP / RESET</button>
+                <button type="button" id="loginTab" class="tab-btn active" onclick="switchAuthMode('login')">Sign In</button>
+                <button type="button" id="signupTab" class="tab-btn" onclick="switchAuthMode('signup')">Create Account</button>
             </div>
-            <input type="text" id="authUser" placeholder="Enter Identity Name..." autocomplete="off">
-            <input type="password" id="authPass" placeholder="Enter Security Passcode...">
+            <input type="text" id="authUser" placeholder="Username or Full Name..." autocomplete="off">
+            <input type="password" id="authPass" placeholder="Password...">
             <div id="signupPinContainer" style="display:none; flex-direction:column; gap:4px;">
-                <input type="password" id="authPin" placeholder="Create 4 to 6 Digit Backup PIN (Mandatory)..." maxlength="6" inputmode="numeric" autocomplete="off">
+                <input type="password" id="authPin" placeholder="Create 4 to 6 digit Backup PIN..." maxlength="6" inputmode="numeric" autocomplete="off">
             </div>
-            <label style="font-size: 11.5px; display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 2px; color: var(--text-muted);">
-                <input type="checkbox" id="captureFaceCheck" checked> Scan & Lock Biometric Face ID
+            <label style="font-size: 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-muted);">
+                <input type="checkbox" id="captureFaceCheck" checked> Enable Face ID quick unlock
             </label>
-            <div id="authError" style="color: var(--danger); font-size: 11.5px; min-height: 16px; font-weight:600;"></div>
-            <button type="button" class="send-btn" style="width:100%;" onclick="performAuth()">VERIFY IDENTITY</button>
-            <button type="button" class="chip-btn" id="cancelAuthBtn" style="display:none; margin-top:4px;" onclick="cancelAddIdentity()">CANCEL</button>
+            <div id="authError" style="color: var(--danger); font-size: 12px; min-height: 16px; font-weight:600; text-align:center;"></div>
+            <button type="button" class="send-btn" style="width:100%; padding:11px;" onclick="performAuth()">Continue</button>
+            <button type="button" class="chip-btn" id="cancelAuthBtn" style="display:none;" onclick="cancelAddIdentity()">Cancel</button>
         </div>
     </div>
 
-    <!-- MAIN 3-PANEL COMMAND HUD -->
-    <div class="container">
-        <!-- LEFT PANEL: USER PROFILE, CAMERA & SYSTEM HEALTH -->
-        <div class="side-panel left-panel">
-            <div class="section-title">
-                <span>📡 PROFILE & TELEMETRY</span>
-                <span style="width:8px; height:8px; border-radius:50%; background:var(--success); box-shadow: 0 0 8px var(--success);"></span>
-            </div>
-            <div class="telemetry-row"><span>STATUS</span><span class="telemetry-val" style="color:var(--success);">ONLINE (LIVE STREAM)</span></div>
-            <div class="telemetry-row"><span>USER</span><span id="idVal" class="telemetry-val">UNVERIFIED</span></div>
-            <div class="telemetry-row"><span>RANK</span><span id="roleVal" class="telemetry-val">LOCKED</span></div>
-            
-            <div class="camera-box">
-                <video id="webcamVideo" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; display: none;"></video>
-                <canvas id="faceCanvas" width="160" height="120" style="display:none;"></canvas>
-                <span id="camStatus" style="position: absolute; font-weight:600; font-size:11px; color:#94a3b8; font-family:'JetBrains Mono', monospace;">Camera Offline...</span>
-            </div>
-            
-            <div style="display: flex; gap: 8px;">
-                <button type="button" class="chip-btn" id="camToggleBtn" style="flex: 1;" onclick="toggleCamera()">📷 CAM: ON</button>
-                <button type="button" class="chip-btn" style="flex: 1;" onclick="switchCamera()">🔄 FLIP</button>
-            </div>
-            
-            <button type="button" class="chip-btn" id="voiceToggleBtn" onclick="toggleVoiceMute()">🔊 VOICE: ON</button>
+    <!-- ==========================================================
+         MAIN GEMINI-INSPIRED APPLICATION SHELL
+         ========================================================== -->
+    <div class="app-shell">
+        <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="toggleMobileSidebar(false)"></div>
 
-            <div class="face-id-box">
-                <img id="savedFaceImg" class="face-thumb" alt="Biometric Face ID">
-                <div>
-                    <div style="font-weight: 700; font-family:'Orbitron', sans-serif; font-size:10.5px; letter-spacing:1px; color:var(--accent-primary);">FACE ID & PIN LOCK</div>
-                    <div id="faceIdStatus" style="font-size:11px; color:var(--text-muted); margin-top:2px; font-family:'JetBrains Mono', monospace;">Awaiting Scan...</div>
+        <!-- LEFT SIDEBAR: NEW CHAT, RECENT CHAT HISTORY, TOOLS & SETTINGS -->
+        <aside id="appSidebar" class="sidebar">
+            <div class="sidebar-top">
+                <div class="brand-logo">
+                    <span class="brand-sparkle">✦</span>
+                    <span>KIZA</span>
                 </div>
-            </div>
-            <button type="button" class="chip-btn" onclick="updateFaceID()">🧬 UPDATE FACE ID</button>
-
-            <div class="diagnostics-box">
-                <div style="font-family:'Orbitron', sans-serif; font-size:10px; font-weight:700; color:var(--accent-primary); letter-spacing:1.2px; display:flex; justify-content:space-between;">
-                    <span>⚡ AI CAPABILITIES</span>
-                    <span id="diagStatusText" style="color:var(--success);">READY</span>
-                </div>
-                <div class="diag-item">
-                    <div class="diag-header"><span>BRAIN LOAD</span><span id="coreLoadText">14%</span></div>
-                    <div class="diag-bar-bg"><div id="coreLoadBar" class="diag-bar-fill" style="width: 14%;"></div></div>
-                </div>
-                <div class="diag-item">
-                    <div class="diag-header"><span>VOICE PERSONA</span><span id="voiceSynthModeLabel">UK • DRY WIT</span></div>
-                    <div class="diag-bar-bg"><div id="memSyncBar" class="diag-bar-fill" style="width: 100%;"></div></div>
-                </div>
-                <div class="diag-item">
-                    <div class="diag-header"><span>ACTIVE MODULES</span><span id="secShieldText">SANDBOX • QUIZ • PPTX</span></div>
-                    <div class="diag-bar-bg"><div class="diag-bar-fill" style="width: 100%; background: var(--success);"></div></div>
-                </div>
-            </div>
-            
-            <button type="button" class="chip-btn" onclick="openSettings()" style="margin-top: auto; background: var(--chip-hover);">⚙️ SETTINGS & DEVICES</button>
-        </div>
-
-        <!-- CENTER PANEL: TOP HUD BAR, QUANTUM CORE, FREQUENCY SPECTRUM & COMMAND DOCK -->
-        <div class="center-panel">
-            <div class="top-hud-bar">
-                <span class="hud-stat">🕒 <span id="hudClock">--:--:-- IST</span></span>
-                <span class="hud-divider"></span>
-                <span class="hud-stat">⚡ PING: <span id="hudPing" style="color:var(--success);">22ms</span></span>
-                <span class="hud-divider"></span>
-                <button type="button" class="live-call-btn" onclick="launchLiveCallMode()" title="Open Full-Screen Gemini-Style Live Video, Voice & Screen-Share Call">📞 KIZA LIVE</button>
-                <span class="hud-divider"></span>
-                <button type="button" id="sfxToggleBtn" class="hud-theme-btn" onclick="toggleTacticalSFX()" title="Toggle Sci-Fi Tactical UI Sound Effects">🎛️ SFX: ON</button>
-                <span class="hud-divider"></span>
-                <button type="button" id="quickThemeBtn" class="hud-theme-btn" onclick="toggleQuickTheme()">🌙 DARK MODE</button>
+                <button type="button" class="icon-btn" onclick="toggleSidebarCollapse()" title="Toggle Sidebar">☰</button>
             </div>
 
-            <div class="core-center-group">
-                <div class="core-assembly">
-                    <canvas id="orbSpectrumCanvas" width="190" height="190"></canvas>
-                    <div class="core-ring ring-1"></div>
-                    <div class="core-ring ring-2"></div>
-                    <div class="core-ring ring-3"></div>
-                    <div id="orb" class="core-orb"></div>
-                </div>
+            <button type="button" class="new-chat-pill" onclick="startNewSession(); toggleMobileSidebar(false);">
+                <span style="font-size:16px; font-weight:700; color:var(--accent-primary);">＋</span>
+                <span>New chat</span>
+            </button>
 
-                <!-- LIVE VOICE-TO-TEXT FLOATING HOLOGRAM -->
-                <div id="voiceHologramBox">🎙️ <span id="voiceHologramText">Listening...</span></div>
-
-                <div id="uiStatus" class="status-text">AWAITING IDENTITY...</div>
-                
-                <!-- EASY-TO-UNDERSTAND QUICK TOOLS FOR EVERYONE -->
-                <div id="publicCmds" style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 690px;">
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="startNewSession()">➕ New Chat</button>
-                    <button type="button" class="chip-btn" style="width:auto; border-color:var(--success); color:var(--success);" onclick="launchLiveCallMode()">📞 Live Call</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/research ')">🔬 Deep Research</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/quiz ')">📝 Quiz Me</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/code ')">💻 Code Sandbox</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/pdf ')">📄 Make PDF</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/pptx ')">📊 Make PPTX</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="openLogsModal()">📂 History</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="openMissionsModal()">📋 Tasks</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="openNotifCenter()">
-                        <span>🔔 Alerts</span>
-                        <span id="unreadBadgeCenter" class="unread-badge">0</span>
-                    </button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="openUpdatesModal()">🚀 Updates</button>
-                </div>
-
-                <!-- HIGH COMMAND CONTROLS (RANKS 1, 2, 3, 4) -->
-                <div id="masterCmds" style="display: none; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 680px;">
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/operative')">🟢 Online Users</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/userdata')">👥 All Users</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="openBroadcastModal()">📢 Broadcast</button>
-                    <button type="button" class="chip-btn" style="width:auto; border-color:var(--warning); color:var(--warning);" onclick="openThreatsModal()">🛡️ Security & Mugshots</button>
-                    <button type="button" class="chip-btn top3-only" style="width:auto; display:none;" onclick="openRankModal()">⭐ Assign Rank</button>
-                    <button type="button" class="chip-btn top3-only" style="width:auto; display:none;" onclick="sendQuickCmd('/purgelog')">📜 Purge History</button>
-                    <button type="button" class="chip-btn" style="width:auto;" onclick="sendQuickCmd('/lockdown')">🔒 Lockdown</button>
-                    <button type="button" class="chip-btn owner-only" style="width:auto; display:none;" onclick="sendQuickCmd('/removelock')">🔓 Unlock</button>
-                    <button type="button" class="chip-btn top3-only" style="width:auto; display:none; border-color:var(--danger); color:var(--danger);" onclick="openPurgeModal()">🗑️ Purge User (PIN)</button>
-                </div>
+            <div class="sidebar-label">
+                <span>Recent Chats</span>
+                <button type="button" style="background:none; border:none; color:var(--accent-primary); font-size:11px; font-weight:600; cursor:pointer;" onclick="openLogsModal()">All ↗</button>
             </div>
 
-            <div class="input-container">
-                <div id="slashAutocomplete"></div>
+            <!-- DYNAMIC CHAT HISTORY LIST IN SIDEBAR -->
+            <div id="sidebarSessionsList" class="sidebar-history-list">
+                <div style="font-size:12px; color:var(--text-muted); padding:8px;">Your recent chats will appear here...</div>
+            </div>
 
-                <!-- ATTACHED IMAGE PREVIEW, OCR STATUS & ONE-CLICK SMART ACTIONS -->
-                <div id="attachmentPreviewBar">
-                    <div style="display:flex; align-items:center; justify-content:space-between; width:100%; gap:10px;">
-                        <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
-                            <img id="attachmentThumb" src="" alt="Attached">
-                            <div style="display:flex; flex-direction:column; gap:2px; overflow:hidden;">
-                                <span id="attachmentName" style="font-weight:700; color:var(--accent-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">image.png</span>
-                                <span id="attachmentOcrStatus" style="font-size:10px; color:var(--text-muted);">Scanning image contents...</span>
-                            </div>
+            <!-- COLLAPSIBLE ADMIN CONTROLS (VISIBLE ONLY FOR RANKS 1-4) -->
+            <div id="masterCmds" class="sidebar-section-card" style="display: none;">
+                <div style="font-size:10.5px; font-weight:700; color:var(--accent-primary); padding:2px 4px;">🛡️ Admin & Team Controls</div>
+                <div class="sidebar-grid-btns">
+                    <button type="button" class="chip-btn" style="padding:5px 8px; font-size:11px;" onclick="sendQuickCmd('/operative'); toggleMobileSidebar(false);">🟢 Online</button>
+                    <button type="button" class="chip-btn" style="padding:5px 8px; font-size:11px;" onclick="sendQuickCmd('/userdata'); toggleMobileSidebar(false);">👥 Users</button>
+                    <button type="button" class="chip-btn" style="padding:5px 8px; font-size:11px;" onclick="openBroadcastModal()">📢 Broadcast</button>
+                    <button type="button" class="chip-btn" style="padding:5px 8px; font-size:11px;" onclick="openThreatsModal()">🛡️ Security</button>
+                    <button type="button" class="chip-btn top3-only" style="padding:5px 8px; font-size:11px; display:none;" onclick="openRankModal()">⭐ Roles</button>
+                    <button type="button" class="chip-btn top3-only" style="padding:5px 8px; font-size:11px; display:none;" onclick="sendQuickCmd('/purgelog'); toggleMobileSidebar(false);">📜 Logs</button>
+                    <button type="button" class="chip-btn" style="padding:5px 8px; font-size:11px;" onclick="sendQuickCmd('/lockdown'); toggleMobileSidebar(false);">🔒 Lock</button>
+                    <button type="button" class="chip-btn owner-only" style="padding:5px 8px; font-size:11px; display:none;" onclick="sendQuickCmd('/removelock'); toggleMobileSidebar(false);">🔓 Unlock</button>
+                </div>
+                <button type="button" class="chip-btn top3-only" style="padding:5px 8px; font-size:11px; display:none; color:var(--danger);" onclick="openPurgeModal()">🗑️ Remove User (PIN)</button>
+            </div>
+
+            <!-- SIDEBAR FOOTER: TASKS, UPDATES & USER SETTINGS PILL -->
+            <div class="sidebar-footer">
+                <div style="display:flex; gap:5px;">
+                    <button type="button" class="chip-btn" style="padding:6px 8px; font-size:11.5px;" onclick="openMissionsModal()">📋 Tasks</button>
+                    <button type="button" class="chip-btn" style="padding:6px 8px; font-size:11.5px;" onclick="openUpdatesModal()">🚀 Updates</button>
+                    <button type="button" class="chip-btn" style="padding:6px 8px; font-size:11.5px;" onclick="openSettings()">⚙️ Settings</button>
+                </div>
+
+                <div class="user-profile-Trigger" onclick="openSettings()" title="Open Settings & Connected Devices">
+                    <div style="display:flex; align-items:center; gap:9px; overflow:hidden;">
+                        <img id="savedFaceImg" class="face-thumb" alt="User">
+                        <div class="avatar-fallback">✦</div>
+                        <div style="display:flex; flex-direction:column; overflow:hidden;">
+                            <span id="idVal" style="font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Guest</span>
+                            <span id="roleVal" style="font-size:10.5px; color:var(--text-muted);">Signed Out</span>
                         </div>
-                        <button type="button" class="chip-btn" style="width:auto; padding:4px 8px; border-color:var(--danger); color:var(--danger);" onclick="clearImageAttachment()" title="Remove Image">✕</button>
                     </div>
-                    <div class="attach-smart-actions">
-                        <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('Extract all visible text (OCR) from this image accurately.')">🔍 Extract Text (OCR)</button>
-                        <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('Explain and summarize everything shown in this image clearly.')">🧠 Explain & Summarize</button>
-                        <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('/pptx Visual Presentation based on this attached image')">📊 Turn into PPTX</button>
-                        <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('/pdf Detailed Report based on this attached image')">📄 Make PDF Dossier</button>
-                    </div>
+                    <span style="font-size:14px; color:var(--text-muted);">⚙️</span>
                 </div>
 
-                <!-- MULTI-PERSONA DYNAMIC VOICE SYNTHESIZER DROPDOWN -->
-                <select id="personaSelect" style="text-align: center; font-weight:700;" onchange="handlePersonaChange()">
-                    <option value="normal" selected>🟢 AI Personality: Normal (Witty & Helpful)</option>
-                    <option value="helpful">💼 AI Personality: Executive Assistant (Polite & Warm)</option>
-                    <option value="energetic">⚡ AI Personality: Energetic (Fast & Punchy)</option>
-                    <option value="security">🛡️ AI Personality: Security Protocol (Strict & Tactical)</option>
-                </select>
-
-                <div class="input-row">
-                    <input type="file" id="imageUploadInput" accept="image/*" style="display:none;" onchange="handleImageAttachment(event)">
-                    <button type="button" class="chip-btn" id="attachImgBtn" onclick="document.getElementById('imageUploadInput').click()" title="Attach Image (or press Ctrl+V / Drag & Drop)" style="width:auto; padding: 9px 12px; font-size: 14px;">📎</button>
-                    <button type="button" class="chip-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Spoken Voice" style="width:auto; padding: 9px 12px; font-size: 14px;">🔊</button>
-                    <button type="button" class="chip-btn" id="micBtn" style="width:auto; padding: 9px 12px; font-size: 15px;" onclick="toggleSpeechRecognition()" title="Tap to Speak">🎤</button>
-                    <button type="button" class="chip-btn" id="wakeToggleBtn" style="width:auto; padding: 9px 12px; font-size: 11px; white-space: nowrap;" onclick="toggleWakeWord()" title="Hands-Free Wake Word: Say 'Hello'">🗣️ WAKE: OFF</button>
-                    <input type="text" id="textInput" placeholder="Ask anything, Ctrl+V image, /quiz, /code, or 'Make a PPTX/PDF...'">
-                    <button type="button" class="send-btn" onclick="submitCommand()">SEND</button>
+                <!-- HIDDEN LEGACY TELEMETRY HOOKS SO PART 2B JS NEVER BREAKS -->
+                <div style="display:none;">
+                    <span id="faceIdStatus"></span>
+                    <span id="diagStatusText"></span>
+                    <span id="coreLoadText"></span>
+                    <div id="coreLoadBar"></div>
+                    <span id="voiceSynthModeLabel"></span>
+                    <div id="memSyncBar"></div>
+                    <span id="secShieldText"></span>
+                    <span id="hudClock"></span>
+                    <span id="hudPing"></span>
+                    <button id="voiceToggleBtn"></button>
                 </div>
             </div>
-        </div>
+        </aside>
 
-        <!-- RIGHT PANEL: LIVE CONVERSATION, CHAT EXPORTS & PREVIEWS -->
-        <div class="side-panel right-panel">
-            <div class="section-title">
-                <span>💬 LIVE CHAT & PREVIEWS</span>
-                <div style="display:flex; gap:4px; flex-wrap:wrap;">
-                    <button type="button" class="chip-btn" style="width:auto; padding:3px 7px; font-size:9.5px;" onclick="exportCurrentActiveChatTXT()" title="Preview & Export Current Chat as .TXT">📝 .TXT</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:3px 7px; font-size:9.5px;" onclick="exportCurrentActiveChatPDF()" title="Preview & Export Current Chat as PDF">📄 PDF</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:3px 7px; font-size:9.5px; border-color:var(--danger); color:var(--danger);" onclick="clearCurrentActiveChatPermanently()" title="Clear & Permanently Delete Current Chat">🗑️</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:3px 7px; font-size:10px;" onclick="openNotifCenter()" title="Notifications">
+        <!-- MAIN CENTRAL CHAT WORKSPACE -->
+        <main class="main-workspace">
+            <!-- TOP BAR -->
+            <header class="workspace-header">
+                <div class="header-left">
+                    <button type="button" class="icon-btn" onclick="toggleSidebarCollapse()" title="Menu & Chat History">☰</button>
+                    <span style="font-weight:700; font-size:15.5px;">KIZA</span>
+                    <span id="uiStatus" class="status-text">Ready</span>
+                </div>
+
+                <div class="header-right">
+                    <button type="button" class="live-call-btn" onclick="launchLiveCallMode()" title="Start Live Voice, Video & Screen-Share Call">📞 Live</button>
+                    <button type="button" class="icon-btn" onclick="toggleVisionDrawer()" title="Toggle Camera Vision Preview">📷</button>
+                    <button type="button" class="icon-btn" id="quickThemeBtn" onclick="toggleQuickTheme()" title="Switch Light / Dark Mode">🌙</button>
+                    <button type="button" class="icon-btn" id="sfxToggleBtn" onclick="toggleTacticalSFX()" title="Toggle UI Sounds">🎛️</button>
+                    <button type="button" class="icon-btn" onclick="exportCurrentActiveChatPDF()" title="Export Chat as PDF">📄</button>
+                    <button type="button" class="icon-btn" onclick="clearCurrentActiveChatPermanently()" title="Delete Current Chat">🗑️</button>
+                    <button type="button" class="icon-btn" onclick="openNotifCenter()" title="Notifications">
                         <span>🔔</span>
                         <span id="unreadBadgeCorner" class="unread-badge">0</span>
+                        <span id="unreadBadgeCenter" class="unread-badge" style="display:none;">0</span>
                     </button>
                 </div>
+            </header>
+
+            <!-- COMPACT FLOATING WEBCAM DRAWER (HIDDEN UNTIL 📷 IS CLICKED) -->
+            <div id="floatingVisionDrawer" class="floating-vision-widget">
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; font-weight:700;">
+                    <span>📷 Camera Vision</span>
+                    <button type="button" style="background:none; border:none; cursor:pointer; color:var(--text-muted);" onclick="toggleVisionDrawer()">✕</button>
+                </div>
+                <div class="camera-box">
+                    <video id="webcamVideo" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; display: none;"></video>
+                    <canvas id="faceCanvas" width="160" height="120" style="display:none;"></canvas>
+                    <span id="camStatus" style="position: absolute; font-size:10.5px; color:#94a3b8;">Camera Offline</span>
+                </div>
+                <div style="display:flex; gap:6px;">
+                    <button type="button" class="chip-btn" id="camToggleBtn" style="padding:4px 8px; font-size:11px;" onclick="toggleCamera()">📷 On</button>
+                    <button type="button" class="chip-btn" style="padding:4px 8px; font-size:11px;" onclick="switchCamera()">🔄 Flip</button>
+                </div>
             </div>
-            <div id="actionLog" class="log-box">
-                <div>> [KIZA]: Ready! Press Ctrl+V to paste screenshots, try /quiz or /code for interactive widgets, click 📞 Live Call for video & screen sharing, or ask for a multi-format PDF/PPTX.</div>
+
+            <!-- SCROLLABLE CONVERSATION AREA -->
+            <div class="chat-scroll-area">
+                <div class="chat-max-width">
+                    <!-- GEMINI WELCOME HERO & COMPACT AUDIO ORB -->
+                    <div class="gemini-welcome-card">
+                        <div class="core-assembly">
+                            <canvas id="orbSpectrumCanvas" width="78" height="78"></canvas>
+                            <div class="core-ring ring-1"></div>
+                            <div class="core-ring ring-2"></div>
+                            <div class="core-ring ring-3"></div>
+                            <div id="orb" class="core-orb"></div>
+                        </div>
+                        <h1 class="welcome-greeting">How can I help you today?</h1>
+
+                        <!-- LIVE VOICE TRANSCRIPT PILL -->
+                        <div id="voiceHologramBox">🎙️ <span id="voiceHologramText">Listening...</span></div>
+
+                        <!-- ONE-TAP SUGGESTION CHIPS -->
+                        <div id="publicCmds">
+                            <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/pptx ')">📊 Create Presentation</button>
+                            <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/pdf ')">📄 Make PDF Report</button>
+                            <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/quiz ')">📝 Quiz Me</button>
+                            <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/code ')">💻 Build Mini App</button>
+                            <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/research ')">🔬 Deep Research</button>
+                        </div>
+                    </div>
+
+                    <!-- CHAT MESSAGES STREAM -->
+                    <div id="actionLog" class="log-box">
+                        <div>> [KIZA]: Hi! Ask me anything, paste or attach an image (📎), or tap a chip above to create presentations, PDFs, quizzes, or live apps.</div>
+                    </div>
+                </div>
             </div>
-        </div>
+
+            <!-- BOTTOM FLOATING GEMINI INPUT BAR -->
+            <div class="composer-wrapper">
+                <div class="input-container">
+                    <div id="slashAutocomplete"></div>
+
+                    <!-- ATTACHED IMAGE PREVIEW & QUICK ACTIONS -->
+                    <div id="attachmentPreviewBar">
+                        <div style="display:flex; align-items:center; justify-content:space-between; width:100%; gap:10px;">
+                            <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+                                <img id="attachmentThumb" src="" alt="Attached">
+                                <div style="display:flex; flex-direction:column; gap:2px; overflow:hidden;">
+                                    <span id="attachmentName" style="font-weight:700; color:var(--accent-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">image.png</span>
+                                    <span id="attachmentOcrStatus" style="font-size:11px; color:var(--text-muted);">Scanning image...</span>
+                                </div>
+                            </div>
+                            <button type="button" class="chip-btn" style="width:auto; padding:4px 8px; color:var(--danger);" onclick="clearImageAttachment()">✕</button>
+                        </div>
+                        <div class="attach-smart-actions">
+                            <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('Extract all visible text (OCR) from this image accurately.')">🔍 Extract Text</button>
+                            <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('Explain and summarize everything shown in this image clearly.')">🧠 Explain Image</button>
+                            <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('/pptx Visual Presentation based on this attached image')">📊 Turn into PPTX</button>
+                            <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('/pdf Detailed Report based on this attached image')">📄 Make PDF</button>
+                        </div>
+                    </div>
+
+                    <div class="input-row">
+                        <input type="file" id="imageUploadInput" accept="image/*" style="display:none;" onchange="handleImageAttachment(event)">
+                        <button type="button" class="icon-btn" id="attachImgBtn" onclick="document.getElementById('imageUploadInput').click()" title="Attach Image (or press Ctrl+V)">📎</button>
+                        <input type="text" id="textInput" placeholder="Ask KIZA anything, or type / for tools...">
+                        <button type="button" class="icon-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Spoken Voice">🔊</button>
+                        <button type="button" class="icon-btn" id="micBtn" onclick="toggleSpeechRecognition()" title="Voice Input">🎤</button>
+                        <button type="button" class="chip-btn" id="wakeToggleBtn" style="width:auto; padding: 7px 11px; font-size: 11px;" onclick="toggleWakeWord()" title="Say 'Hello' for Hands-Free">🗣️ Wake: Off</button>
+                        <button type="button" class="send-btn" onclick="submitCommand()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
+
     <script>
+        // ==========================================================
+        // SIDEBAR CHAT HISTORY DRAWER & MOBILE UI HELPERS
+        // ==========================================================
+        function toggleSidebarCollapse() {
+            const sb = document.getElementById('appSidebar');
+            const bd = document.getElementById('sidebarBackdrop');
+            if (window.innerWidth <= 860) {
+                const isOpen = sb.classList.toggle('mobile-open');
+                bd.classList.toggle('mobile-open', isOpen);
+            } else {
+                sb.classList.toggle('collapsed');
+            }
+        }
+
+        function toggleMobileSidebar(forceOpen) {
+            const sb = document.getElementById('appSidebar');
+            const bd = document.getElementById('sidebarBackdrop');
+            if (!sb || !bd) return;
+            if (forceOpen === false) {
+                sb.classList.remove('mobile-open');
+                bd.classList.remove('mobile-open');
+            }
+        }
+
+        function toggleVisionDrawer() {
+            const drawer = document.getElementById('floatingVisionDrawer');
+            if (drawer) drawer.classList.toggle('open');
+        }
+
+        async function refreshSidebarChatSessions() {
+            const container = document.getElementById('sidebarSessionsList');
+            if (!container || typeof currentUser === "undefined" || currentUser === "Guest") return;
+            try {
+                const targetU = (typeof currentDBUser !== "undefined" && currentDBUser !== "guest") ? currentDBUser : currentUser;
+                const res = await fetch(`https://kiza-brain.onrender.com/api/history/sessions?target_user=${encodeURIComponent(targetU)}&request_user=${encodeURIComponent(currentUser)}`);
+                const data = await res.json();
+                if (!data.success || !Array.isArray(data.sessions) || data.sessions.length === 0) {
+                    container.innerHTML = `<div style="font-size:12px; color:var(--text-muted); padding:8px;">No recent chats yet</div>`;
+                    return;
+                }
+                container.innerHTML = "";
+                data.sessions.slice(0, 20).forEach(s => {
+                    const row = document.createElement('div');
+                    row.className = `sidebar-chat-item ${s.id === currentSessionId ? 'active' : ''}`;
+                    row.innerHTML = `
+                        <span class="sidebar-chat-title">💬 ${s.title || 'Chat Session'}</span>
+                        <button type="button" class="sidebar-chat-del" title="Delete Chat">✕</button>
+                    `;
+                    row.querySelector('.sidebar-chat-title').onclick = () => loadSessionDirectlyFromSidebar(s.id);
+                    row.querySelector('.sidebar-chat-del').onclick = (e) => {
+                        e.stopPropagation();
+                        deleteSidebarSessionItem(s.id);
+                    };
+                    container.appendChild(row);
+                });
+            } catch (e) {}
+        }
+
+        async function loadSessionDirectlyFromSidebar(sessionId) {
+            if (!sessionId) return;
+            currentSessionId = sessionId;
+            toggleMobileSidebar(false);
+            const logBox = document.getElementById('actionLog');
+            logBox.innerHTML = `<div>> [KIZA]: Loading conversation...</div>`;
+            try {
+                const targetU = (typeof currentDBUser !== "undefined" && currentDBUser !== "guest") ? currentDBUser : currentUser;
+                const res = await fetch(`https://kiza-brain.onrender.com/api/history/messages?session_id=${encodeURIComponent(sessionId)}&target_user=${encodeURIComponent(targetU)}&request_user=${encodeURIComponent(currentUser)}`);
+                const data = await res.json();
+                logBox.innerHTML = "";
+                if (data.success && Array.isArray(data.history) && data.history.length > 0) {
+                    const displayLabel = cleanDisplayNameOnly(currentUser).toUpperCase();
+                    data.history.forEach(log => {
+                        const div = document.createElement('div');
+                        const cleanMsg = extractFriendlyAssistantMessage(log.message);
+                        div.innerHTML = log.role === "USER"
+                            ? `<b>You:</b> ${cleanMsg}`
+                            : `<b style="color:var(--accent-primary);">✦ KIZA:</b> ${cleanMsg}`;
+                        logBox.appendChild(div);
+                    });
+                    logBox.scrollTop = logBox.scrollHeight;
+                } else {
+                    logBox.innerHTML = `<div>> [KIZA]: Conversation loaded. Ask me anything!</div>`;
+                }
+                refreshSidebarChatSessions();
+            } catch (e) {}
+        }
+
+        async function deleteSidebarSessionItem(sessionId) {
+            try {
+                await fetch(`https://kiza-brain.onrender.com/api/history/clear`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user: currentUser, session_id: sessionId, clear_all_user_sessions: false })
+                });
+                if (sessionId === currentSessionId) {
+                    startNewSession();
+                }
+                refreshSidebarChatSessions();
+            } catch (e) {}
+        }
+
+        setInterval(refreshSidebarChatSessions, 12000);
+        setTimeout(refreshSidebarChatSessions, 2000);
         const SERVER_URL = "https://kiza-brain.onrender.com";
         const WS_URL = "wss://kiza-brain.onrender.com/api/ws";
         const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
