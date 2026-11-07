@@ -1747,9 +1747,9 @@
             </div>
         </main>
     </div>
-    <script>
-        const SERVER_URL = "[https://kiza-brain.onrender.com](https://kiza-brain.onrender.com)";
-        const WS_URL = "wss://[kiza-brain.onrender.com/api/ws](https://kiza-brain.onrender.com/api/ws)";
+   <script>
+        const SERVER_URL = "https://kiza-brain.onrender.com";
+        const WS_URL = "wss://kiza-brain.onrender.com/api/ws";
         const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
 
         // ==========================================================
@@ -1776,7 +1776,6 @@
         let deferredPWAPrompt = null;
 
         (function initPWASupport() {
-            // Dynamic fallback manifest in case manifest.json is not uploaded yet
             try {
                 const manifestObj = {
                     name: "KIZA — Kinda Intelligent Zippy Assistant",
@@ -1801,7 +1800,6 @@
                 }
             } catch (e) {}
 
-            // Register lightweight Service Worker for PWA installability
             if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
                 try {
                     const swCode = `
@@ -1868,35 +1866,16 @@
         let userSettings = safeGetJSON('kiza_settings', { theme: 'light', voiceDefault: 'off', showNotifs: 'on', sfx: 'on' });
 
         // ==========================================================
-        // GOOGLE GEMS-STYLE CUSTOM PERSONALITY ENGINE
+        // GOOGLE GEMS-STYLE CUSTOM PERSONALITY ENGINE (NO PRESETS!)
         // ==========================================================
-        const DEFAULT_STARTER_GEMS = [
-            {
-                id: "gem_jarvis",
-                emoji: "🤖",
-                name: "Sarcastic J.A.R.V.I.S.",
-                prompt: "Act like Tony Stark's J.A.R.V.I.S. with sharp, dry British wit, playful sarcasm, and ultra-competent engineering precision."
-            },
-            {
-                id: "gem_coder",
-                emoji: "💻",
-                name: "Code Debugger",
-                prompt: "Act as a senior software architect. Spot syntax, indentation, and logic bugs immediately, explain why they happen, and provide clean, runnable fixes."
-            },
-            {
-                id: "gem_cbse",
-                emoji: "📚",
-                name: "CBSE Class 9 Guide",
-                prompt: "Explain concepts clearly using CBSE Class 9 NCERT terminology, step-by-step derivations, real-world examples, and exam-ready points."
-            }
-        ];
-
-        let customGemsList = safeGetJSON('kiza_custom_gems_v1', DEFAULT_STARTER_GEMS);
-        let activeCustomGem = safeGetJSON('kiza_active_gem_v1', null);
+        // Clean slate: Only user-created Gems are stored!
+        localStorage.removeItem('kiza_custom_gems_v1');
+        let customGemsList = safeGetJSON('kiza_user_gems_clean', []);
+        let activeCustomGem = safeGetJSON('kiza_active_gem_clean', null);
 
         function saveGemsToStorage() {
-            safeSetItem('kiza_custom_gems_v1', JSON.stringify(customGemsList));
-            safeSetItem('kiza_active_gem_v1', JSON.stringify(activeCustomGem));
+            safeSetItem('kiza_user_gems_clean', JSON.stringify(customGemsList));
+            safeSetItem('kiza_active_gem_clean', JSON.stringify(activeCustomGem));
         }
 
         function renderCustomGemsBar() {
@@ -1955,7 +1934,7 @@
             if (!container) return;
             container.innerHTML = "";
             if (customGemsList.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding:12px; color:var(--text-muted); font-size:12px;">No custom Gems yet. Create your first one above!</div>`;
+                container.innerHTML = `<div style="text-align:center; padding:12px; color:var(--text-muted); font-size:12px;">No custom Gems created yet. Build your own custom AI personality above!</div>`;
                 return;
             }
             customGemsList.forEach(gem => {
@@ -2008,7 +1987,7 @@
                 saveGemsToStorage();
                 renderCustomGemsBar();
                 renderSavedGemsModalList();
-                showNotification("Default KIZA", "Switched back to standard KIZA assistant.", false, { skipStore: true });
+                showNotification("Default KIZA", "Switched back to Default KIZA assistant.", false, { skipStore: true });
                 return;
             }
             const found = customGemsList.find(g => g.id === gemId);
@@ -2148,7 +2127,6 @@
             } catch (e) {}
         }
 
-        // FIXED: Renders Code Cards & Quizzes when loading a past chat from the sidebar!
         async function loadSessionDirectlyFromSidebar(sessionId) {
             if (!sessionId) return;
             currentSessionId = sessionId;
@@ -2902,7 +2880,7 @@
             if (webImageCache[cleanQ]) return webImageCache[cleanQ];
 
             try {
-                const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(cleanQ)}&gsrlimit=1&prop=pageimages&pithumbsize=600&format=json&origin=*`;
+                const wikiUrl = `[https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=$](https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=$){encodeURIComponent(cleanQ)}&gsrlimit=1&prop=pageimages&pithumbsize=600&format=json&origin=*`;
                 const res = await fetch(wikiUrl);
                 const data = await res.json();
                 if (data && data.query && data.query.pages) {
@@ -2914,7 +2892,7 @@
                 }
             } catch (e) {}
 
-            const fallbackUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanQ + " clean educational diagram illustration high quality")}?width=640&height=380&nologo=true`;
+            const fallbackUrl = `[https://image.pollinations.ai/prompt/$](https://image.pollinations.ai/prompt/$){encodeURIComponent(cleanQ + " clean educational diagram illustration high quality")}?width=640&height=380&nologo=true`;
             webImageCache[cleanQ] = fallbackUrl;
             return fallbackUrl;
         }
@@ -2931,7 +2909,7 @@
 
         function getVisualImageUrlSync(queryStr) {
             const cleanQ = (queryStr || "science diagram").replace(/[^a-zA-Z0-9\s]/g, '').trim();
-            return webImageCache[cleanQ] || `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanQ + " clean educational illustration")}?width=640&height=380&nologo=true`;
+            return webImageCache[cleanQ] || `[https://image.pollinations.ai/prompt/$](https://image.pollinations.ai/prompt/$){encodeURIComponent(cleanQ + " clean educational illustration")}?width=640&height=380&nologo=true`;
         }
 
         function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark", layoutFormat = "infographic") {
@@ -3335,9 +3313,6 @@
             showNotification("Preview Studio Ready", `Inspect, switch formats, or ask KIZA to edit your ${cleanExt.toUpperCase()} before downloading!`, false, { skipStore: true });
         }
 
-        // ==========================================================
-        // UNIVERSAL PREVIEW-BEFORE-DOWNLOAD FOR CHATS & SECURITY AUDITS
-        // ==========================================================
         function openAuditOrChatInPreviewStudio(ext, titleStr, rawTextOrHtml, isHtmlPreview = false) {
             lastCompiledFileCache = {
                 ext: ext.toLowerCase(),
@@ -3474,7 +3449,7 @@
             }
             if (cleanExt === "doc" || cleanExt === "docx") {
                 const viewportHtml = document.getElementById('filePreviewViewport').innerHTML;
-                const htmlDoc = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>${topic}</title></head><body>${viewportHtml}</body></html>`;
+                const htmlDoc = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='[http://www.w3.org/TR/REC-html40](http://www.w3.org/TR/REC-html40)'><head><meta charset='utf-8'><title>${topic}</title></head><body>${viewportHtml}</body></html>`;
                 const blob = new Blob(['\ufeff', htmlDoc], { type: 'application/msword' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -5386,7 +5361,7 @@
                 showNotification("Welcome", replyMsg, false, { skipStore: true }); 
                 if (audioBase64) playKizaAudio(audioBase64, replyMsg);
             }
-            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Hi! Ask me anything, paste or attach an image (📎), or tap 💎 Gems below to create your own custom AI personalities!</div>';
+            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Hi! Ask me anything, paste or attach an image (📎), or tap ＋ Create Gem below to build your own custom AI personalities!</div>';
             initWebSocket();
         }
 
@@ -5441,7 +5416,7 @@
             document.getElementById('authModal').style.display = "flex";
             document.getElementById('cancelAuthBtn').style.display = "none";
             document.getElementById('masterCmds').style.display = "none";
-            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Hi! Ask me anything, paste or attach an image (📎), or tap 💎 Gems below to create your own custom AI personalities!</div>';
+            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Hi! Ask me anything, paste or attach an image (📎), or tap ＋ Create Gem below to build your own custom AI personalities!</div>';
             closeSettings();
         }
         function logoutUser() { forceLogout(); document.getElementById('authUser').value = ""; document.getElementById('authPass').value = ""; document.getElementById('authError').innerText = ""; }
