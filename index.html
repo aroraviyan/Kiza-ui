@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#071324">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,13 +14,19 @@
     <link rel="icon" type="image/jpeg" href="logo.jpg">
     <link rel="apple-touch-icon" href="logo.jpg">
     <link rel="manifest" id="kizaManifestLink" href="manifest.json">
-    <link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
-    <link rel="preconnect" href="[https://fonts.gstatic.com](https://fonts.gstatic.com)" crossorigin>
-    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap)" rel="stylesheet">
-    <script src="[https://accounts.google.com/gsi/client](https://accounts.google.com/gsi/client)" async defer></script>
-    <script src="[https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js](https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js)"></script>
-    <script src="[https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js](https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js)"></script>
-    <script src="[https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js](https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js)"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- KaTeX for Math, Physics & Chemistry Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <!-- Mermaid.js for Interactive Mindmaps, Flowcharts & Circuit Diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root {
             --bg-main: #ffffff;
@@ -77,17 +83,18 @@
         ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 999px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
 
-        body {
+        html, body {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            height: 100dvh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
             background-color: var(--bg-main);
             color: var(--text-main);
             font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            height: 100vh;
-            height: 100dvh;
-            width: 100vw;
-            overflow: hidden;
             transition: background-color 0.25s ease, color 0.25s ease;
         }
 
@@ -100,6 +107,7 @@
             transition: opacity 0.15s ease-out, transform 0.15s ease-out;
             background: radial-gradient(circle at 50% 85%, rgba(0, 242, 254, 0.16) 0%, rgba(2, 132, 199, 0.1) 40%, transparent 75%);
         }
+        body.power-saver #ambientAudioGlow { display: none !important; }
 
         #dragDropOverlay {
             position: fixed;
@@ -120,9 +128,6 @@
             color: var(--accent-primary);
         }
 
-        /* ==========================================================
-           KIZA CUSTOM LOGO EMBLEM STYLES
-           ========================================================== */
         .kiza-logo-img {
             width: 34px;
             height: 34px;
@@ -146,9 +151,6 @@
             background: #071324;
         }
 
-        /* ==========================================================
-           CUSTOM "KIZA GEMS" PILL BAR & MANAGER STYLES
-           ========================================================== */
         .gems-bar-wrapper {
             display: flex;
             align-items: center;
@@ -193,14 +195,16 @@
         }
 
         /* ==========================================================
-           GEMINI-STYLE APP SHELL (COLLAPSIBLE SIDEBAR + WORKSPACE)
+           ORIGINAL KIZA FLEX SHELL (SIDEBAR + MAIN WORKSPACE)
            ========================================================== */
         .app-shell {
             display: flex;
             width: 100%;
             height: 100%;
+            min-height: 0;
             position: relative;
             z-index: 10;
+            padding-top: env(safe-area-inset-top, 0px);
         }
 
         .sidebar-backdrop {
@@ -214,12 +218,14 @@
 
         .sidebar {
             width: 276px;
+            height: 100%;
+            min-height: 0;
             background: var(--bg-sidebar);
             border-right: 1px solid var(--card-border);
             display: flex;
             flex-direction: column;
-            padding: 14px 12px;
-            gap: 10px;
+            padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px)) 12px;
+            gap: 8px;
             flex-shrink: 0;
             transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), margin-left 0.26s ease;
             z-index: 100;
@@ -234,6 +240,7 @@
             align-items: center;
             justify-content: space-between;
             padding: 2px 4px;
+            flex-shrink: 0;
         }
 
         .brand-logo {
@@ -251,13 +258,13 @@
         .new-chat-pill {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             background: var(--bg-elevated);
             border: 1px solid var(--card-border);
             color: var(--text-main);
-            padding: 10px 15px;
+            padding: 9px 14px;
             border-radius: 999px;
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 600;
             cursor: pointer;
             box-shadow: var(--card-shadow);
@@ -274,14 +281,16 @@
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.6px;
-            padding: 4px 8px 0 8px;
+            padding: 2px 8px 0 8px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-shrink: 0;
         }
 
         .sidebar-history-list {
             flex: 1;
+            min-height: 60px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -303,6 +312,7 @@
             transition: background 0.15s ease;
             white-space: nowrap;
             overflow: hidden;
+            flex-shrink: 0;
         }
         .sidebar-chat-item:hover {
             background: var(--chip-hover);
@@ -338,24 +348,28 @@
         .sidebar-section-card {
             background: var(--bg-surface);
             border-radius: 12px;
-            padding: 8px;
+            padding: 7px;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 4px;
+            flex-shrink: 0;
+            max-height: 155px;
+            overflow-y: auto;
         }
 
         .sidebar-grid-btns {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 5px;
+            gap: 4px;
         }
 
         .sidebar-footer {
             border-top: 1px solid var(--card-border);
-            padding-top: 10px;
+            padding-top: 8px;
             display: flex;
             flex-direction: column;
             gap: 6px;
+            flex-shrink: 0;
         }
 
         .user-profile-Trigger {
@@ -363,7 +377,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
-            padding: 8px 10px;
+            padding: 7px 10px;
             border-radius: 12px;
             background: var(--bg-surface);
             cursor: pointer;
@@ -374,8 +388,8 @@
         }
 
         .face-thumb {
-            width: 34px;
-            height: 34px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             border: 2px solid var(--accent-primary);
             object-fit: cover;
@@ -384,27 +398,28 @@
         }
 
         /* ==========================================================
-           MAIN WORKSPACE & CLEAN NON-OVERLAPPING TOP HEADER
+           MAIN WORKSPACE & BATTERY/RESOURCE TELEMETRY HUD
            ========================================================== */
         .main-workspace {
             flex: 1;
             display: flex;
             flex-direction: column;
             height: 100%;
+            min-height: 0;
             position: relative;
             overflow: hidden;
             background: var(--bg-main);
         }
 
         .workspace-header {
-            min-height: 58px;
-            padding: 8px 16px;
+            min-height: 54px;
+            padding: 6px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             border-bottom: 1px solid var(--card-border);
             flex-shrink: 0;
-            gap: 10px;
+            gap: 8px;
             background: var(--bg-main);
             z-index: 20;
         }
@@ -412,7 +427,7 @@
         .header-left {
             display: flex;
             align-items: center;
-            gap: 9px;
+            gap: 8px;
             flex-shrink: 0;
         }
 
@@ -427,15 +442,35 @@
         }
         .header-right::-webkit-scrollbar { display: none; }
 
-        /* AUTO-WIDTH PILL BUTTONS — NEVER OVERLAPS TEXT OR ICONS */
+        .battery-hud-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: var(--chip-bg);
+            border: 1px solid var(--card-border);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-main);
+            white-space: nowrap;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .battery-hud-pill.low-power {
+            border-color: var(--warning);
+            color: var(--warning);
+            background: rgba(245, 158, 11, 0.12);
+        }
+
         .icon-btn {
             background: var(--chip-bg);
             border: 1px solid var(--card-border);
             color: var(--text-main);
-            height: 34px;
-            min-width: 34px;
+            height: 32px;
+            min-width: 32px;
             width: auto;
-            padding: 0 11px;
+            padding: 0 10px;
             border-radius: 999px;
             display: inline-flex;
             align-items: center;
@@ -457,7 +492,7 @@
 
         .floating-vision-widget {
             position: absolute;
-            top: 66px;
+            top: 62px;
             right: 16px;
             width: 190px;
             background: var(--card-bg);
@@ -486,56 +521,59 @@
             position: relative;
         }
 
-        /* CENTRAL CHAT STREAM & WELCOME HERO WITH KIZA LOGO ORB */
+        /* FIXED SCROLLABLE CHAT AREA: Top Hero Never Clips! */
         .chat-scroll-area {
             flex: 1;
+            min-height: 0;
             overflow-y: auto;
-            padding: 18px 16px 12px 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            padding: 18px 14px 10px 14px;
+            display: block;
         }
 
         .chat-max-width {
             width: 100%;
             max-width: 800px;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
             gap: 12px;
+            padding-bottom: 8px;
         }
 
-        .gemini-welcome-card {
+        .kiza-welcome-card {
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
             padding: 10px 10px 4px 10px;
             gap: 7px;
+            flex-shrink: 0;
         }
 
         .core-assembly {
             position: relative;
-            width: 84px;
-            height: 84px;
+            width: 76px;
+            height: 76px;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
         #orbSpectrumCanvas {
             position: absolute;
             top: 0;
             left: 0;
-            width: 84px;
-            height: 84px;
+            width: 76px;
+            height: 76px;
             pointer-events: none;
             z-index: 3;
         }
         .core-orb {
-            width: 56px;
-            height: 56px;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
             border: 2px solid #00f2fe;
-            box-shadow: 0 0 24px rgba(0, 242, 254, 0.55);
+            box-shadow: 0 0 22px rgba(0, 242, 254, 0.55);
             z-index: 2;
             overflow: hidden;
             display: flex;
@@ -555,9 +593,10 @@
         .core-ring { display: none; }
 
         .welcome-greeting {
-            font-size: 22px;
+            font-size: 21px;
             font-weight: 800;
             letter-spacing: -0.4px;
+            line-height: 1.25;
             background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -565,11 +604,11 @@
         }
 
         .welcome-sub {
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: 600;
             color: var(--text-muted);
-            letter-spacing: 0.5px;
-            margin-top: -3px;
+            letter-spacing: 0.4px;
+            margin-top: -2px;
         }
 
         .status-text {
@@ -580,7 +619,7 @@
             padding: 4px 10px;
             border-radius: 999px;
             white-space: nowrap;
-            max-width: 190px;
+            max-width: 170px;
             overflow: hidden;
             text-overflow: ellipsis;
         }
@@ -602,7 +641,7 @@
 
         #publicCmds {
             display: flex;
-            gap: 7px;
+            gap: 6px;
             flex-wrap: wrap;
             justify-content: center;
             margin-top: 2px;
@@ -627,7 +666,7 @@
         }
 
         .log-box > div, .logs-viewer > div {
-            padding: 13px 16px;
+            padding: 12px 16px;
             border-radius: 16px;
             background: var(--bg-surface);
             border: 1px solid var(--card-border);
@@ -639,6 +678,24 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        .mermaid-diagram-card {
+            background: var(--card-bg) !important;
+            border: 1.5px solid var(--accent-primary) !important;
+            border-radius: 16px !important;
+            padding: 14px !important;
+            margin-top: 6px;
+            overflow-x: auto;
+        }
+        .mermaid-svg-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow-x: auto;
+        }
+
         .streaming-cursor::after {
             content: "●";
             display: inline-block;
@@ -648,16 +705,18 @@
         }
         @keyframes blinkCursor { from { opacity: 1; } to { opacity: 0.2; } }
 
-        /* ==========================================================
-           BOTTOM FLOATING GEMINI INPUT COMPOSER + GEMS STRIP
-           ========================================================== */
+        /* BOTTOM COMPOSER + AI DISCLAIMER FOOTER */
         .composer-wrapper {
             width: 100%;
-            padding: 4px 14px 14px 14px;
+            padding: 6px 12px calc(8px + env(safe-area-inset-bottom, 0px)) 12px;
             display: flex;
-            justify-content: center;
-            background: linear-gradient(180deg, transparent 0%, var(--bg-main) 30%);
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            background: var(--bg-main);
+            border-top: 1px solid var(--card-border);
             flex-shrink: 0;
+            z-index: 25;
         }
 
         .input-container {
@@ -666,17 +725,26 @@
             flex-direction: column;
             width: 100%;
             max-width: 800px;
-            gap: 6px;
+            gap: 5px;
             background: var(--input-bg);
-            padding: 9px 13px;
+            padding: 8px 12px;
             border: 1px solid var(--card-border);
-            border-radius: 24px;
+            border-radius: 22px;
             box-shadow: var(--card-shadow);
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .input-container:focus-within {
             border-color: var(--accent-primary);
             box-shadow: 0 6px 24px rgba(2, 132, 199, 0.14);
+        }
+
+        .kiza-ai-disclaimer {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: center;
+            font-weight: 500;
+            letter-spacing: 0.1px;
+            user-select: none;
         }
 
         .input-row {
@@ -690,8 +758,8 @@
             border: none !important;
             background: transparent !important;
             box-shadow: none !important;
-            padding: 8px 6px;
-            font-size: 14.5px;
+            padding: 7px 6px;
+            font-size: 14px;
             color: var(--text-main);
             flex: 1;
             min-width: 80px;
@@ -701,9 +769,9 @@
             background: var(--chip-bg);
             border: 1px solid var(--card-border);
             color: var(--text-main);
-            padding: 6px 12px;
+            padding: 5px 11px;
             font-family: inherit;
-            font-size: 12px;
+            font-size: 11.5px;
             border-radius: 999px;
             cursor: pointer;
             font-weight: 600;
@@ -725,7 +793,7 @@
             background: var(--accent-primary);
             border: none;
             color: #ffffff;
-            padding: 8px 16px;
+            padding: 7px 15px;
             cursor: pointer;
             font-family: inherit;
             font-size: 12.5px;
@@ -747,10 +815,10 @@
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             border: none;
             color: #ffffff;
-            height: 34px;
-            padding: 0 13px;
+            height: 32px;
+            padding: 0 12px;
             border-radius: 999px;
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 700;
             cursor: pointer;
             display: inline-flex;
@@ -825,7 +893,7 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 12px;
             color: #f8fafc;
-            max-height: 250px;
+            max-height: 240px;
             line-height: 1.5;
         }
 
@@ -984,7 +1052,7 @@
             align-items: center;
             justify-content: center;
             z-index: 500;
-            padding: 14px;
+            padding: 12px;
         }
         .auth-card, .logs-card {
             background: var(--card-bg);
@@ -997,8 +1065,10 @@
             gap: 9px;
             width: 100%;
             max-width: 430px;
+            max-height: 92dvh;
+            overflow-y: auto;
         }
-        .logs-card { max-width: 700px; max-height: 90vh; overflow-y: auto; }
+        .logs-card { max-width: 720px; }
 
         .section-title {
             font-size: 13px;
@@ -1010,6 +1080,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
         }
 
         .auth-tabs { display: flex; gap: 6px; }
@@ -1079,7 +1151,14 @@
         #notificationBox.show { right: 18px; }
         .notify-title { font-weight: 700; font-size: 12px; color: var(--accent-primary); }
 
-        /* PHONE & TABLET OPTIMIZATION */
+        @media (max-height: 700px) {
+            .core-assembly { width: 56px; height: 56px; }
+            #orbSpectrumCanvas { width: 56px; height: 56px; }
+            .core-orb { width: 40px; height: 40px; }
+            .welcome-greeting { font-size: 17px; }
+            .kiza-welcome-card { padding: 4px 6px 2px 6px; gap: 4px; }
+        }
+
         @media (max-width: 860px) {
             .sidebar {
                 position: fixed;
@@ -1100,23 +1179,26 @@
                 padding: 6px 10px;
             }
             .status-text {
-                max-width: 110px;
+                max-width: 105px;
                 font-size: 10px;
                 padding: 3px 8px;
             }
             .welcome-greeting {
-                font-size: 19px;
+                font-size: 18px;
             }
             .composer-wrapper {
-                padding: 4px 8px 10px 8px;
+                padding: 4px 8px calc(6px + env(safe-area-inset-bottom, 0px)) 8px;
+            }
+            .kiza-ai-disclaimer {
+                font-size: 10px;
             }
             .icon-btn {
-                height: 32px;
+                height: 30px;
                 padding: 0 8px;
                 font-size: 11px;
             }
             .live-call-btn {
-                height: 32px;
+                height: 30px;
                 padding: 0 10px;
                 font-size: 11px;
             }
@@ -1141,48 +1223,52 @@
         <div class="notify-msg" id="notifMsg">Details...</div>
     </div>
 
-    <!-- ==========================================================
-         GOOGLE GEMS-STYLE CUSTOM PERSONALITY CREATOR STUDIO MODAL
-         ========================================================== -->
+    <!-- KIZA CUSTOM PERSONAS / GEMS STUDIO MODAL (CLOUD SYNCED ACROSS ALL DEVICES) -->
     <div id="gemsModal" class="modal-overlay" style="display:none; z-index: 645;">
         <div class="logs-card" style="max-width: 560px;">
             <div class="section-title">
-                <span>💎 KIZA Gems Studio • Custom AI Personalities</span>
+                <span>💎 KIZA Persona Studio • Cloud-Synced AI Personalities</span>
                 <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeGemsModal()">✕</button>
             </div>
             <div style="font-size:12px; color:var(--text-muted); line-height:1.45;">
-                Create your own custom KIZA personalities (just like Google Gems)! Tell KIZA exactly how you want it to act, speak, or help you.
+                Build your own custom KIZA personalities! Your saved Personas automatically sync across your PC, phone, and tablet when signed in.
             </div>
 
             <div style="display:flex; gap:8px;">
                 <input type="text" id="gemEmojiInput" placeholder="🤖" maxlength="4" style="width:64px; text-align:center; font-size:16px;" value="💎">
-                <input type="text" id="gemNameInput" placeholder="Gem Name (e.g. Sarcastic JARVIS, Code Wizard, Study Buddy)..." style="flex:1;">
+                <input type="text" id="gemNameInput" placeholder="Persona Name (e.g. Witty Commander, Code Architect, Study Mentor)..." style="flex:1;">
             </div>
 
-            <textarea id="gemPromptInput" rows="3" placeholder="Tell KIZA how to behave (e.g. 'Act like Tony Stark's sarcastic JARVIS with dry British wit and call me Sir', or 'Explain everything simply with step-by-step examples')..."></textarea>
+            <textarea id="gemPromptInput" rows="3" placeholder="Tell KIZA how to behave (e.g. 'Speak with dry British wit and call me Commander', or 'Explain concepts with step-by-step formulas and examples')..."></textarea>
 
-            <button type="button" class="send-btn" style="width:100%; padding:10px;" onclick="saveNewCustomGem()">✨ Save & Activate Custom Gem</button>
+            <button type="button" class="send-btn" style="width:100%; padding:10px;" onclick="saveNewCustomGem()">✨ Save & Sync Custom Persona</button>
 
             <div class="section-title" style="margin-top:8px;">
-                <span>💎 Your Saved Gems</span>
+                <span>💎 Your Cloud-Synced Personas</span>
                 <button type="button" class="chip-btn" style="width:auto; padding:3px 9px; font-size:10.5px;" onclick="selectCustomGem(null)">Reset to Default KIZA</button>
             </div>
-            <div id="savedGemsListContainer" style="max-height: 210px; overflow-y: auto; display:flex; flex-direction:column; gap:6px;"></div>
+            <div id="savedGemsListContainer" style="max-height: 200px; overflow-y: auto; display:flex; flex-direction:column; gap:6px;"></div>
         </div>
     </div>
 
-    <!-- GEMINI-STYLE LIVE CODE SANDBOX MODAL -->
+    <!-- LIVE CODE SANDBOX MODAL WITH AUTO-FIX & ERROR DIAGNOSTICS -->
     <div id="codeSandboxModal" class="modal-overlay" style="display:none; z-index: 635;">
-        <div class="logs-card" style="max-width: 940px; width: 96%;">
+        <div class="logs-card" style="max-width: 960px; width: 96%;">
             <div class="section-title">
-                <span id="codeSandboxTitle">💻 Live Code Preview</span>
-                <div style="display:flex; gap:6px; align-items:center;">
-                    <button type="button" class="chip-btn" style="width:auto; padding:5px 12px;" onclick="copyCurrentSandboxCode()">📋 Copy Code</button>
-                    <button type="button" class="send-btn" style="padding:6px 14px; font-size:12px;" onclick="downloadCurrentSandboxCode()">⬇️ Download File</button>
+                <span id="codeSandboxTitle">💻 KIZA Live Code Sandbox</span>
+                <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                    <button type="button" class="chip-btn" style="width:auto; padding:5px 11px; border-color:var(--warning); color:var(--warning);" onclick="autoFixCurrentSandboxCode()">⚡ Auto-Fix / Complete Code</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:5px 11px;" onclick="reloadCurrentSandboxIframe()">🔄 Reload</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:5px 11px;" onclick="copyCurrentSandboxCode()">📋 Copy Code</button>
+                    <button type="button" class="send-btn" style="padding:6px 13px; font-size:12px;" onclick="downloadCurrentSandboxCode()">⬇️ Download File</button>
                     <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 5px 10px; width:auto;" onclick="closeCodeSandboxModal()">✕</button>
                 </div>
             </div>
-            <iframe id="codeSandboxIframe" sandbox="allow-scripts allow-modals" style="width:100%; height:62vh; border:1px solid var(--card-border); border-radius:12px; background:#ffffff;"></iframe>
+            <div id="sandboxDiagnosticBanner" style="display:none; font-size:11.5px; padding:8px 12px; border-radius:10px; background:rgba(245, 158, 11, 0.14); border:1px solid var(--warning); color:var(--warning); justify-content:space-between; align-items:center; gap:8px;">
+                <span id="sandboxDiagnosticText">⚠️ Code diagnostic notice</span>
+                <button type="button" class="send-btn" style="padding:4px 12px; font-size:11px; background:var(--warning); color:#000;" onclick="autoFixCurrentSandboxCode()">⚡ Fix Now</button>
+            </div>
+            <iframe id="codeSandboxIframe" sandbox="allow-scripts allow-modals allow-same-origin" style="width:100%; height:64dvh; border:1px solid var(--card-border); border-radius:12px; background:#ffffff;"></iframe>
         </div>
     </div>
 
@@ -1190,7 +1276,7 @@
     <div id="filePreviewModal" class="modal-overlay" style="display:none; z-index: 620;">
         <div class="logs-card" style="max-width: 940px; width: 96%;">
             <div class="section-title">
-                <span id="filePreviewModalTitle">🎨 Document & Slide Preview Studio</span>
+                <span id="filePreviewModalTitle">🎨 KIZA Document & Slide Preview Studio</span>
                 <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 4px 10px; width:auto;" onclick="closeFilePreviewModal()">✕ Close</button>
             </div>
 
@@ -1225,7 +1311,7 @@
                 <button type="button" id="aiReviseBtn" class="send-btn" style="background:#10b981; color:#fff;" onclick="submitFileRevisionPrompt()">✨ Revise</button>
             </div>
 
-            <div id="filePreviewViewport" style="max-height: 62vh; overflow-y: auto; border: 1px solid var(--card-border); border-radius: 12px; background: #cbd5e1; padding: 16px; outline: none;"></div>
+            <div id="filePreviewViewport" style="max-height: 58dvh; overflow-y: auto; border: 1px solid var(--card-border); border-radius: 12px; background: #cbd5e1; padding: 16px; outline: none;"></div>
         </div>
     </div>
 
@@ -1272,7 +1358,7 @@
         </div>
     </div>
 
-    <!-- TASKS & MISSIONS MODAL -->
+    <!-- TASKS & GOALS MODAL -->
     <div id="missionsModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
@@ -1368,7 +1454,7 @@
             <div id="ownerUpdatePublisher" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:12px; background:var(--bg-surface);">
                 <div style="font-size:12px; font-weight:700; color:var(--accent-primary);">Publish New Update</div>
                 <div style="display:flex; gap:8px;">
-                    <input type="text" id="newUpdateVersion" placeholder="v6.6" style="width:110px;">
+                    <input type="text" id="newUpdateVersion" placeholder="v6.8" style="width:110px;">
                     <input type="text" id="newUpdateTitle" placeholder="Headline...">
                 </div>
                 <input type="text" id="newUpdateDesc" placeholder="Details of what changed...">
@@ -1380,7 +1466,7 @@
 
     <!-- SETTINGS & DEVICE MANAGER MODAL -->
     <div id="settingsModal" class="modal-overlay" style="display:none;">
-        <div class="auth-card" style="max-width:480px; max-height:90vh; overflow-y:auto;">
+        <div class="auth-card" style="max-width:480px;">
             <div class="section-title">
                 <span>⚙️ Settings & Connected Devices</span>
                 <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeSettings()">✕</button>
@@ -1389,7 +1475,7 @@
             <label style="font-size:12px; font-weight:600;">Appearance:</label>
             <select id="themeSelect" onchange="saveSettings()">
                 <option value="light">☀️ Light Mode (Clean Daylight)</option>
-                <option value="dark">🌙 Dark Mode (Gemini Obsidian)</option>
+                <option value="dark">🌙 Dark Mode (KIZA Obsidian)</option>
             </select>
 
             <label style="font-size:12px; font-weight:600;">Base Voice Accent:</label>
@@ -1418,7 +1504,7 @@
             </div>
 
             <div style="display:flex; gap:6px; margin-top:4px;">
-                <button type="button" class="chip-btn" onclick="closeSettings(); openGemsModal();">💎 Manage Custom Gems</button>
+                <button type="button" class="chip-btn" onclick="closeSettings(); openGemsModal();">💎 Manage Custom Personas</button>
                 <button type="button" class="chip-btn" onclick="triggerPWAInstall()">📲 Install App</button>
             </div>
 
@@ -1430,7 +1516,7 @@
             <div class="section-title" style="margin-top:8px;">
                 <span>💻 Active Devices</span>
             </div>
-            <div id="activeDevicesListContainer" style="max-height: 115px; overflow-y: auto; font-size:12px;"></div>
+            <div id="activeDevicesListContainer" style="max-height: 110px; overflow-y: auto; font-size:12px;"></div>
 
             <div class="section-title" style="margin-top:6px;">
                 <span>📲 Sign Out Other Devices</span>
@@ -1444,7 +1530,7 @@
             <div class="section-title" style="margin-top:6px;">
                 <span>👥 Saved Accounts on This Browser</span>
             </div>
-            <div id="profileListContainer" style="max-height: 100px; overflow-y: auto;"></div>
+            <div id="profileListContainer" style="max-height: 95px; overflow-y: auto;"></div>
             <div style="display:flex; gap:6px;">
                 <button class="chip-btn" onclick="addIdentity()">+ Switch / Add Account</button>
                 <button class="chip-btn" style="border-color:var(--danger); color:var(--danger);" onclick="logoutUser()">Sign Out</button>
@@ -1504,11 +1590,11 @@
         </div>
     </div>
 
-    <!-- AUTH / SIGN-IN MODAL WITH CUSTOM KIZA LOGO -->
+    <!-- AUTH / SIGN-IN MODAL -->
     <div id="authModal" class="modal-overlay">
         <div class="auth-card">
             <div style="text-align:center; margin-bottom:4px;">
-                <img src="logo.jpg" alt="KIZA Logo" class="kiza-auth-logo" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22[http://www.w3.org/2000/svg%22](http://www.w3.org/2000/svg%22) viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%224%22/><rect x=%2228%22 y=%2230%22 width=%2264%22 height=%2244%22 rx=%2220%22 fill=%22%23e0f2fe%22 stroke=%22%2300f2fe%22 stroke-width=%223%22/><rect x=%2235%22 y=%2237%22 width=%2250%22 height=%2230%22 rx=%2213%22 fill=%22%23041020%22/><circle cx=%2249%22 cy=%2250%22 r=%225.5%22 fill=%22%2300f2fe%22/><path d=%22M65 50 Q71 43 77 50%22 stroke=%22%2300f2fe%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/><path d=%22M52 59 Q60 65 68 59%22 stroke=%22%2300f2fe%22 stroke-width=%223%22 fill=%22none%22 stroke-linecap=%22round%22/><text x=%2260%22 y=%2298%22 font-family=%22Arial,sans-serif%22 font-weight=%22900%22 font-size=%2222%22 text-anchor=%22middle%22 fill=%22%2300f2fe%22>KIZA</text></svg>';">
+                <img src="logo.jpg" alt="KIZA Logo" class="kiza-auth-logo" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%224%22/><rect x=%2228%22 y=%2230%22 width=%2264%22 height=%2244%22 rx=%2220%22 fill=%22%23e0f2fe%22 stroke=%22%2300f2fe%22 stroke-width=%223%22/><rect x=%2235%22 y=%2237%22 width=%2250%22 height=%2230%22 rx=%2213%22 fill=%22%23041020%22/><circle cx=%2249%22 cy=%2250%22 r=%225.5%22 fill=%22%2300f2fe%22/><path d=%22M65 50 Q71 43 77 50%22 stroke=%22%2300f2fe%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/><path d=%22M52 59 Q60 65 68 59%22 stroke=%22%2300f2fe%22 stroke-width=%223%22 fill=%22none%22 stroke-linecap=%22round%22/><text x=%2260%22 y=%2298%22 font-family=%22Arial,sans-serif%22 font-weight=%22900%22 font-size=%2222%22 text-anchor=%22middle%22 fill=%22%2300f2fe%22>KIZA</text></svg>';">
                 <h2 style="margin:0; font-size:20px;">Welcome to KIZA</h2>
                 <div style="font-size:11.5px; font-weight:600; color:var(--accent-primary); margin-top:2px;">Kinda Intelligent Zippy Assistant</div>
             </div>
@@ -1536,28 +1622,28 @@
     </div>
 
     <!-- ==========================================================
-         MAIN GEMINI-INSPIRED APPLICATION SHELL
+         ORIGINAL KIZA APPLICATION SHELL
          ========================================================== -->
     <div class="app-shell">
         <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="toggleMobileSidebar(false)"></div>
 
-        <!-- LEFT SIDEBAR: CUSTOM KIZA LOGO, NEW CHAT, GEMS STUDIO, RECENT CHATS & SETTINGS -->
+        <!-- LEFT SIDEBAR -->
         <aside id="appSidebar" class="sidebar">
             <div class="sidebar-top">
                 <div class="brand-logo">
-                    <img src="logo.jpg" alt="KIZA" class="kiza-logo-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22[http://www.w3.org/2000/svg%22](http://www.w3.org/2000/svg%22) viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%225%22/><rect x=%2228%22 y=%2230%22 width=%2264%22 height=%2244%22 rx=%2220%22 fill=%22%23e0f2fe%22 stroke=%22%2300f2fe%22 stroke-width=%223%22/><rect x=%2235%22 y=%2237%22 width=%2250%22 height=%2230%22 rx=%2213%22 fill=%22%23041020%22/><circle cx=%2249%22 cy=%2250%22 r=%225.5%22 fill=%22%2300f2fe%22/><path d=%22M65 50 Q71 43 77 50%22 stroke=%22%2300f2fe%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/><path d=%22M52 59 Q60 65 68 59%22 stroke=%22%2300f2fe%22 stroke-width=%223%22 fill=%22none%22 stroke-linecap=%22round%22/><text x=%2260%22 y=%2298%22 font-family=%22Arial,sans-serif%22 font-weight=%22900%22 font-size=%2222%22 text-anchor=%22middle%22 fill=%22%2300f2fe%22>KIZA</text></svg>';">
+                    <img src="logo.jpg" alt="KIZA" class="kiza-logo-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%225%22/><rect x=%2228%22 y=%2230%22 width=%2264%22 height=%2244%22 rx=%2220%22 fill=%22%23e0f2fe%22 stroke=%22%2300f2fe%22 stroke-width=%223%22/><rect x=%2235%22 y=%2237%22 width=%2250%22 height=%2230%22 rx=%2213%22 fill=%22%23041020%22/><circle cx=%2249%22 cy=%2250%22 r=%225.5%22 fill=%22%2300f2fe%22/><path d=%22M65 50 Q71 43 77 50%22 stroke=%22%2300f2fe%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/><path d=%22M52 59 Q60 65 68 59%22 stroke=%22%2300f2fe%22 stroke-width=%223%22 fill=%22none%22 stroke-linecap=%22round%22/><text x=%2260%22 y=%2298%22 font-family=%22Arial,sans-serif%22 font-weight=%22900%22 font-size=%2222%22 text-anchor=%22middle%22 fill=%22%2300f2fe%22>KIZA</text></svg>';">
                     <span>KIZA</span>
                 </div>
                 <button type="button" class="icon-btn" onclick="toggleSidebarCollapse()" title="Toggle Sidebar">☰</button>
             </div>
 
-            <div style="display:flex; gap:6px;">
+            <div style="display:flex; gap:6px; flex-shrink:0;">
                 <button type="button" class="new-chat-pill" style="flex:1;" onclick="startNewSession(); toggleMobileSidebar(false);">
-                    <span style="font-size:16px; font-weight:700; color:var(--accent-primary);">＋</span>
+                    <span style="font-size:15px; font-weight:700; color:var(--accent-primary);">＋</span>
                     <span>New chat</span>
                 </button>
-                <button type="button" class="new-chat-pill" style="padding:10px 13px; color:var(--accent-primary);" onclick="openGemsModal(); toggleMobileSidebar(false);" title="Create or Choose Custom KIZA Gems">
-                    <span>💎 Gems</span>
+                <button type="button" class="new-chat-pill" style="padding:9px 12px; color:var(--accent-primary);" onclick="openGemsModal(); toggleMobileSidebar(false);" title="Create Custom KIZA Personas">
+                    <span>💎 Personas</span>
                 </button>
             </div>
 
@@ -1573,41 +1659,41 @@
 
             <!-- COLLAPSIBLE ADMIN CONTROLS (VISIBLE ONLY FOR RANKS 1-4) -->
             <div id="masterCmds" class="sidebar-section-card" style="display: none;">
-                <div style="font-size:10.5px; font-weight:700; color:var(--accent-primary); padding:2px 4px;">🛡️ Admin & Team Controls</div>
+                <div style="font-size:10.5px; font-weight:700; color:var(--accent-primary); padding:1px 4px;">🛡️ Admin & Team Controls</div>
                 <div class="sidebar-grid-btns">
-                    <button type="button" class="chip-btn" style="padding:5px 8px; font-size:11px;" onclick="sendQuickCmd('/operative'); toggleMobileSidebar(false);">🟢 Online</button>
-                    <button type="button" class="chip-btn" style="padding:5px 8px; font-size:11px;" onclick="sendQuickCmd('/userdata'); toggleMobileSidebar(false);">👥 Users</button>
-                    <button type="button" class="chip-btn" style="padding:5px 8px; font-size:11px;" onclick="openBroadcastModal()">📢 Broadcast</button>
-                    <button type="button" class="chip-btn" style="padding:5px 8px; font-size:11px;" onclick="openThreatsModal()">🛡️ Security</button>
-                    <button type="button" class="chip-btn top3-only" style="padding:5px 8px; font-size:11px; display:none;" onclick="openRankModal()">⭐ Roles</button>
-                    <button type="button" class="chip-btn top3-only" style="padding:5px 8px; font-size:11px; display:none;" onclick="sendQuickCmd('/purgelog'); toggleMobileSidebar(false);">📜 Logs</button>
-                    <button type="button" class="chip-btn" style="padding:5px 8px; font-size:11px;" onclick="sendQuickCmd('/lockdown'); toggleMobileSidebar(false);">🔒 Lock</button>
-                    <button type="button" class="chip-btn owner-only" style="padding:5px 8px; font-size:11px; display:none;" onclick="sendQuickCmd('/removelock'); toggleMobileSidebar(false);">🔓 Unlock</button>
+                    <button type="button" class="chip-btn" style="padding:4px 6px; font-size:10.5px;" onclick="sendQuickCmd('/operative'); toggleMobileSidebar(false);">🟢 Online</button>
+                    <button type="button" class="chip-btn" style="padding:4px 6px; font-size:10.5px;" onclick="sendQuickCmd('/userdata'); toggleMobileSidebar(false);">👥 Users</button>
+                    <button type="button" class="chip-btn" style="padding:4px 6px; font-size:10.5px;" onclick="openBroadcastModal()">📢 Broadcast</button>
+                    <button type="button" class="chip-btn" style="padding:4px 6px; font-size:10.5px;" onclick="openThreatsModal()">🛡️ Security</button>
+                    <button type="button" class="chip-btn top3-only" style="padding:4px 6px; font-size:10.5px; display:none;" onclick="openRankModal()">⭐ Roles</button>
+                    <button type="button" class="chip-btn top3-only" style="padding:4px 6px; font-size:10.5px; display:none;" onclick="sendQuickCmd('/purgelog'); toggleMobileSidebar(false);">📜 Logs</button>
+                    <button type="button" class="chip-btn" style="padding:4px 6px; font-size:10.5px;" onclick="sendQuickCmd('/lockdown'); toggleMobileSidebar(false);">🔒 Lock</button>
+                    <button type="button" class="chip-btn owner-only" style="padding:4px 6px; font-size:10.5px; display:none;" onclick="sendQuickCmd('/removelock'); toggleMobileSidebar(false);">🔓 Unlock</button>
                 </div>
-                <button type="button" class="chip-btn top3-only" style="padding:5px 8px; font-size:11px; display:none; color:var(--danger);" onclick="openPurgeModal()">🗑️ Remove User (PIN)</button>
+                <button type="button" class="chip-btn top3-only" style="padding:4px 6px; font-size:10.5px; display:none; color:var(--danger);" onclick="openPurgeModal()">🗑️ Remove User (PIN)</button>
             </div>
 
-            <!-- SIDEBAR FOOTER: TASKS, UPDATES, INSTALL APP & USER SETTINGS PILL -->
+            <!-- SIDEBAR FOOTER -->
             <div class="sidebar-footer">
                 <div style="display:flex; gap:5px;">
-                    <button type="button" class="chip-btn" style="padding:6px 8px; font-size:11px;" onclick="openMissionsModal()">📋 Tasks</button>
-                    <button type="button" class="chip-btn" style="padding:6px 8px; font-size:11px;" onclick="openUpdatesModal()">🚀 Updates</button>
-                    <button type="button" class="chip-btn" id="sidebarInstallBtn" style="padding:6px 8px; font-size:11px; color:var(--accent-primary);" onclick="triggerPWAInstall()">📲 App</button>
+                    <button type="button" class="chip-btn" style="padding:5px 7px; font-size:11px;" onclick="openMissionsModal()">📋 Tasks</button>
+                    <button type="button" class="chip-btn" style="padding:5px 7px; font-size:11px;" onclick="openUpdatesModal()">🚀 Updates</button>
+                    <button type="button" class="chip-btn" id="sidebarInstallBtn" style="padding:5px 7px; font-size:11px; color:var(--accent-primary);" onclick="triggerPWAInstall()">📲 App</button>
                 </div>
 
                 <div class="user-profile-Trigger" onclick="openSettings()" title="Open Settings & Connected Devices">
                     <div style="display:flex; align-items:center; gap:9px; overflow:hidden;">
                         <img id="savedFaceImg" class="face-thumb" alt="User">
-                        <img src="logo.jpg" alt="KIZA" class="kiza-logo-img" style="width:30px; height:30px;" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22[http://www.w3.org/2000/svg%22](http://www.w3.org/2000/svg%22) viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%225%22/><rect x=%2228%22 y=%2230%22 width=%2264%22 height=%2244%22 rx=%2220%22 fill=%22%23e0f2fe%22 stroke=%22%2300f2fe%22 stroke-width=%223%22/><rect x=%2235%22 y=%2237%22 width=%2250%22 height=%2230%22 rx=%2213%22 fill=%22%23041020%22/><circle cx=%2249%22 cy=%2250%22 r=%225.5%22 fill=%22%2300f2fe%22/><path d=%22M65 50 Q71 43 77 50%22 stroke=%22%2300f2fe%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/><path d=%22M52 59 Q60 65 68 59%22 stroke=%22%2300f2fe%22 stroke-width=%223%22 fill=%22none%22 stroke-linecap=%22round%22/></svg>';">
+                        <img src="logo.jpg" alt="KIZA" class="kiza-logo-img" style="width:28px; height:28px;" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%225%22/><rect x=%2228%22 y=%2230%22 width=%2264%22 height=%2244%22 rx=%2220%22 fill=%22%23e0f2fe%22 stroke=%22%2300f2fe%22 stroke-width=%223%22/><rect x=%2235%22 y=%2237%22 width=%2250%22 height=%2230%22 rx=%2213%22 fill=%22%23041020%22/><circle cx=%2249%22 cy=%2250%22 r=%225.5%22 fill=%22%2300f2fe%22/><path d=%22M65 50 Q71 43 77 50%22 stroke=%22%2300f2fe%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/><path d=%22M52 59 Q60 65 68 59%22 stroke=%22%2300f2fe%22 stroke-width=%223%22 fill=%22none%22 stroke-linecap=%22round%22/></svg>';">
                         <div style="display:flex; flex-direction:column; overflow:hidden;">
-                            <span id="idVal" style="font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Guest</span>
-                            <span id="roleVal" style="font-size:10.5px; color:var(--text-muted);">Signed Out</span>
+                            <span id="idVal" style="font-size:12.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Guest</span>
+                            <span id="roleVal" style="font-size:10px; color:var(--text-muted);">Signed Out</span>
                         </div>
                     </div>
                     <span style="font-size:14px; color:var(--text-muted);">⚙️</span>
                 </div>
 
-                <!-- HIDDEN TELEMETRY HOOKS FOR FULL COMPATIBILITY -->
+                <!-- HIDDEN TELEMETRY HOOKS -->
                 <div style="display:none;">
                     <span id="faceIdStatus"></span>
                     <span id="diagStatusText"></span>
@@ -1625,19 +1711,21 @@
 
         <!-- MAIN CENTRAL CHAT WORKSPACE -->
         <main class="main-workspace">
-            <!-- CLEAN NON-OVERLAPPING TOP BAR WITH KIZA LOGO & PWA INSTALL -->
+            <!-- TOP BAR WITH LIVE BATTERY & RESOURCE HUD -->
             <header class="workspace-header">
                 <div class="header-left">
                     <button type="button" class="icon-btn" onclick="toggleSidebarCollapse()" title="Menu & Chat History">☰</button>
-                    <img src="logo.jpg" alt="KIZA" class="kiza-logo-img" style="width:28px; height:28px;" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22[http://www.w3.org/2000/svg%22](http://www.w3.org/2000/svg%22) viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%225%22/><rect x=%2228%22 y=%2230%22 width=%2264%22 height=%2244%22 rx=%2220%22 fill=%22%23e0f2fe%22 stroke=%22%2300f2fe%22 stroke-width=%223%22/><rect x=%2235%22 y=%2237%22 width=%2250%22 height=%2230%22 rx=%2213%22 fill=%22%23041020%22/><circle cx=%2249%22 cy=%2250%22 r=%225.5%22 fill=%22%2300f2fe%22/><path d=%22M65 50 Q71 43 77 50%22 stroke=%22%2300f2fe%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/><path d=%22M52 59 Q60 65 68 59%22 stroke=%22%2300f2fe%22 stroke-width=%223%22 fill=%22none%22 stroke-linecap=%22round%22/></svg>';">
-                    <span style="font-weight:800; font-size:15.5px;">KIZA</span>
+                    <img src="logo.jpg" alt="KIZA" class="kiza-logo-img" style="width:26px; height:26px;" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%225%22/><rect x=%2228%22 y=%2230%22 width=%2264%22 height=%2244%22 rx=%2220%22 fill=%22%23e0f2fe%22 stroke=%22%2300f2fe%22 stroke-width=%223%22/><rect x=%2235%22 y=%2237%22 width=%2250%22 height=%2230%22 rx=%2213%22 fill=%22%23041020%22/><circle cx=%2249%22 cy=%2250%22 r=%225.5%22 fill=%22%2300f2fe%22/><path d=%22M65 50 Q71 43 77 50%22 stroke=%22%2300f2fe%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/><path d=%22M52 59 Q60 65 68 59%22 stroke=%22%2300f2fe%22 stroke-width=%223%22 fill=%22none%22 stroke-linecap=%22round%22/></svg>';">
+                    <span style="font-weight:800; font-size:15px;">KIZA</span>
                     <span id="uiStatus" class="status-text">Ready</span>
+                    <!-- LIVE BATTERY & MEMORY RESOURCE HUD PILL -->
+                    <span id="batteryHudPill" class="battery-hud-pill" onclick="togglePowerSaverMode()" title="System Battery & Memory HUD (Click to toggle Power-Saver Mode)">🔋 --%</span>
                 </div>
 
                 <div class="header-right">
                     <button type="button" class="live-call-btn" onclick="launchLiveCallMode()" title="Start Live Voice, Video & Screen-Share Call">📞 Live</button>
                     <button type="button" class="icon-btn" id="pwaInstallHeaderBtn" style="display:none; border-color:var(--accent-primary); color:var(--accent-primary);" onclick="triggerPWAInstall()" title="Install KIZA App">📲 Install</button>
-                    <button type="button" class="icon-btn" onclick="openGemsModal()" title="Create or Switch KIZA Gems">💎 Gems</button>
+                    <button type="button" class="icon-btn" onclick="openGemsModal()" title="Create or Switch KIZA Personas">💎 Personas</button>
                     <button type="button" class="icon-btn" onclick="toggleVisionDrawer()" title="Toggle Camera Vision Preview">📷</button>
                     <button type="button" class="icon-btn" id="quickThemeBtn" onclick="toggleQuickTheme()" title="Switch Light / Dark Mode">🌙 Dark</button>
                     <button type="button" class="icon-btn" id="sfxToggleBtn" onclick="toggleTacticalSFX()" title="Toggle UI Sounds">🎛️ SFX</button>
@@ -1652,7 +1740,7 @@
                 </div>
             </header>
 
-            <!-- COMPACT FLOATING WEBCAM DRAWER (HIDDEN UNTIL 📷 IS CLICKED) -->
+            <!-- COMPACT FLOATING WEBCAM DRAWER -->
             <div id="floatingVisionDrawer" class="floating-vision-widget">
                 <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; font-weight:700;">
                     <span>📷 Camera Vision</span>
@@ -1669,24 +1757,23 @@
                 </div>
             </div>
 
-            <!-- SCROLLABLE CONVERSATION AREA -->
+            <!-- SCROLLABLE CONVERSATION AREA (TOP HERO NEVER CLIPS) -->
             <div class="chat-scroll-area">
                 <div class="chat-max-width">
-                    <!-- GEMINI WELCOME HERO WITH KIZA ROBOT LOGO ORB -->
-                    <div class="gemini-welcome-card">
+                    <!-- KIZA WELCOME HERO WITH ROBOT EMBLEM ORB -->
+                    <div class="kiza-welcome-card">
                         <div class="core-assembly">
-                            <canvas id="orbSpectrumCanvas" width="84" height="84"></canvas>
+                            <canvas id="orbSpectrumCanvas" width="76" height="76"></canvas>
                             <div class="core-ring ring-1"></div>
                             <div class="core-ring ring-2"></div>
                             <div class="core-ring ring-3"></div>
                             <div id="orb" class="core-orb">
-                                <img src="logo.jpg" alt="KIZA Core" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22[http://www.w3.org/2000/svg%22](http://www.w3.org/2000/svg%22) viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%224%22/><rect x=%2228%22 y=%2230%22 width=%2264%22 height=%2244%22 rx=%2220%22 fill=%22%23e0f2fe%22 stroke=%22%2300f2fe%22 stroke-width=%223%22/><rect x=%2235%22 y=%2237%22 width=%2250%22 height=%2230%22 rx=%2213%22 fill=%22%23041020%22/><circle cx=%2249%22 cy=%2250%22 r=%225.5%22 fill=%22%2300f2fe%22/><path d=%22M65 50 Q71 43 77 50%22 stroke=%22%2300f2fe%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/><path d=%22M52 59 Q60 65 68 59%22 stroke=%22%2300f2fe%22 stroke-width=%223%22 fill=%22none%22 stroke-linecap=%22round%22/><text x=%2260%22 y=%2298%22 font-family=%22Arial,sans-serif%22 font-weight=%22900%22 font-size=%2222%22 text-anchor=%22middle%22 fill=%22%2300f2fe%22>KIZA</text></svg>';">
+                                <img src="logo.jpg" alt="KIZA Core" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%224%22/><rect x=%2228%22 y=%2230%22 width=%2264%22 height=%2244%22 rx=%2220%22 fill=%22%23e0f2fe%22 stroke=%22%2300f2fe%22 stroke-width=%223%22/><rect x=%2235%22 y=%2237%22 width=%2250%22 height=%2230%22 rx=%2213%22 fill=%22%23041020%22/><circle cx=%2249%22 cy=%2250%22 r=%225.5%22 fill=%22%2300f2fe%22/><path d=%22M65 50 Q71 43 77 50%22 stroke=%22%2300f2fe%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/><path d=%22M52 59 Q60 65 68 59%22 stroke=%22%2300f2fe%22 stroke-width=%223%22 fill=%22none%22 stroke-linecap=%22round%22/><text x=%2260%22 y=%2298%22 font-family=%22Arial,sans-serif%22 font-weight=%22900%22 font-size=%2222%22 text-anchor=%22middle%22 fill=%22%2300f2fe%22>KIZA</text></svg>';">
                             </div>
                         </div>
                         <h1 class="welcome-greeting">How can I help you today?</h1>
                         <div class="welcome-sub" id="activeGemSubtitle">KIZA • Kinda Intelligent Zippy Assistant</div>
 
-                        <!-- LIVE VOICE TRANSCRIPT PILL -->
                         <div id="voiceHologramBox">🎙️ <span id="voiceHologramText">Listening...</span></div>
 
                         <!-- ONE-TAP SUGGESTION CHIPS -->
@@ -1695,23 +1782,23 @@
                             <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/pdf ')">📄 Make PDF Report</button>
                             <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/quiz ')">📝 Quiz Me</button>
                             <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/code ')">💻 Build Mini App</button>
-                            <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('/research ')">🔬 Deep Research</button>
+                            <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('Create a Mermaid flowchart diagram explaining ')">🔀 Flowchart</button>
                         </div>
                     </div>
 
                     <!-- CHAT MESSAGES STREAM -->
                     <div id="actionLog" class="log-box">
-                        <div>> [KIZA]: Hi! Ask me anything, paste or attach an image (📎), or tap 💎 Gems below to create your own custom AI personalities!</div>
+                        <div>> [KIZA]: Hi! Ask me anything, paste or attach an image (📎), or tap ＋ Create Persona below to build your own custom AI personalities!</div>
                     </div>
                 </div>
             </div>
 
-            <!-- BOTTOM FLOATING GEMINI INPUT BAR + CUSTOM GEMS STRIP -->
+            <!-- BOTTOM FLOATING INPUT BAR + CUSTOM PERSONAS STRIP + AI DISCLAIMER -->
             <div class="composer-wrapper">
                 <div class="input-container">
                     <div id="slashAutocomplete"></div>
 
-                    <!-- GOOGLE GEMS-STYLE CUSTOM PERSONALITY SELECTOR BAR -->
+                    <!-- CLOUD-SYNCED CUSTOM PERSONAS BAR -->
                     <div id="customGemsBar" class="gems-bar-wrapper"></div>
 
                     <!-- ATTACHED IMAGE PREVIEW & QUICK ACTIONS -->
@@ -1744,10 +1831,15 @@
                         <button type="button" class="send-btn" onclick="submitCommand()">Send</button>
                     </div>
                 </div>
+
+                <!-- BOTTOM AI DISCLAIMER -->
+                <div class="kiza-ai-disclaimer">
+                    KIZA is an AI assistant and can make mistakes. Please verify important information.
+                </div>
             </div>
         </main>
     </div>
-   <script>
+    <script>
         const SERVER_URL = "https://kiza-brain.onrender.com";
         const WS_URL = "wss://kiza-brain.onrender.com/api/ws";
         const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
@@ -1780,7 +1872,7 @@
                 const manifestObj = {
                     name: "KIZA — Kinda Intelligent Zippy Assistant",
                     short_name: "KIZA",
-                    description: "Your Everyday AI Assistant with Live Video, Screen Share, Code Sandbox & Custom Gems.",
+                    description: "Original AI Command Hub with Live Video, Screen Share, Code Sandbox & Cloud-Synced Personas.",
                     start_url: window.location.href,
                     display: "standalone",
                     background_color: "#071324",
@@ -1833,10 +1925,121 @@
             } else {
                 showNotification(
                     "Install KIZA App",
-                    "On Chrome/Edge: Click the Install icon in your browser address bar (or tap Menu ⋮ -> 'Add to Home screen' on mobile)!",
+                    "Click the Install icon in your browser address bar (or tap Menu ⋮ -> 'Add to Home screen' on mobile/tablet)!",
                     false,
                     { skipStore: true }
                 );
+            }
+        }
+
+        // ==========================================================
+        // LIVE BATTERY, MEMORY RESOURCE HUD & POWER-SAVER ENGINE
+        // ==========================================================
+        let powerSaverActive = false;
+        let batteryLevelPct = 100;
+        let batteryCharging = true;
+
+        function togglePowerSaverMode(forceState = null) {
+            powerSaverActive = forceState !== null ? forceState : !powerSaverActive;
+            document.body.classList.toggle('power-saver', powerSaverActive);
+            const pill = document.getElementById('batteryHudPill');
+            if (pill) pill.classList.toggle('low-power', powerSaverActive);
+            showNotification(
+                powerSaverActive ? "⚡ Power-Saver Active" : "🔋 Normal Power Mode",
+                powerSaverActive ? "Background animations and polling throttled to save battery." : "Full visual animations and telemetry restored.",
+                false,
+                { skipStore: true }
+            );
+            updateBatteryHudDisplay();
+        }
+
+        function updateBatteryHudDisplay() {
+            const pill = document.getElementById('batteryHudPill');
+            if (!pill) return;
+            let memStr = "";
+            if (window.performance && performance.memory) {
+                const usedMB = Math.round(performance.memory.usedJSHeapSize / (1024 * 1024));
+                memStr = ` • ${usedMB}MB`;
+            }
+            const icon = batteryCharging ? "⚡" : (batteryLevelPct <= 20 ? "🪫" : "🔋");
+            pill.innerText = `${icon} ${batteryLevelPct}%${memStr}${powerSaverActive ? ' (Eco)' : ''}`;
+        }
+
+        (function initBatteryAndMemoryHUD() {
+            if ('getBattery' in navigator) {
+                navigator.getBattery().then(bat => {
+                    const syncBat = () => {
+                        batteryLevelPct = Math.round((bat.level || 1) * 100);
+                        batteryCharging = Boolean(bat.charging);
+                        if (batteryLevelPct <= 20 && !batteryCharging && !powerSaverActive) {
+                            togglePowerSaverMode(true);
+                        }
+                        updateBatteryHudDisplay();
+                    };
+                    syncBat();
+                    bat.addEventListener('levelchange', syncBat);
+                    bat.addEventListener('chargingchange', syncBat);
+                }).catch(() => updateBatteryHudDisplay());
+            } else {
+                updateBatteryHudDisplay();
+            }
+            setInterval(updateBatteryHudDisplay, 15000);
+        })();
+
+        // ==========================================================
+        // KATEX FORMULA & MERMAID DIAGRAM INITIALIZATION
+        // ==========================================================
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof mermaid !== "undefined") {
+                mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+            }
+        });
+
+        function renderMathInElementSafe(el) {
+            if (!el || typeof renderMathInElement !== "function") return;
+            try {
+                renderMathInElement(el, {
+                    delimiters: [
+                        { left: "$$", right: "$$", display: true },
+                        { left: "$", right: "$", display: false },
+                        { left: "\\(", right: "\\)", display: false },
+                        { left: "[", right: "]", display: true }
+                    ],
+                    throwOnError: false
+                });
+            } catch (e) {}
+        }
+
+        async function extractAndRenderMermaidBlocks(rawText) {
+            const mermaidRegex = /```mermaid\s*\n([\s\S]*?)(?:```|$)/gi;
+            let match;
+            const logBox = document.getElementById('actionLog');
+            while ((match = mermaidRegex.exec(rawText)) !== null) {
+                const graphCode = match[1].trim();
+                if (!graphCode) continue;
+                const card = document.createElement('div');
+                card.className = "mermaid-diagram-card";
+                const diagId = "mermaid_svg_" + Date.now() + "_" + Math.floor(Math.random() * 9999);
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-size:12px; font-weight:700; color:var(--accent-primary);">🔀 Interactive Architecture & Flowchart Diagram</span>
+                        <button type="button" class="chip-btn" style="width:auto; padding:3px 10px; font-size:10.5px;" onclick="navigator.clipboard.writeText(${JSON.stringify(graphCode)}); showNotification('Copied', 'Mermaid diagram syntax copied!', false, {skipStore:true});">📋 Copy Syntax</button>
+                    </div>
+                    <div class="mermaid-svg-container" id="${diagId}_wrap">Rendering diagram...</div>
+                `;
+                logBox.appendChild(card);
+                logBox.scrollTop = logBox.scrollHeight;
+
+                if (typeof mermaid !== "undefined") {
+                    try {
+                        const { svg } = await mermaid.render(diagId, graphCode);
+                        const wrapEl = document.getElementById(`${diagId}_wrap`);
+                        if (wrapEl) wrapEl.innerHTML = svg;
+                    } catch (err) {
+                        const wrapEl = document.getElementById(`${diagId}_wrap`);
+                        if (wrapEl) wrapEl.innerHTML = `<pre style="color:#0f172a; font-size:11.5px; margin:0;">${graphCode.replace(/</g, '&lt;')}</pre>`;
+                    }
+                }
             }
         }
 
@@ -1866,9 +2069,8 @@
         let userSettings = safeGetJSON('kiza_settings', { theme: 'light', voiceDefault: 'off', showNotifs: 'on', sfx: 'on' });
 
         // ==========================================================
-        // GOOGLE GEMS-STYLE CUSTOM PERSONALITY ENGINE (NO PRESETS!)
+        // CLOUD-SYNCED CUSTOM KIZA PERSONAS (SYNCS TABLET <-> PC!)
         // ==========================================================
-        // Clean slate: Only user-created Gems are stored!
         localStorage.removeItem('kiza_custom_gems_v1');
         let customGemsList = safeGetJSON('kiza_user_gems_clean', []);
         let activeCustomGem = safeGetJSON('kiza_active_gem_clean', null);
@@ -1876,6 +2078,42 @@
         function saveGemsToStorage() {
             safeSetItem('kiza_user_gems_clean', JSON.stringify(customGemsList));
             safeSetItem('kiza_active_gem_clean', JSON.stringify(activeCustomGem));
+        }
+
+        // Automatically syncs tablet-created local Gems up to PostgreSQL & pulls cloud Gems down to PC!
+        async function syncUserGemsWithServer() {
+            if (!currentUser || currentUser === "Guest") return;
+            try {
+                // 1. Upload any local Gems on this device (e.g. tablet) to PostgreSQL so PC sees them
+                for (const localGem of customGemsList) {
+                    if (localGem && localGem.id && localGem.name && localGem.prompt) {
+                        await fetch(`${SERVER_URL}/api/gems`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                user: currentUser,
+                                gem_id: localGem.id,
+                                emoji: localGem.emoji || "💎",
+                                name: localGem.name,
+                                prompt: localGem.prompt
+                            })
+                        });
+                    }
+                }
+                // 2. Fetch the complete unified list of Gems for this account from PostgreSQL
+                const res = await fetch(`${SERVER_URL}/api/gems?user=${encodeURIComponent(currentUser)}`);
+                const data = await res.json();
+                if (data.success && Array.isArray(data.gems)) {
+                    customGemsList = data.gems;
+                    if (activeCustomGem) {
+                        const stillExists = customGemsList.find(g => g.id === activeCustomGem.id);
+                        activeCustomGem = stillExists || null;
+                    }
+                    saveGemsToStorage();
+                    renderCustomGemsBar();
+                    renderSavedGemsModalList();
+                }
+            } catch (e) {}
         }
 
         function renderCustomGemsBar() {
@@ -1905,13 +2143,13 @@
             const createBtn = document.createElement('button');
             createBtn.type = "button";
             createBtn.className = "gem-pill gem-pill-create";
-            createBtn.innerHTML = `<span>＋ Create Gem</span>`;
+            createBtn.innerHTML = `<span>＋ Create Persona</span>`;
             createBtn.onclick = () => openGemsModal();
             bar.appendChild(createBtn);
 
             if (subEl) {
                 if (activeCustomGem) {
-                    subEl.innerHTML = `<span style="color:var(--accent-primary); font-weight:700;">${activeCustomGem.emoji || '💎'} Active Gem: ${activeCustomGem.name}</span>`;
+                    subEl.innerHTML = `<span style="color:var(--accent-primary); font-weight:700;">${activeCustomGem.emoji || '💎'} Active Persona: ${activeCustomGem.name}</span>`;
                 } else {
                     subEl.innerText = "KIZA • Kinda Intelligent Zippy Assistant";
                 }
@@ -1923,6 +2161,7 @@
             toggleMobileSidebar(false);
             document.getElementById('gemsModal').style.display = "flex";
             renderSavedGemsModalList();
+            syncUserGemsWithServer();
         }
 
         function closeGemsModal() {
@@ -1934,7 +2173,7 @@
             if (!container) return;
             container.innerHTML = "";
             if (customGemsList.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding:12px; color:var(--text-muted); font-size:12px;">No custom Gems created yet. Build your own custom AI personality above!</div>`;
+                container.innerHTML = `<div style="text-align:center; padding:12px; color:var(--text-muted); font-size:12px;">No custom Personas created yet. Build your own custom AI personality above and it will sync across all your devices!</div>`;
                 return;
             }
             customGemsList.forEach(gem => {
@@ -1946,7 +2185,7 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
                         <span style="font-weight:700; font-size:13px;">${gem.emoji || '💎'} ${gem.name} ${isAct ? '<span style="color:var(--success); font-size:11px;">(Active)</span>' : ''}</span>
                         <div style="display:flex; gap:6px;">
-                            <button type="button" class="chip-btn" style="width:auto; padding:3px 10px; font-size:11px;" onclick="selectCustomGem('${gem.id}'); closeGemsModal();">${isAct ? '✓ Active' : 'Use Gem'}</button>
+                            <button type="button" class="chip-btn" style="width:auto; padding:3px 10px; font-size:11px;" onclick="selectCustomGem('${gem.id}'); closeGemsModal();">${isAct ? '✓ Active' : 'Activate'}</button>
                             <button type="button" class="chip-btn" style="width:auto; padding:3px 8px; font-size:11px; color:var(--danger);" onclick="deleteCustomGem('${gem.id}')">✕</button>
                         </div>
                     </div>
@@ -1956,19 +2195,19 @@
             });
         }
 
-        function saveNewCustomGem() {
+        async function saveNewCustomGem() {
             const emoji = (document.getElementById('gemEmojiInput').value || "💎").trim();
             const name = (document.getElementById('gemNameInput').value || "").trim();
             const prompt = (document.getElementById('gemPromptInput').value || "").trim();
             if (!name || !prompt) {
-                showNotification("Missing Details", "Please enter both a Gem Name and instructions on how KIZA should act.", true, { skipStore: true });
+                showNotification("Missing Details", "Please enter both a Persona Name and instructions on how KIZA should act.", true, { skipStore: true });
                 return;
             }
             const newGem = {
                 id: "gem_" + Date.now(),
                 emoji: emoji,
                 name: name.slice(0, 32),
-                prompt: prompt.slice(0, 600)
+                prompt: prompt.slice(0, 700)
             };
             customGemsList.unshift(newGem);
             activeCustomGem = newGem;
@@ -1978,7 +2217,22 @@
             renderCustomGemsBar();
             renderSavedGemsModalList();
             closeGemsModal();
-            showNotification("Custom Gem Activated", `${newGem.emoji} ${newGem.name} is now active!`, false, { skipStore: true });
+
+            try {
+                await fetch(`${SERVER_URL}/api/gems`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        user: currentUser,
+                        gem_id: newGem.id,
+                        emoji: newGem.emoji,
+                        name: newGem.name,
+                        prompt: newGem.prompt
+                    })
+                });
+            } catch (e) {}
+
+            showNotification("Persona Synced & Active", `${newGem.emoji} ${newGem.name} is now active and synced across your devices!`, false, { skipStore: true });
         }
 
         function selectCustomGem(gemId) {
@@ -1996,11 +2250,11 @@
                 saveGemsToStorage();
                 renderCustomGemsBar();
                 renderSavedGemsModalList();
-                showNotification("Gem Activated", `Now chatting with ${found.emoji} ${found.name}!`, false, { skipStore: true });
+                showNotification("Persona Activated", `Now chatting with ${found.emoji} ${found.name}!`, false, { skipStore: true });
             }
         }
 
-        function deleteCustomGem(gemId) {
+        async function deleteCustomGem(gemId) {
             customGemsList = customGemsList.filter(g => g.id !== gemId);
             if (activeCustomGem && activeCustomGem.id === gemId) {
                 activeCustomGem = null;
@@ -2008,6 +2262,11 @@
             saveGemsToStorage();
             renderCustomGemsBar();
             renderSavedGemsModalList();
+            try {
+                await fetch(`${SERVER_URL}/api/gems?user=${encodeURIComponent(currentUser)}&gem_id=${encodeURIComponent(gemId)}`, {
+                    method: "DELETE"
+                });
+            } catch (e) {}
         }
 
         let currentUser = "Guest";
@@ -2140,7 +2399,7 @@
                 logBox.innerHTML = "";
                 if (data.success && Array.isArray(data.history) && data.history.length > 0) {
                     const displayLabel = cleanDisplayNameOnly(currentUser).toUpperCase();
-                    data.history.forEach(log => {
+                    for (const log of data.history) {
                         const div = document.createElement('div');
                         const rawMsg = String(log.message || "");
                         const cleanMsg = extractFriendlyAssistantMessage(rawMsg);
@@ -2148,12 +2407,14 @@
                             ? `<b>[${displayLabel}]:</b> ${cleanMsg}`
                             : `<b style="color:var(--accent-primary);">[KIZA]:</b> ${cleanMsg}`;
                         logBox.appendChild(div);
+                        renderMathInElementSafe(div);
 
                         if (log.role !== "USER") {
+                            if (/```mermaid/i.test(rawMsg)) await extractAndRenderMermaidBlocks(rawMsg);
                             if (rawMsg.includes("```")) extractAndRenderCodeBlocks(rawMsg);
                             if (rawMsg.includes("[QUIZ_DATA]")) extractAndRenderInteractiveQuiz(rawMsg);
                         }
-                    });
+                    }
                     logBox.scrollTop = logBox.scrollHeight;
                 } else {
                     logBox.innerHTML = `<div>> [KIZA]: Conversation loaded. Ask me anything!</div>`;
@@ -2176,7 +2437,9 @@
             } catch (e) {}
         }
 
-        setInterval(refreshSidebarChatSessions, 12000);
+        setInterval(() => {
+            if (!powerSaverActive) refreshSidebarChatSessions();
+        }, 14000);
 
         function getOrCreateBrowserDeviceId() {
             let devId = localStorage.getItem('kiza_device_id');
@@ -2191,7 +2454,7 @@
             const ua = navigator.userAgent || "";
             let os = "Desktop OS";
             if (/Windows/i.test(ua)) os = "Windows PC";
-            else if (/Android/i.test(ua)) os = "Android Phone";
+            else if (/Android/i.test(ua)) os = "Android Device";
             else if (/iPhone|iPad|iPod/i.test(ua)) os = "iOS Device";
             else if (/Mac/i.test(ua)) os = "Mac";
             else if (/Linux/i.test(ua)) os = "Linux";
@@ -2226,12 +2489,12 @@
         };
 
         const DEFAULT_UPDATES_FALLBACK = [
-            { version: "v6.6", title: "KIZA Custom Gems Studio, Native PWA App & 3200-Token Code Sandbox", description: "Added Google Gems-style custom AI personality builder, installable PWA support, URL-safe code parser, and 3200-token full HTML sandbox.", author: "Viyan Arora", date: "LIVE" },
-            { version: "v6.5", title: "Official KIZA Emblem & Gemini-Inspired Workspace", description: "Added the official KIZA ('Kinda Intelligent Zippy Assistant') neon emblem across the Sign-In gate, Sidebar, Top Bar, and Audio-Reactive Core Orb.", author: "Viyan Arora", date: "ACTIVE" }
+            { version: "v6.8", title: "Cloud-Synced Custom Personas, Mermaid Diagrams, KaTeX & Battery HUD", description: "Custom Personas now sync across all your devices via PostgreSQL! Added Mermaid flowcharts, KaTeX formulas, Live Battery HUD, and 6500-token Code Sandbox.", author: "Viyan Arora", date: "LIVE" },
+            { version: "v6.5", title: "Official KIZA Emblem & Responsive Workspace", description: "Added the official KIZA ('Kinda Intelligent Zippy Assistant') neon emblem across the Sign-In gate, Sidebar, Top Bar, and Audio-Reactive Core Orb.", author: "Viyan Arora", date: "ACTIVE" }
         ];
 
         // ==========================================================
-        // UI SOUND EFFECTS (CLEAN COMPACT HEADER LABELS)
+        // UI SOUND EFFECTS
         // ==========================================================
         function playTacticalSFX(type = "click") {
             if (!sfxEnabled) return;
@@ -2339,7 +2602,7 @@
         });
 
         // ==========================================================
-        // SMART DYNAMIC FOLLOW-UP CHIPS (WITH GREETING FILTER)
+        // SMART DYNAMIC FOLLOW-UP CHIPS
         // ==========================================================
         function renderDynamicFollowUpChips(userQuery, aiReply, fileIntent) {
             const cleanQ = String(userQuery || "").replace(/\[ATTACHED IMAGE TELEMETRY:[\s\S]*$/i, '').trim();
@@ -2376,8 +2639,8 @@
                 suggestions = [
                     { label: `📊 Make PPTX on ${shortTopic.slice(0, 16)}`, cmd: `/pptx ${shortTopic}` },
                     { label: `📄 Make PDF Report`, cmd: `/pdf ${shortTopic}` },
-                    { label: `📝 Interactive Quiz`, cmd: `/quiz ${shortTopic}` },
-                    { label: `🔬 Deep Web Research`, cmd: `/research ${shortTopic}` }
+                    { label: `🔀 Flowchart Diagram`, cmd: `Create a Mermaid flowchart diagram explaining ${shortTopic}` },
+                    { label: `📝 Interactive Quiz`, cmd: `/quiz ${shortTopic}` }
                 ];
             }
 
@@ -2403,7 +2666,7 @@
         }
 
         // ==========================================================
-        // GEMINI-STYLE CODE SANDBOX (FIXED URLs & UNCLOSED BLOCKS)
+        // KIZA LIVE CODE SANDBOX WITH AUTO-REPAIR & CUTOFF DETECTION
         // ==========================================================
         function extractAndRenderCodeBlocks(rawText) {
             const codeRegex = /```([a-zA-Z0-9_-]*)\s*\n([\s\S]*?)(?:```|$)/g;
@@ -2411,6 +2674,8 @@
             const logBox = document.getElementById('actionLog');
             while ((match = codeRegex.exec(rawText)) !== null) {
                 let lang = (match[1] || "html").toLowerCase().trim();
+                if (lang === "mermaid") continue; // Handled by Mermaid renderer
+
                 let codeContent = match[2]
                     .replace(/https:\s*•\s*/g, 'https://')
                     .replace(/http:\s*•\s*/g, 'http://')
@@ -2439,6 +2704,7 @@
                         </div>
                         <div style="display:flex; gap:6px; flex-wrap:wrap;">
                             ${canRunLive ? `<button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#10b981; color:#ffffff; border:none;" onclick="openCodeSandboxByIndex(${snippetIdx})">▶ Run Live</button>` : ''}
+                            <button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#f59e0b; color:#000000; border:none;" onclick="currentSandboxCodeObj=generatedCodeSnippetsStore[${snippetIdx}]; autoFixCurrentSandboxCode();">⚡ Auto-Fix</button>
                             <button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#334155; color:#f8fafc; border:1px solid #475569;" onclick="copyCodeSnippetByIndex(${snippetIdx})">📋 Copy</button>
                             <button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#0284c7; color:#ffffff; border:none;" onclick="downloadCodeSnippetByIndex(${snippetIdx})">⬇️ Download ${filename}</button>
                         </div>
@@ -2454,14 +2720,68 @@
             const item = generatedCodeSnippetsStore[idx];
             if (!item) return;
             currentSandboxCodeObj = item;
-            document.getElementById('codeSandboxTitle').innerText = `💻 Live Code Sandbox • ${item.filename}`;
-            const iframe = document.getElementById('codeSandboxIframe');
+            document.getElementById('codeSandboxTitle').innerText = `💻 KIZA Live Code Sandbox • ${item.filename}`;
+            const banner = document.getElementById('sandboxDiagnosticBanner');
+            const bannerTxt = document.getElementById('sandboxDiagnosticText');
+
             let htmlToRun = item.code;
+            const isHtmlCutOff = (item.lang === "html" || htmlToRun.includes("<!DOCTYPE") || htmlToRun.includes("<style")) && !htmlToRun.includes("</body>") && !htmlToRun.includes("</html>") && !htmlToRun.includes("<script");
+
+            if (isHtmlCutOff) {
+                if (banner && bannerTxt) {
+                    bannerTxt.innerText = "⚠️ This code block looks cut off before <body> / <script> finished! Click '⚡ Fix Now' to auto-complete it with compact CSS.";
+                    banner.style.display = "flex";
+                }
+                if (htmlToRun.includes("<style") && !htmlToRun.includes("</style>")) {
+                    htmlToRun += "\n</style></head><body style='color:#fff;font-family:sans-serif;padding:24px;text-align:center;'><h3>⚠️ Code was cut off mid-style</h3><p>Click <b>⚡ Auto-Fix / Complete Code</b> at the top of this window so KIZA rewrites it with compact CSS and full interactive JavaScript!</p></body></html>";
+                }
+            } else if (banner) {
+                banner.style.display = "none";
+            }
+
             if (item.lang === "javascript" || item.lang === "js") {
                 htmlToRun = `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:20px;"><h3>JavaScript Console Output:</h3><pre id="out"></pre><script>const origLog = console.log; console.log = (...a) => { document.getElementById('out').innerText += a.join(' ') + '\\n'; origLog(...a); }; try { ${item.code} } catch(e) { document.getElementById('out').innerText += 'Error: ' + e.message; }<\/script></body></html>`;
             }
+
+            // Inject runtime error catcher inside iframe so syntax/JS errors trigger the Auto-Fix banner
+            const errorHook = `<script>window.onerror = function(msg, src, line) { window.parent.postMessage({ type: 'kiza_sandbox_error', message: msg + ' (Line ' + line + ')' }, '*'); };<\/script>`;
+            if (htmlToRun.includes("<head>")) {
+                htmlToRun = htmlToRun.replace("<head>", "<head>" + errorHook);
+            } else {
+                htmlToRun = errorHook + htmlToRun;
+            }
+
+            const iframe = document.getElementById('codeSandboxIframe');
             iframe.srcdoc = htmlToRun;
             document.getElementById('codeSandboxModal').style.display = "flex";
+        }
+
+        window.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'kiza_sandbox_error') {
+                const banner = document.getElementById('sandboxDiagnosticBanner');
+                const bannerTxt = document.getElementById('sandboxDiagnosticText');
+                if (banner && bannerTxt) {
+                    bannerTxt.innerText = `⚠️ Runtime Error Detected: ${e.data.message}`;
+                    banner.style.display = "flex";
+                }
+            }
+        });
+
+        function reloadCurrentSandboxIframe() {
+            const iframe = document.getElementById('codeSandboxIframe');
+            if (iframe && iframe.srcdoc) {
+                const currentDoc = iframe.srcdoc;
+                iframe.srcdoc = "";
+                setTimeout(() => { iframe.srcdoc = currentDoc; }, 40);
+            }
+        }
+
+        function autoFixCurrentSandboxCode() {
+            if (!currentSandboxCodeObj || !currentSandboxCodeObj.code) return;
+            closeCodeSandboxModal();
+            const snippetPreview = currentSandboxCodeObj.code.slice(0, 600);
+            document.getElementById('textInput').value = `/code Complete and fix this truncated/broken web app so it is 100% self-contained and working. Keep <style> under 45 lines (single-line CSS rules) so the full <body> HTML elements and complete <script> Web Audio / interactivity never get cut off:\n${snippetPreview}`;
+            submitCommand();
         }
 
         function closeCodeSandboxModal() {
@@ -2579,6 +2899,7 @@
                 });
 
                 logBox.appendChild(card);
+                renderMathInElementSafe(card);
                 logBox.scrollTop = logBox.scrollHeight;
             } catch (e) {}
         }
@@ -2665,7 +2986,6 @@
             return 5;
         }
 
-        // FIXED: Never corrupts https:// or http:// URLs!
         function stripSlashesFromText(textStr) {
             if (!textStr) return "";
             return String(textStr)
@@ -2677,7 +2997,6 @@
                 .replace(/\s+(?<!:)\/\/\s+/g, ' • ');
         }
 
-        // FIXED: Strips both closed AND unclosed/streaming ``` code blocks from the chat bubble!
         function extractFriendlyAssistantMessage(fullText) {
             const cleaned = stripSlashesFromText(fullText)
                 .replace(/\[QUIZ_DATA\][\s\S]*?(?:\[\/QUIZ_DATA\]|$)/gi, '')
@@ -2695,9 +3014,9 @@
             }
             if (/SLIDE\s*1\s*:|SUBTITLE:|KPI:|SECTION:/i.test(cleaned)) {
                 const beforeTags = cleaned.split(/SLIDE\s*1\s*:|SUBTITLE:|KPI:|SECTION:/i)[0].trim();
-                return beforeTags || "I've compiled your visual document and opened it in the Preview Studio!";
+                return beforeTags || "I've compiled your visual document and opened it in the KIZA Preview Studio!";
             }
-            return cleaned || (fullText.includes("```") ? "I've generated your code module in the interactive sandbox card below! Click ▶ Run Live, 📋 Copy, or ⬇️ Download." : "");
+            return cleaned || (fullText.includes("```") ? "I've generated your interactive module below! Click ▶ Run Live, ⚡ Auto-Fix, 📋 Copy, or ⬇️ Download." : "");
         }
 
         function resolveDBUser(nameStr) {
@@ -2713,7 +3032,6 @@
             const safeKey = (dbUser && dbUser !== "undefined") ? dbUser : resolveDBUser(currentUser);
             return `kiza_tok_ver_${safeKey}`;
         }
-
         function extractClientTopicAndStyle(rawStr) {
             let s = (rawStr || "").trim();
             const low = s.toLowerCase();
@@ -3395,7 +3713,7 @@
             const selectorsBox = document.getElementById('previewLayoutThemeSelectors');
             const reviseBox = document.getElementById('aiRevisePromptContainer');
 
-            titleEl.innerText = `🎨 Preview Studio • ${topic || 'Document'} (.${ext.toUpperCase()})`;
+            titleEl.innerText = `🎨 KIZA Preview Studio • ${topic || 'Document'} (.${ext.toUpperCase()})`;
             btnEl.innerText = `⬇️ Confirm & Download .${ext.toUpperCase()}`;
 
             if (isPreRenderedAuditHtml) {
@@ -3417,6 +3735,7 @@
                 const cleanBody = stripSlashesFromText(rawContent).replace(/\[GENERATE_FILE:[^\]]+\]/g, '').replace(/AI_INTRO:[^\n]*/gi, '').trim();
                 viewport.innerHTML = `<pre style="background:#0f172a; color:#f8fafc; padding:18px; border-radius:10px; overflow-x:auto; font-family:'JetBrains Mono', monospace; font-size:12px;">${cleanBody.replace(/</g, '&lt;')}</pre>`;
             }
+            renderMathInElementSafe(viewport);
             modal.style.display = "flex";
         }
 
@@ -3459,7 +3778,7 @@
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                showNotification("DOC Downloaded", `Saved Word document: KIZA_${safeTopic}.doc`, false, { skipStore: true });
+                showNotification("DOC Downloaded", `Saved document: KIZA_${safeTopic}.doc`, false, { skipStore: true });
                 return;
             }
 
@@ -3515,7 +3834,7 @@
                 return;
             }
 
-            showNotification("Downloading PPTX", `Building PowerPoint (${activeTheme.toUpperCase()} theme)...`, false, { skipStore: true });
+            showNotification("Downloading PPTX", `Building presentation (${activeTheme.toUpperCase()} theme)...`, false, { skipStore: true });
 
             try {
                 const pptx = new PptxGenJS();
@@ -4005,13 +4324,13 @@
 
         const SLASH_COMMANDS_CATALOG = [
             { cmd: "/cmds", desc: "Show available commands for your role", maxRank: 5 },
-            { cmd: "/search ", desc: "Search live web & Wikipedia: /search [query]", maxRank: 5 },
+            { cmd: "/search ", desc: "Search live web & encyclopedia: /search [query]", maxRank: 5 },
             { cmd: "/research ", desc: "Deep multi-source web research brief: /research [topic]", maxRank: 5 },
             { cmd: "/quiz ", desc: "Interactive multiple-choice flashcard quiz: /quiz [topic]", maxRank: 5 },
             { cmd: "/code ", desc: "Generate runnable code in Live Sandbox: /code [app/game]", maxRank: 5 },
             { cmd: "/plan ", desc: "Create a step-by-step plan: /plan [goal]", maxRank: 5 },
             { cmd: "/pdf ", desc: "Create & preview a PDF report: /pdf [topic]", maxRank: 5 },
-            { cmd: "/pptx ", desc: "Create & preview a PowerPoint deck: /pptx [topic]", maxRank: 5 },
+            { cmd: "/pptx ", desc: "Create & preview a presentation deck: /pptx [topic]", maxRank: 5 },
             { cmd: "/file ", desc: "Create any file (doc, csv, py, html, txt): /file [ext] [topic]", maxRank: 5 },
             { cmd: "/ping", desc: "Check connection status & role", maxRank: 5 },
             { cmd: "/logs", desc: "Open Chat History", maxRank: 5 },
@@ -4877,6 +5196,11 @@
             }
         }, 60000);
 
+        // ==========================================================
+        // DUPLICATE-PROOF SYSTEM UPDATES HUB
+        // ==========================================================
+        let isPublishingUpdate = false;
+
         async function openUpdatesModal() {
             if (isPinLocked) { openPinGate(pinGateMode); return; }
             toggleMobileSidebar(false);
@@ -4905,14 +5229,24 @@
             } catch (e) {}
 
             container.innerHTML = "";
+            const canDeleteUpdate = (currentRankNum <= 2 || isMasterOwnerUser(currentUser));
+            const seenSignatures = new Set();
+
             updatesList.forEach(u => {
+                const sig = `${(u.version || '').trim().toLowerCase()}|${(u.title || '').trim().toLowerCase()}|${(u.description || '').trim().toLowerCase()}`;
+                if (seenSignatures.has(sig)) return;
+                seenSignatures.add(sig);
+
                 const div = document.createElement('div');
                 div.className = "update-card";
-                const cleanTitle = String(u.title || "").replace(/JARVIS/gi, "KIZA");
+                const cleanTitle = String(u.title || "");
                 div.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
                         <span style="font-weight:700; font-size:12.5px; color:var(--accent-primary);">[${u.version || 'UPDATE'}] ${cleanTitle}</span>
-                        <span style="font-size:10.5px; color:var(--text-muted);">${u.date || 'LIVE'}</span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span style="font-size:10.5px; color:var(--text-muted);">${u.date || 'LIVE'}</span>
+                            ${(canDeleteUpdate && u.id) ? `<button type="button" class="chip-btn" style="width:auto; padding:2px 7px; font-size:10px; color:var(--danger);" title="Delete Update" onclick="deleteSystemUpdate(${u.id})">🗑️</button>` : ''}
+                        </div>
                     </div>
                     <div style="font-size:12.5px; color:var(--text-main); line-height:1.45;">${u.description}</div>
                     <div style="font-size:10.5px; color:var(--text-muted);">By ${u.author || 'Viyan Arora'}</div>
@@ -4922,6 +5256,7 @@
         }
 
         async function publishSystemUpdate() {
+            if (isPublishingUpdate) return;
             const ver = document.getElementById('newUpdateVersion').value.trim() || "LIVE";
             const title = document.getElementById('newUpdateTitle').value.trim();
             const desc = document.getElementById('newUpdateDesc').value.trim();
@@ -4929,6 +5264,14 @@
                 showNotification("Error", "Please enter both a headline and description.", true);
                 return;
             }
+
+            isPublishingUpdate = true;
+            const pubBtn = document.querySelector('#ownerUpdatePublisher .send-btn');
+            if (pubBtn) {
+                pubBtn.disabled = true;
+                pubBtn.innerText = "Publishing...";
+            }
+
             try {
                 let res = await fetch(`${SERVER_URL}/api/updates`, {
                     method: "POST",
@@ -4947,7 +5290,29 @@
                 }
             } catch (e) {
                 showNotification("Network Error", "Could not reach server to publish update.", true);
+            } finally {
+                isPublishingUpdate = false;
+                if (pubBtn) {
+                    pubBtn.disabled = false;
+                    pubBtn.innerText = "Publish Update";
+                }
             }
+        }
+
+        async function deleteSystemUpdate(updateId) {
+            if (!updateId) return;
+            try {
+                let res = await fetch(`${SERVER_URL}/api/updates?user=${encodeURIComponent(currentUser)}&update_id=${updateId}`, {
+                    method: "DELETE"
+                });
+                let data = await res.json();
+                if (data.success) {
+                    showNotification("Update Deleted", "Removed update entry from changelog.", false, { skipStore: true });
+                    await fetchAndRenderUpdates();
+                } else {
+                    showNotification("Access Denied", data.message || "Could not delete update.", true);
+                }
+            } catch (e) {}
         }
 
         function normalizeUserEntry(u) {
@@ -5159,7 +5524,7 @@
         }
 
         setInterval(async () => {
-            if (currentUser === "Guest" || isChatActive || wsConnected) return;
+            if (currentUser === "Guest" || isChatActive || wsConnected || powerSaverActive) return;
             try {
                 let res = await fetch(`${SERVER_URL}/api/status?user=${encodeURIComponent(currentUser)}&last_alert_idx=${alertIndex}`);
                 if (!res.ok) return;
@@ -5176,9 +5541,6 @@
             refreshSidebarChatSessions();
         }
 
-        // ==========================================================
-        // CLEAN NON-OVERLAPPING BUTTON LABELS FOR MOBILE & DESKTOP
-        // ==========================================================
         function applySettings() {
             const quickBtn = document.getElementById('quickThemeBtn');
             const sfxBtn = document.getElementById('sfxToggleBtn');
@@ -5356,12 +5718,14 @@
             registerCurrentDeviceOnServer();
             refreshSidebarChatSessions();
             renderCustomGemsBar();
+            // Automatically syncs Personas/Gems created on your tablet with your PC!
+            syncUserGemsWithServer();
 
             if (playGreeting && replyMsg) {
                 showNotification("Welcome", replyMsg, false, { skipStore: true }); 
                 if (audioBase64) playKizaAudio(audioBase64, replyMsg);
             }
-            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Hi! Ask me anything, paste or attach an image (📎), or tap ＋ Create Gem below to build your own custom AI personalities!</div>';
+            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Hi! Ask me anything, paste or attach an image (📎), or tap ＋ Create Persona below to build your own custom AI personalities!</div>';
             initWebSocket();
         }
 
@@ -5416,7 +5780,7 @@
             document.getElementById('authModal').style.display = "flex";
             document.getElementById('cancelAuthBtn').style.display = "none";
             document.getElementById('masterCmds').style.display = "none";
-            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Hi! Ask me anything, paste or attach an image (📎), or tap ＋ Create Gem below to build your own custom AI personalities!</div>';
+            document.getElementById('actionLog').innerHTML = '<div>> [KIZA]: Hi! Ask me anything, paste or attach an image (📎), or tap ＋ Create Persona below to build your own custom AI personalities!</div>';
             closeSettings();
         }
         function logoutUser() { forceLogout(); document.getElementById('authUser').value = ""; document.getElementById('authPass').value = ""; document.getElementById('authError').innerText = ""; }
@@ -5554,6 +5918,7 @@
 
                         let htmlContent = log.role === "USER" ? `<span style="opacity:0.6;">[${timeStr}]</span> <b>[${displayLabel}]:</b> ${cleanMsg}` : `<span style="opacity:0.6;">[${timeStr}]</span> <b style="color:var(--accent-primary);">[KIZA]:</b> ${cleanMsg}`;
                         div.innerHTML = htmlContent; viewer.appendChild(div);
+                        renderMathInElementSafe(div);
                         loadedArchiveHTML += `<div>> ${htmlContent}</div>`;
                     });
                     viewer.scrollTop = viewer.scrollHeight; resumeBtn.style.display = "block";
@@ -5647,14 +6012,13 @@
             let cleanText = stripSlashesFromText(message);
             if (isHtml) newEntry.innerHTML = `> ${cleanText}`; else newEntry.innerText = `> ${cleanText}`;
             logBox.appendChild(newEntry);
+            renderMathInElementSafe(newEntry);
             let indicator = document.getElementById('chatIndicator'); if (indicator) logBox.appendChild(indicator);
             logBox.scrollTop = logBox.scrollHeight;
         }
 
-        // ==========================================================
-        // CIRCULAR FREQUENCY SPECTRUM AROUND KIZA LOGO ORB
-        // ==========================================================
         function drawCircularSpectrum(dataArray) {
+            if (powerSaverActive) return;
             const canvas = document.getElementById('orbSpectrumCanvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
@@ -5662,14 +6026,14 @@
             const h = canvas.height;
             const cx = w / 2;
             const cy = h / 2;
-            const baseRadius = 29;
+            const baseRadius = 27;
             ctx.clearRect(0, 0, w, h);
 
             const bars = 24;
             const isDark = document.body.classList.contains('dark-mode');
             for (let i = 0; i < bars; i++) {
                 const val = dataArray[i % dataArray.length] || 0;
-                const barLen = Math.max(2, (val / 255) * 12);
+                const barLen = Math.max(2, (val / 255) * 10);
                 const angle = (i / bars) * Math.PI * 2;
                 const x1 = cx + Math.cos(angle) * baseRadius;
                 const y1 = cy + Math.sin(angle) * baseRadius;
@@ -5719,36 +6083,38 @@
             const ambientEl = document.getElementById('ambientAudioGlow');
 
             try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const source = audioCtx.createMediaElementSource(currentAudio);
-                const analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 64;
-                source.connect(analyser);
-                analyser.connect(audioCtx.destination);
-                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                if (!powerSaverActive) {
+                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                    const source = audioCtx.createMediaElementSource(currentAudio);
+                    const analyser = audioCtx.createAnalyser();
+                    analyser.fftSize = 64;
+                    source.connect(analyser);
+                    analyser.connect(audioCtx.destination);
+                    const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-                function animateOrbAndAmbientVoice() {
-                    if (!isKizaSpeaking) {
-                        if (orbEl) orbEl.style.transform = "";
-                        if (ambientEl) ambientEl.style.opacity = "0";
-                        clearSpectrumCanvas();
-                        return;
+                    function animateOrbAndAmbientVoice() {
+                        if (!isKizaSpeaking || powerSaverActive) {
+                            if (orbEl) orbEl.style.transform = "";
+                            if (ambientEl) ambientEl.style.opacity = "0";
+                            clearSpectrumCanvas();
+                            return;
+                        }
+                        analyser.getByteFrequencyData(dataArray);
+                        drawCircularSpectrum(dataArray);
+                        let sum = 0;
+                        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+                        let avg = sum / dataArray.length;
+                        let scale = 1 + (avg / 255) * 0.22;
+                        if (orbEl) orbEl.style.transform = `scale(${scale.toFixed(3)})`;
+                        if (ambientEl) {
+                            const glowOpacity = Math.min(0.85, (avg / 180));
+                            ambientEl.style.opacity = glowOpacity.toFixed(2);
+                        }
+                        analyserAnimFrame = requestAnimationFrame(animateOrbAndAmbientVoice);
                     }
-                    analyser.getByteFrequencyData(dataArray);
-                    drawCircularSpectrum(dataArray);
-                    let sum = 0;
-                    for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
-                    let avg = sum / dataArray.length;
-                    let scale = 1 + (avg / 255) * 0.22;
-                    if (orbEl) orbEl.style.transform = `scale(${scale.toFixed(3)})`;
-                    if (ambientEl) {
-                        const glowOpacity = Math.min(0.85, (avg / 180));
-                        ambientEl.style.opacity = glowOpacity.toFixed(2);
-                    }
-                    analyserAnimFrame = requestAnimationFrame(animateOrbAndAmbientVoice);
+                    animateOrbAndAmbientVoice();
                 }
-                animateOrbAndAmbientVoice();
             } catch (e) {}
 
             currentAudio.onended = () => {
@@ -6325,7 +6691,9 @@
                                     const visibleClean = extractFriendlyAssistantMessage(accumulatedText);
                                     streamEntry.innerText = `> [KIZA]: ${visibleClean}`;
                                     logBox.scrollTop = logBox.scrollHeight;
-                                    orbEl.style.transform = `scale(${(1.03 + Math.random() * 0.08).toFixed(3)})`;
+                                    if (!powerSaverActive) {
+                                        orbEl.style.transform = `scale(${(1.03 + Math.random() * 0.08).toFixed(3)})`;
+                                    }
                                 } else if (payload.type === "audio" && payload.audio_base64) {
                                     playedAudioFromStream = true;
                                     playKizaAudio(payload.audio_base64, extractFriendlyAssistantMessage(accumulatedText));
@@ -6387,6 +6755,9 @@
                     await prepareAndPreviewUniversalFile(clientFileIntent.ext, clientFileIntent.topic, accumulatedText, currentAttachedImg, clientFileIntent.styleTheme);
                 }
 
+                if (/```mermaid/i.test(accumulatedText)) {
+                    await extractAndRenderMermaidBlocks(accumulatedText);
+                }
                 if (accumulatedText.includes("```")) {
                     extractAndRenderCodeBlocks(accumulatedText);
                 }
@@ -6401,6 +6772,7 @@
                     finalCleaned = "Interactive module is ready below!";
                 }
                 streamEntry.innerText = `> [KIZA]: ${finalCleaned}`;
+                renderMathInElementSafe(streamEntry);
                 logBox.scrollTop = logBox.scrollHeight;
 
                 if (!playedAudioFromStream && !isStreamError && voiceEnabled) {
