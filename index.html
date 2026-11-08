@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover">
     <meta name="theme-color" content="#071324">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -11,8 +11,8 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>KIZA — Kinda Intelligent Zippy Assistant</title>
-    <link rel="icon" type="image/jpeg" href="logo.jpg">
-    <link rel="apple-touch-icon" href="logo.jpg">
+    <link rel="icon" type="image/png" id="kizaFavicon" href="logo.jpg">
+    <link rel="apple-touch-icon" id="kizaAppleIcon" href="logo.jpg">
     <link rel="manifest" id="kizaManifestLink" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,6 +29,13 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root {
+            /* AUTO-ADAPTIVE VIEWPORT & FLUID LOGO SIZING */
+            --app-height: 100dvh;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --logo-size: clamp(28px, 4vw, 34px);
+            --hero-orb-size: clamp(44px, 7vh, 58px);
+            --auth-logo-size: clamp(64px, 10vh, 78px);
+
             --bg-main: #ffffff;
             --bg-sidebar: #f8fafc;
             --bg-surface: #f1f5f9;
@@ -83,12 +90,11 @@
         ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 999px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
 
+        /* AUTO-FITTING VIEWPORT LOCK — NEVER CUTS OFF BOTTOM IN INSTALLED APP */
         html, body {
-            position: fixed;
-            inset: 0;
             width: 100%;
-            height: 100%;
-            height: 100dvh;
+            height: var(--app-height, 100dvh);
+            max-height: var(--app-height, 100dvh);
             margin: 0;
             padding: 0;
             overflow: hidden;
@@ -128,27 +134,35 @@
             color: var(--accent-primary);
         }
 
+        /* ==========================================================
+           AUTO-ADAPTIVE CIRCULAR KIZA EMBLEM (ZERO WHITE BACKGROUND)
+           ========================================================== */
         .kiza-logo-img {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            object-fit: cover;
+            width: var(--logo-size) !important;
+            height: var(--logo-size) !important;
+            aspect-ratio: 1 / 1;
+            border-radius: 50% !important;
+            object-fit: cover !important;
+            object-position: center !important;
+            display: block;
             border: 1.5px solid #00f2fe;
             box-shadow: 0 0 12px rgba(0, 242, 254, 0.45);
             flex-shrink: 0;
-            background: #071324;
+            background: #071324 !important;
         }
 
         .kiza-auth-logo {
-            width: 76px;
-            height: 76px;
-            border-radius: 50%;
-            object-fit: cover;
+            width: var(--auth-logo-size) !important;
+            height: var(--auth-logo-size) !important;
+            aspect-ratio: 1 / 1;
+            border-radius: 50% !important;
+            object-fit: cover !important;
+            object-position: center !important;
             border: 2px solid #00f2fe;
             box-shadow: 0 0 24px rgba(0, 242, 254, 0.55);
             margin: 0 auto 8px auto;
             display: block;
-            background: #071324;
+            background: #071324 !important;
         }
 
         .gems-bar-wrapper {
@@ -157,7 +171,7 @@
             gap: 6px;
             overflow-x: auto;
             width: 100%;
-            padding: 2px 2px 4px 2px;
+            padding: 1px 2px 3px 2px;
             scrollbar-width: none;
         }
         .gems-bar-wrapper::-webkit-scrollbar { display: none; }
@@ -165,13 +179,13 @@
         .gem-pill {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 5px 12px;
+            gap: 5px;
+            padding: 4px 11px;
             border-radius: 999px;
             background: var(--bg-surface);
             border: 1px solid var(--card-border);
             color: var(--text-main);
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: 600;
             cursor: pointer;
             white-space: nowrap;
@@ -195,16 +209,18 @@
         }
 
         /* ==========================================================
-           ORIGINAL KIZA FLEX SHELL (SIDEBAR + MAIN WORKSPACE)
+           DYNAMIC FLEX APP SHELL (AUTOMATICALLY RESIZES TO SCREEN)
            ========================================================== */
         .app-shell {
             display: flex;
             width: 100%;
-            height: 100%;
+            height: var(--app-height, 100dvh);
+            max-height: var(--app-height, 100dvh);
             min-height: 0;
             position: relative;
             z-index: 10;
             padding-top: env(safe-area-inset-top, 0px);
+            overflow: hidden;
         }
 
         .sidebar-backdrop {
@@ -217,22 +233,23 @@
         }
 
         .sidebar {
-            width: 276px;
+            width: 272px;
             height: 100%;
             min-height: 0;
             background: var(--bg-sidebar);
             border-right: 1px solid var(--card-border);
             display: flex;
             flex-direction: column;
-            padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px)) 12px;
-            gap: 8px;
+            padding: 10px 11px calc(10px + var(--safe-bottom)) 11px;
+            gap: 7px;
             flex-shrink: 0;
             transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), margin-left 0.26s ease;
             z-index: 100;
+            overflow: hidden;
         }
 
         .sidebar.collapsed {
-            margin-left: -276px;
+            margin-left: -272px;
         }
 
         .sidebar-top {
@@ -246,9 +263,9 @@
         .brand-logo {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 9px;
             font-weight: 800;
-            font-size: 18px;
+            font-size: 17px;
             letter-spacing: -0.3px;
             background: var(--accent-gradient);
             -webkit-background-clip: text;
@@ -258,13 +275,13 @@
         .new-chat-pill {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 7px;
             background: var(--bg-elevated);
             border: 1px solid var(--card-border);
             color: var(--text-main);
-            padding: 9px 14px;
+            padding: 8px 13px;
             border-radius: 999px;
-            font-size: 12.5px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             box-shadow: var(--card-shadow);
@@ -276,7 +293,7 @@
         }
 
         .sidebar-label {
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -289,8 +306,8 @@
         }
 
         .sidebar-history-list {
-            flex: 1;
-            min-height: 60px;
+            flex: 1 1 0%;
+            min-height: 48px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -303,9 +320,9 @@
             align-items: center;
             justify-content: space-between;
             gap: 8px;
-            padding: 8px 11px;
+            padding: 7px 10px;
             border-radius: 10px;
-            font-size: 12.5px;
+            font-size: 12px;
             font-weight: 500;
             color: var(--text-main);
             cursor: pointer;
@@ -348,12 +365,12 @@
         .sidebar-section-card {
             background: var(--bg-surface);
             border-radius: 12px;
-            padding: 7px;
+            padding: 6px;
             display: flex;
             flex-direction: column;
             gap: 4px;
             flex-shrink: 0;
-            max-height: 155px;
+            max-height: 22vh;
             overflow-y: auto;
         }
 
@@ -365,10 +382,10 @@
 
         .sidebar-footer {
             border-top: 1px solid var(--card-border);
-            padding-top: 8px;
+            padding-top: 7px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 5px;
             flex-shrink: 0;
         }
 
@@ -376,8 +393,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
-            padding: 7px 10px;
+            gap: 9px;
+            padding: 6px 9px;
             border-radius: 12px;
             background: var(--bg-surface);
             cursor: pointer;
@@ -388,8 +405,8 @@
         }
 
         .face-thumb {
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             border: 2px solid var(--accent-primary);
             object-fit: cover;
@@ -401,7 +418,7 @@
            MAIN WORKSPACE & BATTERY/RESOURCE TELEMETRY HUD
            ========================================================== */
         .main-workspace {
-            flex: 1;
+            flex: 1 1 0%;
             display: flex;
             flex-direction: column;
             height: 100%;
@@ -412,8 +429,8 @@
         }
 
         .workspace-header {
-            min-height: 54px;
-            padding: 6px 14px;
+            min-height: 48px;
+            padding: 5px 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -434,7 +451,7 @@
         .header-right {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             flex-wrap: nowrap;
             overflow-x: auto;
             max-width: 100%;
@@ -445,12 +462,12 @@
         .battery-hud-pill {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
-            padding: 4px 10px;
+            gap: 4px;
+            padding: 3px 9px;
             border-radius: 999px;
             background: var(--chip-bg);
             border: 1px solid var(--card-border);
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 700;
             color: var(--text-main);
             white-space: nowrap;
@@ -467,18 +484,18 @@
             background: var(--chip-bg);
             border: 1px solid var(--card-border);
             color: var(--text-main);
-            height: 32px;
-            min-width: 32px;
+            height: 30px;
+            min-width: 30px;
             width: auto;
-            padding: 0 10px;
+            padding: 0 9px;
             border-radius: 999px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
+            gap: 4px;
             cursor: pointer;
             font-family: inherit;
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: 600;
             white-space: nowrap;
             flex-shrink: 0;
@@ -492,18 +509,18 @@
 
         .floating-vision-widget {
             position: absolute;
-            top: 62px;
-            right: 16px;
-            width: 190px;
+            top: 56px;
+            right: 14px;
+            width: 185px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: 16px;
-            padding: 10px;
+            padding: 9px;
             box-shadow: var(--card-shadow);
             z-index: 45;
             display: none;
             flex-direction: column;
-            gap: 8px;
+            gap: 7px;
         }
         .floating-vision-widget.open {
             display: flex;
@@ -511,7 +528,7 @@
 
         .camera-box {
             width: 100%;
-            height: 105px;
+            height: 100px;
             background: #0f172a;
             border-radius: 10px;
             display: flex;
@@ -521,12 +538,12 @@
             position: relative;
         }
 
-        /* FIXED SCROLLABLE CHAT AREA: Top Hero Never Clips! */
+        /* FLUID SCROLLABLE CHAT STREAM — NEVER CLIPS TOP OR BOTTOM */
         .chat-scroll-area {
-            flex: 1;
+            flex: 1 1 0%;
             min-height: 0;
             overflow-y: auto;
-            padding: 18px 14px 10px 14px;
+            padding: clamp(8px, 2vh, 16px) 12px 8px 12px;
             display: block;
         }
 
@@ -536,8 +553,8 @@
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            padding-bottom: 8px;
+            gap: 10px;
+            padding-bottom: 6px;
         }
 
         .kiza-welcome-card {
@@ -545,15 +562,15 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
-            padding: 10px 10px 4px 10px;
-            gap: 7px;
+            padding: clamp(4px, 1vh, 10px) 8px 2px 8px;
+            gap: 5px;
             flex-shrink: 0;
         }
 
         .core-assembly {
             position: relative;
-            width: 76px;
-            height: 76px;
+            width: calc(var(--hero-orb-size) + 20px);
+            height: calc(var(--hero-orb-size) + 20px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -563,15 +580,16 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 76px;
-            height: 76px;
+            width: 100%;
+            height: 100%;
             pointer-events: none;
             z-index: 3;
         }
         .core-orb {
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
+            width: var(--hero-orb-size) !important;
+            height: var(--hero-orb-size) !important;
+            aspect-ratio: 1 / 1;
+            border-radius: 50% !important;
             border: 2px solid #00f2fe;
             box-shadow: 0 0 22px rgba(0, 242, 254, 0.55);
             z-index: 2;
@@ -579,13 +597,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #071324;
+            background: #071324 !important;
             transition: transform 0.08s ease-out, box-shadow 0.2s ease;
         }
         .core-orb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            object-position: center !important;
+            border-radius: 50% !important;
+            display: block;
         }
         .core-orb.processing {
             box-shadow: 0 0 34px #00f2fe, 0 0 60px rgba(0, 242, 254, 0.5);
@@ -593,7 +614,7 @@
         .core-ring { display: none; }
 
         .welcome-greeting {
-            font-size: 21px;
+            font-size: clamp(16px, 2.5vh, 21px);
             font-weight: 800;
             letter-spacing: -0.4px;
             line-height: 1.25;
@@ -604,7 +625,7 @@
         }
 
         .welcome-sub {
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 600;
             color: var(--text-muted);
             letter-spacing: 0.4px;
@@ -612,14 +633,14 @@
         }
 
         .status-text {
-            font-size: 11px;
+            font-size: 10.5px;
             color: var(--text-muted);
             font-weight: 600;
             background: var(--chip-bg);
-            padding: 4px 10px;
+            padding: 3px 9px;
             border-radius: 999px;
             white-space: nowrap;
-            max-width: 170px;
+            max-width: 150px;
             overflow: hidden;
             text-overflow: ellipsis;
         }
@@ -628,11 +649,11 @@
             display: none;
             align-items: center;
             gap: 8px;
-            padding: 6px 15px;
+            padding: 5px 14px;
             border-radius: 999px;
             background: rgba(2, 132, 199, 0.1);
             border: 1px solid var(--accent-primary);
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 600;
             color: var(--accent-primary);
             max-width: 500px;
@@ -641,7 +662,7 @@
 
         #publicCmds {
             display: flex;
-            gap: 6px;
+            gap: 5px;
             flex-wrap: wrap;
             justify-content: center;
             margin-top: 2px;
@@ -651,23 +672,23 @@
             width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            font-size: 14px;
-            line-height: 1.6;
+            gap: 9px;
+            font-size: 13.5px;
+            line-height: 1.55;
             color: var(--text-main);
         }
         .logs-viewer {
-            max-height: 340px;
+            max-height: 320px;
             overflow-y: auto;
             background: var(--bg-surface);
-            padding: 12px;
+            padding: 11px;
             border-radius: 14px;
             border: 1px solid var(--card-border);
         }
 
         .log-box > div, .logs-viewer > div {
-            padding: 12px 16px;
-            border-radius: 16px;
+            padding: 11px 14px;
+            border-radius: 15px;
             background: var(--bg-surface);
             border: 1px solid var(--card-border);
             word-break: break-word;
@@ -682,8 +703,8 @@
             background: var(--card-bg) !important;
             border: 1.5px solid var(--accent-primary) !important;
             border-radius: 16px !important;
-            padding: 14px !important;
-            margin-top: 6px;
+            padding: 13px !important;
+            margin-top: 5px;
             overflow-x: auto;
         }
         .mermaid-svg-container {
@@ -705,14 +726,14 @@
         }
         @keyframes blinkCursor { from { opacity: 1; } to { opacity: 0.2; } }
 
-        /* BOTTOM COMPOSER + AI DISCLAIMER FOOTER */
+        /* AUTO-ADAPTIVE BOTTOM COMPOSER — NEVER GETS CUT OFF IN INSTALLED APP */
         .composer-wrapper {
             width: 100%;
-            padding: 6px 12px calc(8px + env(safe-area-inset-bottom, 0px)) 12px;
+            padding: 5px 10px calc(6px + var(--safe-bottom)) 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
             background: var(--bg-main);
             border-top: 1px solid var(--card-border);
             flex-shrink: 0;
@@ -725,11 +746,11 @@
             flex-direction: column;
             width: 100%;
             max-width: 800px;
-            gap: 5px;
+            gap: 4px;
             background: var(--input-bg);
-            padding: 8px 12px;
+            padding: 6px 10px;
             border: 1px solid var(--card-border);
-            border-radius: 22px;
+            border-radius: 20px;
             box-shadow: var(--card-shadow);
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
@@ -739,17 +760,18 @@
         }
 
         .kiza-ai-disclaimer {
-            font-size: 11px;
+            font-size: 10.5px;
+            line-height: 1.2;
             color: var(--text-muted);
             text-align: center;
             font-weight: 500;
-            letter-spacing: 0.1px;
             user-select: none;
+            padding: 0 4px;
         }
 
         .input-row {
             display: flex;
-            gap: 6px;
+            gap: 5px;
             width: 100%;
             align-items: center;
         }
@@ -758,20 +780,20 @@
             border: none !important;
             background: transparent !important;
             box-shadow: none !important;
-            padding: 7px 6px;
-            font-size: 14px;
+            padding: 6px 5px;
+            font-size: 13.5px;
             color: var(--text-main);
             flex: 1;
-            min-width: 80px;
+            min-width: 70px;
         }
 
         .chip-btn {
             background: var(--chip-bg);
             border: 1px solid var(--card-border);
             color: var(--text-main);
-            padding: 5px 11px;
+            padding: 4px 10px;
             font-family: inherit;
-            font-size: 11.5px;
+            font-size: 11px;
             border-radius: 999px;
             cursor: pointer;
             font-weight: 600;
@@ -782,7 +804,7 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
+            gap: 4px;
         }
         .chip-btn:hover {
             background: var(--chip-hover);
@@ -793,10 +815,10 @@
             background: var(--accent-primary);
             border: none;
             color: #ffffff;
-            padding: 7px 15px;
+            padding: 6px 14px;
             cursor: pointer;
             font-family: inherit;
-            font-size: 12.5px;
+            font-size: 12px;
             font-weight: 700;
             border-radius: 999px;
             white-space: nowrap;
@@ -815,15 +837,15 @@
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             border: none;
             color: #ffffff;
-            height: 32px;
-            padding: 0 12px;
+            height: 30px;
+            padding: 0 11px;
             border-radius: 999px;
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: 700;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
             white-space: nowrap;
             flex-shrink: 0;
             box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25);
@@ -832,7 +854,7 @@
         .unread-badge {
             background: var(--danger);
             color: #ffffff;
-            font-size: 9.5px;
+            font-size: 9px;
             font-weight: 700;
             padding: 1px 5px;
             border-radius: 999px;
@@ -843,7 +865,7 @@
         .followup-chips-row {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 5px;
             padding: 2px 0 !important;
             background: transparent !important;
             border: none !important;
@@ -852,9 +874,9 @@
             background: var(--chip-bg);
             border: 1px solid var(--card-border);
             color: var(--accent-primary);
-            padding: 5px 12px;
+            padding: 4px 11px;
             border-radius: 999px;
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.18s ease;
@@ -870,13 +892,13 @@
             border-radius: 14px !important;
             padding: 0 !important;
             overflow: hidden;
-            margin-top: 6px;
+            margin-top: 5px;
         }
         .code-block-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 12px;
+            padding: 7px 11px;
             background: #1e293b;
             border-bottom: 1px solid #334155;
             font-family: 'JetBrains Mono', monospace;
@@ -888,12 +910,12 @@
         }
         .code-block-pre {
             margin: 0;
-            padding: 12px 14px;
+            padding: 11px 13px;
             overflow-x: auto;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
+            font-size: 11.5px;
             color: #f8fafc;
-            max-height: 240px;
+            max-height: 230px;
             line-height: 1.5;
         }
 
@@ -901,27 +923,27 @@
             background: var(--card-bg) !important;
             border: 1.5px solid var(--accent-primary) !important;
             border-radius: 16px !important;
-            padding: 14px !important;
+            padding: 13px !important;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 9px;
         }
         .quiz-question-box {
-            padding: 11px;
+            padding: 10px;
             border-radius: 12px;
             background: var(--bg-surface);
             border: 1px solid var(--card-border);
             display: flex;
             flex-direction: column;
-            gap: 7px;
+            gap: 6px;
         }
         .quiz-opt-btn {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             color: var(--text-main);
-            padding: 8px 11px;
+            padding: 7px 10px;
             border-radius: 9px;
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 600;
             text-align: left;
             cursor: pointer;
@@ -945,34 +967,34 @@
         #attachmentPreviewBar {
             display: none;
             flex-direction: column;
-            gap: 7px;
-            padding: 9px 11px;
+            gap: 6px;
+            padding: 8px 10px;
             border-radius: 14px;
             background: var(--bg-surface);
             border: 1px solid var(--card-border);
-            font-size: 12px;
+            font-size: 11.5px;
         }
         #attachmentThumb {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             object-fit: cover;
             border-radius: 8px;
             border: 1px solid var(--accent-primary);
         }
         .attach-smart-actions {
             display: flex;
-            gap: 6px;
+            gap: 5px;
             flex-wrap: wrap;
-            padding-top: 6px;
+            padding-top: 5px;
             border-top: 1px solid var(--card-border);
         }
         .attach-action-pill {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             color: var(--accent-primary);
-            padding: 4px 10px;
+            padding: 3px 9px;
             border-radius: 999px;
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 600;
             cursor: pointer;
         }
@@ -982,62 +1004,62 @@
             border: 1px solid var(--card-border);
             border-left: 4px solid var(--accent-primary);
             border-radius: 12px;
-            padding: 11px 13px;
+            padding: 10px 12px;
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            font-size: 12px;
+            gap: 4px;
+            font-size: 11.5px;
         }
         .planner-step { display: flex; align-items: center; gap: 8px; }
         .web-search-pill {
             display: inline-flex;
             align-items: center;
-            gap: 7px;
+            gap: 6px;
             background: rgba(16, 185, 129, 0.12);
             border: 1px solid var(--success);
             color: var(--success);
-            padding: 5px 11px;
+            padding: 4px 10px;
             border-radius: 999px;
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 600;
         }
 
         #slashAutocomplete {
             position: absolute;
-            bottom: calc(100% + 8px);
+            bottom: calc(100% + 6px);
             left: 0;
             width: 100%;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: 16px;
             box-shadow: var(--card-shadow);
-            max-height: 210px;
+            max-height: 190px;
             overflow-y: auto;
             display: none;
             flex-direction: column;
             z-index: 900;
-            padding: 6px;
+            padding: 5px;
         }
         .slash-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 11px;
+            padding: 7px 10px;
             border-radius: 9px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 11.5px;
         }
         .slash-item:hover { background: var(--chip-hover); }
         .slash-cmd-name { font-weight: 700; color: var(--accent-primary); font-family: 'JetBrains Mono', monospace; }
-        .slash-cmd-desc { font-size: 11px; color: var(--text-muted); }
+        .slash-cmd-desc { font-size: 10.5px; color: var(--text-muted); }
 
         input[type="text"], input[type="password"], select, textarea {
             background: var(--bg-surface);
             border: 1px solid var(--card-border);
-            border-radius: 11px;
-            padding: 9px 12px;
+            border-radius: 10px;
+            padding: 8px 11px;
             color: var(--text-main);
-            font-size: 13px;
+            font-size: 12.5px;
             font-family: inherit;
             outline: none;
             width: 100%;
@@ -1052,30 +1074,30 @@
             align-items: center;
             justify-content: center;
             z-index: 500;
-            padding: 12px;
+            padding: 10px;
         }
         .auth-card, .logs-card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             box-shadow: var(--card-shadow);
-            border-radius: 20px;
-            padding: 18px;
+            border-radius: 18px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 9px;
+            gap: 8px;
             width: 100%;
-            max-width: 430px;
-            max-height: 92dvh;
+            max-width: 420px;
+            max-height: calc(var(--app-height, 100dvh) - 24px);
             overflow-y: auto;
         }
         .logs-card { max-width: 720px; }
 
         .section-title {
-            font-size: 13px;
+            font-size: 12.5px;
             color: var(--text-main);
             font-weight: 700;
             border-bottom: 1px solid var(--card-border);
-            padding-bottom: 9px;
+            padding-bottom: 8px;
             margin-bottom: 2px;
             display: flex;
             justify-content: space-between;
@@ -1087,11 +1109,11 @@
         .auth-tabs { display: flex; gap: 6px; }
         .tab-btn {
             flex: 1;
-            padding: 8px 10px;
+            padding: 7px 10px;
             background: var(--bg-surface);
             border: 1px solid var(--card-border);
             color: var(--text-muted);
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 600;
             cursor: pointer;
             border-radius: 9px;
@@ -1103,60 +1125,66 @@
         }
 
         .notif-item, .update-card, .profile-list-item {
-            padding: 11px 13px;
+            padding: 10px 12px;
             border-radius: 12px;
             background: var(--bg-surface);
             border: 1px solid var(--card-border);
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 4px;
         }
         .profile-list-item {
             flex-direction: row;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         .notif-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
         .notif-tag {
-            font-size: 10px;
+            font-size: 9.5px;
             font-weight: 700;
-            padding: 2px 8px;
+            padding: 2px 7px;
             border-radius: 6px;
             background: var(--chip-hover);
             color: var(--accent-primary);
         }
-        .notif-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); }
-        .mugshot-img { width: 64px; height: 50px; object-fit: cover; border-radius: 8px; border: 2px solid var(--danger); }
-        .ppt-slide-preview { border-radius: 14px; padding: 18px 20px; margin-bottom: 14px; }
+        .notif-meta { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-muted); }
+        .mugshot-img { width: 60px; height: 48px; object-fit: cover; border-radius: 8px; border: 2px solid var(--danger); }
+        .ppt-slide-preview { border-radius: 14px; padding: 16px 18px; margin-bottom: 12px; }
 
         #notificationBox {
             position: fixed;
-            top: 18px;
+            top: 14px;
             right: -420px;
-            width: 320px;
+            width: 300px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             box-shadow: var(--card-shadow);
-            padding: 13px 15px;
-            border-radius: 15px;
+            padding: 11px 14px;
+            border-radius: 14px;
             z-index: 9999;
             transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-            font-size: 12.5px;
+            font-size: 12px;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 4px;
             cursor: pointer;
         }
-        #notificationBox.show { right: 18px; }
-        .notify-title { font-weight: 700; font-size: 12px; color: var(--accent-primary); }
+        #notificationBox.show { right: 14px; }
+        .notify-title { font-weight: 700; font-size: 11.5px; color: var(--accent-primary); }
 
-        @media (max-height: 700px) {
-            .core-assembly { width: 56px; height: 56px; }
-            #orbSpectrumCanvas { width: 56px; height: 56px; }
-            .core-orb { width: 40px; height: 40px; }
-            .welcome-greeting { font-size: 17px; }
-            .kiza-welcome-card { padding: 4px 6px 2px 6px; gap: 4px; }
+        /* COMPACT VIEWPORTS & LANDSCAPE TABLETS/LAPTOPS */
+        @media (max-height: 680px) {
+            :root {
+                --hero-orb-size: 40px;
+                --logo-size: 26px;
+            }
+            .kiza-welcome-card { padding: 2px 6px; gap: 3px; }
+            .welcome-greeting { font-size: 15.5px; }
+            .welcome-sub { display: none; }
+            .composer-wrapper { padding: 3px 8px calc(4px + var(--safe-bottom)) 8px; gap: 2px; }
+            .input-container { padding: 4px 9px; gap: 3px; }
+            .kiza-ai-disclaimer { font-size: 9.5px; }
         }
 
         @media (max-width: 860px) {
@@ -1164,7 +1192,8 @@
                 position: fixed;
                 top: 0;
                 left: 0;
-                bottom: 0;
+                height: var(--app-height, 100dvh);
+                max-height: var(--app-height, 100dvh);
                 transform: translateX(-100%);
                 margin-left: 0 !important;
                 box-shadow: 10px 0 30px rgba(0, 0, 0, 0.25);
@@ -1176,31 +1205,13 @@
                 display: block;
             }
             .workspace-header {
-                padding: 6px 10px;
+                min-height: 44px;
+                padding: 4px 8px;
             }
             .status-text {
-                max-width: 105px;
-                font-size: 10px;
-                padding: 3px 8px;
-            }
-            .welcome-greeting {
-                font-size: 18px;
-            }
-            .composer-wrapper {
-                padding: 4px 8px calc(6px + env(safe-area-inset-bottom, 0px)) 8px;
-            }
-            .kiza-ai-disclaimer {
-                font-size: 10px;
-            }
-            .icon-btn {
-                height: 30px;
-                padding: 0 8px;
-                font-size: 11px;
-            }
-            .live-call-btn {
-                height: 30px;
-                padding: 0 10px;
-                font-size: 11px;
+                max-width: 95px;
+                font-size: 9.5px;
+                padding: 2px 7px;
             }
             #wakeToggleBtn {
                 display: none;
@@ -1223,31 +1234,31 @@
         <div class="notify-msg" id="notifMsg">Details...</div>
     </div>
 
-    <!-- KIZA CUSTOM PERSONAS / GEMS STUDIO MODAL (CLOUD SYNCED ACROSS ALL DEVICES) -->
+    <!-- KIZA CUSTOM PERSONAS STUDIO MODAL (CLOUD SYNCED ACROSS ALL DEVICES) -->
     <div id="gemsModal" class="modal-overlay" style="display:none; z-index: 645;">
-        <div class="logs-card" style="max-width: 560px;">
+        <div class="logs-card" style="max-width: 540px;">
             <div class="section-title">
                 <span>💎 KIZA Persona Studio • Cloud-Synced AI Personalities</span>
                 <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeGemsModal()">✕</button>
             </div>
-            <div style="font-size:12px; color:var(--text-muted); line-height:1.45;">
+            <div style="font-size:11.5px; color:var(--text-muted); line-height:1.45;">
                 Build your own custom KIZA personalities! Your saved Personas automatically sync across your PC, phone, and tablet when signed in.
             </div>
 
             <div style="display:flex; gap:8px;">
-                <input type="text" id="gemEmojiInput" placeholder="🤖" maxlength="4" style="width:64px; text-align:center; font-size:16px;" value="💎">
+                <input type="text" id="gemEmojiInput" placeholder="🤖" maxlength="4" style="width:60px; text-align:center; font-size:15px;" value="💎">
                 <input type="text" id="gemNameInput" placeholder="Persona Name (e.g. Witty Commander, Code Architect, Study Mentor)..." style="flex:1;">
             </div>
 
             <textarea id="gemPromptInput" rows="3" placeholder="Tell KIZA how to behave (e.g. 'Speak with dry British wit and call me Commander', or 'Explain concepts with step-by-step formulas and examples')..."></textarea>
 
-            <button type="button" class="send-btn" style="width:100%; padding:10px;" onclick="saveNewCustomGem()">✨ Save & Sync Custom Persona</button>
+            <button type="button" class="send-btn" style="width:100%; padding:9px;" onclick="saveNewCustomGem()">✨ Save & Sync Custom Persona</button>
 
-            <div class="section-title" style="margin-top:8px;">
+            <div class="section-title" style="margin-top:6px;">
                 <span>💎 Your Cloud-Synced Personas</span>
-                <button type="button" class="chip-btn" style="width:auto; padding:3px 9px; font-size:10.5px;" onclick="selectCustomGem(null)">Reset to Default KIZA</button>
+                <button type="button" class="chip-btn" style="width:auto; padding:3px 9px; font-size:10px;" onclick="selectCustomGem(null)">Reset to Default KIZA</button>
             </div>
-            <div id="savedGemsListContainer" style="max-height: 200px; overflow-y: auto; display:flex; flex-direction:column; gap:6px;"></div>
+            <div id="savedGemsListContainer" style="max-height: 180px; overflow-y: auto; display:flex; flex-direction:column; gap:6px;"></div>
         </div>
     </div>
 
@@ -1257,18 +1268,18 @@
             <div class="section-title">
                 <span id="codeSandboxTitle">💻 KIZA Live Code Sandbox</span>
                 <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-                    <button type="button" class="chip-btn" style="width:auto; padding:5px 11px; border-color:var(--warning); color:var(--warning);" onclick="autoFixCurrentSandboxCode()">⚡ Auto-Fix / Complete Code</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:5px 11px;" onclick="reloadCurrentSandboxIframe()">🔄 Reload</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:5px 11px;" onclick="copyCurrentSandboxCode()">📋 Copy Code</button>
-                    <button type="button" class="send-btn" style="padding:6px 13px; font-size:12px;" onclick="downloadCurrentSandboxCode()">⬇️ Download File</button>
-                    <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 5px 10px; width:auto;" onclick="closeCodeSandboxModal()">✕</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; border-color:var(--warning); color:var(--warning);" onclick="autoFixCurrentSandboxCode()">⚡ Auto-Fix / Complete Code</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px;" onclick="reloadCurrentSandboxIframe()">🔄 Reload</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px;" onclick="copyCurrentSandboxCode()">📋 Copy Code</button>
+                    <button type="button" class="send-btn" style="padding:5px 12px; font-size:11.5px;" onclick="downloadCurrentSandboxCode()">⬇️ Download File</button>
+                    <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 4px 9px; width:auto;" onclick="closeCodeSandboxModal()">✕</button>
                 </div>
             </div>
-            <div id="sandboxDiagnosticBanner" style="display:none; font-size:11.5px; padding:8px 12px; border-radius:10px; background:rgba(245, 158, 11, 0.14); border:1px solid var(--warning); color:var(--warning); justify-content:space-between; align-items:center; gap:8px;">
+            <div id="sandboxDiagnosticBanner" style="display:none; font-size:11px; padding:7px 11px; border-radius:10px; background:rgba(245, 158, 11, 0.14); border:1px solid var(--warning); color:var(--warning); justify-content:space-between; align-items:center; gap:8px;">
                 <span id="sandboxDiagnosticText">⚠️ Code diagnostic notice</span>
-                <button type="button" class="send-btn" style="padding:4px 12px; font-size:11px; background:var(--warning); color:#000;" onclick="autoFixCurrentSandboxCode()">⚡ Fix Now</button>
+                <button type="button" class="send-btn" style="padding:4px 11px; font-size:10.5px; background:var(--warning); color:#000;" onclick="autoFixCurrentSandboxCode()">⚡ Fix Now</button>
             </div>
-            <iframe id="codeSandboxIframe" sandbox="allow-scripts allow-modals allow-same-origin" style="width:100%; height:64dvh; border:1px solid var(--card-border); border-radius:12px; background:#ffffff;"></iframe>
+            <iframe id="codeSandboxIframe" sandbox="allow-scripts allow-modals allow-same-origin" style="width:100%; height:62dvh; border:1px solid var(--card-border); border-radius:12px; background:#ffffff;"></iframe>
         </div>
     </div>
 
@@ -1280,18 +1291,18 @@
                 <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 4px 10px; width:auto;" onclick="closeFilePreviewModal()">✕ Close</button>
             </div>
 
-            <div id="previewFormattingToolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:var(--bg-surface); padding:10px 12px; border-radius:12px; border:1px solid var(--card-border);">
+            <div id="previewFormattingToolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:var(--bg-surface); padding:9px 11px; border-radius:12px; border:1px solid var(--card-border);">
                 <div id="previewLayoutThemeSelectors" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                    <label style="font-size:12px; font-weight:600;">Layout:</label>
-                    <select id="previewLayoutFormatSelect" style="width:auto; padding:6px 12px; font-size:12px;" onchange="changePreviewLayoutOrTheme()">
+                    <label style="font-size:11.5px; font-weight:600;">Layout:</label>
+                    <select id="previewLayoutFormatSelect" style="width:auto; padding:5px 10px; font-size:11.5px;" onchange="changePreviewLayoutOrTheme()">
                         <option value="infographic">📊 Infographic Dossier</option>
                         <option value="academic">📚 Academic / NCERT</option>
                         <option value="magazine">📰 Editorial Magazine</option>
                         <option value="minimal">💼 Clean Minimalist</option>
                     </select>
 
-                    <label style="font-size:12px; font-weight:600;">Theme:</label>
-                    <select id="previewThemeSelect" style="width:auto; padding:6px 12px; font-size:12px;" onchange="changePreviewLayoutOrTheme()">
+                    <label style="font-size:11.5px; font-weight:600;">Theme:</label>
+                    <select id="previewThemeSelect" style="width:auto; padding:5px 10px; font-size:11.5px;" onchange="changePreviewLayoutOrTheme()">
                         <option value="cyber_dark">Cyber Dark</option>
                         <option value="black">Obsidian Black</option>
                         <option value="light">Clean White / Light</option>
@@ -1303,7 +1314,7 @@
                     </select>
                 </div>
 
-                <button type="button" id="confirmDownloadBtn" class="send-btn" style="padding:8px 16px; font-size:12px; margin-left:auto;" onclick="confirmAndDownloadPreviewedFile()">⬇️ Confirm & Download</button>
+                <button type="button" id="confirmDownloadBtn" class="send-btn" style="padding:7px 14px; font-size:11.5px; margin-left:auto;" onclick="confirmAndDownloadPreviewedFile()">⬇️ Confirm & Download</button>
             </div>
 
             <div id="aiRevisePromptContainer" style="display:flex; gap:8px; align-items:center; width:100%;">
@@ -1311,7 +1322,7 @@
                 <button type="button" id="aiReviseBtn" class="send-btn" style="background:#10b981; color:#fff;" onclick="submitFileRevisionPrompt()">✨ Revise</button>
             </div>
 
-            <div id="filePreviewViewport" style="max-height: 58dvh; overflow-y: auto; border: 1px solid var(--card-border); border-radius: 12px; background: #cbd5e1; padding: 16px; outline: none;"></div>
+            <div id="filePreviewViewport" style="max-height: 55dvh; overflow-y: auto; border: 1px solid var(--card-border); border-radius: 12px; background: #cbd5e1; padding: 14px; outline: none;"></div>
         </div>
     </div>
 
@@ -1322,7 +1333,7 @@
                 <span>🗑️ Remove User Account</span>
                 <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 3px 9px; width:auto;" onclick="closePurgeModal()">✕</button>
             </div>
-            <div style="font-size:12px; color:var(--text-muted); line-height:1.45;">
+            <div style="font-size:11.5px; color:var(--text-muted); line-height:1.45;">
                 Ranks 1–4 are protected (only Rank 1 Master Owner Viyan Arora can purge Ranks 2–4). Enter the Master Purge PIN to remove a user.
             </div>
             <input type="text" id="purgeSearchInput" placeholder="🔍 Search user list..." autocomplete="off" oninput="filterPurgeUsersDropdown()">
@@ -1332,7 +1343,7 @@
             <input type="password" id="purgeMasterPinInput" placeholder="Enter Master Purge PIN..." maxlength="8" inputmode="numeric" autocomplete="off" style="text-align:center; letter-spacing:3px;">
             <button type="button" class="send-btn" style="width:100%; background:var(--danger); color:#fff;" onclick="submitPurgeWithMasterPin()">🗑️ Verify PIN & Remove User</button>
 
-            <div id="masterOwnerSetPurgePinBox" style="display:none; flex-direction:column; gap:6px; margin-top:8px; padding-top:8px; border-top:1px dashed var(--card-border);">
+            <div id="masterOwnerSetPurgePinBox" style="display:none; flex-direction:column; gap:6px; margin-top:6px; padding-top:6px; border-top:1px dashed var(--card-border);">
                 <div style="font-size:11px; font-weight:700; color:var(--accent-primary);">👑 Master Owner: Update Purge PIN</div>
                 <div style="display:flex; gap:6px;">
                     <input type="password" id="newMasterPurgePinInput" placeholder="New 4-8 digit PIN..." maxlength="8" inputmode="numeric">
@@ -1348,11 +1359,11 @@
             <div class="section-title">
                 <span id="pinGateTitle">🔢 Security Backup PIN</span>
             </div>
-            <div id="pinGateSubtitle" style="font-size:12.5px; color:var(--text-muted); line-height:1.5;">
+            <div id="pinGateSubtitle" style="font-size:12px; color:var(--text-muted); line-height:1.5;">
                 Enter your 4 to 6 digit backup PIN to verify your account.
             </div>
             <input type="password" id="pinGateInput" placeholder="4 to 6 digit PIN..." maxlength="6" inputmode="numeric" autocomplete="off" style="text-align:center; font-size:18px; letter-spacing:6px;">
-            <div id="pinGateError" style="color: var(--danger); font-size: 12px; min-height: 16px; font-weight:600; text-align:center;"></div>
+            <div id="pinGateError" style="color: var(--danger); font-size: 11.5px; min-height: 15px; font-weight:600; text-align:center;"></div>
             <button type="button" id="pinGateSubmitBtn" class="send-btn" style="width:100%;" onclick="submitPinGate()">Verify PIN</button>
             <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger);" onclick="logoutUser()">Sign Out</button>
         </div>
@@ -1365,13 +1376,13 @@
                 <span>📋 Tasks & Goals</span>
                 <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeMissionsModal()">✕</button>
             </div>
-            <div id="missionAssignBox" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:12px; background:var(--bg-surface);">
-                <div style="font-size:12px; font-weight:700; color:var(--accent-primary);">Assign New Task</div>
+            <div id="missionAssignBox" style="display:none; flex-direction:column; gap:8px; padding:11px; border-radius:12px; background:var(--bg-surface);">
+                <div style="font-size:11.5px; font-weight:700; color:var(--accent-primary);">Assign New Task</div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                    <select id="missionAssigneeSelect" style="flex:1; min-width:160px;">
+                    <select id="missionAssigneeSelect" style="flex:1; min-width:150px;">
                         <option value="all">🌐 All Users</option>
                     </select>
-                    <input type="text" id="missionTitleInput" placeholder="Task description..." style="flex:2; min-width:200px;">
+                    <input type="text" id="missionTitleInput" placeholder="Task description..." style="flex:2; min-width:190px;">
                 </div>
                 <button type="button" class="send-btn" style="width:100%;" onclick="submitNewMission()">Assign Task</button>
             </div>
@@ -1386,16 +1397,16 @@
                 <span>🛡️ Security Activity & Mugshots</span>
                 <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeThreatsModal()">✕</button>
             </div>
-            <div style="font-size:11.5px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+            <div style="font-size:11px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                 <span id="threatsClearanceInfo">Preview reports before downloading</span>
-                <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px;" onclick="exportSecurityReportCSV()">📊 CSV</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px;" onclick="exportSecurityReportTXT()">📄 .TXT</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px;" onclick="exportSecurityReportPDF()">👁️ PDF</button>
-                    <button type="button" id="wipeAllThreatsBtn" class="chip-btn" style="width:auto; padding:4px 10px; color:var(--danger); display:none;" onclick="deleteSecurityThreatLog(null)">🧹 Clear All</button>
+                <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px;" onclick="exportSecurityReportCSV()">📊 CSV</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px;" onclick="exportSecurityReportTXT()">📄 .TXT</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px;" onclick="exportSecurityReportPDF()">👁️ PDF</button>
+                    <button type="button" id="wipeAllThreatsBtn" class="chip-btn" style="width:auto; padding:4px 9px; color:var(--danger); display:none;" onclick="deleteSecurityThreatLog(null)">🧹 Clear All</button>
                 </div>
             </div>
-            <div id="threatsBannedBanner" style="font-size:11.5px; padding:8px 12px; border-radius:10px; background:rgba(239, 68, 68, 0.1); color:var(--danger); display:none;"></div>
+            <div id="threatsBannedBanner" style="font-size:11px; padding:7px 11px; border-radius:10px; background:rgba(239, 68, 68, 0.1); color:var(--danger); display:none;"></div>
             <div id="threatsListContainer" class="logs-viewer"></div>
         </div>
     </div>
@@ -1407,12 +1418,12 @@
                 <span>🔔 Notifications • <span id="notifModalUserLabel">User</span></span>
                 <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeNotifCenter()">✕</button>
             </div>
-            <div style="font-size:11.5px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+            <div style="font-size:11px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                 <span>Synced across all your devices</span>
-                <div style="display:flex; gap:6px;">
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px;" onclick="markAllNotificationsRead()">✓ Mark All Read</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px;" onclick="clearReadNotifications()">🗑️ Clear Read</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; color:var(--danger);" onclick="wipeAllUserNotificationsPermanently()">🧹 Clear All</button>
+                <div style="display:flex; gap:5px;">
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px;" onclick="markAllNotificationsRead()">✓ Mark All Read</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px;" onclick="clearReadNotifications()">🗑️ Clear Read</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; color:var(--danger);" onclick="wipeAllUserNotificationsPermanently()">🧹 Clear All</button>
                 </div>
             </div>
             <div class="auth-tabs">
@@ -1451,10 +1462,10 @@
                 <span>🚀 What's New in KIZA</span>
                 <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeUpdatesModal()">✕</button>
             </div>
-            <div id="ownerUpdatePublisher" style="display:none; flex-direction:column; gap:8px; padding:12px; border-radius:12px; background:var(--bg-surface);">
-                <div style="font-size:12px; font-weight:700; color:var(--accent-primary);">Publish New Update</div>
-                <div style="display:flex; gap:8px;">
-                    <input type="text" id="newUpdateVersion" placeholder="v6.8" style="width:110px;">
+            <div id="ownerUpdatePublisher" style="display:none; flex-direction:column; gap:7px; padding:11px; border-radius:12px; background:var(--bg-surface);">
+                <div style="font-size:11.5px; font-weight:700; color:var(--accent-primary);">Publish New Update</div>
+                <div style="display:flex; gap:7px;">
+                    <input type="text" id="newUpdateVersion" placeholder="v7.0" style="width:100px;">
                     <input type="text" id="newUpdateTitle" placeholder="Headline...">
                 </div>
                 <input type="text" id="newUpdateDesc" placeholder="Details of what changed...">
@@ -1466,19 +1477,19 @@
 
     <!-- SETTINGS & DEVICE MANAGER MODAL -->
     <div id="settingsModal" class="modal-overlay" style="display:none;">
-        <div class="auth-card" style="max-width:480px;">
+        <div class="auth-card" style="max-width:460px;">
             <div class="section-title">
                 <span>⚙️ Settings & Connected Devices</span>
                 <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeSettings()">✕</button>
             </div>
 
-            <label style="font-size:12px; font-weight:600;">Appearance:</label>
+            <label style="font-size:11.5px; font-weight:600;">Appearance:</label>
             <select id="themeSelect" onchange="saveSettings()">
                 <option value="light">☀️ Light Mode (Clean Daylight)</option>
                 <option value="dark">🌙 Dark Mode (KIZA Obsidian)</option>
             </select>
 
-            <label style="font-size:12px; font-weight:600;">Base Voice Accent:</label>
+            <label style="font-size:11.5px; font-weight:600;">Base Voice Accent:</label>
             <select id="personaSelect" onchange="handlePersonaChange()">
                 <option value="normal" selected>🟢 Default (UK • Witty & Helpful)</option>
                 <option value="helpful">💼 Executive (IN • Polite & Warm)</option>
@@ -1488,14 +1499,14 @@
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
                 <div>
-                    <label style="font-size:11.5px; font-weight:600;">Startup Voice:</label>
+                    <label style="font-size:11px; font-weight:600;">Startup Voice:</label>
                     <select id="voiceDefaultSelect" onchange="saveSettings()">
                         <option value="off">Muted</option>
                         <option value="on">Speaking</option>
                     </select>
                 </div>
                 <div>
-                    <label style="font-size:11.5px; font-weight:600;">Pop-up Alerts:</label>
+                    <label style="font-size:11px; font-weight:600;">Pop-up Alerts:</label>
                     <select id="notifToggleSelect" onchange="saveSettings()">
                         <option value="on">Show</option>
                         <option value="off">Silent</option>
@@ -1513,12 +1524,12 @@
                 <button type="button" class="chip-btn" onclick="closeSettings(); openPinGate('setup');">🔢 Change Backup PIN</button>
             </div>
 
-            <div class="section-title" style="margin-top:8px;">
+            <div class="section-title" style="margin-top:6px;">
                 <span>💻 Active Devices</span>
             </div>
-            <div id="activeDevicesListContainer" style="max-height: 110px; overflow-y: auto; font-size:12px;"></div>
+            <div id="activeDevicesListContainer" style="max-height: 100px; overflow-y: auto; font-size:11.5px;"></div>
 
-            <div class="section-title" style="margin-top:6px;">
+            <div class="section-title" style="margin-top:4px;">
                 <span>📲 Sign Out Other Devices</span>
             </div>
             <button type="button" class="chip-btn" style="border-color:var(--success); color:var(--success);" onclick="logoutOtherDevicesViaFaceID()">🧬 Verify Face ID to Sign Out Others</button>
@@ -1527,10 +1538,10 @@
                 <button type="button" class="send-btn" style="background:var(--danger); color:#fff;" onclick="logoutOtherDevicesViaPin()">Sign Out Others</button>
             </div>
 
-            <div class="section-title" style="margin-top:6px;">
+            <div class="section-title" style="margin-top:4px;">
                 <span>👥 Saved Accounts on This Browser</span>
             </div>
-            <div id="profileListContainer" style="max-height: 95px; overflow-y: auto;"></div>
+            <div id="profileListContainer" style="max-height: 85px; overflow-y: auto;"></div>
             <div style="display:flex; gap:6px;">
                 <button class="chip-btn" onclick="addIdentity()">+ Switch / Add Account</button>
                 <button class="chip-btn" style="border-color:var(--danger); color:var(--danger);" onclick="logoutUser()">Sign Out</button>
@@ -1573,11 +1584,11 @@
                 </select>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-                <span style="font-size:12px; font-weight:600;">Select Conversation:</span>
-                <div style="display:flex; gap:6px;">
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px;" onclick="exportArchiveTXT()">📄 Preview .TXT</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px;" onclick="exportArchivePDF()">👁️ Preview PDF</button>
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; color:var(--danger);" onclick="deleteSelectedArchiveSessionPermanently()">🗑️ Delete</button>
+                <span style="font-size:11.5px; font-weight:600;">Select Conversation:</span>
+                <div style="display:flex; gap:5px;">
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px;" onclick="exportArchiveTXT()">📄 Preview .TXT</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px;" onclick="exportArchivePDF()">👁️ Preview PDF</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 9px; color:var(--danger);" onclick="deleteSelectedArchiveSessionPermanently()">🗑️ Delete</button>
                 </div>
             </div>
             <select id="logSessionSelect" onchange="handleSessionSelect()">
@@ -1593,16 +1604,16 @@
     <!-- AUTH / SIGN-IN MODAL -->
     <div id="authModal" class="modal-overlay">
         <div class="auth-card">
-            <div style="text-align:center; margin-bottom:4px;">
+            <div style="text-align:center; margin-bottom:2px;">
                 <img src="logo.jpg" alt="KIZA Logo" class="kiza-auth-logo" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%224%22/><rect x=%2228%22 y=%2230%22 width=%2264%22 height=%2244%22 rx=%2220%22 fill=%22%23e0f2fe%22 stroke=%22%2300f2fe%22 stroke-width=%223%22/><rect x=%2235%22 y=%2237%22 width=%2250%22 height=%2230%22 rx=%2213%22 fill=%22%23041020%22/><circle cx=%2249%22 cy=%2250%22 r=%225.5%22 fill=%22%2300f2fe%22/><path d=%22M65 50 Q71 43 77 50%22 stroke=%22%2300f2fe%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/><path d=%22M52 59 Q60 65 68 59%22 stroke=%22%2300f2fe%22 stroke-width=%223%22 fill=%22none%22 stroke-linecap=%22round%22/><text x=%2260%22 y=%2298%22 font-family=%22Arial,sans-serif%22 font-weight=%22900%22 font-size=%2222%22 text-anchor=%22middle%22 fill=%22%2300f2fe%22>KIZA</text></svg>';">
-                <h2 style="margin:0; font-size:20px;">Welcome to KIZA</h2>
-                <div style="font-size:11.5px; font-weight:600; color:var(--accent-primary); margin-top:2px;">Kinda Intelligent Zippy Assistant</div>
+                <h2 style="margin:0; font-size:19px;">Welcome to KIZA</h2>
+                <div style="font-size:11px; font-weight:600; color:var(--accent-primary); margin-top:2px;">Kinda Intelligent Zippy Assistant</div>
             </div>
             <div id="g_id_onload" data-client_id="966529845745-0tvmb131iufp9vvkk8df4h7angi4u8p8.apps.googleusercontent.com" data-callback="handleGoogleLogin" data-auto_prompt="false"></div>
-            <div style="display: flex; justify-content: center; width: 100%; margin: 4px 0;">
-                <div class="g_id_signin" data-type="standard" data-theme="filled_blue" data-size="large" data-width="340"></div>
+            <div style="display: flex; justify-content: center; width: 100%; margin: 2px 0;">
+                <div class="g_id_signin" data-type="standard" data-theme="filled_blue" data-size="large" data-width="320"></div>
             </div>
-            <div style="text-align:center; font-size:11px; color:var(--text-muted); margin: 4px 0;">— or sign in with username —</div>
+            <div style="text-align:center; font-size:10.5px; color:var(--text-muted); margin: 2px 0;">— or sign in with username —</div>
             <div class="auth-tabs">
                 <button type="button" id="loginTab" class="tab-btn active" onclick="switchAuthMode('login')">Sign In</button>
                 <button type="button" id="signupTab" class="tab-btn" onclick="switchAuthMode('signup')">Create Account</button>
@@ -1612,11 +1623,11 @@
             <div id="signupPinContainer" style="display:none; flex-direction:column; gap:4px;">
                 <input type="password" id="authPin" placeholder="Create 4 to 6 digit Backup PIN..." maxlength="6" inputmode="numeric" autocomplete="off">
             </div>
-            <label style="font-size: 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-muted);">
+            <label style="font-size: 11.5px; display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-muted);">
                 <input type="checkbox" id="captureFaceCheck" checked> Enable Face ID quick unlock
             </label>
-            <div id="authError" style="color: var(--danger); font-size: 12px; min-height: 16px; font-weight:600; text-align:center;"></div>
-            <button type="button" class="send-btn" style="width:100%; padding:11px;" onclick="performAuth()">Continue</button>
+            <div id="authError" style="color: var(--danger); font-size: 11.5px; min-height: 15px; font-weight:600; text-align:center;"></div>
+            <button type="button" class="send-btn" style="width:100%; padding:10px;" onclick="performAuth()">Continue</button>
             <button type="button" class="chip-btn" id="cancelAuthBtn" style="display:none;" onclick="cancelAddIdentity()">Cancel</button>
         </div>
     </div>
@@ -1639,58 +1650,58 @@
 
             <div style="display:flex; gap:6px; flex-shrink:0;">
                 <button type="button" class="new-chat-pill" style="flex:1;" onclick="startNewSession(); toggleMobileSidebar(false);">
-                    <span style="font-size:15px; font-weight:700; color:var(--accent-primary);">＋</span>
+                    <span style="font-size:14px; font-weight:700; color:var(--accent-primary);">＋</span>
                     <span>New chat</span>
                 </button>
-                <button type="button" class="new-chat-pill" style="padding:9px 12px; color:var(--accent-primary);" onclick="openGemsModal(); toggleMobileSidebar(false);" title="Create Custom KIZA Personas">
+                <button type="button" class="new-chat-pill" style="padding:8px 11px; color:var(--accent-primary);" onclick="openGemsModal(); toggleMobileSidebar(false);" title="Create Custom KIZA Personas">
                     <span>💎 Personas</span>
                 </button>
             </div>
 
             <div class="sidebar-label">
                 <span>Recent Chats</span>
-                <button type="button" style="background:none; border:none; color:var(--accent-primary); font-size:11px; font-weight:600; cursor:pointer;" onclick="openLogsModal()">All ↗</button>
+                <button type="button" style="background:none; border:none; color:var(--accent-primary); font-size:10.5px; font-weight:600; cursor:pointer;" onclick="openLogsModal()">All ↗</button>
             </div>
 
             <!-- DYNAMIC CHAT HISTORY LIST IN SIDEBAR -->
             <div id="sidebarSessionsList" class="sidebar-history-list">
-                <div style="font-size:12px; color:var(--text-muted); padding:8px;">Your recent chats will appear here...</div>
+                <div style="font-size:11.5px; color:var(--text-muted); padding:8px;">Your recent chats will appear here...</div>
             </div>
 
             <!-- COLLAPSIBLE ADMIN CONTROLS (VISIBLE ONLY FOR RANKS 1-4) -->
             <div id="masterCmds" class="sidebar-section-card" style="display: none;">
-                <div style="font-size:10.5px; font-weight:700; color:var(--accent-primary); padding:1px 4px;">🛡️ Admin & Team Controls</div>
+                <div style="font-size:10px; font-weight:700; color:var(--accent-primary); padding:1px 4px;">🛡️ Admin & Team Controls</div>
                 <div class="sidebar-grid-btns">
-                    <button type="button" class="chip-btn" style="padding:4px 6px; font-size:10.5px;" onclick="sendQuickCmd('/operative'); toggleMobileSidebar(false);">🟢 Online</button>
-                    <button type="button" class="chip-btn" style="padding:4px 6px; font-size:10.5px;" onclick="sendQuickCmd('/userdata'); toggleMobileSidebar(false);">👥 Users</button>
-                    <button type="button" class="chip-btn" style="padding:4px 6px; font-size:10.5px;" onclick="openBroadcastModal()">📢 Broadcast</button>
-                    <button type="button" class="chip-btn" style="padding:4px 6px; font-size:10.5px;" onclick="openThreatsModal()">🛡️ Security</button>
-                    <button type="button" class="chip-btn top3-only" style="padding:4px 6px; font-size:10.5px; display:none;" onclick="openRankModal()">⭐ Roles</button>
-                    <button type="button" class="chip-btn top3-only" style="padding:4px 6px; font-size:10.5px; display:none;" onclick="sendQuickCmd('/purgelog'); toggleMobileSidebar(false);">📜 Logs</button>
-                    <button type="button" class="chip-btn" style="padding:4px 6px; font-size:10.5px;" onclick="sendQuickCmd('/lockdown'); toggleMobileSidebar(false);">🔒 Lock</button>
-                    <button type="button" class="chip-btn owner-only" style="padding:4px 6px; font-size:10.5px; display:none;" onclick="sendQuickCmd('/removelock'); toggleMobileSidebar(false);">🔓 Unlock</button>
+                    <button type="button" class="chip-btn" style="padding:4px 6px; font-size:10px;" onclick="sendQuickCmd('/operative'); toggleMobileSidebar(false);">🟢 Online</button>
+                    <button type="button" class="chip-btn" style="padding:4px 6px; font-size:10px;" onclick="sendQuickCmd('/userdata'); toggleMobileSidebar(false);">👥 Users</button>
+                    <button type="button" class="chip-btn" style="padding:4px 6px; font-size:10px;" onclick="openBroadcastModal()">📢 Broadcast</button>
+                    <button type="button" class="chip-btn" style="padding:4px 6px; font-size:10px;" onclick="openThreatsModal()">🛡️ Security</button>
+                    <button type="button" class="chip-btn top3-only" style="padding:4px 6px; font-size:10px; display:none;" onclick="openRankModal()">⭐ Roles</button>
+                    <button type="button" class="chip-btn top3-only" style="padding:4px 6px; font-size:10px; display:none;" onclick="sendQuickCmd('/purgelog'); toggleMobileSidebar(false);">📜 Logs</button>
+                    <button type="button" class="chip-btn" style="padding:4px 6px; font-size:10px;" onclick="sendQuickCmd('/lockdown'); toggleMobileSidebar(false);">🔒 Lock</button>
+                    <button type="button" class="chip-btn owner-only" style="padding:4px 6px; font-size:10px; display:none;" onclick="sendQuickCmd('/removelock'); toggleMobileSidebar(false);">🔓 Unlock</button>
                 </div>
-                <button type="button" class="chip-btn top3-only" style="padding:4px 6px; font-size:10.5px; display:none; color:var(--danger);" onclick="openPurgeModal()">🗑️ Remove User (PIN)</button>
+                <button type="button" class="chip-btn top3-only" style="padding:4px 6px; font-size:10px; display:none; color:var(--danger);" onclick="openPurgeModal()">🗑️ Remove User (PIN)</button>
             </div>
 
             <!-- SIDEBAR FOOTER -->
             <div class="sidebar-footer">
                 <div style="display:flex; gap:5px;">
-                    <button type="button" class="chip-btn" style="padding:5px 7px; font-size:11px;" onclick="openMissionsModal()">📋 Tasks</button>
-                    <button type="button" class="chip-btn" style="padding:5px 7px; font-size:11px;" onclick="openUpdatesModal()">🚀 Updates</button>
-                    <button type="button" class="chip-btn" id="sidebarInstallBtn" style="padding:5px 7px; font-size:11px; color:var(--accent-primary);" onclick="triggerPWAInstall()">📲 App</button>
+                    <button type="button" class="chip-btn" style="padding:5px 7px; font-size:10.5px;" onclick="openMissionsModal()">📋 Tasks</button>
+                    <button type="button" class="chip-btn" style="padding:5px 7px; font-size:10.5px;" onclick="openUpdatesModal()">🚀 Updates</button>
+                    <button type="button" class="chip-btn" id="sidebarInstallBtn" style="padding:5px 7px; font-size:10.5px; color:var(--accent-primary);" onclick="triggerPWAInstall()">📲 App</button>
                 </div>
 
                 <div class="user-profile-Trigger" onclick="openSettings()" title="Open Settings & Connected Devices">
-                    <div style="display:flex; align-items:center; gap:9px; overflow:hidden;">
+                    <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
                         <img id="savedFaceImg" class="face-thumb" alt="User">
-                        <img src="logo.jpg" alt="KIZA" class="kiza-logo-img" style="width:28px; height:28px;" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%225%22/><rect x=%2228%22 y=%2230%22 width=%2264%22 height=%2244%22 rx=%2220%22 fill=%22%23e0f2fe%22 stroke=%22%2300f2fe%22 stroke-width=%223%22/><rect x=%2235%22 y=%2237%22 width=%2250%22 height=%2230%22 rx=%2213%22 fill=%22%23041020%22/><circle cx=%2249%22 cy=%2250%22 r=%225.5%22 fill=%22%2300f2fe%22/><path d=%22M65 50 Q71 43 77 50%22 stroke=%22%2300f2fe%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/><path d=%22M52 59 Q60 65 68 59%22 stroke=%22%2300f2fe%22 stroke-width=%223%22 fill=%22none%22 stroke-linecap=%22round%22/></svg>';">
+                        <img src="logo.jpg" alt="KIZA" class="kiza-logo-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%225%22/><rect x=%2228%22 y=%2230%22 width=%2264%22 height=%2244%22 rx=%2220%22 fill=%22%23e0f2fe%22 stroke=%22%2300f2fe%22 stroke-width=%223%22/><rect x=%2235%22 y=%2237%22 width=%2250%22 height=%2230%22 rx=%2213%22 fill=%22%23041020%22/><circle cx=%2249%22 cy=%2250%22 r=%225.5%22 fill=%22%2300f2fe%22/><path d=%22M65 50 Q71 43 77 50%22 stroke=%22%2300f2fe%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/><path d=%22M52 59 Q60 65 68 59%22 stroke=%22%2300f2fe%22 stroke-width=%223%22 fill=%22none%22 stroke-linecap=%22round%22/></svg>';">
                         <div style="display:flex; flex-direction:column; overflow:hidden;">
-                            <span id="idVal" style="font-size:12.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Guest</span>
-                            <span id="roleVal" style="font-size:10px; color:var(--text-muted);">Signed Out</span>
+                            <span id="idVal" style="font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Guest</span>
+                            <span id="roleVal" style="font-size:9.5px; color:var(--text-muted);">Signed Out</span>
                         </div>
                     </div>
-                    <span style="font-size:14px; color:var(--text-muted);">⚙️</span>
+                    <span style="font-size:13px; color:var(--text-muted);">⚙️</span>
                 </div>
 
                 <!-- HIDDEN TELEMETRY HOOKS -->
@@ -1715,8 +1726,8 @@
             <header class="workspace-header">
                 <div class="header-left">
                     <button type="button" class="icon-btn" onclick="toggleSidebarCollapse()" title="Menu & Chat History">☰</button>
-                    <img src="logo.jpg" alt="KIZA" class="kiza-logo-img" style="width:26px; height:26px;" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%225%22/><rect x=%2228%22 y=%2230%22 width=%2264%22 height=%2244%22 rx=%2220%22 fill=%22%23e0f2fe%22 stroke=%22%2300f2fe%22 stroke-width=%223%22/><rect x=%2235%22 y=%2237%22 width=%2250%22 height=%2230%22 rx=%2213%22 fill=%22%23041020%22/><circle cx=%2249%22 cy=%2250%22 r=%225.5%22 fill=%22%2300f2fe%22/><path d=%22M65 50 Q71 43 77 50%22 stroke=%22%2300f2fe%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/><path d=%22M52 59 Q60 65 68 59%22 stroke=%22%2300f2fe%22 stroke-width=%223%22 fill=%22none%22 stroke-linecap=%22round%22/></svg>';">
-                    <span style="font-weight:800; font-size:15px;">KIZA</span>
+                    <img src="logo.jpg" alt="KIZA" class="kiza-logo-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%225%22/><rect x=%2228%22 y=%2230%22 width=%2264%22 height=%2244%22 rx=%2220%22 fill=%22%23e0f2fe%22 stroke=%22%2300f2fe%22 stroke-width=%223%22/><rect x=%2235%22 y=%2237%22 width=%2250%22 height=%2230%22 rx=%2213%22 fill=%22%23041020%22/><circle cx=%2249%22 cy=%2250%22 r=%225.5%22 fill=%22%2300f2fe%22/><path d=%22M65 50 Q71 43 77 50%22 stroke=%22%2300f2fe%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/><path d=%22M52 59 Q60 65 68 59%22 stroke=%22%2300f2fe%22 stroke-width=%223%22 fill=%22none%22 stroke-linecap=%22round%22/></svg>';">
+                    <span style="font-weight:800; font-size:14.5px;">KIZA</span>
                     <span id="uiStatus" class="status-text">Ready</span>
                     <!-- LIVE BATTERY & MEMORY RESOURCE HUD PILL -->
                     <span id="batteryHudPill" class="battery-hud-pill" onclick="togglePowerSaverMode()" title="System Battery & Memory HUD (Click to toggle Power-Saver Mode)">🔋 --%</span>
@@ -1757,10 +1768,10 @@
                 </div>
             </div>
 
-            <!-- SCROLLABLE CONVERSATION AREA (TOP HERO NEVER CLIPS) -->
+            <!-- SCROLLABLE CONVERSATION AREA -->
             <div class="chat-scroll-area">
                 <div class="chat-max-width">
-                    <!-- KIZA WELCOME HERO WITH ROBOT EMBLEM ORB -->
+                    <!-- KIZA WELCOME HERO WITH AUTO-ADAPTIVE ROBOT EMBLEM ORB -->
                     <div class="kiza-welcome-card">
                         <div class="core-assembly">
                             <canvas id="orbSpectrumCanvas" width="76" height="76"></canvas>
@@ -1827,7 +1838,7 @@
                         <input type="text" id="textInput" placeholder="Ask KIZA anything, or type / for tools...">
                         <button type="button" class="icon-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Spoken Voice">🔊</button>
                         <button type="button" class="icon-btn" id="micBtn" onclick="toggleSpeechRecognition()" title="Voice Input">🎤</button>
-                        <button type="button" class="chip-btn" id="wakeToggleBtn" style="width:auto; padding: 6px 11px; font-size: 11px;" onclick="toggleWakeWord()" title="Say 'Hello' for Hands-Free">🗣️ Wake: Off</button>
+                        <button type="button" class="chip-btn" id="wakeToggleBtn" style="width:auto; padding: 5px 10px; font-size: 10.5px;" onclick="toggleWakeWord()" title="Say 'Hello' for Hands-Free">🗣️ Wake: Off</button>
                         <button type="button" class="send-btn" onclick="submitCommand()">Send</button>
                     </div>
                 </div>
@@ -1845,52 +1856,128 @@
         const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
 
         // ==========================================================
-        // SMART LOGO AUTO-LOADER & NATIVE PWA INSTALLER ENGINE
+        // 1. REAL-TIME VISUAL VIEWPORT HEIGHT LOCK (NO BOTTOM CUTOFF!)
         // ==========================================================
-        (function initSmartLogoLoader() {
-            const candidates = ["logo.jpg", "logo.png", "logo.jpeg", "KIZA.jpg", "KIZA.png"];
-            function tryNext(idx) {
-                if (idx >= candidates.length) return;
-                const testImg = new Image();
-                testImg.onload = () => {
-                    document.querySelectorAll('img[src="logo.jpg"]').forEach(el => {
-                        el.src = candidates[idx];
-                    });
-                    const fav = document.querySelector('link[rel="icon"]');
-                    if (fav) fav.href = candidates[idx];
-                };
-                testImg.onerror = () => tryNext(idx + 1);
-                testImg.src = candidates[idx];
+        (function initAutoViewportAdapter() {
+            function syncViewportHeight() {
+                const vh = (window.visualViewport && window.visualViewport.height)
+                    ? Math.round(window.visualViewport.height)
+                    : window.innerHeight;
+                if (vh && vh > 100) {
+                    document.documentElement.style.setProperty('--app-height', `${vh}px`);
+                }
             }
-            window.addEventListener('DOMContentLoaded', () => tryNext(0));
+            syncViewportHeight();
+            window.addEventListener('resize', syncViewportHeight);
+            window.addEventListener('orientationchange', () => setTimeout(syncViewportHeight, 120));
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', syncViewportHeight);
+                window.visualViewport.addEventListener('scroll', syncViewportHeight);
+            }
+            window.addEventListener('DOMContentLoaded', syncViewportHeight);
         })();
 
+        // ==========================================================
+        // 2. AUTO-ADAPTIVE CANVAS LOGO CROPPER & PWA MANIFEST ENGINE
+        // ==========================================================
         let deferredPWAPrompt = null;
 
-        (function initPWASupport() {
-            try {
-                const manifestObj = {
-                    name: "KIZA — Kinda Intelligent Zippy Assistant",
-                    short_name: "KIZA",
-                    description: "Original AI Command Hub with Live Video, Screen Share, Code Sandbox & Cloud-Synced Personas.",
-                    start_url: window.location.href,
-                    display: "standalone",
-                    background_color: "#071324",
-                    theme_color: "#00f2fe",
-                    icons: [
-                        { src: new URL("logo.jpg", window.location.href).href, sizes: "192x192", type: "image/jpeg" },
-                        { src: new URL("logo.jpg", window.location.href).href, sizes: "512x512", type: "image/jpeg" }
-                    ]
-                };
-                const blob = new Blob([JSON.stringify(manifestObj)], { type: "application/json" });
-                const manifestURL = URL.createObjectURL(blob);
-                const linkEl = document.getElementById('kizaManifestLink');
-                if (linkEl) {
-                    fetch("manifest.json", { method: "HEAD" }).then(r => {
-                        if (!r.ok) linkEl.href = manifestURL;
-                    }).catch(() => { linkEl.href = manifestURL; });
+        (function initAutoAdaptiveLogoAndPWA() {
+            const candidates = ["logo.jpg", "logo.png", "logo.jpeg", "KIZA.jpg", "KIZA.png"];
+
+            function buildSquareAndCircularIcons(imgEl) {
+                try {
+                    const size = 512;
+                    const srcW = imgEl.naturalWidth || 512;
+                    const srcH = imgEl.naturalHeight || 512;
+                    const minDim = Math.min(srcW, srcH);
+                    // Slight 6% inward crop so any white/rectangular border on the source image is removed automatically
+                    const cropDim = minDim * 0.94;
+                    const sx = (srcW - cropDim) / 2;
+                    const sy = (srcH - cropDim) / 2;
+
+                    // A. Full-bleed square icon for OS Maskable PWA (eliminates Android/Windows white circle plate!)
+                    const sqCanvas = document.createElement('canvas');
+                    sqCanvas.width = size;
+                    sqCanvas.height = size;
+                    const sqCtx = sqCanvas.getContext('2d');
+                    sqCtx.fillStyle = "#071324";
+                    sqCtx.fillRect(0, 0, size, size);
+                    sqCtx.drawImage(imgEl, sx, sy, cropDim, cropDim, 0, 0, size, size);
+                    const maskableDataUrl = sqCanvas.toDataURL('image/png');
+
+                    // B. Perfect circular-clipped PNG for in-app emblems & favicons
+                    const circCanvas = document.createElement('canvas');
+                    circCanvas.width = size;
+                    circCanvas.height = size;
+                    const cCtx = circCanvas.getContext('2d');
+                    cCtx.beginPath();
+                    cCtx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+                    cCtx.closePath();
+                    cCtx.clip();
+                    cCtx.fillStyle = "#071324";
+                    cCtx.fillRect(0, 0, size, size);
+                    cCtx.drawImage(imgEl, sx, sy, cropDim, cropDim, 0, 0, size, size);
+                    const circularDataUrl = circCanvas.toDataURL('image/png');
+
+                    return { maskableDataUrl, circularDataUrl };
+                } catch (e) {
+                    return null;
                 }
-            } catch (e) {}
+            }
+
+            function attachDynamicPWAManifest(circularIconUrl, maskableIconUrl) {
+                try {
+                    const manifestObj = {
+                        name: "KIZA — Kinda Intelligent Zippy Assistant",
+                        short_name: "KIZA",
+                        description: "Original AI Command Hub with Live Video, Screen Share, Code Sandbox & Cloud-Synced Personas.",
+                        start_url: window.location.href,
+                        display: "standalone",
+                        orientation: "any",
+                        background_color: "#071324",
+                        theme_color: "#071324",
+                        icons: [
+                            { src: circularIconUrl, sizes: "192x192", type: "image/png", purpose: "any" },
+                            { src: circularIconUrl, sizes: "512x512", type: "image/png", purpose: "any" },
+                            { src: maskableIconUrl, sizes: "512x512", type: "image/png", purpose: "maskable" }
+                        ]
+                    };
+                    const blob = new Blob([JSON.stringify(manifestObj)], { type: "application/json" });
+                    const manifestURL = URL.createObjectURL(blob);
+                    const linkEl = document.getElementById('kizaManifestLink');
+                    if (linkEl) linkEl.href = manifestURL;
+                } catch (e) {}
+            }
+
+            function tryLoadLogoCandidate(idx) {
+                if (idx >= candidates.length) {
+                    const fallbackUrl = new URL("logo.jpg", window.location.href).href;
+                    attachDynamicPWAManifest(fallbackUrl, fallbackUrl);
+                    return;
+                }
+                const testImg = new Image();
+                testImg.crossOrigin = "anonymous";
+                testImg.onload = () => {
+                    const processed = buildSquareAndCircularIcons(testImg);
+                    const finalUiSrc = processed ? processed.circularDataUrl : candidates[idx];
+                    const finalMaskableSrc = processed ? processed.maskableDataUrl : new URL(candidates[idx], window.location.href).href;
+
+                    document.querySelectorAll('img[src="logo.jpg"]').forEach(el => {
+                        el.src = finalUiSrc;
+                    });
+                    const fav = document.getElementById('kizaFavicon');
+                    if (fav) fav.href = finalUiSrc;
+                    const appleFav = document.getElementById('kizaAppleIcon');
+                    if (appleFav) appleFav.href = finalMaskableSrc;
+
+                    attachDynamicPWAManifest(finalUiSrc, finalMaskableSrc);
+                };
+                testImg.onerror = () => tryLoadLogoCandidate(idx + 1);
+                testImg.src = candidates[idx];
+            }
+
+            window.addEventListener('DOMContentLoaded', () => tryLoadLogoCandidate(0));
 
             if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
                 try {
@@ -2080,11 +2167,9 @@
             safeSetItem('kiza_active_gem_clean', JSON.stringify(activeCustomGem));
         }
 
-        // Automatically syncs tablet-created local Gems up to PostgreSQL & pulls cloud Gems down to PC!
         async function syncUserGemsWithServer() {
             if (!currentUser || currentUser === "Guest") return;
             try {
-                // 1. Upload any local Gems on this device (e.g. tablet) to PostgreSQL so PC sees them
                 for (const localGem of customGemsList) {
                     if (localGem && localGem.id && localGem.name && localGem.prompt) {
                         await fetch(`${SERVER_URL}/api/gems`, {
@@ -2100,7 +2185,6 @@
                         });
                     }
                 }
-                // 2. Fetch the complete unified list of Gems for this account from PostgreSQL
                 const res = await fetch(`${SERVER_URL}/api/gems?user=${encodeURIComponent(currentUser)}`);
                 const data = await res.json();
                 if (data.success && Array.isArray(data.gems)) {
@@ -2489,8 +2573,8 @@
         };
 
         const DEFAULT_UPDATES_FALLBACK = [
-            { version: "v6.8", title: "Cloud-Synced Custom Personas, Mermaid Diagrams, KaTeX & Battery HUD", description: "Custom Personas now sync across all your devices via PostgreSQL! Added Mermaid flowcharts, KaTeX formulas, Live Battery HUD, and 6500-token Code Sandbox.", author: "Viyan Arora", date: "LIVE" },
-            { version: "v6.5", title: "Official KIZA Emblem & Responsive Workspace", description: "Added the official KIZA ('Kinda Intelligent Zippy Assistant') neon emblem across the Sign-In gate, Sidebar, Top Bar, and Audio-Reactive Core Orb.", author: "Viyan Arora", date: "ACTIVE" }
+            { version: "v7.0", title: "Auto-Adaptive Circular Logo & Dynamic Viewport Fit", description: "Added automatic offscreen canvas logo cropper for maskable PWA icons and real-time visualViewport height fitting so installed apps never clip at the bottom.", author: "Viyan Arora", date: "LIVE" },
+            { version: "v6.8", title: "Cloud-Synced Custom Personas, Mermaid Diagrams, KaTeX & Battery HUD", description: "Custom Personas now sync across all your devices via PostgreSQL! Added Mermaid flowcharts, KaTeX formulas, Live Battery HUD, and 6500-token Code Sandbox.", author: "Viyan Arora", date: "ACTIVE" }
         ];
 
         // ==========================================================
@@ -2674,7 +2758,7 @@
             const logBox = document.getElementById('actionLog');
             while ((match = codeRegex.exec(rawText)) !== null) {
                 let lang = (match[1] || "html").toLowerCase().trim();
-                if (lang === "mermaid") continue; // Handled by Mermaid renderer
+                if (lang === "mermaid") continue;
 
                 let codeContent = match[2]
                     .replace(/https:\s*•\s*/g, 'https://')
@@ -2743,7 +2827,6 @@
                 htmlToRun = `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:20px;"><h3>JavaScript Console Output:</h3><pre id="out"></pre><script>const origLog = console.log; console.log = (...a) => { document.getElementById('out').innerText += a.join(' ') + '\\n'; origLog(...a); }; try { ${item.code} } catch(e) { document.getElementById('out').innerText += 'Error: ' + e.message; }<\/script></body></html>`;
             }
 
-            // Inject runtime error catcher inside iframe so syntax/JS errors trigger the Auto-Fix banner
             const errorHook = `<script>window.onerror = function(msg, src, line) { window.parent.postMessage({ type: 'kiza_sandbox_error', message: msg + ' (Line ' + line + ')' }, '*'); };<\/script>`;
             if (htmlToRun.includes("<head>")) {
                 htmlToRun = htmlToRun.replace("<head>", "<head>" + errorHook);
@@ -3198,7 +3281,7 @@
             if (webImageCache[cleanQ]) return webImageCache[cleanQ];
 
             try {
-                const wikiUrl = `[https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=$](https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=$){encodeURIComponent(cleanQ)}&gsrlimit=1&prop=pageimages&pithumbsize=600&format=json&origin=*`;
+                const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(cleanQ)}&gsrlimit=1&prop=pageimages&pithumbsize=600&format=json&origin=*`;
                 const res = await fetch(wikiUrl);
                 const data = await res.json();
                 if (data && data.query && data.query.pages) {
@@ -3210,7 +3293,7 @@
                 }
             } catch (e) {}
 
-            const fallbackUrl = `[https://image.pollinations.ai/prompt/$](https://image.pollinations.ai/prompt/$){encodeURIComponent(cleanQ + " clean educational diagram illustration high quality")}?width=640&height=380&nologo=true`;
+            const fallbackUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanQ + " clean educational diagram illustration high quality")}?width=640&height=380&nologo=true`;
             webImageCache[cleanQ] = fallbackUrl;
             return fallbackUrl;
         }
@@ -3227,7 +3310,7 @@
 
         function getVisualImageUrlSync(queryStr) {
             const cleanQ = (queryStr || "science diagram").replace(/[^a-zA-Z0-9\s]/g, '').trim();
-            return webImageCache[cleanQ] || `[https://image.pollinations.ai/prompt/$](https://image.pollinations.ai/prompt/$){encodeURIComponent(cleanQ + " clean educational illustration")}?width=640&height=380&nologo=true`;
+            return webImageCache[cleanQ] || `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanQ + " clean educational illustration")}?width=640&height=380&nologo=true`;
         }
 
         function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark", layoutFormat = "infographic") {
@@ -3768,7 +3851,7 @@
             }
             if (cleanExt === "doc" || cleanExt === "docx") {
                 const viewportHtml = document.getElementById('filePreviewViewport').innerHTML;
-                const htmlDoc = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='[http://www.w3.org/TR/REC-html40](http://www.w3.org/TR/REC-html40)'><head><meta charset='utf-8'><title>${topic}</title></head><body>${viewportHtml}</body></html>`;
+                const htmlDoc = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>${topic}</title></head><body>${viewportHtml}</body></html>`;
                 const blob = new Blob(['\ufeff', htmlDoc], { type: 'application/msword' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -5718,7 +5801,6 @@
             registerCurrentDeviceOnServer();
             refreshSidebarChatSessions();
             renderCustomGemsBar();
-            // Automatically syncs Personas/Gems created on your tablet with your PC!
             syncUserGemsWithServer();
 
             if (playGreeting && replyMsg) {
