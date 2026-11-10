@@ -2,1172 +2,1015 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>KIZA LIVE — Real-Time Video, Screen Share & Voice Call</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#050811">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>KIZA Live — Voice, Video & Screen Call</title>
+    <link rel="icon" type="image/png" id="liveFavicon" href="logo.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #030611;
+            --app-height: 100%;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --bg-deep: #050811;
+            --card-surface: rgba(15, 23, 42, 0.92);
+            --border-cyan: rgba(0, 242, 254, 0.32);
             --accent-cyan: #00f2fe;
-            --accent-purple: #a855f7;
-            --accent-green: #10b981;
-            --danger: #f43f5e;
-            --warning: #fbbf24;
-            --glass-bg: rgba(11, 16, 33, 0.78);
-            --glass-border: rgba(0, 242, 254, 0.32);
+            --accent-blue: #0284c7;
+            --danger: #ef4444;
+            --success: #10b981;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+        }
 
-        body {
-            background: radial-gradient(circle at 50% 35%, #130b2e 0%, #050816 60%, #020308 100%);
-            color: #f8fafc;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            height: 100vh;
-            width: 100vw;
+        /* SAFARI & MOBILE VIEWPORT LOCK — NEVER SCROLLS OR CLIPS BOTTOM */
+        html, body {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
             overflow: hidden;
+            overscroll-behavior: none;
+            background: radial-gradient(circle at 50% 30%, #0c1938 0%, #050811 75%);
+            color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            touch-action: manipulation;
+        }
+
+        .live-shell {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            position: relative;
-            user-select: none;
-        }
-
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            background-image:
-                linear-gradient(to right, rgba(0, 242, 254, 0.04) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(168, 85, 247, 0.04) 1px, transparent 1px);
-            background-size: 42px 42px;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        #liveAmbientGlow {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 2;
-            opacity: 0;
-            transition: opacity 0.12s ease-out, transform 0.12s ease-out;
-            background: radial-gradient(circle at 50% 42%, rgba(0, 242, 254, 0.28) 0%, rgba(168, 85, 247, 0.18) 40%, transparent 74%);
-        }
-
-        .top-bar {
             width: 100%;
-            max-width: 980px;
-            padding: 18px 24px;
+            height: var(--app-height, 100%);
+            max-height: var(--app-height, 100%);
+            padding: calc(8px + var(--safe-top)) 12px max(14px, calc(var(--safe-bottom) + 10px)) 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* TOP STATUS BAR */
+        .top-hud {
+            width: 100%;
+            max-width: 660px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
             z-index: 20;
-            gap: 12px;
-            flex-wrap: wrap;
         }
 
-        .call-badge {
+        .hud-pill {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            padding: 8px 16px;
+            gap: 6px;
+            padding: 5px 11px;
             border-radius: 999px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 11px;
-            letter-spacing: 1.5px;
+            background: var(--card-surface);
+            border: 1px solid var(--border-cyan);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(10px, 2.5vw, 11.5px);
             font-weight: 700;
-            color: var(--accent-cyan);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45);
+            letter-spacing: 0.4px;
+            white-space: nowrap;
         }
 
         .live-dot {
-            width: 9px;
-            height: 9px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            background: var(--accent-green);
-            box-shadow: 0 0 12px var(--accent-green);
-            animation: blinkDot 1.4s infinite alternate;
+            background: var(--success);
+            flex-shrink: 0;
+            animation: pulseOpacity 1.4s infinite alternate;
         }
-        @keyframes blinkDot {
-            from { opacity: 0.45; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1.15); }
-        }
+        @keyframes pulseOpacity { from { opacity: 1; } to { opacity: 0.35; } }
 
-        .top-right-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .persona-pill {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            color: #e2e8f0;
-            padding: 8px 14px;
-            border-radius: 999px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11.5px;
-            font-weight: 600;
-            outline: none;
-            cursor: pointer;
-        }
-
-        .pip-camera-card {
-            position: fixed;
-            top: 82px;
-            right: 24px;
-            width: 230px;
-            height: 158px;
-            background: #050811;
-            border: 1.5px solid var(--glass-border);
-            border-radius: 16px;
+        /* FLOATING CAMERA / SCREEN PIP (HARDWARE ACCELERATED) */
+        .vision-pip {
+            position: absolute;
+            top: calc(50px + var(--safe-top));
+            right: 14px;
+            width: clamp(96px, 24vw, 142px);
+            height: clamp(72px, 18vw, 106px);
+            border-radius: 12px;
             overflow: hidden;
-            z-index: 25;
-            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.65), 0 0 20px rgba(0, 242, 254, 0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
+            border: 1.5px solid var(--accent-cyan);
+            background: #090d16;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+            z-index: 30;
+            transform: translate3d(0, 0, 0);
         }
-        .pip-camera-card.screen-mode {
-            width: 290px;
-            height: 175px;
-            border-color: var(--accent-green);
-            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.75), 0 0 25px rgba(16, 185, 129, 0.35);
-        }
-        .pip-camera-card video {
+        .vision-pip video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transform: scaleX(-1);
+            display: block;
         }
-        .pip-camera-card.rear-lens video,
-        .pip-camera-card.screen-mode video {
-            transform: scaleX(1);
-            object-fit: contain;
-            background: #02040a;
-        }
-        .pip-label {
+        .vision-badge {
             position: absolute;
-            bottom: 8px;
-            left: 10px;
-            background: rgba(3, 6, 17, 0.82);
-            backdrop-filter: blur(6px);
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 9.5px;
+            bottom: 4px;
+            left: 4px;
+            right: 4px;
+            background: rgba(5, 8, 17, 0.88);
             color: var(--accent-cyan);
-            border: 1px solid rgba(0, 242, 254, 0.3);
-        }
-        .vision-scan-line {
-            position: absolute;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
-            box-shadow: 0 0 8px var(--accent-cyan);
-            animation: scanCam 3s linear infinite;
-            pointer-events: none;
-        }
-        @keyframes scanCam {
-            0% { top: 5%; opacity: 0.2; }
-            50% { top: 92%; opacity: 0.85; }
-            100% { top: 5%; opacity: 0.2; }
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8.5px;
+            font-weight: 700;
+            padding: 2px 5px;
+            border-radius: 5px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
+        /* CENTER STAGE — AUTOMATICALLY SHRINKS ON SMALL SCREENS */
         .center-stage {
-            flex: 1;
+            flex: 1 1 0%;
+            min-height: 0;
+            width: 100%;
+            max-width: 620px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 20px;
+            gap: clamp(6px, 1.4vh, 12px);
             z-index: 10;
-            width: 100%;
-            max-width: 780px;
-            padding: 0 20px;
-            text-align: center;
+            padding: 2px 0;
+            overflow: hidden;
         }
 
         .orb-wrapper {
             position: relative;
-            width: 260px;
-            height: 260px;
+            width: clamp(104px, 19vh, 175px);
+            height: clamp(104px, 19vh, 175px);
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
+            flex-shrink: 0;
+            transform: translate3d(0, 0, 0);
         }
 
         #liveSpectrumCanvas {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 260px;
-            height: 260px;
+            inset: 0;
+            width: 100%;
+            height: 100%;
             pointer-events: none;
-            z-index: 6;
+            z-index: 3;
         }
-
-        .live-ring {
-            position: absolute;
-            border-radius: 50%;
-            pointer-events: none;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        .l-ring-1 {
-            width: 175px;
-            height: 175px;
-            border: 2px dashed rgba(0, 242, 254, 0.55);
-            border-top: 3px solid var(--accent-cyan);
-            animation: spinCW 8s linear infinite;
-        }
-        .l-ring-2 {
-            width: 212px;
-            height: 212px;
-            border: 1.5px solid rgba(168, 85, 247, 0.35);
-            border-bottom: 3px dashed var(--accent-purple);
-            animation: spinCCW 12s linear infinite;
-        }
-        .l-ring-3 {
-            width: 246px;
-            height: 246px;
-            border: 1px dashed rgba(0, 242, 254, 0.25);
-            border-left: 2.5px solid var(--accent-cyan);
-            animation: spinCW 18s linear infinite;
-        }
-
-        @keyframes spinCW { 100% { transform: rotate(360deg); } }
-        @keyframes spinCCW { 100% { transform: rotate(-360deg); } }
 
         .live-orb {
-            width: 124px;
-            height: 124px;
+            width: 68%;
+            height: 68%;
             border-radius: 50%;
-            background: radial-gradient(circle at 32% 32%, #ffffff 0%, #38bdf8 28%, #0284c7 62%, #082f49 100%);
-            box-shadow: 0 0 60px rgba(0, 242, 254, 0.75), 0 0 110px rgba(168, 85, 247, 0.35), inset 0 0 25px rgba(255, 255, 255, 0.75);
-            transition: transform 0.06s ease-out, background 0.3s ease, box-shadow 0.3s ease;
-            z-index: 5;
-        }
-
-        .live-orb.state-listening {
-            background: radial-gradient(circle at 32% 32%, #ecfdf5 0%, #34d399 30%, #059669 65%, #022c22 100%);
-            box-shadow: 0 0 65px rgba(16, 185, 129, 0.8), 0 0 110px rgba(0, 242, 254, 0.35), inset 0 0 24px #ffffff;
-        }
-        .live-orb.state-thinking {
-            background: radial-gradient(circle at 32% 32%, #fef3c7 0%, #fbbf24 32%, #d97706 68%, #451a03 100%);
-            box-shadow: 0 0 70px rgba(251, 191, 36, 0.85), 0 0 120px rgba(245, 158, 11, 0.45), inset 0 0 24px #ffffff;
-            animation: pulseThink 0.7s ease-in-out infinite alternate;
-        }
-        .live-orb.state-speaking {
-            background: radial-gradient(circle at 32% 32%, #f3e8ff 0%, #c084fc 30%, #7e22ce 65%, #2e1065 100%);
-            box-shadow: 0 0 80px rgba(168, 85, 247, 0.95), 0 0 135px rgba(0, 242, 254, 0.5), inset 0 0 28px #ffffff;
-        }
-
-        @keyframes pulseThink {
-            from { transform: scale(0.92); }
-            to { transform: scale(1.08); }
-        }
-
-        .call-state-pill {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 13px;
-            font-weight: 800;
-            letter-spacing: 2.5px;
-            color: var(--accent-cyan);
-            background: rgba(0, 242, 254, 0.1);
-            border: 1px solid rgba(0, 242, 254, 0.35);
-            padding: 7px 20px;
-            border-radius: 999px;
-            text-transform: uppercase;
-            text-shadow: 0 0 12px rgba(0, 242, 254, 0.45);
-        }
-
-        .transcript-box {
-            min-height: 84px;
-            max-height: 150px;
-            overflow-y: auto;
-            width: 100%;
-            background: var(--glass-bg);
-            backdrop-filter: blur(18px);
-            border: 1px solid var(--glass-border);
-            border-radius: 18px;
-            padding: 16px 22px;
+            border: 2.5px solid var(--accent-cyan);
+            box-shadow: 0 0 28px rgba(0, 242, 254, 0.45);
+            overflow: hidden;
             display: flex;
-            flex-direction: column;
-            gap: 8px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.55);
-        }
-
-        .user-caption {
-            font-size: 13px;
-            color: #94a3b8;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .kiza-caption {
-            font-size: 16px;
-            font-weight: 600;
-            color: #ffffff;
-            line-height: 1.5;
-        }
-
-        .barge-in-hint {
-            font-size: 11.5px;
-            color: #94a3b8;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .bottom-dock {
-            width: 100%;
-            max-width: 740px;
-            padding: 16px 20px 26px 20px;
-            display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 12px;
-            z-index: 20;
+            justify-content: center;
+            background: radial-gradient(circle at 35% 30%, #38bdf8 0%, #4f46e5 55%, #071324 100%);
+            will-change: transform;
+            transition: transform 0.08s linear;
+            z-index: 2;
+        }
+        .live-orb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
         }
 
-        .quick-text-row {
-            display: flex;
-            width: 100%;
-            gap: 8px;
-        }
-        .quick-text-row input {
-            flex: 1;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            color: #ffffff;
-            padding: 11px 16px;
+        .state-pill {
+            padding: 5px 14px;
             border-radius: 999px;
-            font-size: 13px;
+            background: rgba(2, 132, 199, 0.22);
+            border: 1px solid var(--border-cyan);
+            color: var(--accent-cyan);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(10px, 1.6vh, 11.5px);
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .subtitle-card {
+            width: 100%;
+            background: var(--card-surface);
+            border: 1px solid var(--border-cyan);
+            border-radius: 16px;
+            padding: clamp(8px, 1.5vh, 14px) 14px;
+            text-align: center;
+            font-size: clamp(13px, 1.9vh, 15.5px);
+            font-weight: 600;
+            line-height: 1.42;
+            color: #f8fafc;
+            max-height: clamp(68px, 18vh, 140px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+        }
+
+        .helper-caption {
+            font-size: 10.5px;
+            color: #94a3b8;
+            text-align: center;
+            line-height: 1.3;
+            padding: 0 6px;
+            flex-shrink: 0;
+        }
+
+        /* FLOATING HARDWARE SELECTOR MODAL */
+        #liveDeviceDrawer {
+            display: none;
+            position: absolute;
+            bottom: calc(145px + var(--safe-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f172a;
+            border: 1.5px solid var(--accent-cyan);
+            border-radius: 16px;
+            padding: 12px 14px;
+            width: 92%;
+            max-width: 360px;
+            z-index: 60;
+            flex-direction: column;
+            gap: 7px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.75);
+        }
+        #liveDeviceDrawer select {
+            background: #050811;
+            color: #f8fafc;
+            border: 1px solid var(--border-cyan);
+            padding: 7px 9px;
+            border-radius: 8px;
+            font-size: 12px;
+            width: 100%;
             outline: none;
         }
-        .quick-text-row button {
-            background: linear-gradient(135deg, #00f2fe 0%, #2563eb 100%);
+
+        /* BOTTOM CONTROLS DOCK — GUARANTEED NO CUTOFF IN SAFARI OR PWA */
+        .bottom-dock {
+            width: 100%;
+            max-width: 620px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(6px, 1.1vh, 9px);
+            flex-shrink: 0;
+            z-index: 25;
+            padding-bottom: 2px;
+        }
+
+        .text-bar {
+            width: 100%;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .text-bar input {
+            flex: 1;
+            min-width: 0;
+            background: var(--card-surface);
+            border: 1px solid var(--border-cyan);
+            color: #f8fafc;
+            padding: 8px 13px;
+            border-radius: 999px;
+            font-size: 14px; /* 14px+ prevents iOS Safari auto-zoom glitch */
+            outline: none;
+        }
+        .text-bar button {
+            background: linear-gradient(135deg, #00f2fe 0%, #3b82f6 100%);
             border: none;
-            color: #030611;
-            font-family: 'Orbitron', sans-serif;
+            color: #050811;
             font-weight: 800;
-            font-size: 11px;
-            padding: 0 20px;
+            font-size: 11.5px;
+            padding: 8px 16px;
             border-radius: 999px;
             cursor: pointer;
+            flex-shrink: 0;
         }
 
-        .call-controls-row {
+        .action-dock-row {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 14px;
-            flex-wrap: wrap;
+            gap: clamp(6px, 2vw, 11px);
+            width: 100%;
+            flex-wrap: nowrap;
         }
 
-        .ctrl-btn {
-            width: 54px;
-            height: 54px;
+        .ctrl-circle {
+            width: clamp(38px, 5.6vh, 46px);
+            height: clamp(38px, 5.6vh, 46px);
             border-radius: 50%;
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            border: 1.5px solid var(--glass-border);
-            color: #ffffff;
-            font-size: 20px;
-            cursor: pointer;
-            display: flex;
+            background: var(--card-surface);
+            border: 1.5px solid var(--border-cyan);
+            color: #f8fafc;
+            font-size: clamp(15px, 2.2vh, 17px);
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            cursor: pointer;
+            transition: transform 0.15s ease, border-color 0.15s ease;
+            flex-shrink: 0;
+            padding: 0;
         }
-        .ctrl-btn:hover {
-            transform: translateY(-2px) scale(1.05);
+        .ctrl-circle.active {
             border-color: var(--accent-cyan);
-            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+            background: rgba(0, 242, 254, 0.18);
         }
-        .ctrl-btn.active-screen {
-            background: rgba(16, 185, 129, 0.25);
-            border-color: var(--accent-green);
-            box-shadow: 0 0 22px rgba(16, 185, 129, 0.6);
-        }
-        .ctrl-btn.muted {
-            background: rgba(244, 63, 94, 0.22);
+        .ctrl-circle.muted {
             border-color: var(--danger);
             color: var(--danger);
         }
 
-        .end-call-btn {
-            height: 54px;
-            padding: 0 26px;
-            border-radius: 999px;
-            background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%);
+        .hangup-pill {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             border: none;
             color: #ffffff;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 12px;
+            font-family: inherit;
+            font-size: clamp(11.5px, 1.8vh, 13px);
             font-weight: 800;
-            letter-spacing: 1.5px;
+            letter-spacing: 0.5px;
+            height: clamp(38px, 5.6vh, 46px);
+            padding: 0 clamp(14px, 3.5vw, 22px);
+            border-radius: 999px;
             cursor: pointer;
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.45);
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 8px 25px rgba(244, 63, 94, 0.55);
-            transition: all 0.2s ease;
-        }
-        .end-call-btn:hover {
-            transform: translateY(-2px) scale(1.04);
-            box-shadow: 0 12px 32px rgba(244, 63, 94, 0.8);
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
-        @media (max-width: 680px) {
-            .pip-camera-card, .pip-camera-card.screen-mode {
-                width: 140px;
-                height: 100px;
-                top: 74px;
-                right: 14px;
-            }
-            .orb-wrapper {
-                width: 200px;
-                height: 200px;
-            }
-            #liveSpectrumCanvas { width: 200px; height: 200px; }
-            .live-orb { width: 98px; height: 98px; }
-            .l-ring-1 { width: 140px; height: 140px; }
-            .l-ring-2 { width: 170px; height: 170px; }
-            .l-ring-3 { width: 196px; height: 196px; }
+        @media (max-height: 640px) {
+            .helper-caption { display: none; }
+            .orb-wrapper { width: 92px; height: 92px; }
+            .subtitle-card { max-height: 64px; font-size: 12.5px; padding: 6px 10px; }
         }
     </style>
 </head>
 <body>
+    <input type="file" id="mobileScreenShareInput" accept="image/*" style="display:none;">
 
-    <div id="liveAmbientGlow"></div>
-
-    <div class="top-bar">
-        <div class="call-badge">
-            <span class="live-dot" id="connDot"></span>
-            <span id="callHeaderTitle">KIZA LIVE CALL • 00:00</span>
+    <div class="live-shell" id="liveShell">
+        <!-- TOP HUD -->
+        <div class="top-hud">
+            <div class="hud-pill">
+                <span class="live-dot"></span>
+                <span id="liveHeaderTitle">KIZA LIVE • 00:00</span>
+            </div>
+            <div class="hud-pill">
+                <span id="personaLabel">UK • Witty</span>
+                <span id="pingBadge" style="color:#10b981; font-size:10px;">•⚡Online</span>
+            </div>
         </div>
 
-        <div class="top-right-controls">
-            <select id="livePersonaSelect" class="persona-pill">
-                <option value="normal">🟢 Normal (UK • Witty)</option>
-                <option value="helpful">💼 Executive (IN • Polite)</option>
-                <option value="energetic">⚡ Energetic (US • Fast)</option>
-                <option value="security">🛡️ Security (Tactical)</option>
-            </select>
-        </div>
-    </div>
-
-    <div class="pip-camera-card" id="pipCard">
-        <video id="liveVideo" autoplay playsinline muted></video>
-        <canvas id="captureCanvas" width="800" height="450" style="display:none;"></canvas>
-        <div class="vision-scan-line" id="scanLine"></div>
-        <div class="pip-label" id="camBadgeLabel">👁️ VISION ACTIVE</div>
-    </div>
-
-    <div class="center-stage">
-        <div class="orb-wrapper" onclick="triggerManualBargeIn()" title="Tap Orb anytime to interrupt KIZA and speak immediately">
-            <canvas id="liveSpectrumCanvas" width="260" height="260"></canvas>
-            <div class="live-ring l-ring-1"></div>
-            <div class="live-ring l-ring-2"></div>
-            <div class="live-ring l-ring-3"></div>
-            <div id="liveOrb" class="live-orb state-listening"></div>
+        <!-- FLOATING CAMERA / SCREEN PIP -->
+        <div class="vision-pip">
+            <video id="camPreview" autoplay playsinline webkit-playsinline muted></video>
+            <!-- Lightweight 320x240 buffer canvas for zero-lag frame encoding -->
+            <canvas id="captureCanvas" width="320" height="240" style="display:none;"></canvas>
+            <div class="vision-badge" id="visionModeBadge">👁️ CAM VISION</div>
         </div>
 
-        <div id="callStateBanner" class="call-state-pill">🟢 LISTENING TO YOU...</div>
+        <!-- CENTER STAGE -->
+        <div class="center-stage">
+            <div class="orb-wrapper">
+                <canvas id="liveSpectrumCanvas" width="160" height="160"></canvas>
+                <div class="live-orb" id="liveOrb">
+                    <img id="liveLogoImg" src="logo.jpg" alt="KIZA" onerror="this.style.display='none'">
+                </div>
+            </div>
 
-        <div class="transcript-box">
-            <div class="user-caption" id="userLiveCaption">🎤 Speak anytime, show an object on camera, or click 🖥️ to share your screen...</div>
-            <div class="kiza-caption" id="kizaLiveCaption">Connecting to KIZA Live Neural Core...</div>
+            <div class="state-pill" id="liveStateText">🎙️ KIZA LISTENING...</div>
+
+            <div class="subtitle-card" id="aiSubtitleBox">
+                Connecting live voice and vision link...
+            </div>
+
+            <div class="helper-caption">
+                💡 Tap 🖥️ to share screen/notes, ⚙️ to switch mic/camera, or ✋ to interrupt KIZA.
+            </div>
         </div>
 
-        <div class="barge-in-hint">
-            💡 <b>Camera + Screen Vision Active:</b> Click <b>🖥️</b> below to let KIZA see your code, browser, or study notes live!
+        <!-- FLOATING MIC & CAMERA SELECTOR DRAWER -->
+        <div id="liveDeviceDrawer">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:700; color:var(--accent-cyan);">
+                <span>🎛️ Camera & Microphone</span>
+                <button type="button" style="background:none; border:none; color:#94a3b8; font-size:15px; cursor:pointer;" onclick="toggleLiveDeviceDrawer()">✕</button>
+            </div>
+            <label style="font-size:10.5px; color:#cbd5e1; font-weight:600;">📷 Select Camera:</label>
+            <select id="liveCamSelect" onchange="switchLiveCameraDevice(this.value)"></select>
+            <label style="font-size:10.5px; color:#cbd5e1; font-weight:600;">🎤 Select Microphone:</label>
+            <select id="liveMicSelect" onchange="switchLiveMicDevice(this.value)"></select>
         </div>
-    </div>
 
-    <div class="bottom-dock">
-        <div class="quick-text-row">
-            <input type="text" id="fallbackTextInput" placeholder="Or type a message during the call and press Enter...">
-            <button type="button" onclick="sendTypedLiveMessage()">SEND</button>
-        </div>
+        <!-- BOTTOM CONTROLS DOCK (SINGLE UNIFIED ROW FOR CONTROLS + END CALL SO IT NEVER CUTS OFF) -->
+        <div class="bottom-dock">
+            <div class="text-bar">
+                <input type="text" id="liveTextInput" placeholder="Type a message during the call..." autocomplete="off">
+                <button type="button" onclick="sendTypedMessage()">SEND</button>
+            </div>
 
-        <div class="call-controls-row">
-            <button type="button" class="ctrl-btn" id="micMuteBtn" onclick="toggleMicMute()" title="Mute / Unmute Microphone">🎤</button>
-            <button type="button" class="ctrl-btn" id="camMuteBtn" onclick="toggleCamStream()" title="Toggle Camera Vision">📷</button>
-            <button type="button" class="ctrl-btn" id="screenShareBtn" onclick="toggleScreenShare()" title="Share Your Screen / Window with KIZA">🖥️</button>
-            <button type="button" class="ctrl-btn" id="flipCamBtn" onclick="flipLiveCamera()" title="Flip Front / Back Camera">🔄</button>
-            <button type="button" class="ctrl-btn" id="bargeInBtn" onclick="triggerManualBargeIn()" title="Interrupt KIZA Speech Now">✋</button>
-            <button type="button" class="end-call-btn" onclick="endLiveCall()">📞 END CALL</button>
+            <div class="action-dock-row">
+                <button type="button" class="ctrl-circle active" id="micBtn" onclick="toggleMic()" title="Mute / Unmute Mic">🎤</button>
+                <button type="button" class="ctrl-circle active" id="camBtn" onclick="toggleCam()" title="Camera On / Off">📷</button>
+                <button type="button" class="ctrl-circle" id="screenBtn" onclick="toggleScreenShare()" title="Share Screen or Rear Cam">🖥️</button>
+                <button type="button" class="ctrl-circle" onclick="flipCamera()" title="Flip Camera">🔄</button>
+                <button type="button" class="ctrl-circle" onclick="toggleLiveDeviceDrawer()" title="Select Mic & Camera">⚙️</button>
+                <button type="button" class="ctrl-circle" onclick="interruptKiza()" title="Interrupt KIZA">✋</button>
+                <button type="button" class="hangup-pill" onclick="endLiveCall()" title="End Live Call">
+                    <span>📞 END</span>
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        const HTTP_SERVER = "https://kiza-brain.onrender.com";
         const WS_LIVE_URL = "wss://kiza-brain.onrender.com/api/live/call";
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const currentUser = urlParams.get('user') || localStorage.getItem('kiza_user') || "User";
-        const currentRole = urlParams.get('role') || localStorage.getItem('kiza_role') || "USER";
-        const initialPersona = urlParams.get('persona') || "normal";
+        // ==========================================================
+        // 1. SAFARI & MOBILE VISUAL VIEWPORT LOCK (ZERO BOTTOM CUTOFF)
+        // ==========================================================
+        (function initSafariViewportLock() {
+            function syncViewport() {
+                const vv = window.visualViewport;
+                const h = vv ? Math.round(vv.height) : window.innerHeight;
+                if (h && h > 120) {
+                    document.documentElement.style.setProperty('--app-height', `${h}px`);
+                }
+                if (window.scrollY !== 0 || window.scrollX !== 0) {
+                    window.scrollTo(0, 0);
+                }
+            }
+            syncViewport();
+            window.addEventListener('resize', syncViewport, { passive: true });
+            window.addEventListener('orientationchange', () => setTimeout(syncViewport, 150), { passive: true });
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', syncViewport, { passive: true });
+                window.visualViewport.addEventListener('scroll', syncViewport, { passive: true });
+            }
+            document.addEventListener('touchend', () => {
+                if (window.scrollY !== 0) window.scrollTo(0, 0);
+            }, { passive: true });
+        })();
 
-        document.getElementById('livePersonaSelect').value = initialPersona;
+        // ==========================================================
+        // 2. AUTO-CIRCULAR LOGO CROPPER
+        // ==========================================================
+        (function initCircularLiveLogo() {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.onload = () => {
+                try {
+                    const c = document.createElement('canvas');
+                    c.width = 256; c.height = 256;
+                    const ctx = c.getContext('2d');
+                    const minDim = Math.min(img.naturalWidth || 256, img.naturalHeight || 256) * 0.94;
+                    const sx = ((img.naturalWidth || 256) - minDim) / 2;
+                    const sy = ((img.naturalHeight || 256) - minDim) / 2;
+                    ctx.beginPath();
+                    ctx.arc(128, 128, 128, 0, Math.PI * 2);
+                    ctx.closePath();
+                    ctx.clip();
+                    ctx.fillStyle = "#071324";
+                    ctx.fillRect(0, 0, 256, 256);
+                    ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, 256, 256);
+                    const dataUrl = c.toDataURL('image/png');
+                    const logoEl = document.getElementById('liveLogoImg');
+                    if (logoEl) logoEl.src = dataUrl;
+                    const fav = document.getElementById('liveFavicon');
+                    if (fav) fav.href = dataUrl;
+                } catch (e) {}
+            };
+            img.src = "logo.jpg";
+        })();
 
-        let liveWs = null;
-        let wsReady = false;
+        const params = new URLSearchParams(window.location.search);
+        const currentUser = params.get("user") || localStorage.getItem("kiza_user") || "User";
+        const currentPersona = params.get("persona") || "normal";
+
+        const personaNames = {
+            normal: "UK • Witty",
+            helpful: "IN • Warm",
+            energetic: "US • Fast",
+            security: "Security"
+        };
+        document.getElementById('personaLabel').innerText = personaNames[currentPersona] || "UK • Witty";
+
+        let ws = null;
         let callSeconds = 0;
-
-        let mediaStream = null;
-        let screenStream = null;
+        let micActive = true;
+        let camActive = true;
         let isScreenSharing = false;
+        let camStream = null;
+        let screenStream = null;
+        let liveMicStream = null;
         let videoDevices = [];
-        let currentCamIdx = 0;
-        let isCamOn = true;
-        let isMicMuted = false;
+        let audioDevices = [];
+        let camIdx = 0;
+        let livePreferredCamId = localStorage.getItem('kiza_pref_cam_id') || "";
+        let livePreferredMicId = localStorage.getItem('kiza_pref_mic_id') || "";
 
         let recognition = null;
         let isKizaSpeaking = false;
-        let isKizaThinking = false;
-        let kizaAudio = null;
-        let fallbackSpeechTimer = null;
-
+        let isWaitingResponse = false;
+        let currentAudio = null;
         let audioCtx = null;
-        let kizaAnalyserFrame = null;
-        let micVadContext = null;
-        let micVadAnalyser = null;
-
-        let latestFrameBase64 = null;
-        let liveSessionId = "live_call_" + Date.now();
-
-        const PERSONA_RATES = {
-            normal: 1.05,
-            helpful: 1.06,
-            energetic: 1.16,
-            security: 0.96
-        };
+        let lastPingSentAt = 0;
 
         setInterval(() => {
             callSeconds++;
             const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
             const secs = String(callSeconds % 60).padStart(2, '0');
-            const cleanName = currentUser.replace(/\s*\((master owner|owner|admin|mod|moderator|user|operative|you)\)/gi, '').trim().toUpperCase();
-            document.getElementById('callHeaderTitle').innerText = `KIZA LIVE • ${cleanName} • ${mins}:${secs}`;
+            const shortUser = currentUser.split(' ')[0].toUpperCase();
+            document.getElementById('liveHeaderTitle').innerText = `KIZA LIVE • ${shortUser} • ${mins}:${secs}`;
         }, 1000);
 
-        // ==========================================================
-        // CAMERA & REAL-TIME SCREEN SHARE VISION ENGINE
-        // ==========================================================
-        async function initLiveCamera() {
-            if (isScreenSharing) return;
+        // Unlock Safari / iOS AudioContext on first tap anywhere
+        function unlockSafariAudio() {
             try {
-                if (mediaStream) {
-                    mediaStream.getTracks().forEach(t => t.stop());
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+            } catch (e) {}
+        }
+        document.addEventListener('touchstart', unlockSafariAudio, { once: true, passive: true });
+        document.addEventListener('click', unlockSafariAudio, { once: true, passive: true });
+
+        // ==========================================================
+        // 3. CAMERA, MICROPHONE & HARDWARE SELECTOR ENGINE
+        // ==========================================================
+        async function populateLiveHardwareSelectors() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+            try {
+                const devs = await navigator.mediaDevices.enumerateDevices();
+                videoDevices = devs.filter(d => d.kind === 'videoinput');
+                audioDevices = devs.filter(d => d.kind === 'audioinput');
+
+                const camSel = document.getElementById('liveCamSelect');
+                if (camSel) {
+                    camSel.innerHTML = '';
+                    videoDevices.forEach((d, i) => {
+                        const opt = document.createElement('option');
+                        opt.value = d.deviceId;
+                        opt.textContent = d.label || `Camera ${i + 1}`;
+                        if (d.deviceId === livePreferredCamId) opt.selected = true;
+                        camSel.appendChild(opt);
+                    });
                 }
-                mediaStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
-                    audio: false
-                });
-                const videoEl = document.getElementById('liveVideo');
-                videoEl.srcObject = mediaStream;
-                document.getElementById('pipCard').classList.remove('screen-mode');
-                videoDevices = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
-                document.getElementById('camBadgeLabel').innerText = "👁️ CAM VISION";
-                document.getElementById('scanLine').style.display = "block";
-                isCamOn = true;
-                document.getElementById('camMuteBtn').classList.remove('muted');
-            } catch (e) {
-                isCamOn = false;
-                document.getElementById('camBadgeLabel').innerText = "📷 CAM OFFLINE";
-                document.getElementById('scanLine').style.display = "none";
-            }
+
+                const micSel = document.getElementById('liveMicSelect');
+                if (micSel) {
+                    micSel.innerHTML = '';
+                    audioDevices.forEach((d, i) => {
+                        const opt = document.createElement('option');
+                        opt.value = d.deviceId;
+                        opt.textContent = d.label || `Microphone ${i + 1}`;
+                        if (d.deviceId === livePreferredMicId) opt.selected = true;
+                        micSel.appendChild(opt);
+                    });
+                }
+            } catch (e) {}
         }
 
-        async function toggleScreenShare() {
-            const screenBtn = document.getElementById('screenShareBtn');
-            const pipCard = document.getElementById('pipCard');
-            const videoEl = document.getElementById('liveVideo');
-
-            if (isScreenSharing) {
-                stopScreenShareAndRestoreCam();
-                return;
-            }
-
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-                document.getElementById('userLiveCaption').innerText = "⚠️ Screen sharing is only supported on desktop browsers or supported tablets.";
-                return;
-            }
-
-            try {
-                screenStream = await navigator.mediaDevices.getDisplayMedia({
-                    video: { cursor: "always", width: { ideal: 1280 }, height: { ideal: 720 } },
-                    audio: false
-                });
-
-                if (mediaStream) {
-                    mediaStream.getTracks().forEach(t => t.stop());
-                }
-
-                isScreenSharing = true;
-                screenBtn.classList.add('active-screen');
-                pipCard.classList.add('screen-mode');
-                videoEl.srcObject = screenStream;
-                document.getElementById('camBadgeLabel').innerText = "🖥️ SCREEN VISION";
-                document.getElementById('scanLine').style.display = "block";
-
-                const videoTrack = screenStream.getVideoTracks()[0];
-                if (videoTrack) {
-                    videoTrack.onended = () => {
-                        stopScreenShareAndRestoreCam();
-                    };
-                }
-
-                setTimeout(() => {
-                    const snap = captureCurrentVideoFrame();
-                    if (snap && wsReady && liveWs && liveWs.readyState === WebSocket.OPEN) {
-                        liveWs.send(JSON.stringify({ type: "frame", image_base64: snap }));
-                    }
-                }, 400);
-            } catch (err) {
-                isScreenSharing = false;
-                screenBtn.classList.remove('active-screen');
-            }
+        function toggleLiveDeviceDrawer() {
+            const d = document.getElementById('liveDeviceDrawer');
+            if (!d) return;
+            const isOpening = (d.style.display !== "flex");
+            d.style.display = isOpening ? "flex" : "none";
+            if (isOpening) populateLiveHardwareSelectors();
         }
 
-        function stopScreenShareAndRestoreCam() {
-            if (screenStream) {
-                screenStream.getTracks().forEach(t => t.stop());
-                screenStream = null;
-            }
+        async function switchLiveCameraDevice(deviceId) {
+            livePreferredCamId = deviceId || "";
+            localStorage.setItem('kiza_pref_cam_id', livePreferredCamId);
             isScreenSharing = false;
-            document.getElementById('screenShareBtn').classList.remove('active-screen');
-            document.getElementById('pipCard').classList.remove('screen-mode');
-            if (isCamOn) {
-                initLiveCamera();
-            } else {
-                document.getElementById('liveVideo').srcObject = null;
-                document.getElementById('camBadgeLabel').innerText = "📷 CAM MUTED";
-                document.getElementById('scanLine').style.display = "none";
-            }
+            document.getElementById('screenBtn').classList.remove('active');
+            document.getElementById('visionModeBadge').innerText = "👁️ CAM VISION";
+            await initCamera();
         }
 
-        function captureCurrentVideoFrame() {
-            const activeVideoStream = isScreenSharing ? screenStream : (isCamOn ? mediaStream : null);
-            if (!activeVideoStream) return null;
+        async function switchLiveMicDevice(deviceId) {
+            livePreferredMicId = deviceId || "";
+            localStorage.setItem('kiza_pref_mic_id', livePreferredMicId);
             try {
-                const videoEl = document.getElementById('liveVideo');
-                if (!videoEl.videoWidth) return null;
+                if (liveMicStream) liveMicStream.getTracks().forEach(t => t.stop());
+                liveMicStream = await navigator.mediaDevices.getUserMedia({
+                    audio: livePreferredMicId ? { deviceId: { exact: livePreferredMicId } } : true,
+                    video: false
+                });
+                if (recognition && micActive) {
+                    try { recognition.stop(); } catch (e) {}
+                }
+            } catch (e) {}
+        }
+
+        async function initCamera() {
+            if (!camActive || isScreenSharing) return;
+            try {
+                if (camStream) camStream.getTracks().forEach(t => t.stop());
+                const constraint = livePreferredCamId
+                    ? { deviceId: { exact: livePreferredCamId }, width: { ideal: 480 }, height: { ideal: 360 } }
+                    : { facingMode: "user", width: { ideal: 480 }, height: { ideal: 360 } };
+
+                try {
+                    camStream = await navigator.mediaDevices.getUserMedia({ video: constraint, audio: false });
+                } catch (errFallback) {
+                    livePreferredCamId = "";
+                    camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+                }
+
+                const videoEl = document.getElementById('camPreview');
+                videoEl.srcObject = camStream;
+                const track = camStream.getVideoTracks()[0];
+                if (track && track.getSettings().deviceId) {
+                    livePreferredCamId = track.getSettings().deviceId;
+                }
+                await populateLiveHardwareSelectors();
+            } catch (e) {}
+        }
+
+        // Zero-Lag Lightweight Frame Capture (320x240 @ 0.58 quality)
+        function captureCurrentVisionFrame() {
+            try {
+                if (!camActive && !isScreenSharing) return null;
+                const videoEl = document.getElementById('camPreview');
+                if (!videoEl || !videoEl.srcObject || videoEl.readyState < 2) return null;
                 const canvas = document.getElementById('captureCanvas');
-                canvas.width = isScreenSharing ? 800 : 480;
-                canvas.height = isScreenSharing ? 450 : 360;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-                latestFrameBase64 = canvas.toDataURL('image/jpeg', isScreenSharing ? 0.76 : 0.65);
-                return latestFrameBase64;
+                const ctx = canvas.getContext('2d', { alpha: false });
+                ctx.drawImage(videoEl, 0, 0, 320, 240);
+                return canvas.toDataURL('image/jpeg', 0.58);
             } catch (e) {
                 return null;
             }
         }
 
+        // Background telemetry frame sent every 4.5s ONLY when idle (eliminates WebSocket lag!)
         setInterval(() => {
-            if (!isCamOn && !isScreenSharing) return;
-            const frame = captureCurrentVideoFrame();
-            if (frame && wsReady && liveWs && liveWs.readyState === WebSocket.OPEN) {
-                liveWs.send(JSON.stringify({ type: "frame", image_base64: frame }));
+            if (ws && ws.readyState === WebSocket.OPEN && !isWaitingResponse && !isKizaSpeaking && (camActive || isScreenSharing)) {
+                const frame = captureCurrentVisionFrame();
+                if (frame) {
+                    ws.send(JSON.stringify({ type: "frame", image_base64: frame }));
+                }
             }
-        }, 2400);
+        }, 4500);
 
-        async function flipLiveCamera() {
-            if (isScreenSharing) return;
-            if (videoDevices.length <= 1) return;
-            currentCamIdx = (currentCamIdx + 1) % videoDevices.length;
-            if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
-            mediaStream = await navigator.mediaDevices.getUserMedia({
-                video: { deviceId: { exact: videoDevices[currentCamIdx].deviceId } }
-            });
-            document.getElementById('liveVideo').srcObject = mediaStream;
-            document.getElementById('pipCard').classList.toggle('rear-lens', currentCamIdx % 2 === 1);
-        }
+        // ==========================================================
+        // 4. SCREEN SHARE WITH MOBILE REAR-CAM & SCREENSHOT FALLBACK
+        // ==========================================================
+        document.getElementById('mobileScreenShareInput').addEventListener('change', (ev) => {
+            const file = ev.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const c = document.createElement('canvas');
+                    c.width = 480; c.height = 360;
+                    c.getContext('2d').drawImage(img, 0, 0, 480, 360);
+                    const snapB64 = c.toDataURL('image/jpeg', 0.72);
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: "frame", image_base64: snapB64 }));
+                        ws.send(JSON.stringify({
+                            type: "speech",
+                            text: "I just shared my screen snapshot with you. Tell me what you see on my screen.",
+                            image_base64: snapB64,
+                            personality: currentPersona
+                        }));
+                    }
+                    document.getElementById('aiSubtitleBox').innerText = "📲 Screen snapshot sent! KIZA is analyzing it now...";
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
 
-        function toggleCamStream() {
+        async function toggleScreenShare() {
+            const screenBtn = document.getElementById('screenBtn');
+            const videoEl = document.getElementById('camPreview');
+            const badgeEl = document.getElementById('visionModeBadge');
+
             if (isScreenSharing) {
-                stopScreenShareAndRestoreCam();
+                isScreenSharing = false;
+                if (screenStream) {
+                    screenStream.getTracks().forEach(t => t.stop());
+                    screenStream = null;
+                }
+                screenBtn.classList.remove('active');
+                badgeEl.innerText = "👁️ CAM VISION";
+                await initCamera();
                 return;
             }
-            isCamOn = !isCamOn;
-            const btn = document.getElementById('camMuteBtn');
-            if (isCamOn) {
-                btn.classList.remove('muted');
-                initLiveCamera();
-            } else {
-                btn.classList.add('muted');
-                if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
-                document.getElementById('liveVideo').srcObject = null;
-                document.getElementById('camBadgeLabel').innerText = "📷 CAM MUTED";
-                document.getElementById('scanLine').style.display = "none";
-                latestFrameBase64 = null;
-            }
-        }
 
-        // ==========================================================
-        // CIRCULAR FREQUENCY SPECTRUM + MICROPHONE BARGE-IN
-        // ==========================================================
-        function drawLiveCircularSpectrum(dataArray) {
-            const canvas = document.getElementById('liveSpectrumCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const w = canvas.width;
-            const h = canvas.height;
-            const cx = w / 2;
-            const cy = h / 2;
-            const baseRadius = 74;
-            ctx.clearRect(0, 0, w, h);
-
-            const bars = 36;
-            for (let i = 0; i < bars; i++) {
-                const val = dataArray[i % dataArray.length] || 0;
-                const barLen = Math.max(2, (val / 255) * 42);
-                const angle = (i / bars) * Math.PI * 2;
-                const x1 = cx + Math.cos(angle) * baseRadius;
-                const y1 = cy + Math.sin(angle) * baseRadius;
-                const x2 = cx + Math.cos(angle) * (baseRadius + barLen);
-                const y2 = cy + Math.sin(angle) * (baseRadius + barLen);
-
-                ctx.strokeStyle = i % 2 === 0 ? '#00f2fe' : '#a855f7';
-                ctx.lineWidth = 2.8;
-                ctx.lineCap = "round";
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.stroke();
-            }
-        }
-
-        function clearLiveSpectrumCanvas() {
-            const canvas = document.getElementById('liveSpectrumCanvas');
-            if (canvas) {
-                canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-            }
-        }
-
-        async function initMicrophoneBargeInDetector() {
-            try {
-                const micStream = await navigator.mediaDevices.getUserMedia({
-                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
-                });
-                micVadContext = new (window.AudioContext || window.webkitAudioContext)();
-                const source = micVadContext.createMediaStreamSource(micStream);
-                micVadAnalyser = micVadContext.createAnalyser();
-                micVadAnalyser.fftSize = 256;
-                source.connect(micVadAnalyser);
-                const data = new Uint8Array(micVadAnalyser.frequencyBinCount);
-
-                function monitorMicVolume() {
-                    requestAnimationFrame(monitorMicVolume);
-                    if (isMicMuted) return;
-
-                    micVadAnalyser.getByteFrequencyData(data);
-                    let sum = 0;
-                    for (let i = 2; i < 40; i++) sum += data[i];
-                    const avgVoiceBand = sum / 38;
-
-                    if (!isKizaSpeaking && !isKizaThinking) {
-                        const orb = document.getElementById('liveOrb');
-                        const scale = 1 + Math.min(0.25, (avgVoiceBand / 255) * 0.32);
-                        orb.style.transform = `scale(${scale.toFixed(3)})`;
-                        if (avgVoiceBand > 12) {
-                            drawLiveCircularSpectrum(data);
-                        } else {
-                            clearLiveSpectrumCanvas();
-                        }
+            if (navigator.mediaDevices && typeof navigator.mediaDevices.getDisplayMedia === 'function') {
+                try {
+                    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+                    isScreenSharing = true;
+                    screenBtn.classList.add('active');
+                    videoEl.srcObject = screenStream;
+                    badgeEl.innerText = "🖥️ SCREEN LIVE";
+                    screenStream.getVideoTracks()[0].onended = () => {
+                        if (isScreenSharing) toggleScreenShare();
+                    };
+                    return;
+                } catch (err) {
+                    if (err.name === "NotAllowedError" && !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                        return;
                     }
                 }
-                monitorMicVolume();
-            } catch (e) {}
+            }
+
+            try {
+                if (camStream) camStream.getTracks().forEach(t => t.stop());
+                screenStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: "environment" }, width: { ideal: 480 }, height: { ideal: 360 } },
+                    audio: false
+                });
+                isScreenSharing = true;
+                screenBtn.classList.add('active');
+                videoEl.srcObject = screenStream;
+                badgeEl.innerText = "🖥️ WORKSPACE LIVE";
+                document.getElementById('aiSubtitleBox').innerHTML =
+                    `📲 <b>Workspace Vision Active!</b> Point your camera at your notes/laptop, or <u style="color:#00f2fe;cursor:pointer;" onclick="document.getElementById('mobileScreenShareInput').click()">tap here to upload a screenshot</u>!`;
+            } catch (fallbackErr) {
+                document.getElementById('mobileScreenShareInput').click();
+            }
         }
 
-        function triggerManualBargeIn() {
-            if (isKizaSpeaking || isKizaThinking) {
-                executeInstantBargeIn("Interrupted by user");
+        function toggleCam() {
+            camActive = !camActive;
+            const btn = document.getElementById('camBtn');
+            btn.classList.toggle('active', camActive);
+            btn.classList.toggle('muted', !camActive);
+            if (camActive) {
+                initCamera();
+            } else if (camStream) {
+                camStream.getTracks().forEach(t => t.stop());
             }
         }
 
-        function executeInstantBargeIn(reason = "Voice barge-in") {
-            if (fallbackSpeechTimer) {
-                clearInterval(fallbackSpeechTimer);
-                fallbackSpeechTimer = null;
+        async function flipCamera() {
+            await populateLiveHardwareSelectors();
+            if (videoDevices.length <= 1) return;
+            camIdx = (camIdx + 1) % videoDevices.length;
+            await switchLiveCameraDevice(videoDevices[camIdx].deviceId);
+        }
+
+        function toggleMic() {
+            micActive = !micActive;
+            const btn = document.getElementById('micBtn');
+            btn.classList.toggle('active', micActive);
+            btn.classList.toggle('muted', !micActive);
+            if (!micActive && recognition) {
+                try { recognition.stop(); } catch (e) {}
+                document.getElementById('liveStateText').innerText = "🔇 MICROPHONE MUTED";
+            } else if (micActive && recognition) {
+                try { recognition.start(); } catch (e) {}
+                document.getElementById('liveStateText').innerText = "🎙️ KIZA LISTENING...";
             }
-            if (window.speechSynthesis) {
-                try { window.speechSynthesis.cancel(); } catch (e) {}
+        }
+
+        function interruptKiza() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
             }
-            if (kizaAudio) {
-                try {
-                    kizaAudio.pause();
-                    kizaAudio.currentTime = 0;
-                } catch (e) {}
-                kizaAudio = null;
-            }
-            if (kizaAnalyserFrame) cancelAnimationFrame(kizaAnalyserFrame);
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
             isKizaSpeaking = false;
-            isKizaThinking = false;
-            clearLiveSpectrumCanvas();
-            const ambientEl = document.getElementById('liveAmbientGlow');
-            if (ambientEl) ambientEl.style.opacity = "0";
-
-            if (wsReady && liveWs && liveWs.readyState === WebSocket.OPEN) {
-                try {
-                    liveWs.send(JSON.stringify({ type: "interrupt" }));
-                } catch (e) {}
+            isWaitingResponse = false;
+            document.getElementById('liveOrb').style.transform = "scale(1)";
+            document.getElementById('liveStateText').innerText = "🎙️ KIZA LISTENING...";
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: "interrupt" }));
             }
-            setOrbState("listening", "🟢 LISTENING (INTERRUPTED)...");
+            if (micActive && recognition) {
+                setTimeout(() => { try { recognition.start(); } catch (e) {} }, 120);
+            }
         }
 
-        function initContinuousSpeechRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                document.getElementById('userLiveCaption').innerText = "⚠️ Browser speech recognition unavailable. Use the text box below.";
+        // ==========================================================
+        // 5. SAFARI-SAFE LOW-LATENCY AUDIO PLAYER
+        // ==========================================================
+        function playLiveAudio(base64Data, textFallback) {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            isWaitingResponse = false;
+            isKizaSpeaking = true;
+            document.getElementById('liveStateText').innerText = "🔊 KIZA SPEAKING (TAP ✋ TO INTERRUPT)";
+            const orb = document.getElementById('liveOrb');
+
+            const onSpeechFinished = () => {
+                isKizaSpeaking = false;
+                orb.style.transform = "scale(1)";
+                document.getElementById('liveStateText').innerText = micActive ? "🎙️ KIZA LISTENING..." : "🔇 MICROPHONE MUTED";
+                if (micActive && recognition) {
+                    setTimeout(() => { try { recognition.start(); } catch (e) {} }, 150);
+                }
+            };
+
+            if (!base64Data) {
+                if (window.speechSynthesis && textFallback) {
+                    window.speechSynthesis.cancel();
+                    const u = new SpeechSynthesisUtterance(textFallback);
+                    u.onend = onSpeechFinished;
+                    u.onerror = onSpeechFinished;
+                    window.speechSynthesis.speak(u);
+                } else {
+                    onSpeechFinished();
+                }
                 return;
             }
 
+            currentAudio = new Audio("data:audio/mp3;base64," + base64Data);
+            currentAudio.playsInline = true;
+
+            // Lightweight pulse animation without blocking WebKit Audio
+            let pulseInterval = setInterval(() => {
+                if (!isKizaSpeaking) {
+                    clearInterval(pulseInterval);
+                    orb.style.transform = "scale(1)";
+                    return;
+                }
+                const s = (1.03 + Math.random() * 0.14).toFixed(3);
+                orb.style.transform = `scale(${s})`;
+            }, 90);
+
+            currentAudio.onended = () => {
+                clearInterval(pulseInterval);
+                onSpeechFinished();
+            };
+            currentAudio.onerror = () => {
+                clearInterval(pulseInterval);
+                if (window.speechSynthesis && textFallback) {
+                    const u = new SpeechSynthesisUtterance(textFallback);
+                    u.onend = onSpeechFinished;
+                    window.speechSynthesis.speak(u);
+                } else {
+                    onSpeechFinished();
+                }
+            };
+            currentAudio.play().catch(() => {
+                clearInterval(pulseInterval);
+                if (window.speechSynthesis && textFallback) {
+                    const u = new SpeechSynthesisUtterance(textFallback);
+                    u.onend = onSpeechFinished;
+                    window.speechSynthesis.speak(u);
+                } else {
+                    onSpeechFinished();
+                }
+            });
+        }
+
+        function sendSpeechToServer(textStr) {
+            const clean = (textStr || "").trim();
+            if (!clean || !ws || ws.readyState !== WebSocket.OPEN) return;
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
+            isKizaSpeaking = false;
+            isWaitingResponse = true;
+
+            document.getElementById('liveStateText').innerText = "⚡ KIZA THINKING...";
+            document.getElementById('aiSubtitleBox').innerText = `You: "${clean}"`;
+            const snap = captureCurrentVisionFrame();
+            ws.send(JSON.stringify({
+                type: "speech",
+                text: clean,
+                image_base64: snap,
+                personality: currentPersona
+            }));
+        }
+
+        function sendTypedMessage() {
+            const inp = document.getElementById('liveTextInput');
+            const val = inp.value.trim();
+            if (!val) return;
+            inp.value = "";
+            inp.blur();
+            sendSpeechToServer(val);
+        }
+
+        document.getElementById('liveTextInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendTypedMessage();
+        });
+
+        // ==========================================================
+        // 6. SAFARI & CHROME COMPATIBLE SPEECH RECOGNITION
+        // ==========================================================
+        function initLiveSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                document.getElementById('liveStateText').innerText = "⌨️ TYPE BELOW TO CHAT LIVE";
+                return;
+            }
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
             recognition = new SpeechRecognition();
-            recognition.continuous = true;
+            // Safari works much more reliably with continuous=false + automatic onend restart
+            recognition.continuous = !isSafari;
             recognition.interimResults = true;
             recognition.lang = 'en-US';
 
             recognition.onresult = (event) => {
-                if (isMicMuted) return;
-
-                let interimTranscript = "";
-                let finalTranscript = "";
-
+                if (!micActive || isWaitingResponse) return;
                 for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const txt = event.results[i][0].transcript;
-                    if (event.results[i].isFinal) {
-                        finalTranscript += txt;
-                    } else {
-                        interimTranscript += txt;
+                    const transcript = event.results[i][0].transcript.trim();
+                    if (isKizaSpeaking && transcript.length > 4) {
+                        interruptKiza();
+                    }
+                    if (event.results[i].isFinal && transcript.length > 1) {
+                        sendSpeechToServer(transcript);
                     }
                 }
-
-                if (interimTranscript.trim().length > 2 && (isKizaSpeaking || isKizaThinking)) {
-                    executeInstantBargeIn("User started speaking");
-                }
-
-                if (interimTranscript.trim()) {
-                    document.getElementById('userLiveCaption').innerText = `🗣️ "${interimTranscript.trim()}..."`;
-                }
-
-                if (finalTranscript.trim()) {
-                    const cleanSpeech = finalTranscript.trim();
-                    document.getElementById('userLiveCaption').innerText = `🗣️ You: "${cleanSpeech}"`;
-                    dispatchUserSpeechToKiza(cleanSpeech);
-                }
             };
-
             recognition.onerror = () => {};
             recognition.onend = () => {
-                if (!isMicMuted) {
+                if (micActive && !isKizaSpeaking && !isWaitingResponse) {
                     setTimeout(() => {
-                        try { recognition.start(); } catch (e) {}
-                    }, 250);
+                        if (micActive && !isKizaSpeaking && !isWaitingResponse) {
+                            try { recognition.start(); } catch (e) {}
+                        }
+                    }, 220);
                 }
             };
-
             try { recognition.start(); } catch (e) {}
         }
 
-        function toggleMicMute() {
-            isMicMuted = !isMicMuted;
-            const btn = document.getElementById('micMuteBtn');
-            if (isMicMuted) {
-                btn.classList.add('muted');
-                btn.innerText = "🔇";
-                setOrbState("listening", "🔇 MICROPHONE MUTED");
-                clearLiveSpectrumCanvas();
-                if (recognition) { try { recognition.stop(); } catch (e) {} }
-            } else {
-                btn.classList.remove('muted');
-                btn.innerText = "🎤";
-                setOrbState("listening", "🟢 LISTENING TO YOU...");
-                if (recognition) { try { recognition.start(); } catch (e) {} }
-            }
-        }
-
         function connectLiveWebSocket() {
-            const persona = document.getElementById('livePersonaSelect').value || "normal";
-            try {
-                liveWs = new WebSocket(`${WS_LIVE_URL}?user=${encodeURIComponent(currentUser)}&personality=${encodeURIComponent(persona)}`);
-
-                liveWs.onopen = () => {
-                    wsReady = true;
-                    document.getElementById('connDot').style.background = "#10b981";
-                    setOrbState("listening", "🟢 LIVE LINK ESTABLISHED");
-                };
-
-                liveWs.onmessage = (event) => {
-                    try {
-                        const data = JSON.parse(event.data);
-                        if (data.type === "state" && data.status === "thinking") {
-                            isKizaThinking = true;
-                            setOrbState("thinking", "⚡ KIZA THINKING...");
-                        } else if (data.type === "interrupted") {
-                            isKizaThinking = false;
-                            isKizaSpeaking = false;
-                            setOrbState("listening", "🟢 LISTENING TO YOU...");
-                        } else if (data.type === "response") {
-                            isKizaThinking = false;
-                            handleKizaLiveReply(data.text, data.audio_base64);
-                        }
-                    } catch (e) {}
-                };
-
-                liveWs.onclose = () => {
-                    wsReady = false;
-                    document.getElementById('connDot').style.background = "#fbbf24";
-                };
-
-                liveWs.onerror = () => {
-                    wsReady = false;
-                };
-            } catch (e) {
-                wsReady = false;
-            }
-        }
-
-        async function dispatchUserSpeechToKiza(speechText) {
-            if (!speechText) return;
-            executeInstantBargeIn();
-
-            isKizaThinking = true;
-            setOrbState("thinking", "⚡ KIZA THINKING...");
-            const persona = document.getElementById('livePersonaSelect').value || "normal";
-            const snap = captureCurrentVideoFrame();
-
-            if (wsReady && liveWs && liveWs.readyState === WebSocket.OPEN) {
-                liveWs.send(JSON.stringify({
-                    type: "speech",
-                    text: speechText,
-                    personality: persona,
-                    image_base64: snap
-                }));
-                return;
-            }
-
-            try {
-                const res = await fetch(`${HTTP_SERVER}/api/chat`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        user: currentUser,
-                        command: speechText,
-                        image_base64: snap,
-                        is_attached_image: Boolean(snap),
-                        personality: persona,
-                        session_id: liveSessionId
-                    })
-                });
-                const data = await res.json();
-                isKizaThinking = false;
-                handleKizaLiveReply(data.reply || "I'm here and listening.", data.audio_base64);
-            } catch (err) {
-                isKizaThinking = false;
-                document.getElementById('kizaLiveCaption').innerText = "Connection interrupted. Retrying link...";
-                setOrbState("listening", "🟢 LISTENING TO YOU...");
-            }
-        }
-
-        function sendTypedLiveMessage() {
-            const inp = document.getElementById('fallbackTextInput');
-            const val = inp.value.trim();
-            if (!val) return;
-            inp.value = "";
-            document.getElementById('userLiveCaption').innerText = `⌨️ You: "${val}"`;
-            dispatchUserSpeechToKiza(val);
-        }
-
-        document.getElementById('fallbackTextInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendTypedLiveMessage();
-        });
-
-        // ==========================================================
-        // SCRUBS ALL [IMG: ...] TAGS + ZERO-LAG BROWSER TTS FALLBACK
-        // ==========================================================
-        function handleKizaLiveReply(replyText, audioBase64) {
-            const cleanText = String(replyText || "")
-                .replace(/<think>[\s\S]*?<\/think>/gi, '')
-                .replace(/<\/?think>/gi, '')
-                .replace(/\[QUIZ_DATA\][\s\S]*?\[\/QUIZ_DATA\]/gi, '')
-                .replace(/```[\s\S]*?```/g, '')
-                .replace(/\[IMG\s*:[^\]]*\]/gi, '')
-                .replace(/\[IMAGE\s*:[^\]]*\]/gi, '')
-                .replace(/\[GENERATE_FILE:[^\]]+\]/gi, '')
-                .replace(/\[ACTION:[^\]]+\]/gi, '')
-                .replace(/\[SYSTEM[^\]]*\]/gi, '')
-                .replace(/\*/g, '')
-                .trim();
-
-            document.getElementById('kizaLiveCaption').innerText = cleanText || "I'm listening.";
-
-            if (audioBase64) {
-                playLiveKizaVoice(audioBase64, cleanText);
-            } else {
-                speakZeroLagLiveFallback(cleanText);
-            }
-        }
-
-        function speakZeroLagLiveFallback(textToSpeak) {
-            if (!window.speechSynthesis || !textToSpeak) {
-                setOrbState("listening", "🟢 LISTENING TO YOU...");
-                return;
-            }
-            try {
-                window.speechSynthesis.cancel();
-                const utter = new SpeechSynthesisUtterance(textToSpeak.slice(0, 260));
-                const persona = document.getElementById('livePersonaSelect').value || "normal";
-                utter.rate = PERSONA_RATES[persona] || 1.05;
-                utter.lang = persona === "helpful" ? "en-IN" : "en-GB";
-
-                const orb = document.getElementById('liveOrb');
-                const ambientEl = document.getElementById('liveAmbientGlow');
-
-                utter.onstart = () => {
-                    isKizaSpeaking = true;
-                    setOrbState("speaking", "🔊 KIZA SPEAKING (SPEAK TO INTERRUPT)");
-                    fallbackSpeechTimer = setInterval(() => {
-                        if (!isKizaSpeaking) return;
-                        const fakeData = Array.from({ length: 36 }, () => Math.floor(40 + Math.random() * 140));
-                        drawLiveCircularSpectrum(fakeData);
-                        orb.style.transform = `scale(${(1.06 + Math.random() * 0.18).toFixed(3)})`;
-                        if (ambientEl) ambientEl.style.opacity = "0.55";
-                    }, 90);
-                };
-
-                const finishFallback = () => {
-                    if (fallbackSpeechTimer) {
-                        clearInterval(fallbackSpeechTimer);
-                        fallbackSpeechTimer = null;
-                    }
-                    isKizaSpeaking = false;
-                    orb.style.transform = "";
-                    if (ambientEl) ambientEl.style.opacity = "0";
-                    clearLiveSpectrumCanvas();
-                    setOrbState("listening", "🟢 LISTENING TO YOU...");
-                };
-
-                utter.onend = finishFallback;
-                utter.onerror = finishFallback;
-                window.speechSynthesis.speak(utter);
-            } catch (e) {
-                setOrbState("listening", "🟢 LISTENING TO YOU...");
-            }
-        }
-
-        function playLiveKizaVoice(base64Audio, fallbackText = "") {
-            if (window.speechSynthesis) {
-                try { window.speechSynthesis.cancel(); } catch (e) {}
-            }
-            if (kizaAudio) {
-                try { kizaAudio.pause(); } catch (e) {}
-                kizaAudio = null;
-            }
-            if (kizaAnalyserFrame) cancelAnimationFrame(kizaAnalyserFrame);
-
-            isKizaSpeaking = true;
-            setOrbState("speaking", "🔊 KIZA SPEAKING (SPEAK TO INTERRUPT)");
-
-            kizaAudio = new Audio("data:audio/mp3;base64," + base64Audio);
-            const persona = document.getElementById('livePersonaSelect').value || "normal";
-            kizaAudio.playbackRate = PERSONA_RATES[persona] || 1.05;
-
-            const orb = document.getElementById('liveOrb');
-            const ambientEl = document.getElementById('liveAmbientGlow');
-
-            try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const src = audioCtx.createMediaElementSource(kizaAudio);
-                const analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 64;
-                src.connect(analyser);
-                analyser.connect(audioCtx.destination);
-                const freqData = new Uint8Array(analyser.frequencyBinCount);
-
-                function animateKizaOrb() {
-                    if (!isKizaSpeaking) {
-                        orb.style.transform = "";
-                        if (ambientEl) ambientEl.style.opacity = "0";
-                        clearLiveSpectrumCanvas();
-                        return;
-                    }
-                    analyser.getByteFrequencyData(freqData);
-                    drawLiveCircularSpectrum(freqData);
-                    let sum = 0;
-                    for (let i = 0; i < freqData.length; i++) sum += freqData[i];
-                    const avg = sum / freqData.length;
-                    const scale = 1 + (avg / 255) * 0.36;
-                    orb.style.transform = `scale(${scale.toFixed(3)})`;
-                    if (ambientEl) {
-                        ambientEl.style.opacity = Math.min(0.95, avg / 170).toFixed(2);
-                    }
-                    kizaAnalyserFrame = requestAnimationFrame(animateKizaOrb);
-                }
-                animateKizaOrb();
-            } catch (e) {}
-
-            kizaAudio.onended = () => {
-                isKizaSpeaking = false;
-                orb.style.transform = "";
-                if (ambientEl) ambientEl.style.opacity = "0";
-                clearLiveSpectrumCanvas();
-                setOrbState("listening", "🟢 LISTENING TO YOU...");
+            ws = new WebSocket(`${WS_LIVE_URL}?user=${encodeURIComponent(currentUser)}&personality=${encodeURIComponent(currentPersona)}`);
+            ws.onopen = () => {
+                lastPingSentAt = performance.now();
+                ws.send(JSON.stringify({ type: "ping" }));
             };
-            kizaAudio.onerror = () => {
-                isKizaSpeaking = false;
-                orb.style.transform = "";
-                if (ambientEl) ambientEl.style.opacity = "0";
-                clearLiveSpectrumCanvas();
-                if (fallbackText) speakZeroLagLiveFallback(fallbackText);
-                else setOrbState("listening", "🟢 LISTENING TO YOU...");
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === "pong") {
+                        const rtt = Math.round(performance.now() - lastPingSentAt);
+                        const pb = document.getElementById('pingBadge');
+                        if (pb) pb.innerText = `•⚡${rtt}ms`;
+                    } else if (data.type === "state" && data.status === "thinking") {
+                        document.getElementById('liveStateText').innerText = "⚡ KIZA THINKING...";
+                    } else if (data.type === "response") {
+                        document.getElementById('aiSubtitleBox').innerText = data.text || "";
+                        playLiveAudio(data.audio_base64, data.text);
+                    } else if (data.type === "error") {
+                        isWaitingResponse = false;
+                        document.getElementById('aiSubtitleBox').innerText = `Notice: ${data.message}`;
+                        document.getElementById('liveStateText').innerText = "🎙️ KIZA LISTENING...";
+                    }
+                } catch (e) {}
             };
-            kizaAudio.play().catch(() => {
-                isKizaSpeaking = false;
-                orb.style.transform = "";
-                if (ambientEl) ambientEl.style.opacity = "0";
-                clearLiveSpectrumCanvas();
-                if (fallbackText) speakZeroLagLiveFallback(fallbackText);
-                else setOrbState("listening", "🟢 LISTENING TO YOU...");
-            });
+            ws.onclose = () => {
+                setTimeout(connectLiveWebSocket, 2500);
+            };
         }
 
-        function setOrbState(mode, bannerText) {
-            const orb = document.getElementById('liveOrb');
-            const banner = document.getElementById('callStateBanner');
-            orb.classList.remove('state-listening', 'state-thinking', 'state-speaking');
-            orb.classList.add(`state-${mode}`);
-            if (bannerText) banner.innerText = bannerText;
-        }
+        setInterval(() => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                lastPingSentAt = performance.now();
+                ws.send(JSON.stringify({ type: "ping" }));
+            }
+        }, 12000);
 
         function endLiveCall() {
-            executeInstantBargeIn();
+            micActive = false;
+            if (recognition) { try { recognition.stop(); } catch (e) {} }
+            if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+            if (camStream) camStream.getTracks().forEach(t => t.stop());
             if (screenStream) screenStream.getTracks().forEach(t => t.stop());
-            if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
-            if (liveWs) { try { liveWs.close(); } catch (e) {} }
+            if (liveMicStream) liveMicStream.getTracks().forEach(t => t.stop());
+            if (ws) { try { ws.onclose = null; ws.close(); } catch (e) {} }
             window.location.href = "index.html";
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            initLiveCamera();
-            initMicrophoneBargeInDetector();
-            initContinuousSpeechRecognition();
+            initCamera();
             connectLiveWebSocket();
+            initLiveSpeechRecognition();
         });
     </script>
 </body>
