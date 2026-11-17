@@ -4796,5 +4796,173 @@
             if (event.key === "Enter" && !isChatActive) submitCommand();
         });
     </script>
+    <!-- KIZA AUTHENTICATION HANDLERS -->
+<script>
+(function() {
+  const BACKEND_URL = "https://kiza-brain.onrender.com";
+  let authMode = "signin"; // 'signin' or 'signup'
+
+  // 1. Google One-Tap & Button Callback
+  window.handleGoogleLogin = async function(response) {
+    const submitBtn = document.getElementById("authSubmitBtn");
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Verifying with Google...";
+    }
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/google_auth`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: response.credential })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Google login failed");
+
+      // Save token and user details cryptographically
+      localStorage.setItem("kiza_jwt_token", data.token);
+      localStorage.setItem("kiza_user_session", JSON.stringify(data.user));
+
+      applyAuthenticatedUser(data.user);
+      dismissAuthModal();
+    } catch (err) {
+      alert("Login Error: " + err.message);
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Continue";
+      }
+    }
+  };
+
+  // 2. Tab Switcher between Sign In and Create Account
+  window.switchAuthMode = function(mode) {
+    authMode = mode;
+    const signinTab = document.querySelector("button[onclick*='signin']");
+    const signupTab = document.querySelector("button[onclick*='signup']");
+    const submitBtn = document.getElementById("authSubmitBtn");
+
+    if (mode === "signin") {
+      if (signinTab) signinTab.style.background = "#e0f2fe";
+      if (signupTab) signupTab.style.background = "transparent";
+      if (submitBtn) submitBtn.innerText = "Sign In";
+    } else {
+      if (signupTab) signupTab.style.background = "#e0f2fe";
+      if (signinTab) signinTab.style.background = "transparent";
+      if (submitBtn) submitBtn.innerText = "Create Account";
+    }
+  };
+
+  // 3. Username & Password Submission
+  window.performAuth = async function() {
+    const userInput = document.querySelector("#authModal input[type='text']");
+    const passInput = document.querySelector("#authModal input[type='password']");
+    const submitBtn = document.getElementById("authSubmitBtn");
+
+    const username = userInput ? userInput.value.trim() : "";
+    const password = passInput ? passInput.value.trim() : "";
+
+    if (!username || !password) {
+      alert("Please enter both username and password.");
+      return;
+    }
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Authenticating...";
+    }
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/auth`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: authMode,
+          username: username,
+          password: password
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Authentication failed");
+
+      localStorage.setItem("kiza_jwt_token", data.token);
+      localStorage.setItem("kiza_user_session", JSON.stringify(data.user));
+
+      applyAuthenticatedUser(data.user);
+      dismissAuthModal();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = authMode === "signin" ? "Sign In" : "Create Account";
+      }
+    }
+  };
+
+  // 4. Dismiss Modal
+  function dismissAuthModal() {
+    const modal = document.getElementById("authModal");
+    if (modal) {
+      modal.style.display = "none";
+      modal.setAttribute("aria-hidden", "true");
+    }
+  }
+
+  // 5. Update UI for Logged-In User
+  function applyAuthenticatedUser(user) {
+    // Bottom left user card
+    const guestLabel = document.querySelector(".guest-text, [class*='Guest']");
+    const bottomUser = document.getElementById("bottomUserName") || document.querySelector(".user-identity-name");
+    if (bottomUser) {
+      bottomUser.innerText = user.name;
+    }
+
+    // Role badge
+    const roleBadge = document.getElementById("userRoleBadge");
+    if (roleBadge) {
+      roleBadge.innerText = user.role.toUpperCase();
+      roleBadge.style.display = "inline-block";
+    }
+
+    // Avatar
+    if (user.avatar) {
+      const avatars = document.querySelectorAll(".user-avatar-img, #navUserAvatar");
+      avatars.forEach(img => { img.src = user.avatar; });
+    }
+  }
+
+  // 6. Verify existing token on page load (Auto-login)
+  window.addEventListener("DOMContentLoaded", async function() {
+    const token = localStorage.getItem("kiza_jwt_token");
+    if (!token) return; // Keep modal ready if no saved token
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/verify_session`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const savedSession = JSON.parse(localStorage.getItem("kiza_user_session") || "{}");
+        applyAuthenticatedUser(savedSession);
+        dismissAuthModal();
+      } else {
+        localStorage.removeItem("kiza_jwt_token");
+        localStorage.removeItem("kiza_user_session");
+      }
+    } catch (e) {
+      console.warn("Could not verify session with backend:", e);
+    }
+  });
+
+  // 7. Global Helper for Chat and API Calls
+  window.getAuthHeader = function() {
+    const token = localStorage.getItem("kiza_jwt_token");
+    return token ? { "Authorization": `Bearer ${token}` } : {};
+  };
+})();
+</script>
 </body>
 </html>
