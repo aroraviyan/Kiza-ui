@@ -27,6 +27,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <!-- PDF.js for Client-Side Multi-File PDF Text Extraction -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- Mammoth.js for Word (.docx) File Reading & Structure Cloning -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <!-- SheetJS (xlsx.js) for Excel (.xlsx / .xls) Reading & Formula Workbook Exporting -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
@@ -46,7 +50,7 @@
             --bg-elevated: #ffffff;
             --card-bg: #ffffff;
             --card-border: #e2e8f0;
-            --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+            --card-shadow: 0 6px 24px -4px rgba(15, 23, 42, 0.07);
             --text-main: #0f172a;
             --text-muted: #64748b;
             --accent-primary: #0284c7;
@@ -64,13 +68,13 @@
         }
 
         body.dark-mode {
-            --bg-main: #0f1117;
-            --bg-sidebar: #161922;
-            --bg-surface: #1e222d;
-            --bg-elevated: #161922;
-            --card-bg: #161922;
-            --card-border: #2a2f3d;
-            --card-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+            --bg-main: #0b0e14;
+            --bg-sidebar: #121721;
+            --bg-surface: #1a202c;
+            --bg-elevated: #121721;
+            --card-bg: #121721;
+            --card-border: #252f3f;
+            --card-shadow: 0 10px 32px rgba(0, 0, 0, 0.55);
             --text-main: #f1f5f9;
             --text-muted: #94a3b8;
             --accent-primary: #38bdf8;
@@ -80,11 +84,11 @@
             --danger: #f87171;
             --warning: #fbbf24;
             --success: #34d399;
-            --chip-bg: #1e222d;
-            --chip-hover: #282d3c;
-            --chip-border: #363c4e;
-            --feed-bg: #0f1117;
-            --input-bg: #161922;
+            --chip-bg: #1a202c;
+            --chip-hover: #242c3d;
+            --chip-border: #333d52;
+            --feed-bg: #0b0e14;
+            --input-bg: #121721;
         }
 
         * {
@@ -1214,7 +1218,9 @@
             flex-direction: row;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 4px;
+            padding: 9px 12px;
+            min-height: 42px;
+            flex-shrink: 0;
         }
         .notif-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
         .notif-tag {
@@ -1327,7 +1333,7 @@
     <div id="ambientAudioGlow"></div>
 
     <div id="dragDropOverlay">
-        <div>📥 Drop Image, PDF, CSV, TXT or Python File to Scan</div>
+        <div>📥 Drop Image, Handwritten Notes, PDF, Word (.docx), Excel (.xlsx), or Code File</div>
         <div style="font-size:13px; font-weight:500; color:var(--text-muted);">Or press Ctrl + V anytime to paste a screenshot</div>
     </div>
 
@@ -1373,7 +1379,7 @@
         </div>
     </div>
 
-    <!-- 📘 OFFICIAL TUTORIAL PDF CHOOSER MODAL (TRIGGERED BY /help) -->
+    <!-- 📘 OFFICIAL TUTORIAL PDF CHOOSER MODAL (OPENS READ-ONLY tutorial.pdf) -->
     <div id="tutorialPromptModal" class="modal-overlay" style="display:none; z-index: 646;">
         <div class="auth-card" style="max-width: 440px; text-align:center;">
             <div class="section-title">
@@ -1381,13 +1387,13 @@
                 <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeTutorialPromptModal()">✕</button>
             </div>
             <div style="font-size:12.5px; color:var(--text-main); line-height:1.5; margin:6px 0;">
-                Would you like to open and read the <b>KIZA Official Tutorial & 5-Tier Hierarchy Guide PDF</b> right now?
+                Would you like to open or download the official read-only <b>KIZA Tutorial & 5-Tier Hierarchy Guide PDF (`tutorial.pdf`)</b>?
             </div>
             <div style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">
                 Includes the 5-Tier Rank Hierarchy, natural-language AI tools, security features, and device setup instructions.
             </div>
             <div style="display:flex; gap:8px;">
-                <button type="button" class="send-btn" style="flex:1; padding:10px;" onclick="openInteractiveTutorialGuidePDF()">📖 Read Tutorial PDF</button>
+                <button type="button" class="send-btn" style="flex:1; padding:10px;" onclick="openInteractiveTutorialGuidePDF()">📖 Open Tutorial PDF</button>
                 <button type="button" class="chip-btn" style="flex:1; padding:10px;" onclick="closeTutorialPromptModal()">Maybe Later</button>
             </div>
         </div>
@@ -1490,26 +1496,28 @@
         </div>
     </div>
 
-    <!-- INTERACTIVE DOCUMENT, CHAT & SECURITY AUDIT PREVIEW STUDIO MODAL -->
+    <!-- INTERACTIVE DOCUMENT, EXCEL, WORD, PPTX & PDF PREVIEW STUDIO MODAL -->
     <div id="filePreviewModal" class="modal-overlay" style="display:none; z-index: 620;">
         <div class="logs-card" style="max-width: 940px; width: 96%;">
             <div class="section-title">
-                <span id="filePreviewModalTitle">🎨 KIZA Document & Slide Preview Studio</span>
+                <span id="filePreviewModalTitle">🎨 KIZA Multi-Format Document, Excel & Slide Studio</span>
                 <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 4px 10px; width:auto;" onclick="closeFilePreviewModal()">✕ Close</button>
             </div>
 
             <div id="previewFormattingToolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:var(--bg-surface); padding:9px 11px; border-radius:12px; border:1px solid var(--card-border);">
-                <div id="previewLayoutThemeSelectors" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                    <label style="font-size:11.5px; font-weight:600;">Layout:</label>
-                    <select id="previewLayoutFormatSelect" style="width:auto; padding:5px 10px; font-size:11.5px;" onchange="changePreviewLayoutOrTheme()">
+                <div id="previewLayoutThemeSelectors" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <label style="font-size:11px; font-weight:700;">Format:</label>
+                    <select id="previewLayoutFormatSelect" style="width:auto; padding:5px 9px; font-size:11px;" onchange="changePreviewLayoutOrTheme()">
                         <option value="infographic">📊 Infographic Dossier</option>
                         <option value="academic">📚 Academic / NCERT</option>
+                        <option value="exam_paper">📝 CBSE Exam Paper</option>
+                        <option value="lab_manual">🔬 Lab Practical File</option>
                         <option value="magazine">📰 Editorial Magazine</option>
                         <option value="minimal">💼 Clean Minimalist</option>
                     </select>
 
-                    <label style="font-size:11.5px; font-weight:600;">Theme:</label>
-                    <select id="previewThemeSelect" style="width:auto; padding:5px 10px; font-size:11.5px;" onchange="changePreviewLayoutOrTheme()">
+                    <label style="font-size:11px; font-weight:700;">Theme:</label>
+                    <select id="previewThemeSelect" style="width:auto; padding:5px 9px; font-size:11px;" onchange="changePreviewLayoutOrTheme()">
                         <option value="cyber_dark">Cyber Dark</option>
                         <option value="black">Obsidian Black</option>
                         <option value="light">Clean White / Light</option>
@@ -1519,17 +1527,26 @@
                         <option value="red">Crimson Red</option>
                         <option value="gold">Royal Gold</option>
                     </select>
+
+                    <label style="font-size:11px; font-weight:700;">Export As:</label>
+                    <select id="previewExportTypeSelect" style="width:auto; padding:5px 9px; font-size:11px; font-weight:700; color:var(--accent-primary);" onchange="switchPreviewExportFormat(this.value)">
+                        <option value="pdf">📕 PDF Document (.pdf)</option>
+                        <option value="docx">📘 Word Document (.docx)</option>
+                        <option value="xlsx">📗 Excel Workbook (.xlsx)</option>
+                        <option value="pptx">📙 PowerPoint Deck (.pptx)</option>
+                        <option value="csv">📊 CSV Dataset (.csv)</option>
+                    </select>
                 </div>
 
                 <button type="button" id="confirmDownloadBtn" class="send-btn" style="padding:7px 14px; font-size:11.5px; margin-left:auto;" onclick="confirmAndDownloadPreviewedFile()">⬇️ Confirm & Download</button>
             </div>
 
             <div id="aiRevisePromptContainer" style="display:flex; gap:8px; align-items:center; width:100%;">
-                <input type="text" id="aiRevisePromptInput" placeholder="✨ Ask KIZA to revise this file (e.g. 'Add a comparison table', 'Make it simpler')..." style="flex:1;">
+                <input type="text" id="aiRevisePromptInput" placeholder="✨ Ask KIZA to edit this document or spreadsheet (e.g. 'Add a total row', 'Keep same format as uploaded file')..." style="flex:1;">
                 <button type="button" id="aiReviseBtn" class="send-btn" style="background:#10b981; color:#fff;" onclick="submitFileRevisionPrompt()">✨ Revise</button>
             </div>
 
-            <div id="filePreviewViewport" style="max-height: 54vh; overflow-y: auto; border: 1px solid var(--card-border); border-radius: 12px; background: #cbd5e1; padding: 14px; outline: none;"></div>
+            <div id="filePreviewViewport" contenteditable="true" title="Tip: You can also click directly inside any paragraph or table cell here to edit text before downloading!" style="max-height: 54vh; overflow-y: auto; border: 1px solid var(--card-border); border-radius: 12px; background: #cbd5e1; padding: 14px; outline: none;"></div>
         </div>
     </div>
 
@@ -1682,7 +1699,7 @@
             <div id="ownerUpdatePublisher" style="display:none; flex-direction:column; gap:7px; padding:11px; border-radius:12px; background:var(--bg-surface);">
                 <div style="font-size:11.5px; font-weight:700; color:var(--accent-primary);">Publish New Update</div>
                 <div style="display:flex; gap:7px;">
-                    <input type="text" id="newUpdateVersion" placeholder="v9.0" style="width:100px;">
+                    <input type="text" id="newUpdateVersion" placeholder="v9.5" style="width:100px;">
                     <input type="text" id="newUpdateTitle" placeholder="Headline...">
                 </div>
                 <input type="text" id="newUpdateDesc" placeholder="Details of what changed...">
@@ -1694,7 +1711,7 @@
 
     <!-- SETTINGS, HARDWARE SELECTOR, DEVICE MANAGER & LOGIN AUDIT LOG MODAL -->
     <div id="settingsModal" class="modal-overlay" style="display:none;">
-        <div class="auth-card" style="max-width:480px;">
+        <div class="auth-card" style="max-width:490px;">
             <div class="section-title">
                 <span>⚙️ Settings, Hardware & Login Audit</span>
                 <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeSettings()">✕</button>
@@ -1765,12 +1782,12 @@
             <div class="section-title" style="margin-top:6px;">
                 <span>💻 Active Devices & Locations</span>
             </div>
-            <div id="activeDevicesListContainer" style="max-height: 85px; overflow-y: auto; font-size:11px;"></div>
+            <div id="activeDevicesListContainer" style="max-height: 110px; overflow-y: auto; font-size:11px; display:flex; flex-direction:column; gap:5px;"></div>
 
             <div class="section-title" style="margin-top:4px;">
                 <span>🕵️ Account Login & Location Audit Log</span>
             </div>
-            <div id="loginAuditListContainer" style="max-height: 95px; overflow-y: auto; font-size:11px; display:flex; flex-direction:column; gap:4px;"></div>
+            <div id="loginAuditListContainer" style="max-height: 110px; overflow-y: auto; font-size:11px; display:flex; flex-direction:column; gap:5px;"></div>
 
             <div class="section-title" style="margin-top:4px;">
                 <span>📲 Sign Out Other Devices</span>
@@ -1781,11 +1798,12 @@
                 <button type="button" class="send-btn" style="background:var(--danger); color:#fff;" onclick="logoutOtherDevicesViaPin()">Sign Out Others</button>
             </div>
 
-            <div class="section-title" style="margin-top:4px;">
+            <!-- EXPANDED SAVED ACCOUNTS BOX -->
+            <div class="section-title" style="margin-top:6px;">
                 <span>👥 Saved Accounts on This Browser</span>
             </div>
-            <div id="profileListContainer" style="max-height: 75px; overflow-y: auto;"></div>
-            <div style="display:flex; gap:6px;">
+            <div id="profileListContainer" style="max-height: 185px; overflow-y: auto; display:flex; flex-direction:column; gap:6px; padding-right:2px;"></div>
+            <div style="display:flex; gap:6px; margin-top:4px;">
                 <button class="chip-btn" onclick="addIdentity()">+ Switch / Add Account</button>
                 <button class="chip-btn" style="border-color:var(--danger); color:var(--danger);" onclick="logoutUser()">Sign Out</button>
             </div>
@@ -1986,7 +2004,7 @@
                 </div>
 
                 <div class="header-right">
-                    <button type="button" class="live-call-btn" onclick="launchLiveCallMode()" title="Start Live Voice, Video & Screen-Share Call">📞 Live</button>
+                    <button type="button" class="live-call-btn" onclick="launchLiveCallMode()" title="Start Live Voice, Video, Whiteboard & Screen Call">📞 Live</button>
                     <button type="button" class="icon-btn personalize-btn" onclick="openProfileMemoryModal()" title="Personalize Profile & Memory Vault">🧠 Personalize</button>
 
                     <!-- DESKTOP QUICK TOOLS -->
@@ -2011,7 +2029,7 @@
                 </div>
             </header>
 
-            <!-- FLOATING QUICK-TOOLS POPOVER (NO HORIZONTAL SCROLL NEEDED ON MOBILE!) -->
+            <!-- FLOATING QUICK-TOOLS POPOVER -->
             <div id="headerToolsMenu">
                 <button type="button" class="chip-btn" onclick="toggleHeaderToolsMenu(); toggleVisionDrawer();">📷 Camera</button>
                 <button type="button" class="chip-btn" onclick="toggleHeaderToolsMenu(); openGemsModal();">💎 Personas</button>
@@ -2059,23 +2077,24 @@
                             </div>
                         </div>
                         <h1 class="welcome-greeting">How can I help you today?</h1>
-                        <div class="welcome-sub" id="activeGemSubtitle">KIZA • Kinda Intelligent Zippy Assistant</div>
+                        <div class="welcome-sub" id="activeGemSubtitle">KIZA • Multi-Format AI Command Hub</div>
 
                         <div id="voiceHologramBox">🎙️ <span id="voiceHologramText">Listening...</span></div>
 
                         <!-- NATURAL-LANGUAGE ONE-TAP SUGGESTION CHIPS -->
                         <div id="publicCmds">
+                            <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('Research and build a comparison chart and compile a PDF report on ')">🚀 Research ➔ Chart ➔ PDF</button>
+                            <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('Make an Excel spreadsheet (.xlsx) with formulas on ')">📗 Excel (.xlsx)</button>
+                            <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('Make a Word document (.docx) on ')">📘 Word (.docx)</button>
                             <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('Create a presentation on ')">📊 Presentation</button>
-                            <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('Make a PDF report on ')">📄 PDF Report</button>
+                            <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('Make a PDF report on ')">📕 PDF Report</button>
                             <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('Quiz me on ')">📝 Quiz Me</button>
-                            <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('Create a bar chart comparing ')">📈 Interactive Chart</button>
-                            <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('Build an interactive HTML mini app for ')">💻 Mini App</button>
                         </div>
                     </div>
 
                     <!-- CHAT MESSAGES STREAM -->
                     <div id="actionLog" class="log-box">
-                        <div>> <b>[KIZA]:</b> Hi! Ask me in normal sentences to make PDFs, presentations, quizzes, or charts, attach any image/PDF/code file (📎), or tap 🧠 Personalize above to save your Memory Vault!</div>
+                        <div>> <b>[KIZA]:</b> Hi! Ask me in normal sentences to make PDFs, Word docs (.docx), Excel sheets (.xlsx), presentations, or Research-to-PDF pipelines! Attach any handwritten notes photo, PDF, Word, or Excel file (📎) to edit or clone its exact format.</div>
                     </div>
                 </div>
             </div>
@@ -2088,7 +2107,7 @@
                     <!-- CLOUD-SYNCED CUSTOM PERSONAS BAR -->
                     <div id="customGemsBar" class="gems-bar-wrapper"></div>
 
-                    <!-- ATTACHED IMAGE OR DOCUMENT (.PDF, .TXT, .CSV, .PY) PREVIEW BAR -->
+                    <!-- ATTACHED IMAGE, HANDWRITTEN NOTES, PDF, WORD (.DOCX), EXCEL (.XLSX) PREVIEW BAR -->
                     <div id="attachmentPreviewBar">
                         <div style="display:flex; align-items:center; justify-content:space-between; width:100%; gap:10px;">
                             <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
@@ -2102,17 +2121,18 @@
                             <button type="button" class="chip-btn" style="width:auto; padding:4px 8px; color:var(--danger);" onclick="clearImageAttachment()">✕</button>
                         </div>
                         <div class="attach-smart-actions">
-                            <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('Summarize the key points and chapters from this attached file clearly.')">🧠 Summarize File</button>
-                            <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('Quiz me on the contents of this attached file')">📝 Quiz Me on This</button>
-                            <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('Create a presentation based on this attached file')">📊 Turn into PPTX</button>
-                            <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('Make a PDF report based on this attached file')">📄 Make PDF</button>
+                            <button type="button" class="attach-action-pill" onclick="convertHandwrittenPhotoToCleanPDF()">✍️ Handwritten Notes ➔ Clean PDF</button>
+                            <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('Edit and improve this attached file while keeping the exact same page-by-page format, headings, and structure, then generate the updated file.')">✏️ Edit & Keep Same Format</button>
+                            <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('Summarize the key points and chapters from this attached file clearly.')">🧠 Summarize</button>
+                            <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('Export this attached data as a clean Excel spreadsheet (.xlsx) with formulas')">📗 Export as .XLSX</button>
+                            <button type="button" class="attach-action-pill" onclick="triggerAttachmentQuickAction('Quiz me on the contents of this attached file')">📝 Quiz Me</button>
                         </div>
                     </div>
 
                     <div class="input-row">
-                        <input type="file" id="imageUploadInput" accept="image/*,.pdf,.txt,.csv,.py,.js,.html,.json,.md" style="display:none;" onchange="handleImageAttachment(event)">
-                        <button type="button" class="icon-btn" id="attachImgBtn" onclick="document.getElementById('imageUploadInput').click()" title="Attach Image, PDF, CSV, TXT or Python File">📎</button>
-                        <input type="text" id="textInput" placeholder="Ask KIZA anything (e.g. 'Make a PDF on...', 'Remind me in 10m...', or /help)..." autocomplete="off">
+                        <input type="file" id="imageUploadInput" accept="image/*,.pdf,.docx,.doc,.xlsx,.xls,.csv,.txt,.py,.js,.html,.json,.md" style="display:none;" onchange="handleImageAttachment(event)">
+                        <button type="button" class="icon-btn" id="attachImgBtn" onclick="document.getElementById('imageUploadInput').click()" title="Attach Handwritten Photo, PDF, Word (.docx), Excel (.xlsx), CSV or Code File">📎</button>
+                        <input type="text" id="textInput" placeholder="Ask KIZA anything (e.g. 'Research & make a PDF on...', 'Make an Excel sheet on...', or /help)..." autocomplete="off">
                         <button type="button" class="icon-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Spoken Voice">🔊</button>
                         <button type="button" class="icon-btn" id="micBtn" onclick="toggleSpeechRecognition()" title="Voice Input">🎤</button>
                         <button type="button" class="chip-btn" id="wakeToggleBtn" style="width:auto; padding: 5px 10px; font-size: 10.5px;" onclick="toggleWakeWord()" title="Say 'Hello' for Hands-Free">🗣️ Wake: Off</button>
@@ -2138,9 +2158,9 @@
         }
 
         // ==========================================================
-        // 0. INJECT v9.0 COLLAPSIBLE PLANNER & STOP BUTTON STYLES
+        // 0. INJECT v9.5 COLLAPSIBLE PLANNER, CALL MINUTES & STOP STYLES
         // ==========================================================
-        (function injectV90Styles() {
+        (function injectV95Styles() {
             const st = document.createElement('style');
             st.textContent = `
                 details.planner-dropdown {
@@ -2207,6 +2227,38 @@
                     background: rgba(239, 68, 68, 0.12);
                     color: var(--danger);
                     border: 1px solid rgba(239, 68, 68, 0.3);
+                }
+                .call-minutes-card {
+                    background: var(--card-bg) !important;
+                    border: 1.5px solid var(--success) !important;
+                    border-radius: 16px !important;
+                    padding: 14px !important;
+                    margin-top: 6px;
+                    box-shadow: var(--card-shadow);
+                }
+                .excel-preview-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 12px;
+                    background: #ffffff;
+                    color: #0f172a;
+                    border-radius: 8px;
+                    overflow: hidden;
+                }
+                .excel-preview-table th {
+                    background: #059669;
+                    color: #ffffff;
+                    padding: 8px 10px;
+                    text-align: left;
+                    font-weight: 700;
+                    border: 1px solid #047857;
+                }
+                .excel-preview-table td {
+                    padding: 7px 10px;
+                    border: 1px solid #cbd5e1;
+                }
+                .excel-preview-table tr:nth-child(even) td {
+                    background: #f0fdf4;
                 }
             `;
             document.head.appendChild(st);
@@ -2314,7 +2366,7 @@
                     const manifestObj = {
                         name: "KIZA — Kinda Intelligent Zippy Assistant",
                         short_name: "KIZA",
-                        description: "Original AI Command Hub with Live Video, Screen Share, Code Sandbox & Cloud-Synced Personas.",
+                        description: "Original AI Command Hub with Live Video, Whiteboard, Multi-Format Docs (.docx/.xlsx/.pdf) & Cloud Personas.",
                         start_url: window.location.href,
                         display: "standalone",
                         orientation: "any",
@@ -2464,7 +2516,60 @@
                 mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
             }
             checkUrlForSharedMiniApp();
+            setTimeout(checkAndRenderLiveCallMinutes, 450);
         });
+
+        // ==========================================================
+        // 📝 AUTO-GENERATED LIVE CALL MINUTES & ACTION ITEMS RENDERER
+        // ==========================================================
+        function checkAndRenderLiveCallMinutes() {
+            try {
+                const raw = localStorage.getItem('kiza_last_call_minutes');
+                if (!raw) return;
+                localStorage.removeItem('kiza_last_call_minutes');
+                const minObj = JSON.parse(raw);
+                if (!minObj) return;
+
+                const logBox = document.getElementById('actionLog');
+                if (!logBox) return;
+
+                const topicsHtml = (minObj.topics && minObj.topics.length > 0)
+                    ? minObj.topics.map(t => `<div style="font-size:12px; margin-bottom:3px;">• ${t.replace(/</g, '&lt;')}</div>`).join('')
+                    : `<div style="font-size:12px; color:var(--text-muted);">• General voice & vision session</div>`;
+
+                const decisionsHtml = (minObj.decisions && minObj.decisions.length > 0)
+                    ? minObj.decisions.map(d => `<div style="font-size:12px; margin-bottom:3px; color:var(--text-main);">✓ ${d.replace(/</g, '&lt;')}</div>`).join('')
+                    : `<div style="font-size:12px; color:var(--text-muted);">✓ Live visual & spoken assistance completed</div>`;
+
+                const card = document.createElement('div');
+                card.className = "call-minutes-card";
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid var(--card-border); padding-bottom:8px; margin-bottom:10px;">
+                        <div>
+                            <span style="font-size:10px; font-weight:800; color:var(--success); background:rgba(16,185,129,0.12); padding:3px 9px; border-radius:999px;">📞 LIVE CALL MINUTES & SUMMARY</span>
+                            <div style="font-weight:800; font-size:13.5px; margin-top:4px;">Call Duration: ${minObj.duration || '00:00'} • Ended at ${minObj.timestamp || 'Just now'}</div>
+                        </div>
+                        <div style="display:flex; gap:6px;">
+                            <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; font-size:11px;" onclick="prefillInput('Make a PDF report summarizing my last Live Call'); submitCommand();">📕 Save as PDF</button>
+                            <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; font-size:11px; color:var(--accent-primary);" onclick="openMissionsModal()">📋 Tasks Board</button>
+                        </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:10px;">
+                        <div style="background:var(--bg-surface); padding:9px 11px; border-radius:10px; border:1px solid var(--card-border);">
+                            <div style="font-size:10.5px; font-weight:800; color:var(--accent-primary); margin-bottom:5px;">🗣️ TOPICS DISCUSSED</div>
+                            ${topicsHtml}
+                        </div>
+                        <div style="background:var(--bg-surface); padding:9px 11px; border-radius:10px; border:1px solid var(--card-border);">
+                            <div style="font-size:10.5px; font-weight:800; color:var(--success); margin-bottom:5px;">🎯 KEY TAKEAWAYS & ANSWERS</div>
+                            ${decisionsHtml}
+                        </div>
+                    </div>
+                `;
+                logBox.appendChild(card);
+                logBox.scrollTop = logBox.scrollHeight;
+                showNotification("📞 Call Minutes Saved", `Summary of your ${minObj.duration} Live Call posted to chat!`, false, { skipStore: true });
+            } catch (e) {}
+        }
 
         function renderMathInElementSafe(el) {
             if (!el || typeof renderMathInElement !== "function") return;
@@ -2689,7 +2794,7 @@
         }
 
         // ==========================================================
-        // 📘 INTERACTIVE TUTORIAL PDF CHOOSER (RANK 5 SAFE)
+        // 📘 READ-ONLY OFFICIAL TUTORIAL PDF VIEWER (tutorial.pdf)
         // ==========================================================
         function openTutorialPromptModal() {
             toggleMobileSidebar(false);
@@ -2702,29 +2807,30 @@
 
         function openInteractiveTutorialGuidePDF() {
             closeTutorialPromptModal();
-            const tutorialRaw = [
-                "SUBTITLE: Official 5-Tier Role Hierarchy, Natural-Language AI Studio & Security Guide",
-                "KPI: Role System | 5 Tiers | Rank 1 (Master Owner) to Rank 5 (User)",
-                "KPI: AI Studio | Natural Sentences | Make PDFs, PPTX, Quizzes, Charts & Code",
-                "KPI: Protection | Face ID + PIN | New-Device Challenge & Login Audit Log",
-                "SECTION: 1. THE 5-TIER CLEARANCE HIERARCHY",
-                "KIZA organizes all members into 5 structured clearance tiers: Rank 1 (Master Owner — Viyan Arora, Creator & Lead Architect), Rank 2 (Owner — Executive Co-Owners), Rank 3 (Moderator — Team & Safety Moderators), Rank 4 (Admin — System Operations & Support), and Rank 5 (User — Full Creative & Study Workspace Access).",
-                "CALLOUT: Every user has complete control over their own chat sessions, Custom Personas (💎), Pinned Replies (📌), and Personalize Memory Vault (🧠).",
-                "SECTION: 2. USING AI STUDIO WITH NATURAL SENTENCES",
-                "- Presentations & PDFs: Simply type 'Create a presentation on...' or 'Make a PDF report on...' to open the KIZA Preview Studio.",
-                "- Interactive Quizzes & Charts: Ask 'Quiz me on...' for a 3-question flashcard test, or 'Create a bar chart comparing...' for live Chart.js graphs.",
-                "- Multi-File Reader (📎): Attach any Image, .PDF, .TXT, .CSV, or .PY file to extract text, summarize chapters, or turn your notes into slides.",
-                "- Multilingual Voice (🔊): Speak or type in English, Hindi, or Punjabi and KIZA automatically matches your language and voice accent.",
-                "SECTION: 3. SECURITY COMMANDS & ACCOUNT PROTECTION",
-                "TABLE_HEADER: Feature / Command | Clearance | Purpose",
-                "TABLE_ROW: /help | All Users (Ranks 1–5) | Opens this Interactive Tutorial PDF Chooser & security manifest",
-                "TABLE_ROW: /logoutall [pin] | All Users (Ranks 1–5) | Remotely signs out all other devices using your Backup PIN",
-                "TABLE_ROW: /telemetry & /threats | Ranks 1–4 | Inspects live server telemetry, latency, and security activity",
-                "TABLE_ROW: /banip & /giverank | Ranks 1–3 | Enforces timed IP bans (1h/24h/perm) and manages user roles",
-                "SECTION: 4. HARDWARE SELECTION & APP INSTALLATION",
-                "Open ⚙️ Settings to select your preferred Camera and Microphone, review your personal Account Login & Location Audit Log, or click 📲 Install to run KIZA as a standalone full-screen app on PC, tablet, or phone."
-            ].join("\n");
-            prepareAndPreviewUniversalFile("pdf", "KIZA Official User & Hierarchy Guide", tutorialRaw, null, "cyber_dark");
+            const pdfUrl = "tutorial.pdf";
+
+            const logBox = document.getElementById('actionLog');
+            const card = document.createElement('div');
+            card.style.background = "var(--card-bg)";
+            card.style.border = "1.5px solid var(--accent-primary)";
+            card.style.borderRadius = "14px";
+            card.style.padding = "14px";
+            card.style.marginTop = "6px";
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                    <div>
+                        <span style="font-size:10.5px; font-weight:700; color:var(--accent-primary); background:var(--chip-bg); padding:3px 9px; border-radius:6px;">📘 OFFICIAL READ-ONLY PDF</span>
+                        <div style="font-weight:800; font-size:14px; margin-top:4px;">KIZA Official User & Hierarchy Guide (tutorial.pdf)</div>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <a href="${pdfUrl}" target="_blank" rel="noopener" class="chip-btn" style="width:auto; padding:6px 12px; font-size:11px; text-decoration:none;">📖 Open Full Tab</a>
+                        <a href="${pdfUrl}" download="KIZA_Official_Tutorial_Guide.pdf" class="send-btn" style="padding:6px 13px; font-size:11px; text-decoration:none;">⬇️ Download PDF</a>
+                    </div>
+                </div>
+                <iframe src="${pdfUrl}#toolbar=0" style="width:100%; height:420px; border:1px solid var(--card-border); border-radius:10px; background:#0f172a;"></iframe>
+            `;
+            logBox.appendChild(card);
+            logBox.scrollTop = logBox.scrollHeight;
         }
 
         // ==========================================================
@@ -2921,7 +3027,7 @@
                 if (activeCustomGem) {
                     subEl.innerHTML = `<span style="color:var(--accent-primary); font-weight:700;">${activeCustomGem.emoji || '💎'} Active Persona: ${activeCustomGem.name}</span>`;
                 } else {
-                    subEl.innerText = "KIZA • Kinda Intelligent Zippy Assistant";
+                    subEl.innerText = "KIZA • Multi-Format AI Command Hub";
                 }
             }
         }
@@ -3097,6 +3203,8 @@
 
         let attachedImageBase64 = null;
         let attachedImageName = "";
+        let lastAttachedFileTopic = "";
+        let lastUploadedDocumentContext = "";
         let attachedImageExtractedContext = "";
         let isScanningAttachment = false;
         let attachmentScanPromise = null;
@@ -3405,8 +3513,8 @@
         };
 
         const DEFAULT_UPDATES_FALLBACK = [
-            { version: "v9.0", title: "Personalize Memory Vault, Multi-File PDF/Code Reader, Chart.js & Telemetry Hub", description: "Added Cross-Chat Memory Vault & Personalize Profile button, Multi-File (.pdf, .txt, .csv, .py) Reader, Chart.js Graphs, Multilingual Voice (EN/HI/PA), Pinned Drawer, New-Device PIN Challenge, Timed IP Bans & Live Telemetry.", author: "Viyan Arora", date: "LIVE" },
-            { version: "v8.1", title: "Live GPS Weather Telemetry, Collapsible Step Plan & Stop Response Button", description: "Added real-time GPS reverse-geocoding + Open-Meteo live weather for 'near me' queries, collapsible Step-by-Step Plan dropdowns, and a live Stop button.", author: "Viyan Arora", date: "ACTIVE" }
+            { version: "v9.5", title: "Word (.docx) & Excel (.xlsx) Studio, Handwritten Notes-to-PDF & Live Call Whiteboard", description: "Added Mammoth.js Word & SheetJS Excel readers/exporters with formulas, Handwritten Photo-to-Clean-PDF, Multi-Step Research-to-PDF pipelines, and Live Call Whiteboard + Push-to-Talk + Auto Call Minutes.", author: "Viyan Arora", date: "LIVE" },
+            { version: "v9.0", title: "Personalize Memory Vault, Multi-File PDF/Code Reader, Chart.js & Telemetry Hub", description: "Added Cross-Chat Memory Vault & Personalize Profile button, Multi-File Reader, Chart.js Graphs, Multilingual Voice (EN/HI/PA), Pinned Drawer, New-Device PIN Challenge, Timed IP Bans & Live Telemetry.", author: "Viyan Arora", date: "ACTIVE" }
         ];
 
         // ==========================================================
@@ -3487,7 +3595,7 @@
                     if (blob) {
                         e.preventDefault();
                         processAttachedImageFileObject(blob, `Clipboard_Paste_${Date.now().toString().slice(-4)}.png`);
-                        showNotification("Clipboard Image Pasted", "Screenshot attached! Scanning visual & OCR text...", false, { skipStore: true });
+                        showNotification("Clipboard Image Pasted", "Screenshot attached! Tap '✍️ Handwritten Notes ➔ Clean PDF' or any quick action.", false, { skipStore: true });
                         break;
                     }
                 }
@@ -3517,13 +3625,14 @@
         });
 
         // ==========================================================
-        // SMART NATURAL-LANGUAGE FOLLOW-UP CHIPS
+        // SMART NATURAL-LANGUAGE FOLLOW-UP CHIPS (NO "Summarize the ke"!)
         // ==========================================================
         function renderDynamicFollowUpChips(userQuery, aiReply, fileIntent) {
             const cleanQ = String(userQuery || "")
                 .replace(/\[ATTACHED IMAGE TELEMETRY:[\s\S]*$/i, '')
                 .replace(/\[ATTACHED DOCUMENT CONTENT[\s\S]*$/i, '')
                 .replace(/\[LIVE USER GPS[\s\S]*$/i, '')
+                .replace(/\[FORMAT INSTRUCTION:[\s\S]*$/i, '')
                 .trim();
             const lowQ = cleanQ.toLowerCase().replace(/[!?.,]+$/g, '').trim();
 
@@ -3541,26 +3650,32 @@
             const oldRows = logBox.querySelectorAll('.followup-chips-row');
             oldRows.forEach(r => r.remove());
 
-            const shortTopic = cleanQ
-                .replace(/^(what is|what's|whats|whts|what are|explain|tell me about|how does|how do|who is|define|describe|make a|create a|generate a|write a|give me a|help with a|can you|the)\s+/i, '')
-                .replace(/\b(near me|right now|today|pdf|pptx|ppt|presentation|report)\b/gi, '')
+            let shortTopic = cleanQ
+                .replace(/^(summarize\s+the\s+key\s+points\s+and\s+chapters\s+from\s+this\s+attached\s+file\s+clearly|edit\s+and\s+improve\s+this\s+attached\s+.*|export\s+this\s+attached\s+data\s+as\s+.*|analyze\s+and\s+summarize\s+this\s+attached\s+file.*|explain\s+and\s+summarize\s+everything.*|extract\s+all\s+visible\s+text.*|quiz\s+me\s+on\s+the\s+contents\s+of\s+this\s+attached\s+file|convert\s+these\s+handwritten\s+notes.*)/i, '')
+                .replace(/^(research\s+and\s+build\s+a\s+comparison\s+chart\s+and\s+compile\s+a\s+pdf\s+report\s+on|what is|what's|whats|whts|what are|explain|summarize|tell me about|how does|how do|who is|define|describe|make a|make an|create a|generate a|write a|give me a|help with a|can you|the)\s+/i, '')
+                .replace(/\b(from this attached file|this attached file|attached file|clearly|in detail|near me|right now|today|pdf|pptx|ppt|docx|doc|xlsx|excel|word|spreadsheet|document|presentation|report|with formulas)\b/gi, '')
                 .replace(/[?.!]+$/, '')
-                .trim()
-                .slice(0, 32) || "this topic";
+                .trim();
+
+            if (!shortTopic || shortTopic.length < 3) {
+                shortTopic = (lastAttachedFileTopic || "This Topic").replace(/\.(pdf|docx|doc|xlsx|xls|txt|csv|py|png|jpg|jpeg)$/i, '');
+            }
+            shortTopic = shortTopic.slice(0, 26);
 
             let suggestions = [];
             if (fileIntent) {
                 suggestions = [
                     { label: "👁️ Open Preview Studio", action: () => openFilePreviewModal() },
-                    { label: `🔬 Deep Research on ${shortTopic.slice(0, 16)}`, cmd: `Do deep research on ${shortTopic}` },
-                    { label: `📝 Quiz Me`, cmd: `Quiz me on ${shortTopic}` }
+                    { label: "📗 Export as .XLSX", action: () => { switchPreviewExportFormat('xlsx'); confirmAndDownloadPreviewedFile(); } },
+                    { label: "📘 Export as .DOCX", action: () => { switchPreviewExportFormat('docx'); confirmAndDownloadPreviewedFile(); } },
+                    { label: `📝 Quiz on ${shortTopic.slice(0, 14)}`, cmd: `Quiz me on ${shortTopic}` }
                 ];
             } else {
                 suggestions = [
-                    { label: `📊 Presentation on ${shortTopic.slice(0, 16)}`, cmd: `Create a presentation on ${shortTopic}` },
-                    { label: `📄 Make PDF Report`, cmd: `Make a PDF report on ${shortTopic}` },
-                    { label: `📈 Chart Comparison`, cmd: `Create a bar chart comparing key metrics of ${shortTopic}` },
-                    { label: `📝 Interactive Quiz`, cmd: `Quiz me on ${shortTopic}` }
+                    { label: `✏️ Same-Format PDF on ${shortTopic.slice(0, 12)}`, cmd: `Make a PDF report on ${shortTopic} keeping the exact same page structure and format` },
+                    { label: `📗 Excel (.xlsx) on ${shortTopic.slice(0, 12)}`, cmd: `Make an Excel spreadsheet (.xlsx) with formulas on ${shortTopic}` },
+                    { label: `📊 Presentation on ${shortTopic.slice(0, 12)}`, cmd: `Create a presentation on ${shortTopic}` },
+                    { label: `📝 Quiz on ${shortTopic.slice(0, 12)}`, cmd: `Quiz me on ${shortTopic}` }
                 ];
             }
 
@@ -3959,9 +4074,9 @@
             if (introMatch) {
                 return introMatch[1].trim();
             }
-            if (/SLIDE\s*1\s*:|SUBTITLE:|KPI:|SECTION:/i.test(cleaned)) {
-                const beforeTags = cleaned.split(/SLIDE\s*1\s*:|SUBTITLE:|KPI:|SECTION:/i)[0].trim();
-                return beforeTags || "I've compiled your visual document and opened it in the KIZA Preview Studio!";
+            if (/SLIDE\s*1\s*:|SUBTITLE:|KPI:|SECTION:|TABLE_HEADER:/i.test(cleaned)) {
+                const beforeTags = cleaned.split(/SLIDE\s*1\s*:|SUBTITLE:|KPI:|SECTION:|TABLE_HEADER:/i)[0].trim();
+                return beforeTags || "I've compiled your visual document and opened it in the KIZA Multi-Format Preview Studio!";
             }
             return cleaned || (fullText.includes("```") ? "I've generated your interactive module below! Click ▶ Run Live, 🔗 Share Link, ⚡ Auto-Fix, 📋 Copy, or ⬇️ Download." : "");
         }
@@ -4005,7 +4120,7 @@
             s = s.replace(/\s+(?:with|in|having|for)\s+\d+\s+(?:slides|pages|sections|points|bullets)\b.*$/i, '').trim();
             s = s.replace(/^(a|an|the|topic|subject)\s+/i, '').replace(/[.,;:-]+$/, '').trim();
 
-            return { cleanTopic: s || "KIZA Briefing", styleTheme };
+            return { cleanTopic: s || "KIZA Document", styleTheme };
         }
 
         function detectClientSideFileIntent(rawCmd) {
@@ -4014,15 +4129,16 @@
             if (low.startsWith("/")) return null;
 
             const extPatterns = [
+                { regex: /\b(xlsx|xls|excel\s*sheet|excel\s*workbook|excel|spreadsheet)\b/i, ext: 'xlsx' },
+                { regex: /\b(docx|doc|word\s*file|word\s*document|word\s*doc)\b/i, ext: 'docx' },
                 { regex: /\b(pptx|ppt|powerpoint|slide\s*deck|presentation|slides)\b/i, ext: 'pptx' },
                 { regex: /\b(pdf|dossier)\b/i, ext: 'pdf' },
-                { regex: /\b(docx|doc|word\s*file|word\s*document)\b/i, ext: 'doc' },
-                { regex: /\b(csv|spreadsheet|excel)\b/i, ext: 'csv' }
+                { regex: /\b(csv)\b/i, ext: 'csv' }
             ];
             for (const item of extPatterns) {
                 if (item.regex.test(low)) {
                     const m = clean.match(/\b(?:on|about|for|titled|called|regarding|of)\s+(.+)$/i);
-                    let rawTopic = m ? m[1].trim() : clean.replace(/\b(please|can\s+you|could\s+you|help\s+me|help\s+with|gen\w*|mak\w*|creat\w*|buld\w*|build\w*|export\w*|download\w*|writ\w*|prepar\w*|give\s+me|send\s+me|a|an|the|file|report|pptx|ppt|powerpoint|slide\s*deck|presentation|slides|pdf|dossier|docx|doc|csv)\b/gi, ' ').replace(/\s+/g, ' ').trim();
+                    let rawTopic = m ? m[1].trim() : clean.replace(/\b(please|can\s+you|could\s+you|help\s+me|help\s+with|gen\w*|mak\w*|creat\w*|buld\w*|build\w*|export\w*|download\w*|writ\w*|prepar\w*|give\s+me|send\s+me|convert|to|into|clean|a|an|the|file|report|pptx|ppt|powerpoint|slide\s*deck|presentation|slides|pdf|dossier|docx|doc|word|xlsx|xls|excel|spreadsheet|csv|with\s+formulas)\b/gi, ' ').replace(/\s+/g, ' ').trim();
                     const parsed = extractClientTopicAndStyle(rawTopic);
                     return { ext: item.ext, topic: parsed.cleanTopic, styleTheme: parsed.styleTheme, fullRawTopic: rawTopic };
                 }
@@ -4057,7 +4173,7 @@
         }
 
         // ==========================================================
-        // 📄 MULTI-FILE DOCUMENT READER (.PDF, .TXT, .CSV, .PY) & IMAGE OCR
+        // 📄 MULTI-FILE DOCUMENT READER (.PDF, .DOCX, .XLSX, .CSV, .PY)
         // ==========================================================
         async function extractTextFromUploadedPDF(file) {
             if (typeof pdfjsLib === "undefined") {
@@ -4065,49 +4181,132 @@
             }
             const arrayBuffer = await file.arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            const maxPages = Math.min(pdf.numPages, 12);
+            const maxPages = Math.min(pdf.numPages, 15);
             let extracted = [];
             for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
                 const page = await pdf.getPage(pageNum);
                 const content = await page.getTextContent();
-                const pageText = content.items.map(item => item.str).join(" ");
-                extracted.push(`[Page ${pageNum}]: ${pageText}`);
+                const pageText = content.items.map(item => item.str).join(" ").replace(/\s+/g, " ").trim();
+                extracted.push(`SECTION: PAGE ${pageNum}\n${pageText}`);
             }
-            return extracted.join("\n").slice(0, 4200);
+            const fullText = extracted.join("\n\n").slice(0, 5000);
+            lastUploadedDocumentContext = fullText;
+            lastAttachedFileTopic = (file.name || "Uploaded_PDF").replace(/\.pdf$/i, '');
+            return fullText;
+        }
+
+        async function extractTextFromUploadedDOCX(file) {
+            if (typeof mammoth === "undefined") {
+                return "Word document attached (Mammoth.js loading).";
+            }
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer });
+            const rawText = (result.value || "").trim().slice(0, 5000);
+            lastUploadedDocumentContext = rawText;
+            lastAttachedFileTopic = (file.name || "Word_Document").replace(/\.(docx|doc)$/i, '');
+            return rawText;
+        }
+
+        async function extractTextFromUploadedXLSX(file) {
+            if (typeof XLSX === "undefined") {
+                return "Excel workbook attached (SheetJS loading).";
+            }
+            const arrayBuffer = await file.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer, { type: "array" });
+            let outBlocks = [];
+            workbook.SheetNames.slice(0, 4).forEach(sheetName => {
+                const sheet = workbook.Sheets[sheetName];
+                const csvText = XLSX.utils.sheet_to_csv(sheet);
+                outBlocks.push(`[SHEET: ${sheetName}]\n${csvText}`);
+            });
+            const combined = outBlocks.join("\n\n").slice(0, 5000);
+            lastUploadedDocumentContext = combined;
+            lastAttachedFileTopic = (file.name || "Excel_Sheet").replace(/\.(xlsx|xls)$/i, '');
+            return combined;
         }
 
         function processAttachedImageFileObject(file, customName = null) {
             if (!file) return;
             playTacticalSFX("sonar");
             attachedImageName = customName || file.name || "attached_file";
+            lastAttachedFileTopic = attachedImageName.replace(/\.[a-z0-9]+$/i, '');
             const lowName = attachedImageName.toLowerCase();
             const thumbEl = document.getElementById('attachmentThumb');
             const docIconEl = document.getElementById('attachmentDocIcon');
 
-            // 1. Check if it is a PDF or Code/Text Document (.pdf, .txt, .csv, .py, .js, .html, .json, .md)
+            // 1. PDF Document
             if (lowName.endsWith(".pdf") || file.type === "application/pdf") {
                 isScanningAttachment = true;
                 attachedImageBase64 = null;
                 if (thumbEl) thumbEl.style.display = "none";
                 if (docIconEl) { docIconEl.style.display = "inline-block"; docIconEl.innerText = "📕"; }
                 document.getElementById('attachmentName').innerText = `📎 ${attachedImageName}`;
-                document.getElementById('attachmentOcrStatus').innerText = "📖 Extracting text from PDF pages...";
+                document.getElementById('attachmentOcrStatus').innerText = "📖 Extracting pages & structure from PDF...";
                 document.getElementById('attachmentPreviewBar').style.display = "flex";
 
                 attachmentScanPromise = (async () => {
                     try {
                         const pdfText = await extractTextFromUploadedPDF(file);
                         attachedImageExtractedContext = `[ATTACHED DOCUMENT CONTENT (${attachedImageName}):\n${pdfText}]`;
-                        document.getElementById('attachmentOcrStatus').innerText = `✓ PDF text extracted (${pdfText.length} chars) — Tap a quick action below!`;
+                        document.getElementById('attachmentOcrStatus').innerText = `✓ PDF ready (${pdfText.length} chars) — Tap Edit & Keep Same Format, Summarize, or Quiz!`;
                     } catch (e) {
-                        attachedImageExtractedContext = `[ATTACHED DOCUMENT CONTENT (${attachedImageName}): PDF Document attached by user]`;
-                        document.getElementById('attachmentOcrStatus').innerText = "✓ PDF ready — Tap a quick action below!";
+                        attachedImageExtractedContext = `[ATTACHED DOCUMENT CONTENT (${attachedImageName}): PDF Document attached]`;
+                        document.getElementById('attachmentOcrStatus').innerText = "✓ PDF ready — Tap an action below!";
                     }
                     isScanningAttachment = false;
                 })();
                 return;
             }
 
+            // 2. Word Document (.docx / .doc)
+            if (lowName.endsWith(".docx") || lowName.endsWith(".doc")) {
+                isScanningAttachment = true;
+                attachedImageBase64 = null;
+                if (thumbEl) thumbEl.style.display = "none";
+                if (docIconEl) { docIconEl.style.display = "inline-block"; docIconEl.innerText = "📘"; }
+                document.getElementById('attachmentName').innerText = `📎 ${attachedImageName}`;
+                document.getElementById('attachmentOcrStatus').innerText = "📘 Reading Word (.docx) paragraphs & layout...";
+                document.getElementById('attachmentPreviewBar').style.display = "flex";
+
+                attachmentScanPromise = (async () => {
+                    try {
+                        const docText = await extractTextFromUploadedDOCX(file);
+                        attachedImageExtractedContext = `[ATTACHED WORD DOCUMENT (${attachedImageName}):\n${docText}]`;
+                        document.getElementById('attachmentOcrStatus').innerText = `✓ Word Doc loaded (${docText.length} chars) — Edit, Summarize, or Export as PDF/DOCX!`;
+                    } catch (e) {
+                        attachedImageExtractedContext = `[ATTACHED WORD DOCUMENT (${attachedImageName})]`;
+                        document.getElementById('attachmentOcrStatus').innerText = "✓ Word Doc ready!";
+                    }
+                    isScanningAttachment = false;
+                })();
+                return;
+            }
+
+            // 3. Excel Workbook (.xlsx / .xls)
+            if (lowName.endsWith(".xlsx") || lowName.endsWith(".xls")) {
+                isScanningAttachment = true;
+                attachedImageBase64 = null;
+                if (thumbEl) thumbEl.style.display = "none";
+                if (docIconEl) { docIconEl.style.display = "inline-block"; docIconEl.innerText = "📗"; }
+                document.getElementById('attachmentName').innerText = `📎 ${attachedImageName}`;
+                document.getElementById('attachmentOcrStatus').innerText = "📗 Parsing Excel (.xlsx) sheets & cells...";
+                document.getElementById('attachmentPreviewBar').style.display = "flex";
+
+                attachmentScanPromise = (async () => {
+                    try {
+                        const xlsText = await extractTextFromUploadedXLSX(file);
+                        attachedImageExtractedContext = `[ATTACHED EXCEL WORKBOOK (${attachedImageName}):\n${xlsText}]`;
+                        document.getElementById('attachmentOcrStatus').innerText = `✓ Excel Sheets loaded — Edit cells, Plot Chart, or Export updated .XLSX!`;
+                    } catch (e) {
+                        attachedImageExtractedContext = `[ATTACHED EXCEL WORKBOOK (${attachedImageName})]`;
+                        document.getElementById('attachmentOcrStatus').innerText = "✓ Excel Workbook ready!";
+                    }
+                    isScanningAttachment = false;
+                })();
+                return;
+            }
+
+            // 4. Text / CSV / Code Files
             if (/\.(txt|csv|py|js|html|css|json|md|sql|c|cpp)$/i.test(lowName) || file.type.startsWith("text/")) {
                 isScanningAttachment = true;
                 attachedImageBase64 = null;
@@ -4120,9 +4319,10 @@
                 attachmentScanPromise = new Promise((resolveScan) => {
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                        const rawTxt = String(e.target.result || "").slice(0, 4500);
+                        const rawTxt = String(e.target.result || "").slice(0, 4800);
+                        lastUploadedDocumentContext = rawTxt;
                         attachedImageExtractedContext = `[ATTACHED DOCUMENT CONTENT (${attachedImageName}):\n${rawTxt}]`;
-                        document.getElementById('attachmentOcrStatus').innerText = `✓ File loaded (${rawTxt.length} chars) — Tap Summarize, Quiz, or Chart!`;
+                        document.getElementById('attachmentOcrStatus').innerText = `✓ File loaded (${rawTxt.length} chars) — Tap Summarize, Export .XLSX, or Quiz!`;
                         isScanningAttachment = false;
                         resolveScan();
                     };
@@ -4132,7 +4332,7 @@
                 return;
             }
 
-            // 2. Standard Image Attachment + OCR
+            // 5. Image / Handwritten Notes Photo + OCR
             isScanningAttachment = true;
             if (thumbEl) thumbEl.style.display = "block";
             if (docIconEl) docIconEl.style.display = "none";
@@ -4143,7 +4343,7 @@
                     const img = new Image();
                     img.onload = async () => {
                         const canvas = document.createElement('canvas');
-                        const maxDim = 800;
+                        const maxDim = 900;
                         let w = img.naturalWidth || 640;
                         let h = img.naturalHeight || 480;
                         if (w > maxDim || h > maxDim) {
@@ -4153,11 +4353,11 @@
                         canvas.width = w;
                         canvas.height = h;
                         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        attachedImageBase64 = canvas.toDataURL('image/jpeg', 0.78);
+                        attachedImageBase64 = canvas.toDataURL('image/jpeg', 0.8);
 
                         document.getElementById('attachmentThumb').src = attachedImageBase64;
                         document.getElementById('attachmentName').innerText = `📎 ${attachedImageName}`;
-                        document.getElementById('attachmentOcrStatus').innerText = "🔍 Scanning image text & colors...";
+                        document.getElementById('attachmentOcrStatus').innerText = "🔍 Scanning image & handwriting OCR...";
                         document.getElementById('attachmentPreviewBar').style.display = "flex";
 
                         const visualMeta = analyzeImageVisualTelemetry(img, attachedImageName);
@@ -4167,12 +4367,12 @@
                             try {
                                 const ocrResult = await Promise.race([
                                     Tesseract.recognize(attachedImageBase64, 'eng'),
-                                    new Promise((_, rej) => setTimeout(() => rej(new Error("OCR timeout")), 4500))
+                                    new Promise((_, rej) => setTimeout(() => rej(new Error("OCR timeout")), 5000))
                                 ]);
                                 const extractedText = (ocrResult?.data?.text || "").replace(/\s+/g, ' ').trim();
                                 if (extractedText && extractedText.length > 1) {
-                                    attachedImageExtractedContext = `[ATTACHED IMAGE TELEMETRY: ${visualMeta} | VISIBLE TEXT IN IMAGE (OCR): "${extractedText.slice(0, 600)}"]`;
-                                    document.getElementById('attachmentOcrStatus').innerText = "✓ Image & text ready — Tap a quick action below!";
+                                    attachedImageExtractedContext = `[ATTACHED IMAGE TELEMETRY: ${visualMeta} | VISIBLE TEXT / HANDWRITING IN IMAGE (OCR): "${extractedText.slice(0, 1200)}"]`;
+                                    document.getElementById('attachmentOcrStatus').innerText = "✓ Image & handwriting ready — Tap '✍️ Handwritten Notes ➔ Clean PDF' or Summarize!";
                                 } else {
                                     document.getElementById('attachmentOcrStatus').innerText = "✓ Image ready — Tap a quick action below!";
                                 }
@@ -4193,6 +4393,19 @@
                 };
                 reader.readAsDataURL(file);
             });
+        }
+
+        // ==========================================================
+        // ✍️ HANDWRITTEN NOTES PHOTO-TO-CLEAN-PDF ACTION
+        // ==========================================================
+        function convertHandwrittenPhotoToCleanPDF() {
+            if (!attachedImageBase64 && !attachedImageExtractedContext) {
+                showNotification("Attach Photo First", "Attach or paste a photo of your handwritten notebook page first!", true, { skipStore: true });
+                return;
+            }
+            const cleanTitle = (lastAttachedFileTopic || "Handwritten Study Notes").replace(/[_-]+/g, ' ');
+            document.getElementById('textInput').value = `Make a clean typed PDF report on ${cleanTitle} by transcribing all handwritten text, cleaning up grammar, formatting math/science equations in LaTeX ($...$), adding relevant diagrams, and organizing into clear study sections.`;
+            submitCommand();
         }
 
         function handleImageAttachment(event) {
@@ -4222,7 +4435,6 @@
             const bar = document.createElement('div');
             bar.className = "msg-action-bar";
 
-            // 1. Copy Button
             const copyBtn = document.createElement('button');
             copyBtn.type = "button";
             copyBtn.className = "msg-action-btn";
@@ -4234,7 +4446,6 @@
             };
             bar.appendChild(copyBtn);
 
-            // 2. Regenerate Button
             if (originalUserPrompt) {
                 const regenBtn = document.createElement('button');
                 regenBtn.type = "button";
@@ -4244,7 +4455,6 @@
                 bar.appendChild(regenBtn);
             }
 
-            // 3. Read Aloud Button (Multilingual EN/HI/PA)
             const readBtn = document.createElement('button');
             readBtn.type = "button";
             readBtn.className = "msg-action-btn";
@@ -4252,7 +4462,6 @@
             readBtn.onclick = () => speakMessageDirectly(cleanMessageText);
             bar.appendChild(readBtn);
 
-            // 4. Pin Button
             const pinnedList = safeGetJSON(getPinnedStorageKey(), []);
             const isAlreadyPinned = pinnedList.some(p => p.text === cleanMessageText);
             const pinBtn = document.createElement('button');
@@ -4300,7 +4509,6 @@
 
         function parseNaturalLanguageReminder(rawText) {
             const s = (rawText || "").trim();
-            // Match "remind me in X sec/min/hr to [task]" or "set a timer for X min [task]"
             const inMatch = s.match(/(?:remind\s+me\s+in|timer\s+for|in)\s+(\d+)\s*(s|sec|secs|second|seconds|m|min|mins|minute|minutes|h|hr|hrs|hour|hours)\s*(?:to|for|about|:)?\s*(.*)$/i);
             if (inMatch && /(remind|timer|alarm)/i.test(s)) {
                 const amount = parseInt(inMatch[1], 10);
@@ -4312,7 +4520,6 @@
                 return { title: taskTitle, targetTimeMs: Date.now() + ms };
             }
 
-            // Match "remind me at HH:MM [am/pm] to [task]"
             const atMatch = s.match(/remind\s+me\s+at\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*(?:to|for|about|:)?\s*(.*)$/i);
             if (atMatch) {
                 let hrs = parseInt(atMatch[1], 10);
@@ -4342,7 +4549,6 @@
             saveSmartReminders();
             renderActiveRemindersList();
 
-            // Also sync to Tasks board on server
             if (currentUser !== "Guest") {
                 fetch(`${SERVER_URL}/api/missions`, {
                     method: "POST",
@@ -4446,6 +4652,9 @@
             return webImageCache[cleanQ] || `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanQ + " clean educational illustration")}?width=640&height=380&nologo=true`;
         }
 
+        // ==========================================================
+        // MULTI-FORMAT DOCUMENT, EXCEL, EXAM PAPER & LAB MANUAL RENDERER
+        // ==========================================================
         function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark", layoutFormat = "infographic") {
             const parsedTopic = extractClientTopicAndStyle(topicTitle);
             const cleanTopic = parsedTopic.cleanTopic.toUpperCase();
@@ -4610,7 +4819,27 @@
             let headerBannerHTML = "";
             let mainContentWrapperHTML = `${kpiHtml}${imgBlockHtml}${renderedBody}`;
 
-            if (layoutFormat === "academic") {
+            if (layoutFormat === "exam_paper") {
+                headerBannerHTML = `
+                    <div style="border:2px solid #0f172a; padding:16px 20px; margin-bottom:20px; text-align:center; background:#ffffff; color:#0f172a;">
+                        <div style="font-size:11px; font-weight:800; letter-spacing:1.5px;">CBSE PATTERN ASSESSMENT • QUESTION PAPER & ANSWER KEY</div>
+                        <h1 style="margin:6px 0; font-size:21px; font-weight:800;">${cleanTopic}</h1>
+                        <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; border-top:1px solid #cbd5e1; padding-top:8px; margin-top:8px;">
+                            <span>Time Allowed: 2 Hours</span>
+                            <span>Candidate: ${cleanDisplayNameOnly(currentUser)}</span>
+                            <span>Maximum Marks: 40</span>
+                        </div>
+                    </div>
+                `;
+            } else if (layoutFormat === "lab_manual") {
+                headerBannerHTML = `
+                    <div style="border-left:6px solid #059669; background:#ecfdf5; color:#064e3b; padding:16px 20px; border-radius:0 10px 10px 0; margin-bottom:20px;">
+                        <div style="font-size:10px; font-weight:800; letter-spacing:1.5px; color:#059669;">PRACTICAL LAB RECORD • AIM • THEORY • OBSERVATIONS • RESULT</div>
+                        <h1 style="margin:4px 0; font-size:21px; font-weight:800;">${cleanTopic}</h1>
+                        <div style="font-size:11px;">Student: <b>${cleanDisplayNameOnly(currentUser)}</b> • Date: ${new Date().toLocaleDateString('en-IN')}</div>
+                    </div>
+                `;
+            } else if (layoutFormat === "academic") {
                 headerBannerHTML = `
                     <div style="border-bottom:3px double #0284c7; padding-bottom:14px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:flex-end;">
                         <div>
@@ -4667,6 +4896,8 @@
                 subtitle,
                 kpis,
                 charts,
+                tableHeaders,
+                tableRows,
                 activeTheme,
                 html: `
                     <div style="font-family:'Inter', Arial, sans-serif; color:${pal.pdfText}; background:${pal.pdfPageBg}; padding:30px 36px; border-radius:10px;">
@@ -4679,6 +4910,104 @@
                     </div>
                 `
             };
+        }
+
+        function buildExcelSheetPreviewHTML(topicTitle, rawContent) {
+            const parsed = buildDecorativeReportHTML(topicTitle, rawContent);
+            let headers = parsed.tableHeaders.length ? parsed.tableHeaders : ["Item / Metric", "Value", "Benchmark / Notes"];
+            let rows = parsed.tableRows.length ? parsed.tableRows : [];
+
+            if (rows.length === 0 && parsed.charts.length > 0) {
+                headers = ["Category / Factor", "Score / Percentage", "Status"];
+                rows = parsed.charts.map(c => [c.label, c.pct, c.pct >= 75 ? "Optimal" : "Standard"]);
+            }
+            if (rows.length === 0 && parsed.kpis.length > 0) {
+                headers = ["Metric Name", "Recorded Value", "Context"];
+                rows = parsed.kpis.map(k => [k.label, k.value, k.sub]);
+            }
+            if (rows.length === 0) {
+                const lines = stripSlashesFromText(rawContent).split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('AI_INTRO'));
+                rows = lines.slice(0, 12).map((l, idx) => [`Row ${idx + 1}`, l, "Verified"]);
+            }
+
+            return `
+                <div style="background:#ffffff; padding:20px; border-radius:12px; color:#0f172a;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:2px solid #059669; padding-bottom:8px;">
+                        <div>
+                            <span style="font-size:10px; font-weight:800; color:#059669; letter-spacing:1px;">📗 EXCEL WORKBOOK (.XLSX) • CLICK ANY CELL TO EDIT BEFORE EXPORT</span>
+                            <h2 style="margin:3px 0 0 0; font-size:18px;">${parsed.cleanTopic}</h2>
+                        </div>
+                        <span style="font-size:11px; color:#64748b;">Auto-Formula Ready (=SUM / =AVERAGE)</span>
+                    </div>
+                    <table class="excel-preview-table" id="editableExcelPreviewTable">
+                        <thead>
+                            <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+                        </thead>
+                        <tbody>
+                            ${rows.map(r => `<tr>${headers.map((_, cIdx) => `<td>${r[cIdx] !== undefined ? r[cIdx] : ''}</td>`).join('')}</tr>`).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function compileAndDownloadXLSX(topicTitle, rawContent) {
+            const safeTopic = (topicTitle || "KIZA_Workbook").replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30);
+            if (typeof XLSX === "undefined") {
+                triggerTextDownload(`${safeTopic}.csv`, rawContent);
+                return;
+            }
+
+            try {
+                // Read live edited cells directly from the preview table if present!
+                const domTable = document.getElementById('editableExcelPreviewTable');
+                let aoa = [];
+                if (domTable) {
+                    const ths = Array.from(domTable.querySelectorAll('thead th')).map(th => th.innerText.trim());
+                    if (ths.length) aoa.push(ths);
+                    domTable.querySelectorAll('tbody tr').forEach(tr => {
+                        const tds = Array.from(tr.querySelectorAll('td')).map(td => {
+                            const txt = td.innerText.trim();
+                            const numVal = Number(txt.replace(/[%$,]/g, ''));
+                            return (!isNaN(numVal) && txt !== "" && /^[0-9.,%-]+$/.test(txt)) ? numVal : txt;
+                        });
+                        if (tds.some(v => v !== "")) aoa.push(tds);
+                    });
+                }
+
+                if (aoa.length === 0) {
+                    const parsed = buildDecorativeReportHTML(topicTitle, rawContent);
+                    const headers = parsed.tableHeaders.length ? parsed.tableHeaders : ["Item", "Value", "Notes"];
+                    aoa.push(headers);
+                    (parsed.tableRows.length ? parsed.tableRows : [["Sample Item", 100, "Generated by KIZA"]]).forEach(r => aoa.push(r));
+                }
+
+                // Append an automatic Excel Formula Summary Row (=SUM / =AVERAGE) for numeric columns!
+                if (aoa.length >= 3) {
+                    const colCount = aoa[0].length;
+                    const dataStartRow = 2;
+                    const dataEndRow = aoa.length;
+                    const totalRow = ["TOTAL / SUMMARY"];
+                    for (let c = 1; c < colCount; c++) {
+                        const colLetter = XLSX.utils.encode_col(c);
+                        const hasNumbers = aoa.slice(1).some(r => typeof r[c] === "number");
+                        if (hasNumbers) {
+                            totalRow.push({ t: 'n', f: `SUM(${colLetter}${dataStartRow}:${colLetter}${dataEndRow})` });
+                        } else {
+                            totalRow.push("");
+                        }
+                    }
+                    aoa.push(totalRow);
+                }
+
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(aoa);
+                XLSX.utils.book_append_sheet(wb, ws, "KIZA_Data");
+                XLSX.writeFile(wb, `KIZA_${safeTopic}.xlsx`);
+                showNotification("📗 Excel Workbook Saved", `Downloaded KIZA_${safeTopic}.xlsx with live formulas!`, false, { skipStore: true });
+            } catch (e) {
+                triggerTextDownload(`${safeTopic}.csv`, rawContent);
+            }
         }
 
         function parseSlideBlocksFromContent(rawContent) {
@@ -4821,7 +5150,9 @@
         }
 
         async function prepareAndPreviewUniversalFile(ext, topic, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark") {
-            const cleanExt = (ext || "pdf").toLowerCase().trim();
+            let cleanExt = (ext || "pdf").toLowerCase().trim();
+            if (cleanExt === "doc") cleanExt = "docx";
+            if (cleanExt === "xls") cleanExt = "xlsx";
             const parsed = extractClientTopicAndStyle(topic);
             const finalTopic = parsed.cleanTopic;
             const finalTheme = (styleTheme && styleTheme !== "cyber_dark") ? styleTheme : parsed.styleTheme;
@@ -4840,11 +5171,21 @@
 
             const themeDropdown = document.getElementById('previewThemeSelect');
             if (themeDropdown) themeDropdown.value = finalTheme;
+            const expDropdown = document.getElementById('previewExportTypeSelect');
+            if (expDropdown && Array.from(expDropdown.options).some(o => o.value === cleanExt)) {
+                expDropdown.value = cleanExt;
+            }
 
             playTacticalSFX("complete");
             renderInChatVisualFileCard(cleanExt, finalTopic, rawContent, embeddedImgBase64, finalTheme);
             openFilePreviewModal();
-            showNotification("Preview Studio Ready", `Inspect, switch formats, or ask KIZA to edit your ${cleanExt.toUpperCase()} before downloading!`, false, { skipStore: true });
+            showNotification("Studio Ready", `Inspect, edit text/cells directly, switch formats, or download as .${cleanExt.toUpperCase()}!`, false, { skipStore: true });
+        }
+
+        function switchPreviewExportFormat(newExt) {
+            if (!lastCompiledFileCache) return;
+            lastCompiledFileCache.ext = newExt.toLowerCase();
+            openFilePreviewModal();
         }
 
         function openAuditOrChatInPreviewStudio(ext, titleStr, rawTextOrHtml, isHtmlPreview = false) {
@@ -4929,13 +5270,17 @@
             const selectorsBox = document.getElementById('previewLayoutThemeSelectors');
             const reviseBox = document.getElementById('aiRevisePromptContainer');
 
-            titleEl.innerText = `🎨 KIZA Preview Studio • ${topic || 'Document'} (.${ext.toUpperCase()})`;
+            titleEl.innerText = `🎨 KIZA Multi-Format Studio • ${topic || 'Document'} (.${ext.toUpperCase()})`;
             btnEl.innerText = `⬇️ Confirm & Download .${ext.toUpperCase()}`;
 
             if (isPreRenderedAuditHtml) {
                 if (selectorsBox) selectorsBox.style.display = "none";
                 if (reviseBox) reviseBox.style.display = "none";
                 viewport.innerHTML = rawContent;
+            } else if (ext === "xlsx" || ext === "xls") {
+                if (selectorsBox) selectorsBox.style.display = "flex";
+                if (reviseBox) reviseBox.style.display = "flex";
+                viewport.innerHTML = buildExcelSheetPreviewHTML(topic, rawContent);
             } else if (ext === "pptx" || ext === "ppt") {
                 if (selectorsBox) selectorsBox.style.display = "flex";
                 if (reviseBox) reviseBox.style.display = "flex";
@@ -4962,9 +5307,13 @@
         function confirmAndDownloadPreviewedFile() {
             if (!lastCompiledFileCache) return;
             const { ext, topic, rawContent, embeddedImgBase64, styleTheme } = lastCompiledFileCache;
-            const cleanExt = (ext || "txt").toLowerCase().trim();
+            const cleanExt = (ext || "pdf").toLowerCase().trim();
             const safeTopic = (topic || "KIZA_Export").replace(/[^a-zA-Z0-9]/g, '_').slice(0, 32);
 
+            if (cleanExt === "xlsx" || cleanExt === "xls") {
+                compileAndDownloadXLSX(topic, rawContent);
+                return;
+            }
             if (cleanExt === "pdf") {
                 const viewportEl = document.getElementById('filePreviewViewport');
                 const opt = {
@@ -4989,12 +5338,12 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `KIZA_${safeTopic}.doc`;
+                a.download = `KIZA_${safeTopic}.docx`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                showNotification("DOC Downloaded", `Saved document: KIZA_${safeTopic}.doc`, false, { skipStore: true });
+                showNotification("📘 Word Doc Saved", `Saved document: KIZA_${safeTopic}.docx`, false, { skipStore: true });
                 return;
             }
 
@@ -5027,7 +5376,7 @@
                         <span style="font-size:10.5px; font-weight:700; color:var(--accent-primary); background:var(--chip-bg); padding:3px 9px; border-radius:6px;">🎨 ${ext.toUpperCase()} Ready • ${(styleTheme || 'Default').toUpperCase()}</span>
                         <div style="font-weight:700; font-size:13.5px; margin-top:5px;">${parsed.cleanTopic}</div>
                     </div>
-                    <div style="display:flex; gap:6px;">
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
                         <button type="button" class="chip-btn" style="width:auto; padding:6px 12px; font-size:11px;" onclick="openFilePreviewModal()">👁️ Preview & Edit</button>
                         <button type="button" class="send-btn" style="padding:6px 13px; font-size:11px;" onclick="confirmAndDownloadPreviewedFile()">⬇️ Download .${ext.toUpperCase()}</button>
                     </div>
@@ -5582,7 +5931,7 @@
         // 🧹 SECURITY & TUTORIAL ONLY SLASH COMMANDS CATALOG
         // ==========================================================
         const SLASH_COMMANDS_CATALOG = [
-            { cmd: "/help", desc: "Open Official KIZA Tutorial PDF Chooser & security manifest", maxRank: 5 },
+            { cmd: "/help", desc: "Open Official Read-Only Tutorial PDF Guide & security manifest", maxRank: 5 },
             { cmd: "/logoutall ", desc: "Sign out all other devices using your Backup PIN: /logoutall [pin]", maxRank: 5 },
             { cmd: "/telemetry", desc: "Open Real-Time System Telemetry Panel (Ranks 1–4)", maxRank: 4 },
             { cmd: "/health", desc: "Check server uptime, Groq latency & blocked IPs", maxRank: 4 },
@@ -6614,7 +6963,6 @@
             const low = rawText.toLowerCase().trim();
             const words = low.split(/[\s,?.!]+/);
 
-            // Check if user is setting a natural-language countdown reminder
             const parsedRem = parseNaturalLanguageReminder(rawText);
             if (parsedRem) {
                 addSmartReminder(parsedRem.title, parsedRem.targetTimeMs);
@@ -6853,7 +7201,7 @@
             if (isPinLocked) { openPinGate(pinGateMode); return; }
             currentSessionId = generateSessionId();
             clearImageAttachment();
-            document.getElementById('actionLog').innerHTML = `<div>> <b>[KIZA]:</b> Started a fresh conversation! Ask me to create a PDF, presentation, quiz, or chart in normal sentences.</div>`;
+            document.getElementById('actionLog').innerHTML = `<div>> <b>[KIZA]:</b> Started a fresh conversation! Ask me to make a PDF, Word doc (.docx), Excel sheet (.xlsx), or Research-to-PDF report.</div>`;
             refreshSidebarChatSessions();
         }
 
@@ -6958,7 +7306,7 @@
                 let div = document.createElement('div');
                 div.className = "profile-list-item";
                 let isCurrent = (prof.username === currentUser);
-                div.innerHTML = `<span style="font-weight:700;">${cleanDisplayNameOnly(prof.username)} ${isCurrent ? "(Active)" : ""}</span><div style="display:flex; gap:6px;">${!isCurrent ? `<button class="chip-btn" style="padding:3px 9px; width:auto;" onclick="switchToProfile(${idx})">Switch</button>` : ''}<button class="chip-btn" style="color:var(--danger); padding:3px 9px; width:auto;" onclick="removeProfile(${idx})">✕</button></div>`;
+                div.innerHTML = `<span style="font-weight:700; font-size:12.5px;">${cleanDisplayNameOnly(prof.username)} ${isCurrent ? "<span style='color:var(--success); font-size:11px;'>(Active)</span>" : ""}</span><div style="display:flex; gap:6px; flex-shrink:0;">${!isCurrent ? `<button class="chip-btn" style="padding:4px 11px; width:auto;" onclick="switchToProfile(${idx})">Switch</button>` : ''}<button class="chip-btn" style="color:var(--danger); padding:4px 10px; width:auto;" onclick="removeProfile(${idx})">✕</button></div>`;
                 list.appendChild(div);
             });
         }
@@ -7049,7 +7397,8 @@
                 showNotification("Welcome", replyMsg, false, { skipStore: true }); 
                 if (audioBase64) playKizaAudio(audioBase64, replyMsg);
             }
-            document.getElementById('actionLog').innerHTML = '<div>> <b>[KIZA]:</b> Hi! Ask me in normal sentences to make PDFs, presentations, quizzes, or charts, attach any image/PDF/code file (📎), or tap 🧠 Personalize above to save your Memory Vault!</div>';
+            document.getElementById('actionLog').innerHTML = '<div>> <b>[KIZA]:</b> Hi! Ask me in normal sentences to make PDFs, Word docs (.docx), Excel sheets (.xlsx), presentations, or Research-to-PDF pipelines! Attach any handwritten notes photo, PDF, Word, or Excel file (📎) to edit or clone its exact format.</div>';
+            checkAndRenderLiveCallMinutes();
             initWebSocket();
         }
 
@@ -7073,7 +7422,6 @@
             applyRoleUI(role);
             safeSetItem(getLocalHasPinKey(currentDBUser), "true");
 
-            // Trigger New-Device Backup PIN Challenge if signing in from unrecognized browser/IP
             if (requirePinChallenge && isInteractiveLogin) {
                 pendingLoginData = { username, db_username, role, face_id, playGreeting, replyMsg, audioBase64, tokenVersion };
                 openPinGate("verify", "🔑 New browser or unrecognized IP detected! Enter your 4 to 6 digit Backup PIN to authorize this device:");
@@ -7092,7 +7440,7 @@
             document.getElementById('authModal').style.display = "flex";
             document.getElementById('cancelAuthBtn').style.display = "none";
             document.getElementById('masterCmds').style.display = "none";
-            document.getElementById('actionLog').innerHTML = '<div>> <b>[KIZA]:</b> Hi! Ask me in normal sentences to make PDFs, presentations, quizzes, or charts, attach any image/PDF/code file (📎), or tap 🧠 Personalize above to save your Memory Vault!</div>';
+            document.getElementById('actionLog').innerHTML = '<div>> <b>[KIZA]:</b> Hi! Ask me in normal sentences to make PDFs, Word docs (.docx), Excel sheets (.xlsx), presentations, or Research-to-PDF pipelines!</div>';
             closeSettings();
         }
         function logoutUser() { forceLogout(); document.getElementById('authUser').value = ""; document.getElementById('authPass').value = ""; document.getElementById('authError').innerText = ""; }
@@ -7985,7 +8333,7 @@
 
         function isVisualQuestion(textStr) {
             const low = textStr.toLowerCase();
-            const visualWords = ["see", "look", "camera", "webcam", "holding", "hold", "hand", "wearing", "wear", "show", "watch", "read this", "what is this", "what's this", "in front", "photo", "picture", "image", "attached", "attachment", "solve", "explain this", "hows this", "how is this"];
+            const visualWords = ["see", "look", "camera", "webcam", "holding", "hold", "hand", "wearing", "wear", "show", "watch", "read this", "what is this", "what's this", "in front", "photo", "picture", "image", "attached", "attachment", "solve", "explain this", "hows this", "how is this", "handwritten"];
             return visualWords.some(w => low.includes(w));
         }
 
@@ -8001,7 +8349,7 @@
         }
 
         // ==========================================================
-        // STREAMING COMMAND SUBMITTER WITH STOP BUTTON & GPS INJECTION
+        // STREAMING COMMAND SUBMITTER WITH RESEARCH->CHART->PDF PIPELINE
         // ==========================================================
         async function submitCommand() {
             if (isPinLocked) {
@@ -8055,13 +8403,24 @@
                 : rawText;
 
             if (hasExplicitAttachment) {
+                lastAttachedFileTopic = (currentAttachedName || "Document").replace(/\.[a-z0-9]+$/i, '');
+                if (currentAttachedContext) lastUploadedDocumentContext = currentAttachedContext;
                 logAction(`[${cleanSpeaker}]: [📎 ${currentAttachedName}] ${displayUserCmd}`);
                 if (currentAttachedContext && !text.startsWith("/")) {
-                    text = `${text}\n\n${currentAttachedContext}`;
+                    text = `${text}\n\n${currentAttachedContext}\n[FORMAT INSTRUCTION: Preserve the exact page-by-page / section-by-section structure and headings of this attached document!]`;
                 }
                 clearImageAttachment();
             } else {
                 logAction(`[${cleanSpeaker}]: ${displayUserCmd}`);
+                if (lastUploadedDocumentContext && /(this pdf|this doc|this word|this excel|attached|same format|edit page|update the pdf|keep the format)/i.test(rawText)) {
+                    text = `${text}\n\n${lastUploadedDocumentContext}\n[FORMAT INSTRUCTION: Copy and preserve the exact page-by-page / table format and section layout of the user's uploaded document!]`;
+                }
+            }
+
+            // Multi-Step Autonomous Research + Chart + PDF Pipeline Enrichment
+            const isResearchPipeline = /\bresearch\b/i.test(rawText) && (clientFileIntent !== null || /\bchart\b/i.test(rawText));
+            if (isResearchPipeline) {
+                text += `\n[AUTONOMOUS PIPELINE: Perform thorough multi-source web research, include real benchmark numbers in CHART: and TABLE_ROW: tags, and also include a [CHART_DATA]{"type":"bar","title":"${clientFileIntent ? clientFileIntent.topic : 'Research Metrics'}","labels":["Metric A","Metric B","Metric C","Metric D"],"values":[82,68,94,76],"datasetLabel":"Score / Index"}[/CHART_DATA] JSON block so an interactive Chart.js graph renders alongside the compiled file!]`;
             }
 
             // Inject real-time GPS & live weather telemetry for "near me" / local weather queries
@@ -8070,7 +8429,7 @@
                     try { await updateLiveLocationAndWeatherFromCoords(cachedLat, cachedLon); } catch (e) {}
                 }
                 if (cachedLat !== null && cachedLon !== null) {
-                    const gpsBlock = `[LIVE USER GPS & REAL-TIME WEATHER TELEMETRY: Exact Coordinates = (${cachedLat.toFixed(4)}, ${cachedLon.toFixed(4)}) | Detected Location = ${cachedClientCityName || 'Current GPS Sector'} | Live Weather = ${cachedClientWeatherSummary || 'Clear'} — IMPORTANT: Use this exact live GPS location and weather data to answer the user's question, and ignore any older city like Bathinda from earlier messages!]`;
+                    const gpsBlock = `[LIVE USER GPS & REAL-TIME WEATHER TELEMETRY: Exact Coordinates = (${cachedLat.toFixed(4)}, ${cachedLon.toFixed(4)}) | Detected Location = ${cachedClientCityName || 'Current GPS Sector'} | Live Weather = ${cachedClientWeatherSummary || 'Clear'} — IMPORTANT: Use this exact live GPS location and weather data to answer the user's question, and ignore any older city from earlier messages!]`;
                     text = `${text}\n\n${gpsBlock}`;
                 }
             }
@@ -8219,7 +8578,7 @@
                 if (accumulatedText.includes("[GENERATE_FILE:")) {
                     wasFileGenerated = true;
                     const fileMatch = accumulatedText.match(/\[GENERATE_FILE:([^:]+):([^:\]]+)(?::([^\]]+))?\]/);
-                    const fileExt = fileMatch ? fileMatch[1] : "pdf";
+                    const fileExt = clientFileIntent ? clientFileIntent.ext : (fileMatch ? fileMatch[1] : "pdf");
                     const fileTopic = fileMatch ? fileMatch[2] : "Report";
                     const fileTheme = (fileMatch && fileMatch[3]) ? fileMatch[3] : (clientFileIntent ? clientFileIntent.styleTheme : "cyber_dark");
                     await prepareAndPreviewUniversalFile(fileExt, fileTopic, accumulatedText, currentAttachedImg, fileTheme);
