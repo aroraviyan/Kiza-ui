@@ -117,6 +117,100 @@
             touch-action: manipulation;
         }
 
+        details.planner-dropdown {
+            background: var(--bg-surface) !important;
+            border: 1px solid var(--card-border) !important;
+            border-left: 4px solid var(--accent-primary) !important;
+            border-radius: 12px !important;
+            padding: 8px 12px !important;
+            font-size: 11.5px;
+            transition: all 0.18s ease;
+        }
+        details.planner-dropdown summary {
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--accent-primary);
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+            outline: none;
+        }
+        details.planner-dropdown summary::-webkit-details-marker { display: none; }
+        details.planner-dropdown summary::after {
+            content: "▾ Tap to view";
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: var(--chip-bg);
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid var(--card-border);
+        }
+        details.planner-dropdown[open] summary::after { content: "▴ Hide steps"; }
+        .planner-steps-body {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed var(--card-border);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .send-btn.stop-mode {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 3px 12px rgba(239, 68, 68, 0.4) !important;
+            animation: pulseStopBtn 1.2s infinite alternate;
+        }
+        @keyframes pulseStopBtn {
+            from { filter: brightness(1); }
+            to { filter: brightness(1.15); }
+        }
+        .stopped-tag {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .call-minutes-card {
+            background: var(--card-bg) !important;
+            border: 1.5px solid var(--success) !important;
+            border-radius: 16px !important;
+            padding: 14px !important;
+            margin-top: 6px;
+            box-shadow: var(--card-shadow);
+        }
+        .excel-preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            background: #ffffff;
+            color: #0f172a;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .excel-preview-table th {
+            background: #059669;
+            color: #ffffff;
+            padding: 8px 10px;
+            text-align: left;
+            font-weight: 700;
+            border: 1px solid #047857;
+        }
+        .excel-preview-table td {
+            padding: 7px 10px;
+            border: 1px solid #cbd5e1;
+        }
+        .excel-preview-table tr:nth-child(even) td {
+            background: #f0fdf4;
+        }
+
         #ambientAudioGlow {
             position: fixed;
             inset: 0;
@@ -267,9 +361,7 @@
             transform: translate3d(0, 0, 0);
         }
 
-        .sidebar.collapsed {
-            margin-left: -274px;
-        }
+        .sidebar.collapsed { margin-left: -274px; }
 
         .sidebar-top {
             display: flex;
@@ -307,9 +399,7 @@
             box-shadow: var(--card-shadow);
             transition: border-color 0.15s ease;
         }
-        .new-chat-pill:hover {
-            border-color: var(--accent-primary);
-        }
+        .new-chat-pill:hover { border-color: var(--accent-primary); }
 
         .sidebar-tabs-row {
             display: flex;
@@ -364,9 +454,7 @@
             overflow: hidden;
             flex-shrink: 0;
         }
-        .sidebar-chat-item:hover {
-            background: var(--chip-hover);
-        }
+        .sidebar-chat-item:hover { background: var(--chip-hover); }
         .sidebar-chat-item.active {
             background: var(--chip-bg);
             color: var(--accent-primary);
@@ -430,9 +518,7 @@
             cursor: pointer;
             transition: background 0.15s ease;
         }
-        .user-profile-Trigger:hover {
-            background: var(--chip-hover);
-        }
+        .user-profile-Trigger:hover { background: var(--chip-hover); }
 
         .face-thumb {
             width: 30px;
@@ -444,9 +530,6 @@
             flex-shrink: 0;
         }
 
-        /* ==========================================================
-           MODERN NO-SCROLL HEADER & FLOATING TOOLS MENU
-           ========================================================== */
         .main-workspace {
             flex: 1 1 0%;
             display: flex;
@@ -507,9 +590,7 @@
             grid-template-columns: 1fr 1fr;
             gap: 6px;
         }
-        #headerToolsMenu.open {
-            display: grid;
-        }
+        #headerToolsMenu.open { display: grid; }
 
         .battery-hud-pill {
             display: inline-flex;
@@ -582,9 +663,7 @@
             gap: 6px;
             transform: translate3d(0, 0, 0);
         }
-        .floating-vision-widget.open {
-            display: flex;
-        }
+        .floating-vision-widget.open { display: flex; }
 
         .camera-box {
             width: 100%;
@@ -598,7 +677,6 @@
             position: relative;
         }
 
-        /* FLUID SCROLLABLE CHAT STREAM */
         .chat-scroll-area {
             flex: 1 1 0%;
             min-height: 0;
@@ -671,9 +749,7 @@
             border-radius: 50% !important;
             display: block;
         }
-        .core-orb.processing {
-            box-shadow: 0 0 28px #00f2fe;
-        }
+        .core-orb.processing { box-shadow: 0 0 28px #00f2fe; }
         .core-ring { display: none; }
 
         .welcome-greeting {
@@ -758,7 +834,6 @@
             word-break: break-word;
         }
 
-        /* MESSAGE ACTION BAR (COPY, REGENERATE, READ ALOUD, PIN) */
         .msg-action-bar {
             display: flex;
             align-items: center;
@@ -792,7 +867,6 @@
             background: rgba(245, 158, 11, 0.1);
         }
 
-        /* CHART.JS CARD */
         .chart-widget-card {
             background: var(--card-bg) !important;
             border: 1.5px solid var(--accent-primary) !important;
@@ -828,7 +902,6 @@
         }
         @keyframes blinkCursor { from { opacity: 1; } to { opacity: 0.2; } }
 
-        /* SAFARI-SAFE BOTTOM COMPOSER */
         .composer-wrapper {
             width: 100%;
             padding: 5px 10px max(8px, calc(var(--safe-bottom) + 6px)) 10px;
@@ -856,9 +929,7 @@
             box-shadow: var(--card-shadow);
             transition: border-color 0.15s ease;
         }
-        .input-container:focus-within {
-            border-color: var(--accent-primary);
-        }
+        .input-container:focus-within { border-color: var(--accent-primary); }
 
         .kiza-ai-disclaimer {
             font-size: 10px;
@@ -925,9 +996,7 @@
             white-space: nowrap;
             flex-shrink: 0;
         }
-        body.dark-mode .send-btn {
-            color: #0f172a;
-        }
+        body.dark-mode .send-btn { color: #0f172a; }
 
         .live-call-btn {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -976,9 +1045,7 @@
             font-weight: 600;
             cursor: pointer;
         }
-        .followup-chip:hover {
-            background: var(--chip-hover);
-        }
+        .followup-chip:hover { background: var(--chip-hover); }
 
         .code-block-card {
             background: #0f172a !important;
@@ -1300,30 +1367,13 @@
                 margin-left: 0 !important;
                 box-shadow: 10px 0 30px rgba(0, 0, 0, 0.25);
             }
-            .sidebar.mobile-open {
-                transform: translateX(0);
-            }
-            .sidebar-backdrop.mobile-open {
-                display: block;
-            }
-            .workspace-header {
-                min-height: 46px;
-                padding: 4px 8px;
-            }
-            .desktop-only-tools {
-                display: none !important;
-            }
-            #pingHudPill {
-                display: none !important;
-            }
-            .status-text {
-                max-width: 82px;
-                font-size: 9.5px;
-                padding: 2px 6px;
-            }
-            #wakeToggleBtn {
-                display: none;
-            }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .sidebar-backdrop.mobile-open { display: block; }
+            .workspace-header { min-height: 46px; padding: 4px 8px; }
+            .desktop-only-tools { display: none !important; }
+            #pingHudPill { display: none !important; }
+            .status-text { max-width: 82px; font-size: 9.5px; padding: 2px 6px; }
+            #wakeToggleBtn { display: none; }
         }
     </style>
 </head>
@@ -1543,7 +1593,7 @@
                 <button type="button" id="confirmDownloadBtn" class="send-btn" style="padding:7px 14px; font-size:11.5px; margin-left:auto;" onclick="confirmAndDownloadPreviewedFile()">⬇️ Confirm & Download</button>
             </div>
 
-            <div id="filePreviewViewport" contenteditable="true" title="Tip: You can also click directly inside any paragraph or table cell here to edit text before downloading!" style="max-height: 54vh; overflow-y: auto; border: 1px solid var(--card-border); border-radius: 12px; background: #cbd5e1; padding: 14px; outline: none;"></div>
+            <div id="filePreviewViewport" contenteditable="true" title="Click inside any paragraph or table cell here to edit text directly before downloading, or ask KIZA in chat to revise!" style="max-height: 58vh; overflow-y: auto; border: 1px solid var(--card-border); border-radius: 12px; background: #cbd5e1; padding: 14px; outline: none;"></div>
         </div>
     </div>
 
@@ -1581,7 +1631,7 @@
                 <span id="pinGateTitle">🔑 Security Backup PIN Challenge</span>
             </div>
             <div id="pinGateSubtitle" style="font-size:12px; color:var(--text-muted); line-height:1.5;">
-                New browser or unrecognized IP detected. Enter your 4 to 6 digit Backup PIN to verify your identity.
+                Enter your 4 to 6 digit Backup PIN to verify your identity.
             </div>
             <input type="password" id="pinGateInput" placeholder="4 to 6 digit PIN..." maxlength="6" inputmode="numeric" autocomplete="off" style="text-align:center; font-size:18px; letter-spacing:6px;">
             <div id="pinGateError" style="color: var(--danger); font-size: 11.5px; min-height: 15px; font-weight:600; text-align:center;"></div>
@@ -1696,7 +1746,7 @@
             <div id="ownerUpdatePublisher" style="display:none; flex-direction:column; gap:7px; padding:11px; border-radius:12px; background:var(--bg-surface);">
                 <div style="font-size:11.5px; font-weight:700; color:var(--accent-primary);">Publish New Update</div>
                 <div style="display:flex; gap:7px;">
-                    <input type="text" id="newUpdateVersion" placeholder="v10.1" style="width:100px;">
+                    <input type="text" id="newUpdateVersion" placeholder="v10.3" style="width:100px;">
                     <input type="text" id="newUpdateTitle" placeholder="Headline...">
                 </div>
                 <input type="text" id="newUpdateDesc" placeholder="Details of what changed...">
@@ -1750,7 +1800,6 @@
                 </div>
             </div>
 
-            <!-- CAMERA & MICROPHONE HARDWARE SELECTORS -->
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:2px;">
                 <div>
                     <label style="font-size:11px; font-weight:600;">📷 Camera Device:</label>
@@ -1795,7 +1844,6 @@
                 <button type="button" class="send-btn" style="background:var(--danger); color:#fff;" onclick="logoutOtherDevicesViaPin()">Sign Out Others</button>
             </div>
 
-            <!-- EXPANDED SAVED ACCOUNTS BOX -->
             <div class="section-title" style="margin-top:6px;">
                 <span>👥 Saved Accounts on This Browser</span>
             </div>
@@ -1885,10 +1933,11 @@
                 <input type="checkbox" id="captureFaceCheck" checked> Enable Face ID quick unlock
             </label>
             <div id="authError" style="color: var(--danger); font-size: 11.5px; min-height: 15px; font-weight:600; text-align:center;"></div>
-            <button type="button" class="send-btn" style="width:100%; padding:10px;" onclick="performAuth()">Continue</button>
+            <button type="button" id="authSubmitBtn" class="send-btn" style="width:100%; padding:10px;" onclick="performAuth()">Continue</button>
             <button type="button" class="chip-btn" id="cancelAuthBtn" style="display:none;" onclick="cancelAddIdentity()">Cancel</button>
         </div>
     </div>
+
     <!-- ==========================================================
          ORIGINAL KIZA APPLICATION SHELL
          ========================================================== -->
@@ -1915,19 +1964,16 @@
                 </button>
             </div>
 
-            <!-- SIDEBAR TABS: RECENT CHATS vs PINNED REPLIES -->
             <div class="sidebar-tabs-row">
                 <button type="button" id="sidebarTabChats" class="sidebar-tab-btn active" onclick="switchSidebarTab('chats')">💬 Recent Chats</button>
                 <button type="button" id="sidebarTabPinned" class="sidebar-tab-btn" onclick="switchSidebarTab('pinned')">📌 Pinned</button>
                 <button type="button" style="background:none; border:none; color:var(--accent-primary); font-size:10px; font-weight:700; cursor:pointer; padding:0 5px;" onclick="openLogsModal()">All ↗</button>
             </div>
 
-            <!-- DYNAMIC CHAT HISTORY LIST IN SIDEBAR -->
             <div id="sidebarSessionsList" class="sidebar-history-list">
                 <div style="font-size:11.5px; color:var(--text-muted); padding:8px;">Your recent chats will appear here...</div>
             </div>
 
-            <!-- PINNED MESSAGES DRAWER IN SIDEBAR -->
             <div id="sidebarPinnedList" class="sidebar-history-list" style="display:none;">
                 <div style="font-size:11.5px; color:var(--text-muted); padding:8px;">Tap 📌 Pin under any KIZA reply to save it here for quick revision!</div>
             </div>
@@ -1942,7 +1988,7 @@
                     <button type="button" class="chip-btn" style="padding:4px 6px; font-size:10px;" onclick="sendQuickCmd('/userdata'); toggleMobileSidebar(false);">👥 Users</button>
                     <button type="button" class="chip-btn" style="padding:4px 6px; font-size:10px;" onclick="openBroadcastModal()">📢 Broadcast</button>
                     <button type="button" class="chip-btn top3-only" style="padding:4px 6px; font-size:10px; display:none;" onclick="openRankModal()">⭐ Roles</button>
-                    <button type="button" class="chip-btn top3-only" style="padding:4px 6px; font-size:10px; display:none;" onclick="openLogsModal()">📜 Logs</button>
+                    <button type="button" class="chip-btn top3-only" style="padding:4px 6px; font-size:10px; display:none;" onclick="sendQuickCmd('/purgelog'); toggleMobileSidebar(false);">📜 Logs</button>
                     <button type="button" class="chip-btn" style="padding:4px 6px; font-size:10px;" onclick="sendQuickCmd('/lockdown'); toggleMobileSidebar(false);">🔒 Lock</button>
                     <button type="button" class="chip-btn owner-only" style="padding:4px 6px; font-size:10px; display:none;" onclick="sendQuickCmd('/removelock'); toggleMobileSidebar(false);">🔓 Unlock</button>
                 </div>
@@ -1988,7 +2034,6 @@
 
         <!-- MAIN CENTRAL CHAT WORKSPACE -->
         <main class="main-workspace">
-            <!-- MODERN NO-SCROLL TOP HEADER -->
             <header class="workspace-header">
                 <div class="header-left">
                     <button type="button" class="icon-btn" onclick="toggleSidebarCollapse()" title="Menu, History & Pinned">☰</button>
@@ -2003,7 +2048,6 @@
                     <button type="button" class="live-call-btn" onclick="launchLiveCallMode()" title="Start Live Voice, Video, Whiteboard & Screen Call">📞 Live</button>
                     <button type="button" class="icon-btn personalize-btn" onclick="openProfileMemoryModal()" title="Personalize Profile & Memory Vault">🧠 Personalize</button>
 
-                    <!-- DESKTOP QUICK TOOLS -->
                     <div class="desktop-only-tools">
                         <button type="button" class="icon-btn" id="pwaInstallHeaderBtn" style="display:none; border-color:var(--accent-primary); color:var(--accent-primary);" onclick="triggerPWAInstall()">📲 Install</button>
                         <button type="button" class="icon-btn" onclick="openGemsModal()" title="Custom Personas">💎 Personas</button>
@@ -2020,12 +2064,10 @@
                         <span id="unreadBadgeCenter" class="unread-badge" style="display:none;">0</span>
                     </button>
 
-                    <!-- COMPACT TOOLS MENU BUTTON (ALWAYS VISIBLE ON MOBILE & DESKTOP) -->
                     <button type="button" class="icon-btn" onclick="toggleHeaderToolsMenu(event)" title="All Workspace Tools">⚡ Tools</button>
                 </div>
             </header>
 
-            <!-- FLOATING QUICK-TOOLS POPOVER -->
             <div id="headerToolsMenu">
                 <button type="button" class="chip-btn" onclick="toggleHeaderToolsMenu(); toggleVisionDrawer();">📷 Camera</button>
                 <button type="button" class="chip-btn" onclick="toggleHeaderToolsMenu(); openGemsModal();">💎 Personas</button>
@@ -2038,7 +2080,6 @@
                 <button type="button" class="chip-btn" style="grid-column: span 2; color:var(--danger); border-color:var(--danger);" onclick="toggleHeaderToolsMenu(); clearCurrentActiveChatPermanently();">🗑️ Delete Current Chat</button>
             </div>
 
-            <!-- COMPACT FLOATING WEBCAM DRAWER WITH CAMERA SELECTOR -->
             <div id="floatingVisionDrawer" class="floating-vision-widget">
                 <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; font-weight:700;">
                     <span>📷 Camera Vision</span>
@@ -2061,7 +2102,6 @@
             <!-- SCROLLABLE CONVERSATION AREA -->
             <div class="chat-scroll-area">
                 <div class="chat-max-width">
-                    <!-- KIZA WELCOME HERO -->
                     <div class="kiza-welcome-card">
                         <div class="core-assembly">
                             <canvas id="orbSpectrumCanvas" width="76" height="76"></canvas>
@@ -2077,33 +2117,28 @@
 
                         <div id="voiceHologramBox">🎙️ <span id="voiceHologramText">Listening...</span></div>
 
-                        <!-- NATURAL-LANGUAGE ONE-TAP SUGGESTION CHIPS -->
                         <div id="publicCmds">
                             <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('Research and build a comparison chart and compile a PDF report on ')">🚀 Research ➔ Chart ➔ PDF</button>
                             <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('Make an Excel spreadsheet (.xlsx) with formulas on ')">📗 Excel (.xlsx)</button>
                             <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('Make a Word document (.docx) on ')">📘 Word (.docx)</button>
                             <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('Create a presentation on ')">📊 Presentation</button>
-                            <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('Make a PDF report on ')">📕 PDF Report</button>
+                            <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('Make a 10 page PDF report with a movie theater background on ')">🎬 Movie Theater PDF</button>
                             <button type="button" class="chip-btn" style="width:auto;" onclick="prefillInput('Quiz me on ')">📝 Quiz Me</button>
                         </div>
                     </div>
 
-                    <!-- CHAT MESSAGES STREAM -->
                     <div id="actionLog" class="log-box">
                         <div>> <b>[KIZA]:</b> Hi! Ask me in normal sentences to make PDFs, Word docs (.docx), Excel sheets (.xlsx), presentations, or Research-to-PDF pipelines! Attach any handwritten notes photo, PDF, Word, or Excel file (📎) to edit or clone its exact format.</div>
                     </div>
                 </div>
             </div>
 
-            <!-- BOTTOM FLOATING INPUT BAR + CUSTOM PERSONAS STRIP + AI DISCLAIMER -->
+            <!-- BOTTOM FLOATING INPUT BAR -->
             <div class="composer-wrapper">
                 <div class="input-container">
                     <div id="slashAutocomplete"></div>
-
-                    <!-- CLOUD-SYNCED CUSTOM PERSONAS BAR -->
                     <div id="customGemsBar" class="gems-bar-wrapper"></div>
 
-                    <!-- ATTACHED IMAGE, HANDWRITTEN NOTES, PDF, WORD (.DOCX), EXCEL (.XLSX) PREVIEW BAR -->
                     <div id="attachmentPreviewBar">
                         <div style="display:flex; align-items:center; justify-content:space-between; width:100%; gap:10px;">
                             <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
@@ -2128,7 +2163,7 @@
                     <div class="input-row">
                         <input type="file" id="imageUploadInput" accept="image/*,.pdf,.docx,.doc,.xlsx,.xls,.csv,.txt,.py,.js,.html,.json,.md" style="display:none;" onchange="handleImageAttachment(event)">
                         <button type="button" class="icon-btn" id="attachImgBtn" onclick="document.getElementById('imageUploadInput').click()" title="Attach Handwritten Photo, PDF, Word (.docx), Excel (.xlsx), CSV or Code File">📎</button>
-                        <input type="text" id="textInput" placeholder="Ask KIZA anything (e.g. 'Research & make a PDF on...', 'Make an Excel sheet on...', or /help)..." autocomplete="off">
+                        <input type="text" id="textInput" placeholder="Ask KIZA anything (e.g. 'Make a 10 page PDF with movie theater background on...', or /help)..." autocomplete="off">
                         <button type="button" class="icon-btn" id="mobileVoiceBtn" onclick="toggleVoiceMute()" title="Toggle Spoken Voice">🔊</button>
                         <button type="button" class="icon-btn" id="micBtn" onclick="toggleSpeechRecognition()" title="Voice Input">🎤</button>
                         <button type="button" class="chip-btn" id="wakeToggleBtn" style="width:auto; padding: 5px 10px; font-size: 10.5px;" onclick="toggleWakeWord()" title="Say 'Hello' for Hands-Free">🗣️ Wake: Off</button>
@@ -2136,2833 +2171,9 @@
                     </div>
                 </div>
 
-                <!-- BOTTOM AI DISCLAIMER -->
                 <div class="kiza-ai-disclaimer">
                     KIZA is an AI assistant and can make mistakes. Please verify important information.
                 </div>
             </div>
         </main>
     </div>
-
-    <script>
-        const SERVER_URL = "https://kiza-brain.onrender.com";
-        const WS_URL = "wss://kiza-brain.onrender.com/api/ws";
-        const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
-
-        // Configure PDF.js Worker for Client-Side Multi-File PDF Reading
-        if (typeof pdfjsLib !== "undefined") {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-        }
-
-        // ==========================================================
-        // 0. INJECT v9.5 COLLAPSIBLE PLANNER, CALL MINUTES & STOP STYLES
-        // ==========================================================
-        (function injectV95Styles() {
-            const st = document.createElement('style');
-            st.textContent = `
-                details.planner-dropdown {
-                    background: var(--bg-surface) !important;
-                    border: 1px solid var(--card-border) !important;
-                    border-left: 4px solid var(--accent-primary) !important;
-                    border-radius: 12px !important;
-                    padding: 8px 12px !important;
-                    font-size: 11.5px;
-                    transition: all 0.18s ease;
-                }
-                details.planner-dropdown summary {
-                    cursor: pointer;
-                    font-weight: 700;
-                    color: var(--accent-primary);
-                    list-style: none;
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    user-select: none;
-                    outline: none;
-                }
-                details.planner-dropdown summary::-webkit-details-marker {
-                    display: none;
-                }
-                details.planner-dropdown summary::after {
-                    content: "▾ Tap to view";
-                    font-size: 10px;
-                    font-weight: 600;
-                    color: var(--text-muted);
-                    background: var(--chip-bg);
-                    padding: 2px 8px;
-                    border-radius: 999px;
-                    border: 1px solid var(--card-border);
-                }
-                details.planner-dropdown[open] summary::after {
-                    content: "▴ Hide steps";
-                }
-                .planner-steps-body {
-                    margin-top: 8px;
-                    padding-top: 8px;
-                    border-top: 1px dashed var(--card-border);
-                    display: flex;
-                    flex-direction: column;
-                    gap: 5px;
-                }
-                .send-btn.stop-mode {
-                    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
-                    color: #ffffff !important;
-                    box-shadow: 0 3px 12px rgba(239, 68, 68, 0.4) !important;
-                    animation: pulseStopBtn 1.2s infinite alternate;
-                }
-                @keyframes pulseStopBtn {
-                    from { filter: brightness(1); }
-                    to { filter: brightness(1.15); }
-                }
-                .stopped-tag {
-                    display: inline-block;
-                    margin-top: 6px;
-                    padding: 3px 9px;
-                    border-radius: 6px;
-                    font-size: 11px;
-                    font-weight: 700;
-                    background: rgba(239, 68, 68, 0.12);
-                    color: var(--danger);
-                    border: 1px solid rgba(239, 68, 68, 0.3);
-                }
-                .call-minutes-card {
-                    background: var(--card-bg) !important;
-                    border: 1.5px solid var(--success) !important;
-                    border-radius: 16px !important;
-                    padding: 14px !important;
-                    margin-top: 6px;
-                    box-shadow: var(--card-shadow);
-                }
-                .excel-preview-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    font-size: 12px;
-                    background: #ffffff;
-                    color: #0f172a;
-                    border-radius: 8px;
-                    overflow: hidden;
-                }
-                .excel-preview-table th {
-                    background: #059669;
-                    color: #ffffff;
-                    padding: 8px 10px;
-                    text-align: left;
-                    font-weight: 700;
-                    border: 1px solid #047857;
-                }
-                .excel-preview-table td {
-                    padding: 7px 10px;
-                    border: 1px solid #cbd5e1;
-                }
-                .excel-preview-table tr:nth-child(even) td {
-                    background: #f0fdf4;
-                }
-            `;
-            document.head.appendChild(st);
-        })();
-
-        // ==========================================================
-        // 1. SAFARI & MOBILE VISUAL VIEWPORT LOCK (NO BOTTOM CUTOFF!)
-        // ==========================================================
-        (function initAutoViewportAdapter() {
-            function syncViewportHeight() {
-                const vv = window.visualViewport;
-                const vh = vv ? Math.round(vv.height) : window.innerHeight;
-                if (vh && vh > 100) {
-                    document.documentElement.style.setProperty('--app-height', `${vh}px`);
-                }
-                if (window.scrollY !== 0 || window.scrollX !== 0) {
-                    window.scrollTo(0, 0);
-                }
-            }
-            syncViewportHeight();
-            window.addEventListener('resize', syncViewportHeight, { passive: true });
-            window.addEventListener('orientationchange', () => setTimeout(syncViewportHeight, 120), { passive: true });
-            if (window.visualViewport) {
-                window.visualViewport.addEventListener('resize', syncViewportHeight, { passive: true });
-                window.visualViewport.addEventListener('scroll', syncViewportHeight, { passive: true });
-            }
-            window.addEventListener('DOMContentLoaded', syncViewportHeight);
-        })();
-
-        // ==========================================================
-        // 2. OFFLINE LOCAL CACHE MONITOR & MOBILE TOOLS MENU
-        // ==========================================================
-        (function initOfflineCacheMonitor() {
-            function updateOnlineStatus() {
-                const banner = document.getElementById('offlineBanner');
-                if (!banner) return;
-                banner.style.display = navigator.onLine ? "none" : "block";
-            }
-            window.addEventListener('online', updateOnlineStatus);
-            window.addEventListener('offline', updateOnlineStatus);
-            window.addEventListener('DOMContentLoaded', updateOnlineStatus);
-        })();
-
-        function toggleHeaderToolsMenu(e) {
-            if (e) e.stopPropagation();
-            const menu = document.getElementById('headerToolsMenu');
-            if (menu) menu.classList.toggle('open');
-        }
-
-        document.addEventListener('click', (e) => {
-            const menu = document.getElementById('headerToolsMenu');
-            if (menu && menu.classList.contains('open') && !e.target.closest('#headerToolsMenu') && !e.target.closest('[onclick*="toggleHeaderToolsMenu"]')) {
-                menu.classList.remove('open');
-            }
-        });
-
-        // ==========================================================
-        // 3. AUTO-ADAPTIVE CANVAS LOGO CROPPER & PWA MANIFEST ENGINE
-        // ==========================================================
-        let deferredPWAPrompt = null;
-
-        (function initAutoAdaptiveLogoAndPWA() {
-            const candidates = ["logo.jpg", "logo.png", "logo.jpeg", "KIZA.jpg", "KIZA.png"];
-
-            function buildSquareAndCircularIcons(imgEl) {
-                try {
-                    const size = 512;
-                    const srcW = imgEl.naturalWidth || 512;
-                    const srcH = imgEl.naturalHeight || 512;
-                    const minDim = Math.min(srcW, srcH);
-                    const cropDim = minDim * 0.94;
-                    const sx = (srcW - cropDim) / 2;
-                    const sy = (srcH - cropDim) / 2;
-
-                    const sqCanvas = document.createElement('canvas');
-                    sqCanvas.width = size;
-                    sqCanvas.height = size;
-                    const sqCtx = sqCanvas.getContext('2d');
-                    sqCtx.fillStyle = "#071324";
-                    sqCtx.fillRect(0, 0, size, size);
-                    sqCtx.drawImage(imgEl, sx, sy, cropDim, cropDim, 0, 0, size, size);
-                    const maskableDataUrl = sqCanvas.toDataURL('image/png');
-
-                    const circCanvas = document.createElement('canvas');
-                    circCanvas.width = size;
-                    circCanvas.height = size;
-                    const cCtx = circCanvas.getContext('2d');
-                    cCtx.beginPath();
-                    cCtx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
-                    cCtx.closePath();
-                    cCtx.clip();
-                    cCtx.fillStyle = "#071324";
-                    cCtx.fillRect(0, 0, size, size);
-                    cCtx.drawImage(imgEl, sx, sy, cropDim, cropDim, 0, 0, size, size);
-                    const circularDataUrl = circCanvas.toDataURL('image/png');
-
-                    return { maskableDataUrl, circularDataUrl };
-                } catch (e) {
-                    return null;
-                }
-            }
-
-            function attachDynamicPWAManifest(circularIconUrl, maskableIconUrl) {
-                try {
-                    const manifestObj = {
-                        name: "KIZA — Kinda Intelligent Zippy Assistant",
-                        short_name: "KIZA",
-                        description: "Original AI Command Hub with Live Video, Whiteboard, Multi-Format Docs (.docx/.xlsx/.pdf) & Cloud Personas.",
-                        start_url: window.location.href,
-                        display: "standalone",
-                        orientation: "any",
-                        background_color: "#071324",
-                        theme_color: "#071324",
-                        icons: [
-                            { src: circularIconUrl, sizes: "192x192", type: "image/png", purpose: "any" },
-                            { src: circularIconUrl, sizes: "512x512", type: "image/png", purpose: "any" },
-                            { src: maskableIconUrl, sizes: "512x512", type: "image/png", purpose: "maskable" }
-                        ]
-                    };
-                    const blob = new Blob([JSON.stringify(manifestObj)], { type: "application/json" });
-                    const manifestURL = URL.createObjectURL(blob);
-                    const linkEl = document.getElementById('kizaManifestLink');
-                    if (linkEl) linkEl.href = manifestURL;
-                } catch (e) {}
-            }
-
-            function tryLoadLogoCandidate(idx) {
-                if (idx >= candidates.length) {
-                    const fallbackUrl = new URL("logo.jpg", window.location.href).href;
-                    attachDynamicPWAManifest(fallbackUrl, fallbackUrl);
-                    return;
-                }
-                const testImg = new Image();
-                testImg.crossOrigin = "anonymous";
-                testImg.onload = () => {
-                    const processed = buildSquareAndCircularIcons(testImg);
-                    const finalUiSrc = processed ? processed.circularDataUrl : candidates[idx];
-                    const finalMaskableSrc = processed ? processed.maskableDataUrl : new URL(candidates[idx], window.location.href).href;
-
-                    document.querySelectorAll('img[src="logo.jpg"]').forEach(el => {
-                        el.src = finalUiSrc;
-                    });
-                    const fav = document.getElementById('kizaFavicon');
-                    if (fav) fav.href = finalUiSrc;
-                    const appleFav = document.getElementById('kizaAppleIcon');
-                    if (appleFav) appleFav.href = finalMaskableSrc;
-
-                    attachDynamicPWAManifest(finalUiSrc, finalMaskableSrc);
-                };
-                testImg.onerror = () => tryLoadLogoCandidate(idx + 1);
-                testImg.src = candidates[idx];
-            }
-
-            window.addEventListener('DOMContentLoaded', () => tryLoadLogoCandidate(0));
-
-            if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
-                try {
-                    const swCode = `
-                        self.addEventListener('install', (e) => self.skipWaiting());
-                        self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
-                        self.addEventListener('fetch', (e) => {});
-                    `;
-                    const swBlob = new Blob([swCode], { type: 'application/javascript' });
-                    navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
-                } catch (e) {}
-            }
-
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPWAPrompt = e;
-                const hdrBtn = document.getElementById('pwaInstallHeaderBtn');
-                if (hdrBtn) hdrBtn.style.display = "inline-flex";
-            });
-        })();
-
-        async function triggerPWAInstall() {
-            if (deferredPWAPrompt) {
-                deferredPWAPrompt.prompt();
-                const { outcome } = await deferredPWAPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    showNotification("App Installed", "KIZA has been installed to your device!", false, { skipStore: true });
-                }
-                deferredPWAPrompt = null;
-                const hdrBtn = document.getElementById('pwaInstallHeaderBtn');
-                if (hdrBtn) hdrBtn.style.display = "none";
-            } else {
-                showNotification(
-                    "Install KIZA App",
-                    "Click the Install icon in your browser address bar (or tap Share / Menu ⋮ -> 'Add to Home Screen' on mobile)!",
-                    false,
-                    { skipStore: true }
-                );
-            }
-        }
-
-        // ==========================================================
-        // LIVE BATTERY, MEMORY RESOURCE HUD & POWER-SAVER ENGINE
-        // ==========================================================
-        let powerSaverActive = false;
-        let batteryLevelPct = 100;
-        let batteryCharging = true;
-
-        function togglePowerSaverMode(forceState = null) {
-            powerSaverActive = forceState !== null ? forceState : !powerSaverActive;
-            document.body.classList.toggle('power-saver', powerSaverActive);
-            const pill = document.getElementById('batteryHudPill');
-            if (pill) pill.classList.toggle('low-power', powerSaverActive);
-            showNotification(
-                powerSaverActive ? "⚡ Power-Saver Active" : "🔋 Normal Power Mode",
-                powerSaverActive ? "Background animations and polling throttled to save battery." : "Full visual animations and telemetry restored.",
-                false,
-                { skipStore: true }
-            );
-            updateBatteryHudDisplay();
-        }
-
-        function updateBatteryHudDisplay() {
-            const pill = document.getElementById('batteryHudPill');
-            if (!pill) return;
-            let memStr = "";
-            if (window.performance && performance.memory) {
-                const usedMB = Math.round(performance.memory.usedJSHeapSize / (1024 * 1024));
-                memStr = ` • ${usedMB}MB`;
-            }
-            const icon = batteryCharging ? "⚡" : (batteryLevelPct <= 20 ? "🪫" : "🔋");
-            pill.innerText = `${icon} ${batteryLevelPct}%${memStr}${powerSaverActive ? ' (Eco)' : ''}`;
-        }
-
-        (function initBatteryAndMemoryHUD() {
-            if ('getBattery' in navigator) {
-                navigator.getBattery().then(bat => {
-                    const syncBat = () => {
-                        batteryLevelPct = Math.round((bat.level || 1) * 100);
-                        batteryCharging = Boolean(bat.charging);
-                        if (batteryLevelPct <= 20 && !batteryCharging && !powerSaverActive) {
-                            togglePowerSaverMode(true);
-                        }
-                        updateBatteryHudDisplay();
-                    };
-                    syncBat();
-                    bat.addEventListener('levelchange', syncBat);
-                    bat.addEventListener('chargingchange', syncBat);
-                }).catch(() => updateBatteryHudDisplay());
-            } else {
-                updateBatteryHudDisplay();
-            }
-            setInterval(updateBatteryHudDisplay, 15000);
-        })();
-
-        // ==========================================================
-        // KATEX FORMULA, MERMAID DIAGRAMS & INTERACTIVE CHART.JS
-        // ==========================================================
-        window.addEventListener('DOMContentLoaded', () => {
-            if (typeof mermaid !== "undefined") {
-                mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
-            }
-            checkUrlForSharedMiniApp();
-            setTimeout(checkAndRenderLiveCallMinutes, 450);
-        });
-
-        // ==========================================================
-        // 📝 AUTO-GENERATED LIVE CALL MINUTES & ACTION ITEMS RENDERER
-        // ==========================================================
-        function checkAndRenderLiveCallMinutes() {
-            try {
-                const raw = localStorage.getItem('kiza_last_call_minutes');
-                if (!raw) return;
-                localStorage.removeItem('kiza_last_call_minutes');
-                const minObj = JSON.parse(raw);
-                if (!minObj) return;
-
-                const logBox = document.getElementById('actionLog');
-                if (!logBox) return;
-
-                const topicsHtml = (minObj.topics && minObj.topics.length > 0)
-                    ? minObj.topics.map(t => `<div style="font-size:12px; margin-bottom:3px;">• ${t.replace(/</g, '&lt;')}</div>`).join('')
-                    : `<div style="font-size:12px; color:var(--text-muted);">• General voice & vision session</div>`;
-
-                const decisionsHtml = (minObj.decisions && minObj.decisions.length > 0)
-                    ? minObj.decisions.map(d => `<div style="font-size:12px; margin-bottom:3px; color:var(--text-main);">✓ ${d.replace(/</g, '&lt;')}</div>`).join('')
-                    : `<div style="font-size:12px; color:var(--text-muted);">✓ Live visual & spoken assistance completed</div>`;
-
-                const card = document.createElement('div');
-                card.className = "call-minutes-card";
-                card.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid var(--card-border); padding-bottom:8px; margin-bottom:10px;">
-                        <div>
-                            <span style="font-size:10px; font-weight:800; color:var(--success); background:rgba(16,185,129,0.12); padding:3px 9px; border-radius:999px;">📞 LIVE CALL MINUTES & SUMMARY</span>
-                            <div style="font-weight:800; font-size:13.5px; margin-top:4px;">Call Duration: ${minObj.duration || '00:00'} • Ended at ${minObj.timestamp || 'Just now'}</div>
-                        </div>
-                        <div style="display:flex; gap:6px;">
-                            <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; font-size:11px;" onclick="prefillInput('Make a PDF report summarizing my last Live Call'); submitCommand();">📕 Save as PDF</button>
-                            <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; font-size:11px; color:var(--accent-primary);" onclick="openMissionsModal()">📋 Tasks Board</button>
-                        </div>
-                    </div>
-                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:10px;">
-                        <div style="background:var(--bg-surface); padding:9px 11px; border-radius:10px; border:1px solid var(--card-border);">
-                            <div style="font-size:10.5px; font-weight:800; color:var(--accent-primary); margin-bottom:5px;">🗣️ TOPICS DISCUSSED</div>
-                            ${topicsHtml}
-                        </div>
-                        <div style="background:var(--bg-surface); padding:9px 11px; border-radius:10px; border:1px solid var(--card-border);">
-                            <div style="font-size:10.5px; font-weight:800; color:var(--success); margin-bottom:5px;">🎯 KEY TAKEAWAYS & ANSWERS</div>
-                            ${decisionsHtml}
-                        </div>
-                    </div>
-                `;
-                logBox.appendChild(card);
-                logBox.scrollTop = logBox.scrollHeight;
-                showNotification("📞 Call Minutes Saved", `Summary of your ${minObj.duration} Live Call posted to chat!`, false, { skipStore: true });
-            } catch (e) {}
-        }
-
-        function renderMathInElementSafe(el) {
-            if (!el || typeof renderMathInElement !== "function") return;
-            try {
-                renderMathInElement(el, {
-                    delimiters: [
-                        { left: "$$", right: "$$", display: true },
-                        { left: "$", right: "$", display: false }
-                    ],
-                    ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code", "b"],
-                    throwOnError: false
-                });
-            } catch (e) {}
-        }
-
-        async function extractAndRenderMermaidBlocks(rawText) {
-            const mermaidRegex = /```mermaid\s*\n([\s\S]*?)(?:```|$)/gi;
-            let match;
-            const logBox = document.getElementById('actionLog');
-            while ((match = mermaidRegex.exec(rawText)) !== null) {
-                const graphCode = match[1].trim();
-                if (!graphCode) continue;
-                const card = document.createElement('div');
-                card.className = "mermaid-diagram-card";
-                const diagId = "mermaid_svg_" + Date.now() + "_" + Math.floor(Math.random() * 9999);
-                card.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                        <span style="font-size:12px; font-weight:700; color:var(--accent-primary);">🔀 Interactive Architecture & Flowchart Diagram</span>
-                        <button type="button" class="chip-btn" style="width:auto; padding:3px 10px; font-size:10.5px;" onclick="navigator.clipboard.writeText(${JSON.stringify(graphCode)}); showNotification('Copied', 'Mermaid diagram syntax copied!', false, {skipStore:true});">📋 Copy Syntax</button>
-                    </div>
-                    <div class="mermaid-svg-container" id="${diagId}_wrap">Rendering diagram...</div>
-                `;
-                logBox.appendChild(card);
-                logBox.scrollTop = logBox.scrollHeight;
-
-                if (typeof mermaid !== "undefined") {
-                    try {
-                        const { svg } = await mermaid.render(diagId, graphCode);
-                        const wrapEl = document.getElementById(`${diagId}_wrap`);
-                        if (wrapEl) wrapEl.innerHTML = svg;
-                    } catch (err) {
-                        const wrapEl = document.getElementById(`${diagId}_wrap`);
-                        if (wrapEl) wrapEl.innerHTML = `<pre style="color:#0f172a; font-size:11.5px; margin:0;">${graphCode.replace(/</g, '&lt;')}</pre>`;
-                    }
-                }
-            }
-        }
-
-        // ==========================================================
-        // 📊 INTERACTIVE CHART & GRAPH RENDERER (CHART.JS)
-        // ==========================================================
-        const activeChartInstances = {};
-
-        function extractAndRenderChartBlocks(rawText) {
-            if (typeof Chart === "undefined") return;
-            const chartRegex = /\[CHART_DATA\]([\s\S]*?)\[\/CHART_DATA\]/gi;
-            let match;
-            const logBox = document.getElementById('actionLog');
-            while ((match = chartRegex.exec(rawText)) !== null) {
-                try {
-                    const cfg = JSON.parse(match[1].trim());
-                    if (!cfg || !Array.isArray(cfg.labels) || !Array.isArray(cfg.values)) continue;
-                    const chartId = "kiza_chart_" + Date.now() + "_" + Math.floor(Math.random() * 9999);
-                    const card = document.createElement('div');
-                    card.className = "chart-widget-card";
-                    card.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
-                            <span style="font-size:12.5px; font-weight:800; color:var(--accent-primary);">📊 ${cfg.title || 'Interactive Data Visualization'}</span>
-                            <div style="display:flex; gap:5px;">
-                                <button type="button" class="chip-btn" style="width:auto; padding:2px 9px; font-size:10px;" onclick="switchChartWidgetType('${chartId}', 'bar')">📊 Bar</button>
-                                <button type="button" class="chip-btn" style="width:auto; padding:2px 9px; font-size:10px;" onclick="switchChartWidgetType('${chartId}', 'line')">📈 Line</button>
-                                <button type="button" class="chip-btn" style="width:auto; padding:2px 9px; font-size:10px;" onclick="switchChartWidgetType('${chartId}', 'pie')">🥧 Pie</button>
-                            </div>
-                        </div>
-                        <div style="position:relative; width:100%; max-height:250px; display:flex; justify-content:center;">
-                            <canvas id="${chartId}"></canvas>
-                        </div>
-                    `;
-                    logBox.appendChild(card);
-                    logBox.scrollTop = logBox.scrollHeight;
-
-                    const ctx = document.getElementById(chartId).getContext('2d');
-                    const palette = ['#0284c7', '#4f46e5', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'];
-                    const chartObj = new Chart(ctx, {
-                        type: (cfg.type || 'bar').toLowerCase(),
-                        data: {
-                            labels: cfg.labels,
-                            datasets: [{
-                                label: cfg.datasetLabel || cfg.title || 'Value',
-                                data: cfg.values,
-                                backgroundColor: cfg.labels.map((_, i) => palette[i % palette.length] + 'CC'),
-                                borderColor: cfg.labels.map((_, i) => palette[i % palette.length]),
-                                borderWidth: 2,
-                                borderRadius: 6,
-                                tension: 0.35
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: true }
-                            }
-                        }
-                    });
-                    activeChartInstances[chartId] = { instance: chartObj, config: cfg, palette };
-                } catch (e) {}
-            }
-        }
-
-        function switchChartWidgetType(chartId, newType) {
-            const entry = activeChartInstances[chartId];
-            if (!entry) return;
-            try {
-                entry.instance.destroy();
-                const ctx = document.getElementById(chartId).getContext('2d');
-                entry.instance = new Chart(ctx, {
-                    type: newType,
-                    data: {
-                        labels: entry.config.labels,
-                        datasets: [{
-                            label: entry.config.datasetLabel || entry.config.title || 'Value',
-                            data: entry.config.values,
-                            backgroundColor: entry.config.labels.map((_, i) => entry.palette[i % entry.palette.length] + 'CC'),
-                            borderColor: entry.config.labels.map((_, i) => entry.palette[i % entry.palette.length]),
-                            borderWidth: 2,
-                            borderRadius: 6,
-                            tension: 0.35
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false
-                    }
-                });
-            } catch (e) {}
-        }
-
-        function safeGetJSON(key, fallback) {
-            try {
-                const raw = localStorage.getItem(key);
-                return raw ? JSON.parse(raw) : fallback;
-            } catch (e) {
-                return fallback;
-            }
-        }
-
-        function safeSetItem(key, value) {
-            try {
-                localStorage.setItem(key, value);
-            } catch (quotaErr) {
-                try {
-                    let profs = safeGetJSON('kiza_profiles', []);
-                    profs.forEach(p => { p.face_id = null; });
-                    localStorage.setItem('kiza_profiles', JSON.stringify(profs));
-                    localStorage.setItem(key, value);
-                } catch (e2) {}
-            }
-        }
-
-        let storedProfiles = safeGetJSON('kiza_profiles', []);
-        let userSettings = safeGetJSON('kiza_settings', { theme: 'light', voiceDefault: 'off', showNotifs: 'on', sfx: 'on' });
-
-        // ==========================================================
-        // 🧠 PERSONALIZE PROFILE & CROSS-CHAT MEMORY VAULT ENGINE
-        // ==========================================================
-        function openProfileMemoryModal() {
-            if (isPinLocked) { openPinGate(pinGateMode); return; }
-            toggleMobileSidebar(false);
-            document.getElementById('profileMemoryModal').style.display = "flex";
-            loadUserProfileAndMemory();
-        }
-
-        function closeProfileMemoryModal() {
-            document.getElementById('profileMemoryModal').style.display = "none";
-        }
-
-        async function loadUserProfileAndMemory() {
-            const localKey = `kiza_mem_vault_${currentDBUser}`;
-            const cached = safeGetJSON(localKey, { email: "", age: "", bio: "", memory_notes: "" });
-            document.getElementById('profEmailInput').value = cached.email || "";
-            document.getElementById('profAgeInput').value = cached.age || "";
-            document.getElementById('profBioInput').value = cached.bio || "";
-            document.getElementById('profMemoryInput').value = cached.memory_notes || "";
-
-            if (!currentUser || currentUser === "Guest") return;
-            try {
-                const res = await fetch(`${SERVER_URL}/api/profile?user=${encodeURIComponent(currentUser)}`);
-                const data = await res.json();
-                if (data.success && data.profile) {
-                    document.getElementById('profEmailInput').value = data.profile.email || cached.email || "";
-                    document.getElementById('profAgeInput').value = data.profile.age || cached.age || "";
-                    document.getElementById('profBioInput').value = data.profile.bio || cached.bio || "";
-                    document.getElementById('profMemoryInput').value = data.profile.memory_notes || cached.memory_notes || "";
-                    safeSetItem(localKey, JSON.stringify(data.profile));
-                }
-            } catch (e) {}
-        }
-
-        async function saveUserProfileAndMemory() {
-            const email = document.getElementById('profEmailInput').value.trim();
-            const age = document.getElementById('profAgeInput').value.trim();
-            const bio = document.getElementById('profBioInput').value.trim();
-            const memory_notes = document.getElementById('profMemoryInput').value.trim();
-
-            const localKey = `kiza_mem_vault_${currentDBUser}`;
-            safeSetItem(localKey, JSON.stringify({ email, age, bio, memory_notes }));
-
-            try {
-                const res = await fetch(`${SERVER_URL}/api/profile`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ user: currentUser, email, age, bio, memory_notes })
-                });
-                const data = await res.json();
-                closeProfileMemoryModal();
-                showNotification("Memory Vault Saved", data.message || "Your Personalize Profile & Memory Vault are active across all chats!", false, { skipStore: true });
-            } catch (e) {
-                closeProfileMemoryModal();
-                showNotification("Saved Locally", "Profile saved to local cache and will sync when online.", false, { skipStore: true });
-            }
-        }
-
-        // ==========================================================
-        // 📘 READ-ONLY OFFICIAL TUTORIAL PDF VIEWER (tutorial.pdf)
-        // ==========================================================
-        function openTutorialPromptModal() {
-            toggleMobileSidebar(false);
-            document.getElementById('tutorialPromptModal').style.display = "flex";
-        }
-
-        function closeTutorialPromptModal() {
-            document.getElementById('tutorialPromptModal').style.display = "none";
-        }
-
-        function openInteractiveTutorialGuidePDF() {
-            closeTutorialPromptModal();
-            const pdfUrl = "tutorial.pdf";
-
-            const logBox = document.getElementById('actionLog');
-            const card = document.createElement('div');
-            card.style.background = "var(--card-bg)";
-            card.style.border = "1.5px solid var(--accent-primary)";
-            card.style.borderRadius = "14px";
-            card.style.padding = "14px";
-            card.style.marginTop = "6px";
-            card.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
-                    <div>
-                        <span style="font-size:10.5px; font-weight:700; color:var(--accent-primary); background:var(--chip-bg); padding:3px 9px; border-radius:6px;">📘 OFFICIAL READ-ONLY PDF</span>
-                        <div style="font-weight:800; font-size:14px; margin-top:4px;">KIZA Official User & Hierarchy Guide (tutorial.pdf)</div>
-                    </div>
-                    <div style="display:flex; gap:6px;">
-                        <a href="${pdfUrl}" target="_blank" rel="noopener" class="chip-btn" style="width:auto; padding:6px 12px; font-size:11px; text-decoration:none;">📖 Open Full Tab</a>
-                        <a href="${pdfUrl}" download="KIZA_Official_Tutorial_Guide.pdf" class="send-btn" style="padding:6px 13px; font-size:11px; text-decoration:none;">⬇️ Download PDF</a>
-                    </div>
-                </div>
-                <iframe src="${pdfUrl}#toolbar=0" style="width:100%; height:420px; border:1px solid var(--card-border); border-radius:10px; background:#0f172a;"></iframe>
-            `;
-            logBox.appendChild(card);
-            logBox.scrollTop = logBox.scrollHeight;
-        }
-
-        // ==========================================================
-        // 📊 REAL-TIME SYSTEM TELEMETRY PANEL (RANKS 1-4)
-        // ==========================================================
-        async function openTelemetryModal() {
-            if (isPinLocked) { openPinGate(pinGateMode); return; }
-            toggleMobileSidebar(false);
-            if (currentRankNum > 4 && !isMasterOwnerUser(currentUser)) {
-                showNotification("Access Denied", "Real-Time System Telemetry requires Rank 1–4 clearance.", true);
-                return;
-            }
-            document.getElementById('telemetryModal').style.display = "flex";
-            await fetchAndRenderTelemetry();
-        }
-
-        function closeTelemetryModal() {
-            document.getElementById('telemetryModal').style.display = "none";
-        }
-
-        async function fetchAndRenderTelemetry() {
-            try {
-                const res = await fetch(`${SERVER_URL}/api/telemetry?user=${encodeURIComponent(currentUser)}`);
-                const data = await res.json();
-                if (!data.success) return;
-                document.getElementById('teleGroqLatency').innerText = `${data.groq_latency_ms || 160} ms`;
-                document.getElementById('teleWsCount').innerText = `${data.active_ws || 1} (${data.online_users || 1} Online)`;
-                document.getElementById('teleDbStatus').innerText = data.db_pool_status || "HEALTHY";
-                document.getElementById('teleThreatsCount').innerText = String(data.blocked_threats || 0);
-                document.getElementById('teleBansCount').innerText = `${data.active_ip_bans || 0} (🛡️ ${data.whitelisted_ips_count || 0} Safe)`;
-                document.getElementById('teleUsersCount').innerText = String(data.registered_users || 0);
-                const mins = Math.floor((data.uptime_seconds || 0) / 60);
-                document.getElementById('teleUptime').innerText = `${mins}m ${(data.uptime_seconds || 0) % 60}s`;
-                document.getElementById('teleReqCount').innerText = String(data.total_requests || 0);
-            } catch (e) {}
-        }
-
-        // ==========================================================
-        // 🔖 PINNED MESSAGES DRAWER & SIDEBAR TAB SWITCHER
-        // ==========================================================
-        function getPinnedStorageKey() {
-            return `kiza_pinned_msgs_${currentDBUser || 'guest'}`;
-        }
-
-        function switchSidebarTab(tabName) {
-            const isChats = (tabName === 'chats');
-            document.getElementById('sidebarTabChats').classList.toggle('active', isChats);
-            document.getElementById('sidebarTabPinned').classList.toggle('active', !isChats);
-            document.getElementById('sidebarSessionsList').style.display = isChats ? "flex" : "none";
-            document.getElementById('sidebarPinnedList').style.display = isChats ? "none" : "flex";
-            if (!isChats) renderPinnedMessagesSidebar();
-        }
-
-        function togglePinMessage(msgText, btnEl = null) {
-            if (!msgText) return;
-            let pinned = safeGetJSON(getPinnedStorageKey(), []);
-            const existingIdx = pinned.findIndex(p => p.text === msgText);
-            if (existingIdx >= 0) {
-                pinned.splice(existingIdx, 1);
-                if (btnEl) {
-                    btnEl.classList.remove('pinned');
-                    btnEl.innerText = "📌 Pin";
-                }
-                showNotification("Unpinned", "Removed message from your Pinned drawer.", false, { skipStore: true });
-            } else {
-                pinned.unshift({
-                    id: "pin_" + Date.now(),
-                    text: msgText,
-                    date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                });
-                if (btnEl) {
-                    btnEl.classList.add('pinned');
-                    btnEl.innerText = "📌 Pinned";
-                }
-                showNotification("Pinned to Sidebar", "Saved to 📌 Pinned in your sidebar for quick revision!", false, { skipStore: true });
-            }
-            safeSetItem(getPinnedStorageKey(), JSON.stringify(pinned.slice(0, 50)));
-            renderPinnedMessagesSidebar();
-        }
-
-        function renderPinnedMessagesSidebar() {
-            const container = document.getElementById('sidebarPinnedList');
-            if (!container) return;
-            const pinned = safeGetJSON(getPinnedStorageKey(), []);
-            if (pinned.length === 0) {
-                container.innerHTML = `<div style="font-size:11.5px; color:var(--text-muted); padding:8px;">Tap 📌 Pin under any KIZA reply to save it here for quick revision!</div>`;
-                return;
-            }
-            container.innerHTML = "";
-            pinned.forEach((p, idx) => {
-                const div = document.createElement('div');
-                div.className = "notif-item";
-                div.style.padding = "8px 10px";
-                div.style.cursor = "pointer";
-                div.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:10px; color:var(--accent-primary); font-weight:700;">
-                        <span>📌 Pinned Note • ${p.date || ''}</span>
-                        <button type="button" class="sidebar-chat-del" style="opacity:1;" onclick="event.stopPropagation(); removePinnedItemByIndex(${idx});">✕</button>
-                    </div>
-                    <div style="font-size:11.5px; line-height:1.4; color:var(--text-main); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">${p.text.replace(/</g, '&lt;')}</div>
-                `;
-                div.onclick = () => {
-                    toggleMobileSidebar(false);
-                    logAction(`[KIZA PINNED NOTE]: ${p.text}`);
-                };
-                container.appendChild(div);
-            });
-        }
-
-        function removePinnedItemByIndex(idx) {
-            let pinned = safeGetJSON(getPinnedStorageKey(), []);
-            pinned.splice(idx, 1);
-            safeSetItem(getPinnedStorageKey(), JSON.stringify(pinned));
-            renderPinnedMessagesSidebar();
-        }
-
-        // ==========================================================
-        // CLOUD-SYNCED CUSTOM KIZA PERSONAS
-        // ==========================================================
-        localStorage.removeItem('kiza_custom_gems_v1');
-        let customGemsList = safeGetJSON('kiza_user_gems_clean', []);
-        let activeCustomGem = safeGetJSON('kiza_active_gem_clean', null);
-
-        function saveGemsToStorage() {
-            safeSetItem('kiza_user_gems_clean', JSON.stringify(customGemsList));
-            safeSetItem('kiza_active_gem_clean', JSON.stringify(activeCustomGem));
-        }
-
-        async function syncUserGemsWithServer() {
-            if (!currentUser || currentUser === "Guest") return;
-            try {
-                for (const localGem of customGemsList) {
-                    if (localGem && localGem.id && localGem.name && localGem.prompt) {
-                        await fetch(`${SERVER_URL}/api/gems`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                user: currentUser,
-                                gem_id: localGem.id,
-                                emoji: localGem.emoji || "💎",
-                                name: localGem.name,
-                                prompt: localGem.prompt
-                            })
-                        });
-                    }
-                }
-                const res = await fetch(`${SERVER_URL}/api/gems?user=${encodeURIComponent(currentUser)}`);
-                const data = await res.json();
-                if (data.success && Array.isArray(data.gems)) {
-                    customGemsList = data.gems;
-                    if (activeCustomGem) {
-                        const stillExists = customGemsList.find(g => g.id === activeCustomGem.id);
-                        activeCustomGem = stillExists || null;
-                    }
-                    saveGemsToStorage();
-                    renderCustomGemsBar();
-                    renderSavedGemsModalList();
-                }
-            } catch (e) {}
-        }
-
-        function renderCustomGemsBar() {
-            const bar = document.getElementById('customGemsBar');
-            const subEl = document.getElementById('activeGemSubtitle');
-            if (!bar) return;
-            bar.innerHTML = "";
-
-            const defaultBtn = document.createElement('button');
-            defaultBtn.type = "button";
-            defaultBtn.className = `gem-pill ${!activeCustomGem ? 'active' : ''}`;
-            defaultBtn.innerHTML = `<span>✦ Default KIZA</span>`;
-            defaultBtn.onclick = () => selectCustomGem(null);
-            bar.appendChild(defaultBtn);
-
-            customGemsList.forEach(gem => {
-                const isAct = activeCustomGem && activeCustomGem.id === gem.id;
-                const btn = document.createElement('button');
-                btn.type = "button";
-                btn.className = `gem-pill ${isAct ? 'active' : ''}`;
-                btn.innerHTML = `<span>${gem.emoji || '💎'} ${gem.name}</span>`;
-                btn.title = gem.prompt;
-                btn.onclick = () => selectCustomGem(gem.id);
-                bar.appendChild(btn);
-            });
-
-            const createBtn = document.createElement('button');
-            createBtn.type = "button";
-            createBtn.className = "gem-pill gem-pill-create";
-            createBtn.innerHTML = `<span>＋ Create Persona</span>`;
-            createBtn.onclick = () => openGemsModal();
-            bar.appendChild(createBtn);
-
-            if (subEl) {
-                if (activeCustomGem) {
-                    subEl.innerHTML = `<span style="color:var(--accent-primary); font-weight:700;">${activeCustomGem.emoji || '💎'} Active Persona: ${activeCustomGem.name}</span>`;
-                } else {
-                    subEl.innerText = "KIZA • Multi-Format AI Command Hub";
-                }
-            }
-        }
-
-        function openGemsModal() {
-            if (isPinLocked) { openPinGate(pinGateMode); return; }
-            toggleMobileSidebar(false);
-            document.getElementById('gemsModal').style.display = "flex";
-            renderSavedGemsModalList();
-            syncUserGemsWithServer();
-        }
-
-        function closeGemsModal() {
-            document.getElementById('gemsModal').style.display = "none";
-        }
-
-        function renderSavedGemsModalList() {
-            const container = document.getElementById('savedGemsListContainer');
-            if (!container) return;
-            container.innerHTML = "";
-            if (customGemsList.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding:12px; color:var(--text-muted); font-size:12px;">No custom Personas created yet. Build your own custom AI personality above and it will sync across all your devices!</div>`;
-                return;
-            }
-            customGemsList.forEach(gem => {
-                const isAct = activeCustomGem && activeCustomGem.id === gem.id;
-                const div = document.createElement('div');
-                div.className = "notif-item";
-                div.style.borderColor = isAct ? "var(--accent-primary)" : "var(--card-border)";
-                div.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                        <span style="font-weight:700; font-size:13px;">${gem.emoji || '💎'} ${gem.name} ${isAct ? '<span style="color:var(--success); font-size:11px;">(Active)</span>' : ''}</span>
-                        <div style="display:flex; gap:6px;">
-                            <button type="button" class="chip-btn" style="width:auto; padding:3px 10px; font-size:11px;" onclick="selectCustomGem('${gem.id}'); closeGemsModal();">${isAct ? '✓ Active' : 'Activate'}</button>
-                            <button type="button" class="chip-btn" style="width:auto; padding:3px 8px; font-size:11px; color:var(--danger);" onclick="deleteCustomGem('${gem.id}')">✕</button>
-                        </div>
-                    </div>
-                    <div style="font-size:11.5px; color:var(--text-muted); line-height:1.4;">${gem.prompt}</div>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        async function saveNewCustomGem() {
-            const emoji = (document.getElementById('gemEmojiInput').value || "💎").trim();
-            const name = (document.getElementById('gemNameInput').value || "").trim();
-            const prompt = (document.getElementById('gemPromptInput').value || "").trim();
-            if (!name || !prompt) {
-                showNotification("Missing Details", "Please enter both a Persona Name and instructions on how KIZA should act.", true, { skipStore: true });
-                return;
-            }
-            const newGem = {
-                id: "gem_" + Date.now(),
-                emoji: emoji,
-                name: name.slice(0, 32),
-                prompt: prompt.slice(0, 700)
-            };
-            customGemsList.unshift(newGem);
-            activeCustomGem = newGem;
-            saveGemsToStorage();
-            document.getElementById('gemNameInput').value = "";
-            document.getElementById('gemPromptInput').value = "";
-            renderCustomGemsBar();
-            renderSavedGemsModalList();
-            closeGemsModal();
-
-            try {
-                await fetch(`${SERVER_URL}/api/gems`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        user: currentUser,
-                        gem_id: newGem.id,
-                        emoji: newGem.emoji,
-                        name: newGem.name,
-                        prompt: newGem.prompt
-                    })
-                });
-            } catch (e) {}
-
-            showNotification("Persona Synced & Active", `${newGem.emoji} ${newGem.name} is now active and synced across your devices!`, false, { skipStore: true });
-        }
-
-        function selectCustomGem(gemId) {
-            if (!gemId) {
-                activeCustomGem = null;
-                saveGemsToStorage();
-                renderCustomGemsBar();
-                renderSavedGemsModalList();
-                showNotification("Default KIZA", "Switched back to Default KIZA assistant.", false, { skipStore: true });
-                return;
-            }
-            const found = customGemsList.find(g => g.id === gemId);
-            if (found) {
-                activeCustomGem = found;
-                saveGemsToStorage();
-                renderCustomGemsBar();
-                renderSavedGemsModalList();
-                showNotification("Persona Activated", `Now chatting with ${found.emoji} ${found.name}!`, false, { skipStore: true });
-            }
-        }
-
-        async function deleteCustomGem(gemId) {
-            customGemsList = customGemsList.filter(g => g.id !== gemId);
-            if (activeCustomGem && activeCustomGem.id === gemId) {
-                activeCustomGem = null;
-            }
-            saveGemsToStorage();
-            renderCustomGemsBar();
-            renderSavedGemsModalList();
-            try {
-                await fetch(`${SERVER_URL}/api/gems?user=${encodeURIComponent(currentUser)}&gem_id=${encodeURIComponent(gemId)}`, {
-                    method: "DELETE"
-                });
-            } catch (e) {}
-        }
-
-        let currentUser = "Guest";
-        let currentDBUser = "guest";
-        let currentRole = "LOCKED";
-        let currentRankNum = 5;
-        let currentTokenVersion = 1;
-        let lastLoginTimestamp = 0;
-        let authMode = "login";
-        let alertIndex = 0;
-        let isChatActive = false;
-        let activeChatAbortController = null;
-        let lastUserPromptSent = "";
-        
-        let ws = null;
-        let wsConnected = false;
-        let wsPingTimer = null;
-        let wsLastPingSent = 0;
-
-        let cameraReady = false;
-        let isCameraActive = true;
-        let videoDevices = [];
-        let audioInputDevices = [];
-        let currentCamIndex = 0;
-        let activeStream = null;
-        let activeMicStream = null;
-        let preferredCamId = localStorage.getItem('kiza_pref_cam_id') || "";
-        let preferredMicId = localStorage.getItem('kiza_pref_mic_id') || "";
-
-        let recognition = null;
-        let isRecording = false;
-
-        let wakeWordEnabled = false;
-        let wakeRecognition = null;
-        let awaitingWakeCommand = false;
-        let wakeCommandTimeout = null;
-        let isKizaSpeaking = false;
-
-        const WAKE_WORD_VARIATIONS = ["hello", "helo", "listen", "lissen", "listening"];
-
-        let voiceEnabled = false;
-        let sfxEnabled = (userSettings.sfx !== 'off');
-        let currentAudio = null;
-        let audioCtx = null;
-        let analyserAnimFrame = null;
-        let typingTimer;
-
-        let cachedOperatives = [];
-        let cachedThreatLogs = [];
-        let currentArchiveExportData = [];
-        let currentSessionId = generateSessionId();
-        let currentNotifFilter = "all";
-        let lastLockdownSignature = "";
-
-        let pinGateMode = "setup";
-        let isPinLocked = false;
-        let pendingLoginData = null;
-
-        let attachedImageBase64 = null;
-        let attachedImageName = "";
-        let lastAttachedFileTopic = "";
-        let lastUploadedDocumentContext = "";
-        let attachedImageExtractedContext = "";
-        let isScanningAttachment = false;
-        let attachmentScanPromise = null;
-
-        let lastCompiledFileCache = null;
-        let currentSandboxCodeObj = { lang: "html", code: "", filename: "kiza_app.html" };
-        let generatedCodeSnippetsStore = [];
-
-        // ==========================================================
-        // SEND <-> STOP BUTTON CONTROLLER
-        // ==========================================================
-        function setSendButtonToStopMode(isProcessing) {
-            const btn = document.getElementById('mainSendBtn');
-            if (!btn) return;
-            if (isProcessing) {
-                btn.classList.add('stop-mode');
-                btn.innerHTML = "⏹ Stop";
-                btn.title = "Stop generating response";
-            } else {
-                btn.classList.remove('stop-mode');
-                btn.innerHTML = "Send";
-                btn.title = "Send message";
-            }
-        }
-
-        function handleSendOrStop() {
-            if (isChatActive) {
-                stopActiveKizaResponse();
-            } else {
-                submitCommand();
-            }
-        }
-
-        function stopActiveKizaResponse() {
-            if (activeChatAbortController) {
-                try { activeChatAbortController.abort(); } catch (e) {}
-                activeChatAbortController = null;
-            }
-            if (currentAudio) {
-                try { currentAudio.pause(); currentAudio = null; } catch (e) {}
-            }
-            if (window.speechSynthesis) {
-                try { window.speechSynthesis.cancel(); } catch (e) {}
-            }
-            isKizaSpeaking = false;
-            isChatActive = false;
-            setSendButtonToStopMode(false);
-            setCoreLoadSpike(false);
-            const orbEl = document.getElementById('orb');
-            if (orbEl) {
-                orbEl.style.transform = "";
-                orbEl.classList.remove('processing');
-            }
-            document.getElementById('uiStatus').innerText = `${cleanDisplayNameOnly(currentUser)} • Rank ${currentRankNum}`;
-        }
-
-        // ==========================================================
-        // SIDEBAR CHAT HISTORY DRAWER WITH OFFLINE LOCAL CACHE
-        // ==========================================================
-        function toggleSidebarCollapse() {
-            const sb = document.getElementById('appSidebar');
-            const bd = document.getElementById('sidebarBackdrop');
-            if (!sb) return;
-            if (window.innerWidth <= 860) {
-                const isOpen = sb.classList.toggle('mobile-open');
-                if (bd) bd.classList.toggle('mobile-open', isOpen);
-            } else {
-                sb.classList.toggle('collapsed');
-            }
-        }
-
-        function toggleMobileSidebar(forceOpen) {
-            const sb = document.getElementById('appSidebar');
-            const bd = document.getElementById('sidebarBackdrop');
-            if (!sb || !bd) return;
-            if (forceOpen === false) {
-                sb.classList.remove('mobile-open');
-                bd.classList.remove('mobile-open');
-            }
-        }
-
-        function toggleVisionDrawer() {
-            const drawer = document.getElementById('floatingVisionDrawer');
-            if (drawer) {
-                drawer.classList.toggle('open');
-                if (drawer.classList.contains('open')) refreshHardwareDeviceDropdowns();
-            }
-        }
-
-        async function refreshSidebarChatSessions() {
-            const container = document.getElementById('sidebarSessionsList');
-            if (!container || !currentUser || currentUser === "Guest") return;
-            const cacheKey = `kiza_offline_sess_${currentDBUser}`;
-            let sessionsList = [];
-            try {
-                const targetU = (currentDBUser && currentDBUser !== "guest") ? currentDBUser : resolveDBUser(currentUser);
-                const res = await fetch(`${SERVER_URL}/api/history/sessions?target_user=${encodeURIComponent(targetU)}&request_user=${encodeURIComponent(currentUser)}`);
-                const data = await res.json();
-                if (data.success && Array.isArray(data.sessions)) {
-                    sessionsList = data.sessions;
-                    safeSetItem(cacheKey, JSON.stringify(sessionsList.slice(0, 25)));
-                }
-            } catch (e) {
-                sessionsList = safeGetJSON(cacheKey, []);
-            }
-
-            if (!sessionsList || sessionsList.length === 0) {
-                container.innerHTML = `<div style="font-size:12px; color:var(--text-muted); padding:8px;">No recent chats yet</div>`;
-                return;
-            }
-            container.innerHTML = "";
-            sessionsList.slice(0, 22).forEach(s => {
-                const row = document.createElement('div');
-                row.className = `sidebar-chat-item ${s.id === currentSessionId ? 'active' : ''}`;
-                row.innerHTML = `
-                    <span class="sidebar-chat-title">💬 ${s.title || 'Chat Session'}</span>
-                    <button type="button" class="sidebar-chat-del" title="Delete Chat">✕</button>
-                `;
-                row.querySelector('.sidebar-chat-title').onclick = () => loadSessionDirectlyFromSidebar(s.id);
-                row.querySelector('.sidebar-chat-del').onclick = (e) => {
-                    e.stopPropagation();
-                    deleteSidebarSessionItem(s.id);
-                };
-                container.appendChild(row);
-            });
-        }
-
-        async function loadSessionDirectlyFromSidebar(sessionId) {
-            if (!sessionId) return;
-            currentSessionId = sessionId;
-            toggleMobileSidebar(false);
-            const logBox = document.getElementById('actionLog');
-            logBox.innerHTML = `<div>> <b>[KIZA]:</b> Loading conversation...</div>`;
-            const msgCacheKey = `kiza_offline_msgs_${sessionId}`;
-            let historyArr = [];
-            try {
-                const targetU = (currentDBUser && currentDBUser !== "guest") ? currentDBUser : resolveDBUser(currentUser);
-                const res = await fetch(`${SERVER_URL}/api/history/messages?session_id=${encodeURIComponent(sessionId)}&target_user=${encodeURIComponent(targetU)}&request_user=${encodeURIComponent(currentUser)}`);
-                const data = await res.json();
-                if (data.success && Array.isArray(data.history)) {
-                    historyArr = data.history;
-                    safeSetItem(msgCacheKey, JSON.stringify(historyArr.slice(-40)));
-                }
-            } catch (e) {
-                historyArr = safeGetJSON(msgCacheKey, []);
-            }
-
-            logBox.innerHTML = "";
-            if (historyArr.length > 0) {
-                const displayLabel = cleanDisplayNameOnly(currentUser).toUpperCase();
-                for (const log of historyArr) {
-                    const div = document.createElement('div');
-                    const rawMsg = String(log.message || "");
-                    const cleanMsg = extractFriendlyAssistantMessage(rawMsg);
-                    const bTag = document.createElement('b');
-                    if (log.role !== "USER") bTag.style.color = "var(--accent-primary)";
-                    bTag.textContent = log.role === "USER" ? `[${displayLabel}]: ` : `[KIZA]: `;
-                    const spanTag = document.createElement('span');
-                    spanTag.textContent = cleanMsg;
-                    div.textContent = "> ";
-                    div.appendChild(bTag);
-                    div.appendChild(spanTag);
-                    logBox.appendChild(div);
-                    renderMathInElementSafe(spanTag);
-
-                    if (log.role !== "USER") {
-                        appendMessageActionBar(div, cleanMsg, "");
-                        if (/```mermaid/i.test(rawMsg)) await extractAndRenderMermaidBlocks(rawMsg);
-                        if (rawMsg.includes("[CHART_DATA]")) extractAndRenderChartBlocks(rawMsg);
-                        if (rawMsg.includes("```")) extractAndRenderCodeBlocks(rawMsg);
-                        if (rawMsg.includes("[QUIZ_DATA]")) extractAndRenderInteractiveQuiz(rawMsg);
-                    }
-                }
-                logBox.scrollTop = logBox.scrollHeight;
-            } else {
-                logBox.innerHTML = `<div>> <b>[KIZA]:</b> Conversation loaded. Ask me anything!</div>`;
-            }
-            refreshSidebarChatSessions();
-        }
-
-        async function deleteSidebarSessionItem(sessionId) {
-            localStorage.removeItem(`kiza_offline_msgs_${sessionId}`);
-            try {
-                await fetch(`${SERVER_URL}/api/history/clear`, {
-                    method: "DELETE",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ user: currentUser, session_id: sessionId, clear_all_user_sessions: false })
-                });
-                if (sessionId === currentSessionId) {
-                    startNewSession();
-                }
-                refreshSidebarChatSessions();
-            } catch (e) {}
-        }
-
-        setInterval(() => {
-            if (!powerSaverActive && navigator.onLine) refreshSidebarChatSessions();
-        }, 18000);
-
-        function getOrCreateBrowserDeviceId() {
-            let devId = localStorage.getItem('kiza_device_id');
-            if (!devId) {
-                devId = 'dev_' + Math.random().toString(36).substr(2, 10) + '_' + Date.now().toString(36);
-                safeSetItem('kiza_device_id', devId);
-            }
-            return devId;
-        }
-
-        function getFriendlyDeviceName() {
-            const ua = navigator.userAgent || "";
-            let os = "Desktop OS";
-            if (/Windows/i.test(ua)) os = "Windows PC";
-            else if (/Android/i.test(ua)) os = "Android Device";
-            else if (/iPhone|iPad|iPod/i.test(ua)) os = "iOS Device";
-            else if (/Mac/i.test(ua)) os = "Mac";
-            else if (/Linux/i.test(ua)) os = "Linux";
-
-            let browser = "Browser";
-            if (/Edg\//i.test(ua)) browser = "Edge";
-            else if (/Chrome\//i.test(ua)) browser = "Chrome";
-            else if (/Firefox\//i.test(ua)) browser = "Firefox";
-            else if (/Safari\//i.test(ua)) browser = "Safari";
-
-            return `${os} • ${browser}`;
-        }
-
-        const CURRENT_DEVICE_ID = getOrCreateBrowserDeviceId();
-
-        // ==========================================================
-        // LIVE GPS REVERSE-GEOCODING & REAL-TIME WEATHER ENGINE
-        // ==========================================================
-        let cachedClientGPS = null;
-        let cachedLat = null;
-        let cachedLon = null;
-        let cachedClientCityName = "";
-        let cachedClientWeatherSummary = "";
-
-        async function updateLiveLocationAndWeatherFromCoords(lat, lon) {
-            cachedLat = lat;
-            cachedLon = lon;
-            cachedClientGPS = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
-
-            try {
-                const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
-                if (geoRes.ok) {
-                    const geoData = await geoRes.json();
-                    const town = geoData.locality || geoData.city || "";
-                    const dist = geoData.principalSubdivision || "";
-                    const country = geoData.countryName || "India";
-                    cachedClientCityName = [town, dist, country].filter(Boolean).join(", ");
-                }
-            } catch (e) {}
-
-            try {
-                const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,surface_pressure&timezone=auto`);
-                if (wRes.ok) {
-                    const wData = await wRes.json();
-                    if (wData && wData.current) {
-                        const c = wData.current;
-                        cachedClientWeatherSummary = `Temperature: ${c.temperature_2m}°C (Feels like ${c.apparent_temperature}°C), Humidity: ${c.relative_humidity_2m}%, Wind: ${c.wind_speed_10m} km/h, Pressure: ${c.surface_pressure} hPa`;
-                    }
-                }
-            } catch (e) {}
-
-            if (cachedClientCityName) {
-                cachedClientGPS = `${lat.toFixed(4)}, ${lon.toFixed(4)} (${cachedClientCityName})`;
-            }
-        }
-
-        function refreshClientGPS() {
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        updateLiveLocationAndWeatherFromCoords(pos.coords.latitude, pos.coords.longitude);
-                    },
-                    () => {},
-                    { enableHighAccuracy: true, timeout: 7000, maximumAge: 60000 }
-                );
-                navigator.geolocation.watchPosition(
-                    (pos) => {
-                        updateLiveLocationAndWeatherFromCoords(pos.coords.latitude, pos.coords.longitude);
-                    },
-                    () => {},
-                    { enableHighAccuracy: true, maximumAge: 90000 }
-                );
-            }
-        }
-        refreshClientGPS();
-
-        const PERSONA_VOICE_CONFIG = {
-            normal: { label: "UK • DRY WIT", rate: 1.04 },
-            energetic: { label: "US • FAST WIT", rate: 1.16 },
-            security: { label: "UK • COLD TACTICAL", rate: 0.94 },
-            helpful: { label: "IN • EXECUTIVE", rate: 1.06 }
-        };
-
-        const THEME_PALETTES = {
-            movie_theater: { bgHex: "0D0205", cardHex: "1A050A", accentHex: "FBBF24", secHex: "DC2626", textHex: "FFFBEB", subHex: "FCA5A5", pdfHero: "linear-gradient(135deg, #450a0a 0%, #1a050a 50%, #78350f 100%)", pdfPageBg: "#0d0205", pdfText: "#fffbeb", pdfCardBg: "#1a050a" },
-            black: { bgHex: "000000", cardHex: "0A0A0A", accentHex: "00F2FE", secHex: "A855F7", textHex: "FFFFFF", subHex: "94A3B8", pdfHero: "linear-gradient(135deg, #000000 0%, #111111 70%, #1e293b 100%)", pdfPageBg: "#090d16", pdfText: "#f8fafc", pdfCardBg: "#111827" },
-            cyber_dark: { bgHex: "060A17", cardHex: "111827", accentHex: "38BDF8", secHex: "A855F7", textHex: "F8FAFC", subHex: "94A3B8", pdfHero: "linear-gradient(135deg, #090d16 0%, #0f172a 55%, #0284c7 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#f8fafc" },
-            light: { bgHex: "F8FAFC", cardHex: "FFFFFF", accentHex: "0284C7", secHex: "2563EB", textHex: "0F172A", subHex: "475569", pdfHero: "linear-gradient(135deg, #0284c7 0%, #2563eb 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#f1f5f9" },
-            blue: { bgHex: "071936", cardHex: "0C264E", accentHex: "38BDF8", secHex: "60A5FA", textHex: "FFFFFF", subHex: "93C5FD", pdfHero: "linear-gradient(135deg, #071936 0%, #1d4ed8 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#eff6ff" },
-            purple: { bgHex: "130726", cardHex: "210E3D", accentHex: "C084FC", secHex: "F472B6", textHex: "FFFFFF", subHex: "D8B4FE", pdfHero: "linear-gradient(135deg, #130726 0%, #7e22ce 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#faf5ff" },
-            green: { bgHex: "041E16", cardHex: "062E22", accentHex: "10B981", secHex: "34D399", textHex: "FFFFFF", subHex: "A7F3D0", pdfHero: "linear-gradient(135deg, #041e16 0%, #059669 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#ecfdf5" },
-            red: { bgHex: "28070C", cardHex: "3F0B13", accentHex: "FB7185", secHex: "F43F5E", textHex: "FFFFFF", subHex: "FDA4AF", pdfHero: "linear-gradient(135deg, #28070c 0%, #e11d48 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#fff1f2" },
-            gold: { bgHex: "1C1605", cardHex: "2E2408", accentHex: "FBBF24", secHex: "F59E0B", textHex: "FFFFFF", subHex: "FDE68A", pdfHero: "linear-gradient(135deg, #1c1605 0%, #d97706 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#fffbeb" }
-        };
-
-        const DEFAULT_UPDATES_FALLBACK = [
-            { version: "v10.1", title: "AI-Driven Theming & Movie Theater Mode", description: "Replaced Pollinations.ai with custom SVG engine, added 🎬 Movie Theater format, fixed 10-page logic, and fixed the /purge vs /logs sidebar bug.", author: "Viyan Arora", date: "LIVE" },
-            { version: "v9.5", title: "Word (.docx) & Excel (.xlsx) Studio, Handwritten Notes-to-PDF & Live Call Whiteboard", description: "Added Mammoth.js Word & SheetJS Excel readers/exporters with formulas, Handwritten Photo-to-Clean-PDF, Multi-Step Research-to-PDF pipelines, and Live Call Whiteboard + Push-to-Talk + Auto Call Minutes.", author: "Viyan Arora", date: "ACTIVE" }
-        ];
-
-        // ==========================================================
-        // UI SOUND EFFECTS
-        // ==========================================================
-        function playTacticalSFX(type = "click") {
-            if (!sfxEnabled) return;
-            try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const now = audioCtx.currentTime;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-
-                if (type === "click") {
-                    osc.type = "sine";
-                    osc.frequency.setValueAtTime(1100, now);
-                    osc.frequency.exponentialRampToValueAtTime(520, now + 0.035);
-                    gain.gain.setValueAtTime(0.03, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
-                    osc.start(now);
-                    osc.stop(now + 0.04);
-                } else if (type === "sonar") {
-                    osc.type = "sine";
-                    osc.frequency.setValueAtTime(740, now);
-                    osc.frequency.exponentialRampToValueAtTime(1480, now + 0.14);
-                    gain.gain.setValueAtTime(0.045, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
-                    osc.start(now);
-                    osc.stop(now + 0.16);
-                } else if (type === "complete") {
-                    osc.type = "triangle";
-                    osc.frequency.setValueAtTime(587.33, now);
-                    osc.frequency.setValueAtTime(880, now + 0.07);
-                    gain.gain.setValueAtTime(0.04, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-                    osc.start(now);
-                    osc.stop(now + 0.18);
-                } else if (type === "alert") {
-                    osc.type = "sawtooth";
-                    osc.frequency.setValueAtTime(240, now);
-                    osc.frequency.setValueAtTime(180, now + 0.09);
-                    gain.gain.setValueAtTime(0.045, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-                    osc.start(now);
-                    osc.stop(now + 0.22);
-                }
-            } catch (e) {}
-        }
-
-        function toggleTacticalSFX() {
-            sfxEnabled = !sfxEnabled;
-            userSettings.sfx = sfxEnabled ? 'on' : 'off';
-            safeSetItem('kiza_settings', JSON.stringify(userSettings));
-            const btn = document.getElementById('sfxToggleBtn');
-            if (btn) btn.innerText = sfxEnabled ? "🎛️ SFX" : "🔇 Mute";
-            if (sfxEnabled) playTacticalSFX("complete");
-        }
-
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('button') || e.target.closest('.followup-chip') || e.target.closest('.attach-action-pill')) {
-                playTacticalSFX("click");
-            }
-        });
-
-        // ==========================================================
-        // CTRL + V CLIPBOARD PASTE & DRAG-AND-DROP MULTI-FILE ANYWHERE
-        // ==========================================================
-        window.addEventListener('paste', (e) => {
-            if (isPinLocked || currentUser === "Guest") return;
-            const items = (e.clipboardData || e.originalEvent.clipboardData)?.items;
-            if (!items) return;
-            for (const item of items) {
-                if (item.type.indexOf("image") === 0) {
-                    const blob = item.getAsFile();
-                    if (blob) {
-                        e.preventDefault();
-                        processAttachedImageFileObject(blob, `Clipboard_Paste_${Date.now().toString().slice(-4)}.png`);
-                        showNotification("Clipboard Image Pasted", "Screenshot attached! Tap '✍️ Handwritten Notes ➔ Clean PDF' or any quick action.", false, { skipStore: true });
-                        break;
-                    }
-                }
-            }
-        });
-
-        window.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            if (isPinLocked || currentUser === "Guest") return;
-            document.getElementById('dragDropOverlay').style.display = "flex";
-        });
-
-        window.addEventListener('dragleave', (e) => {
-            if (e.relatedTarget === null || e.clientX <= 0 || e.clientY <= 0) {
-                document.getElementById('dragDropOverlay').style.display = "none";
-            }
-        });
-
-        window.addEventListener('drop', (e) => {
-            e.preventDefault();
-            document.getElementById('dragDropOverlay').style.display = "none";
-            if (isPinLocked || currentUser === "Guest") return;
-            const files = e.dataTransfer?.files;
-            if (files && files.length > 0) {
-                processAttachedImageFileObject(files[0], files[0].name);
-            }
-        });
-
-        // ==========================================================
-        // SMART NATURAL-LANGUAGE FOLLOW-UP CHIPS (NO "Summarize the ke"!)
-        // ==========================================================
-        function renderDynamicFollowUpChips(userQuery, aiReply, fileIntent) {
-            const cleanQ = String(userQuery || "")
-                .replace(/\[ATTACHED IMAGE TELEMETRY:[\s\S]*$/i, '')
-                .replace(/\[ATTACHED (DOCUMENT CONTENT|WORD DOCUMENT|EXCEL WORKBOOK)[\s\S]*$/i, '')
-                .replace(/\[LIVE USER GPS[\s\S]*$/i, '')
-                .replace(/\[FORMAT INSTRUCTION:[\s\S]*$/i, '')
-                .replace(/\[AUTONOMOUS PIPELINE:[\s\S]*$/i, '')
-                .trim();
-            const lowQ = cleanQ.toLowerCase().replace(/[!?.,]+$/g, '').trim();
-
-            const casualGreetings = [
-                "hi", "hii", "hiii", "hiiii", "hello", "helo", "hey", "heyy", "sup", "yo",
-                "ok", "okay", "kk", "thanks", "thank you", "thx", "ty", "bye", "good morning",
-                "good afternoon", "good evening", "good night", "gm", "gn", "how are you",
-                "how r u", "whats up", "what's up", "who are you", "test", "testing"
-            ];
-            if (!cleanQ || cleanQ.startsWith("/") || cleanQ.length < 4 || casualGreetings.includes(lowQ) || cleanQ.split(/\s+/).length < 2) {
-                return;
-            }
-
-            const logBox = document.getElementById('actionLog');
-            const oldRows = logBox.querySelectorAll('.followup-chips-row');
-            oldRows.forEach(r => r.remove());
-
-            let shortTopic = cleanQ
-                .replace(/^(summarize\s+the\s+key\s+points\s+and\s+chapters\s+from\s+this\s+attached\s+file\s+clearly|edit\s+and\s+improve\s+this\s+attached\s+.*|export\s+this\s+attached\s+data\s+as\s+.*|analyze\s+and\s+summarize\s+this\s+attached\s+file.*|explain\s+and\s+summarize\s+everything.*|extract\s+all\s+visible\s+text.*|quiz\s+me\s+on\s+the\s+contents\s+of\s+this\s+attached\s+file|convert\s+these\s+handwritten\s+notes.*)/i, '')
-                .replace(/^(research\s+and\s+build\s+a\s+comparison\s+chart\s+and\s+compile\s+a\s+pdf\s+report\s+on|what is|what's|whats|whts|what are|explain|summarize|tell me about|how does|how do|who is|define|describe|make a|make an|create a|generate a|write a|give me a|help with a|can you|the)\s+/i, '')
-                .replace(/\b(from this attached file|this attached file|attached file|clearly|in detail|near me|right now|today|pdf|pptx|ppt|docx|doc|xlsx|excel|word|spreadsheet|document|presentation|report|with formulas|10 pages|pages)\b/gi, '')
-                .replace(/[?.!]+$/, '')
-                .trim();
-
-            if (!shortTopic || shortTopic.length < 3) {
-                shortTopic = (lastAttachedFileTopic || "This Topic").replace(/\.(pdf|docx|doc|xlsx|xls|txt|csv|py|png|jpg|jpeg)$/i, '');
-            }
-            shortTopic = shortTopic.slice(0, 26);
-
-            let suggestions = [];
-            if (fileIntent) {
-                suggestions = [
-                    { label: "👁️ Open Preview Studio", action: () => openFilePreviewModal() },
-                    { label: "📗 Export as .XLSX", action: () => { switchPreviewExportFormat('xlsx'); confirmAndDownloadPreviewedFile(); } },
-                    { label: "📘 Export as .DOCX", action: () => { switchPreviewExportFormat('docx'); confirmAndDownloadPreviewedFile(); } },
-                    { label: `📝 Quiz on ${shortTopic.slice(0, 14)}`, cmd: `Quiz me on ${shortTopic}` }
-                ];
-            } else {
-                suggestions = [
-                    { label: `✏️ Same-Format PDF on ${shortTopic.slice(0, 12)}`, cmd: `Make a PDF report on ${shortTopic} keeping the exact same page structure and format` },
-                    { label: `📗 Excel (.xlsx) on ${shortTopic.slice(0, 12)}`, cmd: `Make an Excel spreadsheet (.xlsx) with formulas on ${shortTopic}` },
-                    { label: `📊 Presentation on ${shortTopic.slice(0, 12)}`, cmd: `Create a presentation on ${shortTopic}` },
-                    { label: `📝 Quiz on ${shortTopic.slice(0, 12)}`, cmd: `Quiz me on ${shortTopic}` }
-                ];
-            }
-
-            const row = document.createElement('div');
-            row.className = "followup-chips-row";
-            suggestions.forEach(s => {
-                const btn = document.createElement('button');
-                btn.type = "button";
-                btn.className = "followup-chip";
-                btn.innerText = s.label;
-                btn.onclick = () => {
-                    if (s.action) {
-                        s.action();
-                    } else if (s.cmd) {
-                        document.getElementById('textInput').value = s.cmd;
-                        submitCommand();
-                    }
-                };
-                row.appendChild(btn);
-            });
-            logBox.appendChild(row);
-            logBox.scrollTop = logBox.scrollHeight;
-        }
-
-        // ==========================================================
-        // KIZA LIVE CODE SANDBOX & 🔗 SHAREABLE MINI-APP URLS
-        // ==========================================================
-        function shareCurrentSandboxMiniAppUrl() {
-            if (!currentSandboxCodeObj || !currentSandboxCodeObj.code) return;
-            try {
-                const encoded = btoa(unescape(encodeURIComponent(currentSandboxCodeObj.code)));
-                const shareUrl = `${window.location.origin}${window.location.pathname}#kiza_app=${encoded}`;
-                navigator.clipboard.writeText(shareUrl);
-                showNotification("🔗 App Link Copied!", "Shareable Mini-App URL copied to clipboard! Anyone opening it will launch this app directly.", false, { skipStore: true });
-            } catch (e) {
-                showNotification("Share Notice", "Mini-app is too large for a URL hash—use Download instead.", true, { skipStore: true });
-            }
-        }
-
-        function checkUrlForSharedMiniApp() {
-            const hash = window.location.hash || "";
-            if (hash.startsWith("#kiza_app=")) {
-                try {
-                    const encoded = hash.replace("#kiza_app=", "").trim();
-                    const decodedHtml = decodeURIComponent(escape(atob(encoded)));
-                    if (decodedHtml) {
-                        generatedCodeSnippetsStore.push({ lang: "html", code: decodedHtml, filename: "shared_mini_app.html" });
-                        setTimeout(() => openCodeSandboxByIndex(generatedCodeSnippetsStore.length - 1), 600);
-                    }
-                } catch (e) {}
-            }
-        }
-
-        function extractAndRenderCodeBlocks(rawText) {
-            const codeRegex = /```([a-zA-Z0-9_-]*)\s*\n([\s\S]*?)(?:```|$)/g;
-            let match;
-            const logBox = document.getElementById('actionLog');
-            while ((match = codeRegex.exec(rawText)) !== null) {
-                let lang = (match[1] || "html").toLowerCase().trim();
-                if (lang === "mermaid") continue;
-
-                let codeContent = match[2]
-                    .replace(/https:\s*•\s*/g, 'https://')
-                    .replace(/http:\s*•\s*/g, 'http://')
-                    .trim();
-                if (!codeContent) continue;
-
-                if (!lang && (codeContent.includes("<!DOCTYPE") || codeContent.includes("<html"))) {
-                    lang = "html";
-                }
-
-                const extMap = { html: "html", javascript: "js", js: "js", css: "css", python: "py", py: "py", json: "json", sql: "sql", c: "c", cpp: "cpp" };
-                const fileExt = extMap[lang] || "html";
-                const filename = `index.${fileExt}`;
-                const snippetIdx = generatedCodeSnippetsStore.length;
-                generatedCodeSnippetsStore.push({ lang, code: codeContent, filename });
-
-                const canRunLive = ["html", "javascript", "js", "svg"].includes(lang) || codeContent.includes("<html") || codeContent.includes("<body") || codeContent.includes("<style");
-
-                const card = document.createElement('div');
-                card.className = "code-block-card";
-                card.innerHTML = `
-                    <div class="code-block-header">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span style="background:rgba(56,189,248,0.15); color:#38bdf8; padding:3px 8px; border-radius:6px; font-weight:700;">${lang.toUpperCase()}</span>
-                            <span style="color:#e2e8f0; font-weight:600;">${filename}</span>
-                        </div>
-                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                            ${canRunLive ? `<button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#10b981; color:#ffffff; border:none;" onclick="openCodeSandboxByIndex(${snippetIdx})">▶ Run Live</button>` : ''}
-                            ${canRunLive ? `<button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#4f46e5; color:#ffffff; border:none;" onclick="currentSandboxCodeObj=generatedCodeSnippetsStore[${snippetIdx}]; shareCurrentSandboxMiniAppUrl();">🔗 Share Link</button>` : ''}
-                            <button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#f59e0b; color:#000000; border:none;" onclick="currentSandboxCodeObj=generatedCodeSnippetsStore[${snippetIdx}]; autoFixCurrentSandboxCode();">⚡ Auto-Fix</button>
-                            <button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#334155; color:#f8fafc; border:1px solid #475569;" onclick="copyCodeSnippetByIndex(${snippetIdx})">📋 Copy</button>
-                            <button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#0284c7; color:#ffffff; border:none;" onclick="downloadCodeSnippetByIndex(${snippetIdx})">⬇️ Download</button>
-                        </div>
-                    </div>
-                    <pre class="code-block-pre"><code>${codeContent.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
-                `;
-                logBox.appendChild(card);
-                logBox.scrollTop = logBox.scrollHeight;
-            }
-        }
-
-        function openCodeSandboxByIndex(idx) {
-            const item = generatedCodeSnippetsStore[idx];
-            if (!item) return;
-            currentSandboxCodeObj = item;
-            document.getElementById('codeSandboxTitle').innerText = `💻 KIZA Live Code Sandbox • ${item.filename}`;
-            const banner = document.getElementById('sandboxDiagnosticBanner');
-            const bannerTxt = document.getElementById('sandboxDiagnosticText');
-
-            let htmlToRun = item.code;
-            const isHtmlCutOff = (item.lang === "html" || htmlToRun.includes("<!DOCTYPE") || htmlToRun.includes("<style")) && !htmlToRun.includes("</body>") && !htmlToRun.includes("</html>") && !htmlToRun.includes("<script");
-
-            if (isHtmlCutOff) {
-                if (banner && bannerTxt) {
-                    bannerTxt.innerText = "⚠️ This code block looks cut off before <body> / <script> finished! Click '⚡ Fix Now' to auto-complete it with compact CSS.";
-                    banner.style.display = "flex";
-                }
-                if (htmlToRun.includes("<style") && !htmlToRun.includes("</style>")) {
-                    htmlToRun += "\n</style></head><body style='color:#fff;font-family:sans-serif;padding:24px;text-align:center;'><h3>⚠️ Code was cut off mid-style</h3><p>Click <b>⚡ Auto-Fix</b> at the top of this window so KIZA rewrites it with compact CSS and full interactive JavaScript!</p></body></html>";
-                }
-            } else if (banner) {
-                banner.style.display = "none";
-            }
-
-            if (item.lang === "javascript" || item.lang === "js") {
-                htmlToRun = `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:20px;"><h3>JavaScript Console Output:</h3><pre id="out"></pre><script>const origLog = console.log; console.log = (...a) => { document.getElementById('out').innerText += a.join(' ') + '\\n'; origLog(...a); }; try { ${item.code} } catch(e) { document.getElementById('out').innerText += 'Error: ' + e.message; }<\/script></body></html>`;
-            }
-
-            const errorHook = `<script>window.onerror = function(msg, src, line) { window.parent.postMessage({ type: 'kiza_sandbox_error', message: msg + ' (Line ' + line + ')' }, '*'); };<\/script>`;
-            if (htmlToRun.includes("<head>")) {
-                htmlToRun = htmlToRun.replace("<head>", "<head>" + errorHook);
-            } else {
-                htmlToRun = errorHook + htmlToRun;
-            }
-
-            const iframe = document.getElementById('codeSandboxIframe');
-            iframe.srcdoc = htmlToRun;
-            document.getElementById('codeSandboxModal').style.display = "flex";
-        }
-
-        window.addEventListener('message', (e) => {
-            if (e.data && e.data.type === 'kiza_sandbox_error') {
-                const banner = document.getElementById('sandboxDiagnosticBanner');
-                const bannerTxt = document.getElementById('sandboxDiagnosticText');
-                if (banner && bannerTxt) {
-                    bannerTxt.innerText = `⚠️ Runtime Error Detected: ${e.data.message}`;
-                    banner.style.display = "flex";
-                }
-            }
-        });
-
-        function reloadCurrentSandboxIframe() {
-            const iframe = document.getElementById('codeSandboxIframe');
-            if (iframe && iframe.srcdoc) {
-                const currentDoc = iframe.srcdoc;
-                iframe.srcdoc = "";
-                setTimeout(() => { iframe.srcdoc = currentDoc; }, 40);
-            }
-        }
-
-        function autoFixCurrentSandboxCode() {
-            if (!currentSandboxCodeObj || !currentSandboxCodeObj.code) return;
-            closeCodeSandboxModal();
-            const snippetPreview = currentSandboxCodeObj.code.slice(0, 600);
-            document.getElementById('textInput').value = `Write HTML code to complete and fix this truncated/broken web app so it is 100% self-contained and working. Keep <style> under 45 lines (single-line CSS rules) so the full <body> HTML elements and complete <script> interactivity never get cut off:\n${snippetPreview}`;
-            submitCommand();
-        }
-
-        function closeCodeSandboxModal() {
-            document.getElementById('codeSandboxModal').style.display = "none";
-            document.getElementById('codeSandboxIframe').srcdoc = "";
-        }
-
-        function copyCodeSnippetByIndex(idx) {
-            const item = generatedCodeSnippetsStore[idx];
-            if (!item) return;
-            navigator.clipboard.writeText(item.code);
-            showNotification("Code Copied", `Copied ${item.filename} to clipboard!`, false, { skipStore: true });
-        }
-
-        function downloadCodeSnippetByIndex(idx) {
-            const item = generatedCodeSnippetsStore[idx];
-            if (!item) return;
-            triggerTextDownload(item.filename, item.code);
-            showNotification("File Downloaded", `Saved ${item.filename} to your device.`, false, { skipStore: true });
-        }
-
-        function copyCurrentSandboxCode() {
-            if (!currentSandboxCodeObj.code) return;
-            navigator.clipboard.writeText(currentSandboxCodeObj.code);
-            showNotification("Code Copied", `Copied ${currentSandboxCodeObj.filename} to clipboard!`, false, { skipStore: true });
-        }
-
-        function downloadCurrentSandboxCode() {
-            if (!currentSandboxCodeObj.code) return;
-            triggerTextDownload(currentSandboxCodeObj.filename, currentSandboxCodeObj.code);
-            showNotification("File Downloaded", `Downloaded ${currentSandboxCodeObj.filename}!`, false, { skipStore: true });
-        }
-
-        // ==========================================================
-        // INTERACTIVE QUIZ / FLASHCARD WIDGET ENGINE
-        // ==========================================================
-        function extractAndRenderInteractiveQuiz(rawText) {
-            const quizMatch = rawText.match(/\[QUIZ_DATA\]([\s\S]*?)\[\/QUIZ_DATA\]/i);
-            if (!quizMatch) return;
-            try {
-                const jsonRaw = quizMatch[1].trim();
-                const questions = JSON.parse(jsonRaw);
-                if (!Array.isArray(questions) || questions.length === 0) return;
-
-                const logBox = document.getElementById('actionLog');
-                const quizId = 'quiz_' + Date.now();
-                let score = 0;
-
-                const card = document.createElement('div');
-                card.className = "quiz-card";
-                card.id = quizId;
-
-                const header = document.createElement('div');
-                header.style.display = "flex";
-                header.style.justifyContent = "space-between";
-                header.style.alignItems = "center";
-                header.innerHTML = `
-                    <span style="font-size:13px; font-weight:700; color:var(--accent-primary);">📝 Interactive Quiz (${questions.length} Questions)</span>
-                    <span id="${quizId}_score" style="font-size:12px; font-weight:700; color:var(--success); background:rgba(16,185,129,0.12); padding:3px 10px; border-radius:999px;">Score: 0 / ${questions.length}</span>
-                `;
-                card.appendChild(header);
-
-                questions.forEach((qObj, qIdx) => {
-                    const qBox = document.createElement('div');
-                    qBox.className = "quiz-question-box";
-                    const qTitle = document.createElement('div');
-                    qTitle.style.fontWeight = "700";
-                    qTitle.style.fontSize = "13px";
-                    qTitle.innerText = `${qIdx + 1}. ${qObj.q}`;
-                    qBox.appendChild(qTitle);
-
-                    const optsContainer = document.createElement('div');
-                    optsContainer.style.display = "flex";
-                    optsContainer.style.flexDirection = "column";
-                    optsContainer.style.gap = "6px";
-
-                    const expBox = document.createElement('div');
-                    expBox.style.display = "none";
-                    expBox.style.fontSize = "11.5px";
-                    expBox.style.marginTop = "4px";
-                    expBox.style.color = "var(--text-muted)";
-
-                    const letters = ["A", "B", "C", "D"];
-                    (qObj.options || []).forEach((optText, oIdx) => {
-                        const btn = document.createElement('button');
-                        btn.type = "button";
-                        btn.className = "quiz-opt-btn";
-                        btn.innerText = `${letters[oIdx] || (oIdx + 1)}. ${optText}`;
-                        btn.onclick = () => {
-                            const allBtns = optsContainer.querySelectorAll('.quiz-opt-btn');
-                            allBtns.forEach(b => b.disabled = true);
-                            if (oIdx === Number(qObj.answer)) {
-                                btn.classList.add('correct');
-                                score++;
-                                playTacticalSFX("complete");
-                            } else {
-                                btn.classList.add('wrong');
-                                if (allBtns[Number(qObj.answer)]) {
-                                    allBtns[Number(qObj.answer)].classList.add('correct');
-                                }
-                                playTacticalSFX("alert");
-                            }
-                            document.getElementById(`${quizId}_score`).innerText = `Score: ${score} / ${questions.length}`;
-                            if (qObj.explanation) {
-                                expBox.innerText = `💡 ${qObj.explanation}`;
-                                expBox.style.display = "block";
-                            }
-                        };
-                        optsContainer.appendChild(btn);
-                    });
-
-                    qBox.appendChild(optsContainer);
-                    qBox.appendChild(expBox);
-                    card.appendChild(qBox);
-                });
-
-                logBox.appendChild(card);
-                renderMathInElementSafe(card);
-                logBox.scrollTop = logBox.scrollHeight;
-            } catch (e) {}
-        }
-
-        function triggerAttachmentQuickAction(promptStr) {
-            if (!attachedImageBase64 && !attachedImageExtractedContext) return;
-            document.getElementById('textInput').value = promptStr;
-            submitCommand();
-        }
-
-        function showVoiceHologram(textStr) {
-            const box = document.getElementById('voiceHologramBox');
-            const span = document.getElementById('voiceHologramText');
-            if (!box || !span) return;
-            span.innerText = textStr || "Listening...";
-            box.style.display = "inline-flex";
-        }
-
-        function hideVoiceHologram() {
-            const box = document.getElementById('voiceHologramBox');
-            if (box) box.style.display = "none";
-        }
-
-        function launchLiveCallMode() {
-            if (isPinLocked) {
-                openPinGate(pinGateMode);
-                return;
-            }
-            const persona = document.getElementById('personaSelect')?.value || "normal";
-            const url = `live.html?user=${encodeURIComponent(currentUser)}&role=${encodeURIComponent(currentRole)}&persona=${encodeURIComponent(persona)}`;
-            window.location.href = url;
-        }
-
-        function prefillInput(prefixStr) {
-            const inp = document.getElementById('textInput');
-            inp.value = prefixStr;
-            inp.focus();
-            handleSlashAutocomplete(inp);
-        }
-
-        function handlePersonaChange() {
-            const pVal = document.getElementById('personaSelect').value || "normal";
-            const cfg = PERSONA_VOICE_CONFIG[pVal] || PERSONA_VOICE_CONFIG.normal;
-            const lbl = document.getElementById('voiceSynthModeLabel');
-            if (lbl) lbl.innerText = cfg.label;
-            logAction(`[KIZA]: Switched base voice accent to ${pVal.toUpperCase()}.`);
-        }
-
-        function generateSessionId() {
-            return 'sess_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-        }
-
-        function isMasterOwnerUser(nameStr) {
-            if (!nameStr) return false;
-            const s = String(nameStr).toLowerCase().trim();
-            return s.includes("viyan");
-        }
-
-        function cleanDisplayNameOnly(nameStr) {
-            if (!nameStr) return "User";
-            return String(nameStr)
-                .replace(/\s*\((master owner|owner|admin|mod|moderator|user|operative|you)\)/gi, '')
-                .trim();
-        }
-
-        function formatCleanRole(roleStr, usernameHint = "") {
-            if (isMasterOwnerUser(usernameHint)) return "MASTER OWNER";
-            const r = String(roleStr || "USER").toUpperCase().split("/")[0].trim();
-            if (r.includes("MASTER")) return isMasterOwnerUser(usernameHint) ? "MASTER OWNER" : "OWNER";
-            if (r.includes("OWNER")) return "OWNER";
-            if (r.includes("MOD")) return "MODERATOR";
-            if (r.includes("ADMIN")) return "ADMIN";
-            if (r.includes("LOCKED")) return "LOCKED";
-            return "USER";
-        }
-
-        function computeRankNumber(roleStr, usernameHint = "") {
-            if (isMasterOwnerUser(usernameHint)) return 1;
-            const cleanR = formatCleanRole(roleStr, usernameHint);
-            if (cleanR === "MASTER OWNER") return 1;
-            if (cleanR === "OWNER") return 2;
-            if (cleanR === "MODERATOR") return 3;
-            if (cleanR === "ADMIN") return 4;
-            return 5;
-        }
-
-        function stripSlashesFromText(textStr) {
-            if (!textStr) return "";
-            return String(textStr)
-                .replace(/<think>[\s\S]*?<\/think>/gi, '')
-                .replace(/<\/?think>/gi, '')
-                .replace(/\[IMG\s*:[^\]]*\]/gi, '')
-                .replace(/\[IMAGE\s*:[^\]]*\]/gi, '')
-                .replace(/\s*(?<!:)\/\/\s*(MASTER|COMMANDER|OVERSEER)/gi, '')
-                .replace(/\s+(?<!:)\/\/\s+/g, ' • ');
-        }
-
-        function extractFriendlyAssistantMessage(fullText) {
-            const cleaned = stripSlashesFromText(fullText)
-                .replace(/\[QUIZ_DATA\][\s\S]*?(?:\[\/QUIZ_DATA\]|$)/gi, '')
-                .replace(/\[CHART_DATA\][\s\S]*?(?:\[\/CHART_DATA\]|$)/gi, '')
-                .replace(/```[\s\S]*?(?:```|$)/g, '')
-                .replace(/\[ACTION:[A-Z_]+\]/g, '')
-                .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
-                .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
-                .replace(/\[SYSTEM[^\]]*\]/gi, '')
-                .replace(/\*/g, '')
-                .trim();
-
-            const introMatch = cleaned.match(/AI_INTRO:\s*([^\n]+)/i);
-            if (introMatch) {
-                return introMatch[1].trim();
-            }
-            if (/SLIDE\s*1\s*:|SUBTITLE:|KPI:|SECTION:|TABLE_HEADER:|PAGE\s*1\s*:/i.test(cleaned)) {
-                const beforeTags = cleaned.split(/SLIDE\s*1\s*:|SUBTITLE:|KPI:|SECTION:|TABLE_HEADER:|PAGE\s*1\s*:/i)[0].trim();
-                return beforeTags || "I've compiled your document and opened it in the KIZA Multi-Format Preview Studio!";
-            }
-            return cleaned || (fullText.includes("```") ? "I've generated your interactive module below! Click ▶ Run Live, 🔗 Share Link, ⚡ Auto-Fix, 📋 Copy, or ⬇️ Download." : "");
-        }
-
-        function resolveDBUser(nameStr) {
-            if (!nameStr || nameStr === "undefined") return "guest";
-            let d = String(nameStr).toLowerCase().trim();
-            if (d.includes("viyan")) return "viyan_arora_owner";
-            if (d === "admin1" || d.startsWith("admin1 ")) return "admin1";
-            if (d === "mod1" || d.startsWith("mod1 ")) return "mod1";
-            return d.replace(/\s*\((master owner|owner|admin|mod|moderator|user|you)\)/gi, "").trim();
-        }
-
-        function getTokenVerStorageKey(dbUser = currentDBUser) {
-            const safeKey = (dbUser && dbUser !== "undefined") ? dbUser : resolveDBUser(currentUser);
-            return `kiza_tok_ver_${safeKey}`;
-        }
-        // ==========================================================
-        // 🎨 DYNAMIC INTENT PARSER (AUTO-CATCHES "MOVIE THEATER BACKGROUND")
-        // ==========================================================
-        function extractClientTopicAndStyle(rawStr) {
-            let s = (rawStr || "").trim();
-            const low = s.toLowerCase();
-            let styleTheme = "cyber_dark";
-            let layoutFormat = "infographic";
-
-            // Natively understand "Movie Theater" background/theme requests
-            if (/\b(movie\s*theat(?:er|re)|cinema|imax|stage\s*production|movie\s*theme|film\s*theme|theat(?:er|re)\s*background|movie\s*background)\b/i.test(low)) {
-                styleTheme = "movie_theater";
-                layoutFormat = "movie_theater";
-            } else {
-                const themeRules = [
-                    { rx: /\b(movie|cinema|theater|theatre|film|hollywood)\b/i, theme: "movie_theater" },
-                    { rx: /\b(black|obsidian|onyx|pitch\s*black|dark\s*mode|dark)\b/i, theme: "black" },
-                    { rx: /\b(white|light|minimal|clean\s*white|bright)\b/i, theme: "light" },
-                    { rx: /\b(blue|navy|ocean|sky|cyan)\b/i, theme: "blue" },
-                    { rx: /\b(purple|violet|neon|cyberpunk|magenta)\b/i, theme: "purple" },
-                    { rx: /\b(green|emerald|forest|matrix)\b/i, theme: "green" },
-                    { rx: /\b(red|crimson|ruby)\b/i, theme: "red" },
-                    { rx: /\b(gold|amber|yellow|warm)\b/i, theme: "gold" }
-                ];
-
-                for (const item of themeRules) {
-                    if (item.rx.test(low) && /(background|bg|theme|style|color|design|template|mode|format|with a |in a )/i.test(low)) {
-                        styleTheme = item.theme;
-                        if (item.theme === "movie_theater") layoutFormat = "movie_theater";
-                        break;
-                    }
-                }
-            }
-
-            s = s.replace(/\s+(?:with|in|using|having|featuring|and)\s+(?:a\s+|an\s+|the\s+)?(?:[a-z]+\s+){0,3}(?:background|bg|theme|style|color|design|template|layout|mode|format)\b.*$/i, '').trim();
-            s = s.replace(/\s+(?:with|in|having|for|of)\s+\d+\s+(?:slides|pages|sections|points|bullets)\b.*$/i, '').trim();
-            s = s.replace(/^(a|an|the|topic|subject)\s+/i, '').replace(/[.,;:-]+$/, '').trim();
-
-            return { cleanTopic: s || "KIZA Document", styleTheme, layoutFormat };
-        }
-
-        function detectClientSideFileIntent(rawCmd) {
-            const clean = rawCmd.trim();
-            const low = clean.toLowerCase();
-            if (low.startsWith("/")) return null;
-
-            const extPatterns = [
-                { regex: /\b(xlsx|xls|excel\s*sheet|excel\s*workbook|excel|spreadsheet)\b/i, ext: 'xlsx' },
-                { regex: /\b(docx|doc|word\s*file|word\s*document|word\s*doc)\b/i, ext: 'docx' },
-                { regex: /\b(pptx|ppt|powerpoint|slide\s*deck|presentation|slides)\b/i, ext: 'pptx' },
-                { regex: /\b(pdf|dossier|\d+\s*pages)\b/i, ext: 'pdf' },
-                { regex: /\b(csv)\b/i, ext: 'csv' }
-            ];
-            for (const item of extPatterns) {
-                if (item.regex.test(low)) {
-                    const m = clean.match(/\b(?:on|about|for|titled|called|regarding|of)\s+(.+)$/i);
-                    let rawTopic = m ? m[1].trim() : clean.replace(/\b(please|can\s+you|could\s+you|help\s+me|help\s+with|gen\w*|mak\w*|creat\w*|buld\w*|build\w*|export\w*|download\w*|writ\w*|prepar\w*|give\s+me|send\s+me|convert|to|into|clean|a|an|the|file|report|pptx|ppt|powerpoint|slide\s*deck|presentation|slides|pdf|dossier|docx|doc|word|xlsx|xls|excel|spreadsheet|csv|with\s+formulas)\b/gi, ' ').replace(/\s+/g, ' ').trim();
-                    const parsed = extractClientTopicAndStyle(rawCmd);
-                    const topicParsed = extractClientTopicAndStyle(rawTopic);
-                    return {
-                        ext: item.ext,
-                        topic: topicParsed.cleanTopic,
-                        styleTheme: parsed.styleTheme,
-                        layoutFormat: parsed.layoutFormat,
-                        fullRawTopic: rawTopic
-                    };
-                }
-            }
-            return null;
-        }
-
-        // ==========================================================
-        // 🧠 LOCAL INTENT PARSER (HANDLES /LOGS BUG FIX)
-        // ==========================================================
-        function processNaturalVoiceIntent(rawText) {
-            const low = rawText.toLowerCase().trim();
-            const words = low.split(/[\s,?.!]+/);
-
-            const parsedRem = parseNaturalLanguageReminder(rawText);
-            if (parsedRem) {
-                addSmartReminder(parsedRem.title, parsedRem.targetTimeMs);
-                const minsLeft = Math.max(1, Math.round((parsedRem.targetTimeMs - Date.now()) / 60000));
-                logAction(`[${cleanDisplayNameOnly(currentUser).toUpperCase()}]: ${rawText}`);
-                logAction(`[KIZA]: ⏰ Countdown reminder set for "${parsedRem.title}" (${minsLeft} min)! You can view live ticking timers anytime on your 📋 Tasks board.`);
-                showNotification("⏰ Reminder Active", `Timer set for "${parsedRem.title}" (${minsLeft}m)`, false, { skipStore: true });
-                return { handledLocally: true };
-            }
-
-            if ((words.includes("live") && (words.includes("call") || words.includes("mode") || words.includes("video"))) || low === "call kiza") {
-                launchLiveCallMode();
-                return { handledLocally: true };
-            }
-            if ((words.includes("dark") || words.includes("neon") || words.includes("cyberpunk")) && (words.includes("mode") || words.includes("theme") || words.includes("switch") || words.includes("turn") || words.includes("enable"))) {
-                document.getElementById('themeSelect').value = 'dark';
-                saveSettings();
-                logAction(`[${cleanDisplayNameOnly(currentUser).toUpperCase()}]: ${rawText}`);
-                logAction(`[KIZA]: Switched to Dark Mode.`);
-                return { handledLocally: true };
-            }
-            if ((words.includes("light") || words.includes("white") || words.includes("sky") || words.includes("default")) && (words.includes("mode") || words.includes("theme") || words.includes("switch") || words.includes("turn") || words.includes("enable"))) {
-                document.getElementById('themeSelect').value = 'light';
-                saveSettings();
-                logAction(`[${cleanDisplayNameOnly(currentUser).toUpperCase()}]: ${rawText}`);
-                logAction(`[KIZA]: Switched to Light Mode.`);
-                return { handledLocally: true };
-            }
-            if ((words.includes("memory") || words.includes("personalize") || words.includes("profile")) && (words.includes("open") || words.includes("edit") || words.includes("my"))) {
-                openProfileMemoryModal();
-                return { handledLocally: true };
-            }
-            if ((words.includes("mission") || words.includes("missions") || words.includes("tasks") || words.includes("reminders")) && (words.includes("open") || words.includes("show") || words.includes("check") || words.includes("my"))) {
-                openMissionsModal();
-                return { handledLocally: true };
-            }
-            if (words.includes("notification") || words.includes("notifications") || (words.includes("alerts") && (words.includes("open") || words.includes("show") || words.includes("check")))) {
-                openNotifCenter();
-                return { handledLocally: true };
-            }
-            if ((words.includes("update") || words.includes("updates") || words.includes("changelog")) && (words.includes("open") || words.includes("show") || words.includes("check") || words.includes("new"))) {
-                openUpdatesModal();
-                return { handledLocally: true };
-            }
-            // FIXED: Directly route /logs and /archive to the Chat Archive Modal
-            if (low === "/logs" || low === "/archive" || ((words.includes("archive") || words.includes("archives") || words.includes("history") || words.includes("logs")) && (words.includes("open") || words.includes("show") || words.includes("view") || words.includes("my")))) {
-                openLogsModal();
-                return { handledLocally: true };
-            }
-            if (words.includes("settings") && (words.includes("open") || words.includes("show") || words.includes("system"))) {
-                openSettings();
-                return { handledLocally: true };
-            }
-            if ((words.includes("rank") || words.includes("ranks")) && (words.includes("open") || words.includes("manage") || words.includes("management") || words.includes("assign"))) {
-                openRankModal();
-                return { handledLocally: true };
-            }
-            if ((words.includes("new") || words.includes("clear") || words.includes("reset")) && (words.includes("chat") || words.includes("session"))) {
-                startNewSession();
-                return { handledLocally: true };
-            }
-            return { handledLocally: false, mappedText: rawText };
-        }
-
-        function executeAIActionTags(replyStr) {
-            if (!replyStr) return "";
-            if (replyStr.includes("[ACTION:DARK_MODE]")) { document.getElementById('themeSelect').value = 'dark'; saveSettings(); }
-            if (replyStr.includes("[ACTION:LIGHT_MODE]")) { document.getElementById('themeSelect').value = 'light'; saveSettings(); }
-            if (replyStr.includes("[ACTION:OPEN_ARCHIVE]")) openLogsModal();
-            if (replyStr.includes("[ACTION:OPEN_SETTINGS]")) openSettings();
-            if (replyStr.includes("[ACTION:OPEN_RANK]")) openRankModal();
-            if (replyStr.includes("[ACTION:OPEN_NOTIFS]")) openNotifCenter();
-            if (replyStr.includes("[ACTION:OPEN_UPDATES]")) openUpdatesModal();
-            if (replyStr.includes("[ACTION:OPEN_THREATS]")) openThreatsModal();
-            if (replyStr.includes("[ACTION:OPEN_MISSIONS]")) openMissionsModal();
-            if (replyStr.includes("[ACTION:OPEN_PURGE]")) openPurgeModal();
-            if (replyStr.includes("[ACTION:OPEN_MEMORY]")) openProfileMemoryModal();
-            if (replyStr.includes("[ACTION:OPEN_TELEMETRY]")) openTelemetryModal();
-            if (replyStr.includes("[ACTION:PROMPT_TUTORIAL]")) openTutorialPromptModal();
-            if (replyStr.includes("[ACTION:NEW_CHAT]")) startNewSession();
-            return replyStr.replace(/\[ACTION:[A-Z_]+\]/g, '').trim();
-        }
-
-        // ==========================================================
-        // SERVER STATUS PAYLOAD HANDLER
-        // ==========================================================
-        function handleServerStatusPayload(data) {
-            if (!data) return;
-            if (data.type === "pong" && wsLastPingSent > 0) {
-                const rtt = Math.max(12, Math.round(performance.now() - wsLastPingSent));
-                const pingPill = document.getElementById('pingHudPill');
-                if (pingPill) pingPill.innerText = `⚡ ${rtt}ms`;
-            }
-            if (data.ip_banned) {
-                forceLogout();
-                showNotification("Global IP Ban", data.reason || "Your IP has been banned from KIZA.", true, { skipStore: true });
-                return;
-            }
-            if (data.revoked_device_id && data.revoked_device_id === CURRENT_DEVICE_ID) {
-                forceLogout();
-                showNotification("Device Signed Out", "This device session was signed out from Settings.", true, { skipStore: true });
-                return;
-            }
-
-            const withinLoginGrace = (Date.now() - lastLoginTimestamp) < 10000;
-            if (data.force_logout_token_version) {
-                if (withinLoginGrace) {
-                    currentTokenVersion = data.force_logout_token_version;
-                    safeSetItem(getTokenVerStorageKey(currentDBUser), String(currentTokenVersion));
-                } else if (data.force_logout_token_version > currentTokenVersion) {
-                    forceLogout();
-                    showNotification("Signed Out Remotely", "Your account was signed out from another device.", true, { skipStore: true });
-                    return;
-                }
-            }
-            if (data.token_version) {
-                if (withinLoginGrace || data.token_version < currentTokenVersion) {
-                    currentTokenVersion = data.token_version;
-                    safeSetItem(getTokenVerStorageKey(currentDBUser), String(currentTokenVersion));
-                } else if (data.token_version > currentTokenVersion) {
-                    forceLogout();
-                    showNotification("Session Expired", "Signed out remotely from another device.", true, { skipStore: true });
-                    return;
-                }
-            }
-
-            if (data.next_alert_idx !== undefined) {
-                alertIndex = data.next_alert_idx;
-                safeSetItem(getAlertIdxStorageKey(currentDBUser), String(alertIndex));
-            }
-            if (data.role && data.role !== "LOCKED" && formatCleanRole(data.role, currentUser) !== currentRole) {
-                applyRoleUI(data.role);
-                showNotification("Role Updated", `Your role is now Rank ${currentRankNum} (${currentRole})`, false, { category: "broadcast" });
-            }
-            if (data.face_id) {
-                const img = document.getElementById('savedFaceImg');
-                if (img && img.style.display === "none") {
-                    img.src = data.face_id;
-                    img.style.display = "block";
-                    safeSetItem('kiza_face', data.face_id);
-                }
-            }
-            if (data.has_pin === true) {
-                safeSetItem(getLocalHasPinKey(currentDBUser), "true");
-            }
-            if (data.new_alerts && data.new_alerts.length > 0) {
-                data.new_alerts.forEach(alert => {
-                    const uniqueAlertId = getAlertUniqueId(alert);
-                    if (hasUserSeenOrDeletedAlert(uniqueAlertId, currentDBUser)) return;
-                    if ((alert.target === "owner" || alert.category === "security_owner") && currentRankNum > 2) return;
-                    const cat = alert.category || (String(alert.title).includes("LOCKDOWN") ? "lockdown" : "broadcast");
-                    if (cat === "lockdown" && alert.target === "all") {
-                        recordGlobalLockdownToEveryone(alert.title, alert.message, uniqueAlertId);
-                    }
-                    showNotification(alert.title, alert.message, cat === "lockdown" || cat === "security_owner", {
-                        category: cat, serverId: uniqueAlertId, timestamp: alert.timestamp
-                    });
-                });
-            }
-            if (data.lockdown) {
-                const lockSig = `lock_${data.reason}`;
-                if (lastLockdownSignature !== lockSig) {
-                    lastLockdownSignature = lockSig;
-                    recordGlobalLockdownToEveryone("🚨 System Lockdown Active", `Lockdown: ${data.reason}`, `lock_state_${data.reason}`);
-                }
-                if (currentRankNum > 4 && !isMasterOwnerUser(currentUser)) {
-                    forceLogout();
-                    showNotification("System Lockdown", `Lockdown active: ${data.reason}`, true, { skipStore: true });
-                }
-            } else {
-                lastLockdownSignature = "";
-            }
-        }
-
-        function initWebSocket() {
-            if (currentUser === "Guest") return;
-            if (ws) {
-                try { ws.onclose = null; ws.close(); } catch (e) {}
-            }
-            try {
-                ws = new WebSocket(`${WS_URL}?user=${encodeURIComponent(currentUser)}`);
-                ws.onopen = () => {
-                    wsConnected = true;
-                    wsLastPingSent = performance.now();
-                    ws.send("ping");
-                    if (wsPingTimer) clearInterval(wsPingTimer);
-                    wsPingTimer = setInterval(() => {
-                        if (ws && ws.readyState === WebSocket.OPEN) {
-                            wsLastPingSent = performance.now();
-                            ws.send("ping");
-                        }
-                    }, 22000);
-                };
-                ws.onmessage = (event) => {
-                    try {
-                        const data = JSON.parse(event.data);
-                        handleServerStatusPayload(data);
-                    } catch (e) {}
-                };
-                ws.onclose = () => {
-                    wsConnected = false;
-                    if (wsPingTimer) clearInterval(wsPingTimer);
-                    if (currentUser !== "Guest") setTimeout(initWebSocket, 5000);
-                };
-                ws.onerror = () => { wsConnected = false; };
-            } catch (e) { wsConnected = false; }
-        }
-
-        setInterval(async () => {
-            if (currentUser === "Guest" || isChatActive || wsConnected || powerSaverActive || !navigator.onLine) return;
-            try {
-                let res = await fetch(`${SERVER_URL}/api/status?user=${encodeURIComponent(currentUser)}&last_alert_idx=${alertIndex}`);
-                if (!res.ok) return;
-                let data = await res.json();
-                handleServerStatusPayload(data);
-            } catch(e) {}
-        }, 30000);
-
-        // ==========================================================
-        // 🧹 COMMAND CATALOG (ADDED /LOGS)
-        // ==========================================================
-        const SLASH_COMMANDS_CATALOG = [
-            { cmd: "/help", desc: "Open Official Read-Only Tutorial PDF Guide & security manifest", maxRank: 5 },
-            { cmd: "/logs", desc: "Open all Chat History & Archives", maxRank: 5 },
-            { cmd: "/logoutall ", desc: "Sign out all other devices using your Backup PIN: /logoutall [pin]", maxRank: 5 },
-            { cmd: "/telemetry", desc: "Open Real-Time System Telemetry Panel (Ranks 1–4)", maxRank: 4 },
-            { cmd: "/health", desc: "Check server uptime, Groq latency & blocked IPs", maxRank: 4 },
-            { cmd: "/operative", desc: "List currently online users", maxRank: 4 },
-            { cmd: "/userdata", desc: "View registered users", maxRank: 4 },
-            { cmd: "/threats", desc: "Inspect failed logins, mugshots & timed IP bans", maxRank: 4 },
-            { cmd: "/wrongpass", desc: "Filter security log for wrong passwords", maxRank: 4 },
-            { cmd: "/notify ", desc: "Send announcement: /notify [target] [msg]", maxRank: 4 },
-            { cmd: "/lockdown ", desc: "Initiate system lockdown: /lockdown [reason]", maxRank: 4 },
-            { cmd: "/banip ", desc: "Timed IP Ban: /banip [ip] [1h|24h|perm] [reason]", maxRank: 3 },
-            { cmd: "/unban ", desc: "Unban IP address: /unban [ip or all]", maxRank: 3 },
-            { cmd: "/giverank ", desc: "Change user role: /giverank [user] [owner|mod|admin|user]", maxRank: 3 },
-            { cmd: "/purgelog", desc: "View user removal logs", maxRank: 3 },
-            { cmd: "/purge ", desc: "Remove user (Requires Master PIN): /purge [user] | [pin]", maxRank: 3 },
-            { cmd: "/whitelistip ", desc: "Protect trusted Owner IP from bans: /whitelistip [ip]", maxRank: 2 },
-            { cmd: "/recoverusers", desc: "Restore historical users from chat archives (Ranks 1 & 2)", maxRank: 2 },
-            { cmd: "/removelock", desc: "Lift active system lockdown (Ranks 1 & 2)", maxRank: 2 },
-            { cmd: "/clearthreats", desc: "Clear all security logs & mugshots (Ranks 1 & 2)", maxRank: 2 },
-            { cmd: "/update ", desc: "Publish live update: /update Title | Details (Ranks 1 & 2)", maxRank: 2 },
-            { cmd: "/setpurgepin ", desc: "Change Master Purge PIN (Rank 1 Master Owner Only)", maxRank: 1 }
-        ];
-
-        function handleSlashAutocomplete(inputEl) {
-            const val = inputEl.value;
-            const box = document.getElementById('slashAutocomplete');
-            if (!box) return;
-            if (!val.startsWith('/')) {
-                box.style.display = 'none';
-                return;
-            }
-            const query = val.toLowerCase().trim();
-            const matches = SLASH_COMMANDS_CATALOG.filter(c => currentRankNum <= c.maxRank && c.cmd.toLowerCase().startsWith(query));
-            if (matches.length === 0) {
-                box.style.display = 'none';
-                return;
-            }
-            box.innerHTML = '';
-            matches.forEach(m => {
-                const div = document.createElement('div');
-                div.className = 'slash-item';
-                div.innerHTML = `<span class="slash-cmd-name">${m.cmd}</span><span class="slash-cmd-desc">${m.desc}</span>`;
-                div.onclick = () => {
-                    inputEl.value = m.cmd;
-                    box.style.display = 'none';
-                    inputEl.focus();
-                    if (!m.cmd.endsWith(' ')) submitCommand();
-                };
-                box.appendChild(div);
-            });
-            box.style.display = 'flex';
-        }
-
-        document.addEventListener('click', (e) => {
-            const box = document.getElementById('slashAutocomplete');
-            if (box && !e.target.closest('.input-container')) {
-                box.style.display = 'none';
-            }
-        });
-
-        // ==========================================================
-        // 🚀 MASTER STREAMING COMMAND SUBMITTER
-        // ==========================================================
-        async function submitCommand() {
-            if (isPinLocked) {
-                openPinGate(pinGateMode);
-                return;
-            }
-            let inputField = document.getElementById('textInput');
-            let rawText = inputField.value.trim();
-            const autoBox = document.getElementById('slashAutocomplete');
-            if (autoBox) autoBox.style.display = "none";
-
-            if (!rawText && (attachedImageBase64 || attachedImageExtractedContext)) {
-                rawText = "Analyze and summarize this attached file in detail.";
-            }
-            if (!rawText || isChatActive) return;
-
-            // FIXED BUG: Now strictly requires a space after /purge (e.g. "/purge user") so it doesn't trigger on "/purgelog"
-            if ((rawText.toLowerCase() === "/purge" || rawText.toLowerCase().startsWith("/purge ")) && !rawText.includes("|") && !/\d{4,8}$/.test(rawText.trim())) {
-                const possibleTarget = rawText.slice(6).trim();
-                inputField.value = "";
-                await openPurgeModal();
-                if (possibleTarget && possibleTarget.toLowerCase() !== "all") {
-                    document.getElementById('purgeSearchInput').value = possibleTarget;
-                    filterPurgeUsersDropdown();
-                }
-                return;
-            }
-
-            inputField.value = "";
-            clearTimeout(typingTimer); clearIndicator();
-
-            if (isScanningAttachment && attachmentScanPromise) {
-                document.getElementById('uiStatus').innerText = "Scanning file...";
-                try { await attachmentScanPromise; } catch (e) {}
-            }
-
-            const intent = processNaturalVoiceIntent(rawText);
-            if (intent.handledLocally) return;
-
-            let text = intent.mappedText;
-            lastUserPromptSent = rawText;
-            const cleanSpeaker = cleanDisplayNameOnly(currentUser).toUpperCase();
-            const clientFileIntent = detectClientSideFileIntent(rawText);
-
-            const currentAttachedImg = attachedImageBase64;
-            const currentAttachedName = attachedImageName;
-            const currentAttachedContext = attachedImageExtractedContext;
-            const hasExplicitAttachment = Boolean(currentAttachedImg || currentAttachedContext);
-
-            const displayUserCmd = rawText.toLowerCase().startsWith("/purge")
-                ? rawText.split("|")[0].trim() + " [PIN]"
-                : rawText;
-
-            // 1. Force Formatting Copy from Uploaded Documents
-            if (hasExplicitAttachment) {
-                lastAttachedFileTopic = (currentAttachedName || "Document").replace(/\.[a-z0-9]+$/i, '');
-                if (currentAttachedContext) lastUploadedDocumentContext = currentAttachedContext;
-                logAction(`[${cleanSpeaker}]: [📎 ${currentAttachedName}] ${displayUserCmd}`);
-                if (currentAttachedContext && !text.startsWith("/")) {
-                    text = `${text}\n\n${currentAttachedContext}\n[FORMAT INSTRUCTION: Preserve the exact page-by-page / section-by-section structure and headings of this attached document!]`;
-                }
-                clearImageAttachment();
-            } else {
-                logAction(`[${cleanSpeaker}]: ${displayUserCmd}`);
-                if (lastUploadedDocumentContext && /(this pdf|this doc|this word|this excel|attached|same format|edit page|update the pdf|keep the format)/i.test(rawText)) {
-                    text = `${text}\n\n${lastUploadedDocumentContext}\n[FORMAT INSTRUCTION: Copy and preserve the exact page-by-page / table format and section layout of the user's uploaded document! If generating a new file, exactly mirror its headings and structure.]`;
-                }
-            }
-
-            // 2. Strict Exact 10-Page Count Enforcer
-            const pageMatch = rawText.match(/\b(\d+)\s+(pages|slides)\b/i);
-            if (pageMatch) {
-                text += `\n[FORMAT INSTRUCTION: The user explicitly requested ${pageMatch[1]} ${pageMatch[2]}. You MUST generate exactly ${pageMatch[1]} distinct 'PAGE N:' or 'SLIDE N:' sections. Do not stop early. Do not summarize.]`;
-            }
-
-            // 3. Multi-Step Autonomous Research Pipeline
-            const isResearchPipeline = /\bresearch\b/i.test(rawText) && (clientFileIntent !== null || /\bchart\b/i.test(rawText));
-            if (isResearchPipeline) {
-                text += `\n[AUTONOMOUS PIPELINE: Perform thorough multi-source web research, include real benchmark numbers in CHART: and TABLE_ROW: tags, and also include a [CHART_DATA]{"type":"bar","title":"${clientFileIntent ? clientFileIntent.topic : 'Research Metrics'}","labels":["Metric A","Metric B","Metric C","Metric D"],"values":[82,68,94,76],"datasetLabel":"Score / Index"}[/CHART_DATA] JSON block so an interactive Chart.js graph renders alongside the compiled file!]`;
-            }
-
-            // 4. Inject Real-Time GPS
-            if (!text.startsWith("/") && isLocationOrLocalWeatherQuery(rawText)) {
-                if (cachedLat !== null && cachedLon !== null && !cachedClientWeatherSummary) {
-                    try { await updateLiveLocationAndWeatherFromCoords(cachedLat, cachedLon); } catch (e) {}
-                }
-                if (cachedLat !== null && cachedLon !== null) {
-                    const gpsBlock = `[LIVE USER GPS & REAL-TIME WEATHER TELEMETRY: Exact Coordinates = (${cachedLat.toFixed(4)}, ${cachedLon.toFixed(4)}) | Detected Location = ${cachedClientCityName || 'Current GPS Sector'} | Live Weather = ${cachedClientWeatherSummary || 'Clear'} — IMPORTANT: Use this exact live GPS location and weather data to answer the user's question, and ignore any older city from earlier messages!]`;
-                    text = `${text}\n\n${gpsBlock}`;
-                }
-            }
-
-            isChatActive = true;
-            activeChatAbortController = new AbortController();
-            setSendButtonToStopMode(true);
-            setCoreLoadSpike(true);
-            document.getElementById('uiStatus').innerText = "Thinking...";
-            const orbEl = document.getElementById('orb');
-            orbEl.classList.add('processing');
-
-            let selectedPersona = document.getElementById('personaSelect').value; 
-            let finalVisionFrame = currentAttachedImg;
-
-            if (!finalVisionFrame) {
-                try {
-                    if (isCameraActive && cameraReady && isVisualQuestion(rawText)) {
-                        const video = document.getElementById('webcamVideo'); const canvas = document.getElementById('faceCanvas');
-                        canvas.width = 640; canvas.height = 480; canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-                        finalVisionFrame = canvas.toDataURL('image/jpeg', 0.7);
-                    }
-                } catch (e) {}
-            }
-
-            const logBox = document.getElementById('actionLog');
-            const streamEntry = document.createElement('div');
-            streamEntry.className = "streaming-cursor";
-            const kizaBold = document.createElement('b');
-            kizaBold.style.color = "var(--accent-primary)";
-            kizaBold.textContent = "[KIZA]: ";
-            const kizaSpan = document.createElement('span');
-            streamEntry.textContent = "> ";
-            streamEntry.appendChild(kizaBold);
-            streamEntry.appendChild(kizaSpan);
-            logBox.appendChild(streamEntry);
-            logBox.scrollTop = logBox.scrollHeight;
-
-            let accumulatedText = "";
-            let isStreamError = false;
-            let renderedPlanner = false;
-            let playedAudioFromStream = false;
-
-            const reqPayload = {
-                user: currentUser,
-                command: text,
-                image_base64: finalVisionFrame,
-                is_attached_image: Boolean(finalVisionFrame),
-                personality: selectedPersona,
-                session_id: currentSessionId,
-                custom_gem_name: activeCustomGem ? activeCustomGem.name : null,
-                custom_gem_prompt: activeCustomGem ? activeCustomGem.prompt : null,
-                client_gps: cachedClientGPS
-            };
-
-            try {
-                let response = await fetch(`${SERVER_URL}/api/chat/stream`, { 
-                    method: "POST", 
-                    headers: { "Content-Type": "application/json" }, 
-                    body: JSON.stringify(reqPayload),
-                    signal: activeChatAbortController.signal
-                });
-
-                if (response.ok && response.body) {
-                    const reader = response.body.getReader();
-                    const decoder = new TextDecoder("utf-8");
-                    let buffer = "";
-
-                    while (true) {
-                        const { value, done } = await reader.read();
-                        if (done) break;
-                        buffer += decoder.decode(value, { stream: true });
-
-                        let lines = buffer.split("\n\n");
-                        buffer = lines.pop() || "";
-
-                        for (let block of lines) {
-                            const trimmed = block.trim();
-                            if (!trimmed.startsWith("data:")) continue;
-                            const jsonStr = trimmed.replace(/^data:\s*/, "");
-                            try {
-                                const payload = JSON.parse(jsonStr);
-                                if (payload.type === "web_search" && payload.query) {
-                                    renderWebSearchBadgeInFeed(payload.query);
-                                    logBox.appendChild(streamEntry);
-                                } else if (payload.type === "plan" && Array.isArray(payload.steps)) {
-                                    renderedPlanner = true;
-                                    renderTaskPlannerQueueInFeed(payload.steps);
-                                    logBox.appendChild(streamEntry);
-                                } else if (payload.type === "token") {
-                                    if (payload.is_error) isStreamError = true;
-                                    accumulatedText += payload.text;
-                                    const visibleClean = extractFriendlyAssistantMessage(accumulatedText);
-                                    kizaSpan.textContent = visibleClean;
-                                    logBox.scrollTop = logBox.scrollHeight;
-                                    if (!powerSaverActive) {
-                                        orbEl.style.transform = `scale(${(1.03 + Math.random() * 0.08).toFixed(3)})`;
-                                    }
-                                } else if (payload.type === "audio" && payload.audio_base64) {
-                                    playedAudioFromStream = true;
-                                    playKizaAudio(payload.audio_base64, extractFriendlyAssistantMessage(accumulatedText));
-                                }
-                            } catch (parseErr) {}
-                        }
-                    }
-                }
-
-                const visibleCheck = stripSlashesFromText(accumulatedText).trim();
-                if (!visibleCheck) {
-                    let syncRes = await fetch(`${SERVER_URL}/api/chat`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(reqPayload),
-                        signal: activeChatAbortController.signal
-                    });
-                    if (syncRes.ok) {
-                        let syncData = await syncRes.json();
-                        accumulatedText = syncData.reply || "";
-                        isStreamError = Boolean(syncData.is_error);
-                        if (syncData.web_query) renderWebSearchBadgeInFeed(syncData.web_query);
-                        if (syncData.plan_steps && syncData.plan_steps.length && !renderedPlanner) {
-                            renderTaskPlannerQueueInFeed(syncData.plan_steps);
-                        }
-                        if (syncData.audio_base64) {
-                            playedAudioFromStream = true;
-                            playKizaAudio(syncData.audio_base64, extractFriendlyAssistantMessage(accumulatedText));
-                        }
-                    }
-                }
-
-                streamEntry.classList.remove("streaming-cursor");
-                orbEl.style.transform = "";
-                orbEl.classList.remove('processing');
-                document.getElementById('uiStatus').innerText = `${cleanDisplayNameOnly(currentUser)} • Rank ${currentRankNum}`;
-                isChatActive = false;
-                activeChatAbortController = null;
-                setSendButtonToStopMode(false);
-                setCoreLoadSpike(false);
-                refreshSidebarChatSessions();
-
-                if (accumulatedText.includes("[PURGE_PIN_REQUIRED]")) {
-                    openPurgeModal();
-                }
-
-                let wasFileGenerated = false;
-                if (accumulatedText.includes("[GENERATE_FILE:")) {
-                    wasFileGenerated = true;
-                    const fileMatch = accumulatedText.match(/\[GENERATE_FILE:([^:]+):([^:\]]+)(?::([^\]]+))?\]/);
-                    const fileExt = clientFileIntent ? clientFileIntent.ext : (fileMatch ? fileMatch[1] : "pdf");
-                    const fileTopic = fileMatch ? fileMatch[2] : "Report";
-                    
-                    // Force the layout format derived from intent to apply during preview
-                    const layoutToUse = clientFileIntent ? clientFileIntent.layoutFormat : "infographic";
-                    const fileTheme = (fileMatch && fileMatch[3]) ? fileMatch[3] : (clientFileIntent ? clientFileIntent.styleTheme : "cyber_dark");
-                    
-                    if (lastCompiledFileCache) lastCompiledFileCache.layoutFormat = layoutToUse;
-                    await prepareAndPreviewUniversalFile(fileExt, fileTopic, accumulatedText, currentAttachedImg, fileTheme);
-                    
-                    // Manually force dropdowns to update to the inferred movie intent
-                    const themeSelect = document.getElementById('previewThemeSelect');
-                    const layoutSelect = document.getElementById('previewLayoutFormatSelect');
-                    if (themeSelect && fileTheme === "movie_theater") themeSelect.value = "movie_theater";
-                    if (layoutSelect && layoutToUse === "movie_theater") layoutSelect.value = "movie_theater";
-
-                } else if (accumulatedText.includes("[GENERATING_PDF:")) {
-                    wasFileGenerated = true;
-                    const match = accumulatedText.match(/\[GENERATING_PDF:([^\]]+)\]/);
-                    const topic = match ? match[1] : "Report";
-                    await prepareAndPreviewUniversalFile("pdf", topic, accumulatedText, currentAttachedImg, "cyber_dark");
-                } else if (clientFileIntent && !isStreamError) {
-                    wasFileGenerated = true;
-                    if (lastCompiledFileCache) lastCompiledFileCache.layoutFormat = clientFileIntent.layoutFormat;
-                    await prepareAndPreviewUniversalFile(clientFileIntent.ext, clientFileIntent.topic, accumulatedText, currentAttachedImg, clientFileIntent.styleTheme);
-                    
-                    const themeSelect = document.getElementById('previewThemeSelect');
-                    const layoutSelect = document.getElementById('previewLayoutFormatSelect');
-                    if (themeSelect && clientFileIntent.styleTheme === "movie_theater") themeSelect.value = "movie_theater";
-                    if (layoutSelect && clientFileIntent.layoutFormat === "movie_theater") layoutSelect.value = "movie_theater";
-                }
-
-                if (/```mermaid/i.test(accumulatedText)) {
-                    await extractAndRenderMermaidBlocks(accumulatedText);
-                }
-                if (accumulatedText.includes("[CHART_DATA]")) {
-                    extractAndRenderChartBlocks(accumulatedText);
-                }
-                if (accumulatedText.includes("```")) {
-                    extractAndRenderCodeBlocks(accumulatedText);
-                }
-                if (accumulatedText.includes("[QUIZ_DATA]")) {
-                    extractAndRenderInteractiveQuiz(accumulatedText);
-                }
-
-                executeAIActionTags(accumulatedText);
-                let finalCleaned = extractFriendlyAssistantMessage(accumulatedText).replace(/\[PURGE_PIN_REQUIRED\]\s*/g, '');
-
-                if (!finalCleaned) {
-                    finalCleaned = "Interactive module is ready below!";
-                }
-                kizaSpan.textContent = finalCleaned;
-                renderMathInElementSafe(kizaSpan);
-                appendMessageActionBar(streamEntry, finalCleaned, rawText);
-                logBox.scrollTop = logBox.scrollHeight;
-
-                if (!playedAudioFromStream && !isStreamError && voiceEnabled) {
-                    speakZeroLagBrowserFallback(finalCleaned);
-                }
-
-                if (!isStreamError) {
-                    playTacticalSFX("complete");
-                    renderDynamicFollowUpChips(rawText, finalCleaned, wasFileGenerated);
-                }
-
-                if (isStreamError) {
-                    streamEntry.style.borderLeftColor = "var(--danger)";
-                    const isLockCmd = text.toLowerCase().startsWith("/lockdown");
-                    showNotification(isLockCmd ? "System Lockdown" : "Alert", finalCleaned, true, {
-                        category: isLockCmd ? "lockdown" : "error",
-                        skipStore: isLockCmd
-                    });
-                }
-            } catch (error) {
-                streamEntry.classList.remove("streaming-cursor");
-                isChatActive = false;
-                activeChatAbortController = null;
-                setSendButtonToStopMode(false);
-                setCoreLoadSpike(false);
-                orbEl.style.transform = "";
-                orbEl.classList.remove('processing');
-
-                if (error.name === "AbortError") {
-                    const partialClean = extractFriendlyAssistantMessage(accumulatedText);
-                    kizaSpan.textContent = partialClean ? `${partialClean} ` : "";
-                    const stopBadge = document.createElement('div');
-                    stopBadge.innerHTML = `<span class="stopped-tag">🛑 You stopped this response</span>`;
-                    streamEntry.appendChild(stopBadge);
-                    if (partialClean) appendMessageActionBar(streamEntry, partialClean, rawText);
-                    document.getElementById('uiStatus').innerText = `${cleanDisplayNameOnly(currentUser)} • Rank ${currentRankNum}`;
-                    logBox.scrollTop = logBox.scrollHeight;
-                    return;
-                }
-
-                kizaSpan.textContent = `[Error]: ${error.message}`;
-                showNotification("Connection Error", error.message, true, { category: "error" });
-                document.getElementById('uiStatus').innerText = "Offline";
-            }
-        }
-
-        document.getElementById('textInput').addEventListener("keypress", function(event) {
-            if (event.key === "Enter" && !isChatActive) submitCommand();
-        });
-    </script>
-    <!-- KIZA AUTHENTICATION HANDLERS -->
-<script>
-(function() {
-  const BACKEND_URL = "https://kiza-brain.onrender.com";
-  let authMode = "signin"; // 'signin' or 'signup'
-
-  // 1. Google One-Tap & Button Callback
-  window.handleGoogleLogin = async function(response) {
-    const submitBtn = document.getElementById("authSubmitBtn");
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.innerText = "Verifying with Google...";
-    }
-
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/google_auth`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: response.credential })
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Google login failed");
-
-      // Save token and user details cryptographically
-      localStorage.setItem("kiza_jwt_token", data.token);
-      localStorage.setItem("kiza_user_session", JSON.stringify(data.user));
-
-      applyAuthenticatedUser(data.user);
-      dismissAuthModal();
-    } catch (err) {
-      alert("Login Error: " + err.message);
-    } finally {
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.innerText = "Continue";
-      }
-    }
-  };
-
-  // 2. Tab Switcher between Sign In and Create Account
-  window.switchAuthMode = function(mode) {
-    authMode = mode;
-    const signinTab = document.querySelector("button[onclick*='signin']");
-    const signupTab = document.querySelector("button[onclick*='signup']");
-    const submitBtn = document.getElementById("authSubmitBtn");
-
-    if (mode === "signin") {
-      if (signinTab) signinTab.style.background = "#e0f2fe";
-      if (signupTab) signupTab.style.background = "transparent";
-      if (submitBtn) submitBtn.innerText = "Sign In";
-    } else {
-      if (signupTab) signupTab.style.background = "#e0f2fe";
-      if (signinTab) signinTab.style.background = "transparent";
-      if (submitBtn) submitBtn.innerText = "Create Account";
-    }
-  };
-
-  // 3. Username & Password Submission
-  window.performAuth = async function() {
-    const userInput = document.querySelector("#authModal input[type='text']");
-    const passInput = document.querySelector("#authModal input[type='password']");
-    const submitBtn = document.getElementById("authSubmitBtn");
-
-    const username = userInput ? userInput.value.trim() : "";
-    const password = passInput ? passInput.value.trim() : "";
-
-    if (!username || !password) {
-      alert("Please enter both username and password.");
-      return;
-    }
-
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.innerText = "Authenticating...";
-    }
-
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/auth`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: authMode,
-          username: username,
-          password: password
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Authentication failed");
-
-      localStorage.setItem("kiza_jwt_token", data.token);
-      localStorage.setItem("kiza_user_session", JSON.stringify(data.user));
-
-      applyAuthenticatedUser(data.user);
-      dismissAuthModal();
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.innerText = authMode === "signin" ? "Sign In" : "Create Account";
-      }
-    }
-  };
-
-  // 4. Dismiss Modal
-  function dismissAuthModal() {
-    const modal = document.getElementById("authModal");
-    if (modal) {
-      modal.style.display = "none";
-      modal.setAttribute("aria-hidden", "true");
-    }
-  }
-
-  // 5. Update UI for Logged-In User
-  function applyAuthenticatedUser(user) {
-    // Bottom left user card
-    const guestLabel = document.querySelector(".guest-text, [class*='Guest']");
-    const bottomUser = document.getElementById("bottomUserName") || document.querySelector(".user-identity-name");
-    if (bottomUser) {
-      bottomUser.innerText = user.name;
-    }
-
-    // Role badge
-    const roleBadge = document.getElementById("userRoleBadge");
-    if (roleBadge) {
-      roleBadge.innerText = user.role.toUpperCase();
-      roleBadge.style.display = "inline-block";
-    }
-
-    // Avatar
-    if (user.avatar) {
-      const avatars = document.querySelectorAll(".user-avatar-img, #navUserAvatar");
-      avatars.forEach(img => { img.src = user.avatar; });
-    }
-  }
-
-  // 6. Verify existing token on page load (Auto-login)
-  window.addEventListener("DOMContentLoaded", async function() {
-    const token = localStorage.getItem("kiza_jwt_token");
-    if (!token) return; // Keep modal ready if no saved token
-
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/verify_session`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const savedSession = JSON.parse(localStorage.getItem("kiza_user_session") || "{}");
-        applyAuthenticatedUser(savedSession);
-        dismissAuthModal();
-      } else {
-        localStorage.removeItem("kiza_jwt_token");
-        localStorage.removeItem("kiza_user_session");
-      }
-    } catch (e) {
-      console.warn("Could not verify session with backend:", e);
-    }
-  });
-
-  // 7. Global Helper for Chat and API Calls
-  window.getAuthHeader = function() {
-    const token = localStorage.getItem("kiza_jwt_token");
-    return token ? { "Authorization": `Bearer ${token}` } : {};
-  };
-})();
-</script>
-</body>
-</html>
