@@ -1,9 +1,10 @@
 // ==========================================================
-// KIZA v11.2 — AUTH, STRICT 128-D BIOMETRICS & TIMEOUT-SAFE CORE
+// KIZA v11.3 — AUTH, 3D ANTI-SPOOF FACE 2FA & IDLE LOCK CORE
 // ==========================================================
 const SERVER_URL = "https://kiza-brain.onrender.com";
 const WS_URL = "wss://kiza-brain.onrender.com/api/ws";
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
+const IDLE_LOCK_MS = 30 * 60 * 1000;
 
 let currentUser = "Guest";
 let currentDBUser = "guest";
@@ -42,6 +43,7 @@ let lastLockdownSignature = "";
 let pinGateMode = "setup";
 let isPinLocked = false;
 let pendingLoginData = null;
+let idleLockTimer = null;
 
 // ==========================================================
 // SAFE STORAGE & XSS ESCAPE HELPERS
@@ -171,6 +173,22 @@ function getFriendlyDeviceName() {
 const CURRENT_DEVICE_ID = getOrCreateBrowserDeviceId();
 
 // ==========================================================
+// 30-MINUTE AUTO-IDLE LOCK (FOR SHARED PCs / SCHOOL LABS)
+// ==========================================================
+function resetIdleLockTimer() {
+    clearTimeout(idleLockTimer);
+    if (currentUser === "Guest" || isPinLocked) return;
+    idleLockTimer = setTimeout(() => {
+        if (currentUser !== "Guest" && !isPinLocked) {
+            openPinGate("verify", "🔒 Auto-locked after 30 minutes of inactivity. Enter your Backup PIN to resume:");
+        }
+    }, IDLE_LOCK_MS);
+}
+["mousedown", "keydown", "touchstart"].forEach(ev => {
+    window.addEventListener(ev, resetIdleLockTimer, { passive: true });
+});
+
+// ==========================================================
 // AUTO-ATTACH SIGNED X-KIZA-TOKEN TO ALL SERVER REQUESTS
 // ==========================================================
 (function installSecureFetchInterceptor() {
@@ -186,7 +204,7 @@ const CURRENT_DEVICE_ID = getOrCreateBrowserDeviceId();
             init = { ...init, headers };
         }
         const res = await origFetch(input, init);
-        const isPublicRoute = /\/api\/(auth|google_auth|verify_session|biometrics\/login|verify_pin|updates)|\/health/.test(url);
+        const isPublicRoute = /\/api\/(auth|google_auth|verify_session|biometrics\/login|biometrics\/verify_challenge|verify_pin|updates)|\/health/.test(url);
         if (url.startsWith(SERVER_URL) && res.status === 401 && !isPublicRoute && typeof forceLogout === "function") {
             forceLogout();
         }
@@ -276,7 +294,8 @@ function refreshClientGPS() {
 refreshClientGPS();
 
 // ==========================================================
-// STRICT 128-D NEURAL FACE BIOMETRICS + 2-FRAME LIVENESS
+// STRICT 128-D NEURAL BIOMETRICS + 3D ANTI-PHOTO LIVENESS
+// (MEASURES REAL EYELID BLINK EAR + 3D NOSE-TO-JAW YAW SHIFT)
 // ==========================================================
 let faceModelsLoaded = false;
 const FACE_MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/";
@@ -296,61 +315,164 @@ async function ensureFaceApiModelsLoaded() {
     return true;
 }
 
-function computeEyeAspectDelta(landmarksA, landmarksB) {
-    try {
-        const leftA = landmarksA.getLeftEye();
-        const leftB = landmarksB.getLeftEye();
-        const rightA = landmarksA.getRightEye();
-        const rightB = landmarksB.getRightEye();
-        const openA = (Math.abs(leftA[1].y - leftA[5].y) + Math.abs(rightA[1].y - rightA[5].y)) / 2;
-        const openB = (Math.abs(leftB[1].y - leftB[5].y) + Math.abs(rightB[1].y - rightB[5].y)) / 2;
-        return Math.abs(openB - openA) * 1.4;
-    } catch (e) {
-        return 0;
+function ptDist(a, b) {
+    return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function computeEyeAspectRatio(landmarks) {
+    const calcEye = (pts) => {
+        const v1 = ptDist(pts[1], pts[5]);
+        const v2 = ptDist(pts[2], pts[4]);
+        const h = ptDist(pts[0], pts[3]) || 1;
+        return (v1 + v2) / (2.0 * h);
+    };
+    return (calcEye(landmarks.getLeftEye()) + calcEye(landmarks.getRightEye())) / 2.0;
+}
+
+function compute3DYawRatio(landmarks) {
+    // Ratio of nose tip distance to left vs right jaw contour — constant on flat photos, shifts on real 3D head turns!
+    const jaw = landmarks.getJawOutline();
+    const nose = landmarks.getNose()[3];
+    const leftEdge = jaw[1];
+    const rightEdge = jaw[15];
+    const dL = Math.max(1, nose.x - leftEdge.x);
+    const dR = Math.max(1, rightEdge.x - nose.x);
+    return (dL - dR) / (dL + dR);
+}
+
+function showAuthFacePreview(show, promptText = "") {
+    const box = document.getElementById("authFaceScannerBox");
+    const vid = document.getElementById("authFacePreview");
+    const txt = document.getElementById("authFacePromptText");
+    if (!box) return;
+    if (show && activeStream && document.getElementById("authModal")?.style.display !== "none") {
+        if (vid && vid.srcObject !== activeStream) vid.srcObject = activeStream;
+        if (txt && promptText) txt.textContent = promptText;
+        box.style.display = "flex";
+    } else {
+        box.style.display = "none";
     }
 }
 
 async function captureStrictFaceDescriptorWithLiveness(statusCallback = () => {}) {
-    if (!cameraReady) {
+    if (!cameraReady || !activeStream) {
         isCameraActive = true;
         await initCamera();
         await new Promise(r => setTimeout(r, 700));
     }
-    if (!cameraReady) {
+    if (!cameraReady || !activeStream) {
         throw new Error("Camera is offline. Allow camera permissions and try again.");
     }
-    statusCallback("🧬 Loading 128-D neural face model...");
-    const ok = await ensureFaceApiModelsLoaded();
-    if (!ok) throw new Error("Face recognition model unavailable.");
 
-    const video = document.getElementById("webcamVideo");
-    const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.65 });
+    const challengeCue = Math.random() < 0.5
+        ? "🧬 BLINK clearly OR turn your head slightly LEFT..."
+        : "🧬 BLINK clearly OR turn your head slightly RIGHT...";
 
-    statusCallback("🧬 Frame 1/2: Look directly at the camera...");
-    const det1 = await faceapi.detectSingleFace(video, opts).withFaceLandmarks().withFaceDescriptor();
-    if (!det1) throw new Error("No clear face detected. Move into better lighting.");
+    showAuthFacePreview(true, "🧬 Loading 128-D neural face engine...");
+    statusCallback("🧬 Loading 128-D neural face engine...");
 
-    statusCallback("🧬 Frame 2/2: Blink or tilt your head slightly (Anti-Photo Check)...");
-    await new Promise(r => setTimeout(r, 950));
-    const det2 = await faceapi.detectSingleFace(video, opts).withFaceLandmarks().withFaceDescriptor();
-    if (!det2) throw new Error("Face lost during liveness check. Keep your face centered.");
+    try {
+        const ok = await ensureFaceApiModelsLoaded();
+        if (!ok) throw new Error("Face recognition model unavailable.");
 
-    const samePersonDist = faceapi.euclideanDistance(det1.descriptor, det2.descriptor);
-    if (samePersonDist > 0.38) {
-        throw new Error("Face changed during scan. Only one person should be in frame.");
+        const video = document.getElementById("webcamVideo");
+        const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.60 });
+
+        showAuthFacePreview(true, challengeCue);
+        statusCallback(challengeCue);
+
+        const samples = [];
+        for (let i = 0; i < 10; i++) {
+            const det = await faceapi.detectSingleFace(video, opts).withFaceLandmarks().withFaceDescriptor();
+            if (det) {
+                samples.push({
+                    descriptor: det.descriptor,
+                    ear: computeEyeAspectRatio(det.landmarks),
+                    yaw: compute3DYawRatio(det.landmarks),
+                    nose: det.landmarks.getNose()[3]
+                });
+            }
+            const rem = Math.max(1, Math.ceil((10 - i) * 0.24));
+            showAuthFacePreview(true, `${challengeCue} (${rem}s)`);
+            await new Promise(r => setTimeout(r, 230));
+        }
+
+        if (samples.length < 4) {
+            throw new Error("Face not clearly visible. Move into brighter lighting and keep your face centered.");
+        }
+
+        const first = samples[0];
+        const last = samples[samples.length - 1];
+
+        // Ensure nobody swapped a photo or another person mid-scan
+        let maxSelfDist = 0;
+        for (const s of samples) {
+            const d = faceapi.euclideanDistance(first.descriptor, s.descriptor);
+            if (d > maxSelfDist) maxSelfDist = d;
+        }
+        if (maxSelfDist > 0.44) {
+            throw new Error("Face changed during scan. Keep only your own face in frame.");
+        }
+
+        // 1. Check real eye blink (EAR drop >= 0.060 or closed eye < 0.22)
+        const ears = samples.map(s => s.ear);
+        const minEar = Math.min(...ears);
+        const maxEar = Math.max(...ears);
+        const blinkDetected = ((maxEar - minEar) >= 0.058) || (maxEar >= 0.24 && minEar <= 0.205);
+
+        // 2. Check real 3D nose-to-jaw yaw perspective shift (flat shaken photos stay ~0.01-0.04)
+        const yaws = samples.map(s => s.yaw);
+        const yawShift = Number((Math.max(...yaws) - Math.min(...yaws)).toFixed(3));
+        const headDelta = Number(Math.hypot(last.nose.x - first.nose.x, last.nose.y - first.nose.y).toFixed(2));
+
+        if (!blinkDetected && yawShift < 0.085) {
+            throw new Error("🛡️ Anti-Photo Check failed: Static or shaken photos are blocked! Blink once OR turn your head slightly left/right.");
+        }
+
+        return {
+            embedding: Array.from(last.descriptor),
+            blinkDetected,
+            yawShift,
+            livenessDelta: headDelta,
+            snapshot: captureSilentSecurityFrame()
+        };
+    } finally {
+        showAuthFacePreview(false);
     }
+}
 
-    const nose1 = det1.landmarks.getNose()[3];
-    const nose2 = det2.landmarks.getNose()[3];
-    const headDelta = Math.hypot(nose2.x - nose1.x, nose2.y - nose1.y);
-    const blinkDelta = computeEyeAspectDelta(det1.landmarks, det2.landmarks);
-    const livenessDelta = Number((headDelta + blinkDelta).toFixed(2));
+function syncStrictFaceToggleUI(hasEmbed, isEnabled) {
+    const chk = document.getElementById("requireFaceLoginToggle");
+    const hint = document.getElementById("strictFaceToggleHint");
+    if (!chk) return;
+    chk.checked = Boolean(isEnabled);
+    chk.disabled = !hasEmbed;
+    if (hint) {
+        hint.textContent = hasEmbed
+            ? (isEnabled ? "✅ Active: Every Google & Password sign-in requires a live 3D Face Scan." : "Enrolled! Flip the switch above to require a 3D Face Scan on every login.")
+            : "Enroll your 128-D Face ID above first to enable mandatory Face Scan on every login.";
+    }
+}
 
-    return {
-        embedding: Array.from(det2.descriptor),
-        livenessDelta,
-        snapshot: captureSilentSecurityFrame()
-    };
+async function toggleRequireFaceOnLogin(enabled) {
+    const chk = document.getElementById("requireFaceLoginToggle");
+    try {
+        const data = await fetchJsonWithTimeout(`${SERVER_URL}/api/biometrics/toggle_strict_login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ enabled: Boolean(enabled) })
+        }, 15000);
+        if (!data.success) {
+            if (chk) chk.checked = !enabled;
+            showNotification("Face ID Required", data.message || "Could not update setting.", true);
+            return;
+        }
+        syncStrictFaceToggleUI(true, data.require_face_on_login);
+        showNotification("Security Updated", data.message, false, { skipStore: true });
+    } catch (e) {
+        if (chk) chk.checked = !enabled;
+        showNotification("Error", e.message, true, { skipStore: true });
+    }
 }
 
 function updateRotatedSessionToken(newTokVer, newSig) {
@@ -368,16 +490,63 @@ function updateRotatedSessionToken(newTokVer, newSig) {
     if (typeof initWebSocket === "function") initWebSocket();
 }
 
+async function runMandatoryFaceLoginChallenge(challengeToken, displayUser) {
+    const errBox = document.getElementById("authError");
+    try {
+        errBox.style.color = "var(--accent-primary)";
+        errBox.innerText = `🧬 Mandatory 3D Face Scan required for ${displayUser}...`;
+        const scan = await captureStrictFaceDescriptorWithLiveness((msg) => { errBox.innerText = msg; });
+        errBox.innerText = "Verifying 2FA Face Scan with KIZA Server...";
+        const data = await fetchJsonWithTimeout(`${SERVER_URL}/api/biometrics/verify_challenge`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                challenge_token: challengeToken,
+                embedding: scan.embedding,
+                liveness_delta: scan.livenessDelta,
+                blink_detected: scan.blinkDetected,
+                yaw_shift: scan.yawShift,
+                device_id: CURRENT_DEVICE_ID,
+                device_name: getFriendlyDeviceName(),
+                client_gps: cachedClientGPS
+            })
+        }, 25000);
+        if (!data.success) {
+            errBox.style.color = "var(--danger)";
+            errBox.innerText = data.message || "Mandatory Face Scan failed.";
+            showNotification("Face Scan Rejected", data.message || "Identity mismatch.", true);
+            return;
+        }
+        errBox.innerText = "";
+        completeLoginAfterVerification(
+            cleanDisplayNameOnly(data.username),
+            data.db_username,
+            data.role,
+            data.face_id || scan.snapshot,
+            true,
+            data.reply,
+            null,
+            data.token_version || 1,
+            data.session_sig,
+            true,
+            true
+        );
+    } catch (e) {
+        errBox.style.color = "var(--danger)";
+        errBox.innerText = `Login Blocked: ${e.message}`;
+    }
+}
+
 async function loginWithStrictFaceID() {
     const errBox = document.getElementById("authError");
     const faceBtn = document.getElementById("strictFaceLoginBtn");
     const username = document.getElementById("authUser").value.trim();
     if (!username) {
         errBox.style.color = "var(--danger)";
-        errBox.innerText = "Type your Username first, then tap Unlock with Strict 128-D Face ID.";
+        errBox.innerText = "Type your Username first, then tap Unlock with 3D Face ID.";
         return;
     }
-    if (faceBtn) { faceBtn.disabled = true; faceBtn.innerText = "🧬 Scanning Biometrics..."; }
+    if (faceBtn) { faceBtn.disabled = true; faceBtn.innerText = "🧬 Scanning 3D Face..."; }
     try {
         errBox.style.color = "var(--accent-primary)";
         const scan = await captureStrictFaceDescriptorWithLiveness((msg) => { errBox.innerText = msg; });
@@ -389,6 +558,8 @@ async function loginWithStrictFaceID() {
                 username,
                 embedding: scan.embedding,
                 liveness_delta: scan.livenessDelta,
+                blink_detected: scan.blinkDetected,
+                yaw_shift: scan.yawShift,
                 device_id: CURRENT_DEVICE_ID,
                 device_name: getFriendlyDeviceName(),
                 client_gps: cachedClientGPS
@@ -410,20 +581,22 @@ async function loginWithStrictFaceID() {
             data.reply,
             null,
             data.token_version || 1,
-            data.session_sig
+            data.session_sig,
+            Boolean(data.has_face_embedding),
+            Boolean(data.require_face_on_login)
         );
     } catch (e) {
         errBox.style.color = "var(--danger)";
         errBox.innerText = e.message || "Biometric scan failed.";
     } finally {
-        if (faceBtn) { faceBtn.disabled = false; faceBtn.innerText = "🧬 Unlock with Strict 128-D Face ID"; }
+        if (faceBtn) { faceBtn.disabled = false; faceBtn.innerText = "🧬 Unlock with 3D Anti-Spoof Face ID"; }
     }
 }
 
 async function updateFaceID() {
     if (currentUser === "Guest" || isPinLocked) return;
     try {
-        showNotification("Biometrics", "Look at the camera and blink slightly to enroll Strict 128-D Face ID...", false, { skipStore: true });
+        showNotification("3D Face Enrollment", "Look at your camera and BLINK or turn your head slightly...", false, { skipStore: true });
         const scan = await captureStrictFaceDescriptorWithLiveness((msg) => {
             document.getElementById("uiStatus").innerText = msg;
         });
@@ -433,12 +606,16 @@ async function updateFaceID() {
             body: JSON.stringify({
                 embedding: scan.embedding,
                 face_id: scan.snapshot,
-                keep_device_id: CURRENT_DEVICE_ID
+                keep_device_id: CURRENT_DEVICE_ID,
+                blink_detected: scan.blinkDetected,
+                yaw_shift: scan.yawShift,
+                liveness_delta: scan.livenessDelta
             })
         }, 25000);
         document.getElementById("uiStatus").innerText = `${cleanDisplayNameOnly(currentUser)} • Rank ${currentRankNum}`;
         if (data.success) {
             updateRotatedSessionToken(data.new_token_version, data.session_sig);
+            syncStrictFaceToggleUI(true, Boolean(data.require_face_on_login));
             if (scan.snapshot) {
                 document.getElementById("savedFaceImg").src = scan.snapshot;
                 document.getElementById("savedFaceImg").style.display = "block";
@@ -550,7 +727,7 @@ async function revokeSingleDeviceSession(targetDevId) {
 
 async function logoutOtherDevicesViaFaceID() {
     try {
-        showNotification("Biometrics", "Look at camera and blink slightly to verify identity...", false, { skipStore: true });
+        showNotification("3D Face Check", "Look at camera and blink or turn your head slightly...", false, { skipStore: true });
         const scan = await captureStrictFaceDescriptorWithLiveness((msg) => {
             document.getElementById('uiStatus').innerText = msg;
         });
@@ -558,6 +735,8 @@ async function logoutOtherDevicesViaFaceID() {
         await executeRemoteLogoutRequest({
             embedding: scan.embedding,
             liveness_delta: scan.livenessDelta,
+            blink_detected: scan.blinkDetected,
+            yaw_shift: scan.yawShift,
             security_snap: scan.snapshot,
             keep_device_id: CURRENT_DEVICE_ID,
             client_gps: cachedClientGPS
@@ -619,6 +798,7 @@ function openPinGate(mode, customReason = "") {
 function closePinGate() {
     isPinLocked = false;
     document.getElementById('pinGateModal').style.display = "none";
+    resetIdleLockTimer();
 }
 
 async function submitPinGate() {
@@ -797,7 +977,7 @@ async function switchToProfile(idx) {
     if (!prof || !prof.session_sig) {
         addIdentity();
         if (prof) document.getElementById('authUser').value = prof.username;
-        showNotification("Sign In Required", "Verify password or Strict Face ID to switch accounts securely.", false, { skipStore: true });
+        showNotification("Sign In Required", "Verify password or 3D Face ID to switch accounts securely.", false, { skipStore: true });
         return;
     }
     const safeDB = prof.db_username || resolveDBUser(prof.username);
@@ -806,10 +986,10 @@ async function switchToProfile(idx) {
     if (!verified) {
         addIdentity();
         document.getElementById('authUser').value = prof.username;
-        showNotification("Session Expired", "Enter password or Strict Face ID to re-verify.", true, { skipStore: true });
+        showNotification("Session Expired", "Enter password or 3D Face ID to re-verify.", true, { skipStore: true });
         return;
     }
-    completeLoginAfterVerification(verified.username, verified.db_username, verified.role, prof.face_id, false, "", null, verified.token_version, verified.session_sig);
+    completeLoginAfterVerification(verified.username, verified.db_username, verified.role, prof.face_id, false, "", null, verified.token_version, verified.session_sig, Boolean(verified.has_face_embedding), Boolean(verified.require_face_on_login));
 }
 
 function addIdentity() {
@@ -848,7 +1028,7 @@ function applyRoleUI(roleStr) {
     }
 }
 
-function completeLoginAfterVerification(username, db_username, role, face_id, playGreeting = true, replyMsg = "", audioBase64 = null, tokenVersion = 1, sessionSig = "") {
+function completeLoginAfterVerification(username, db_username, role, face_id, playGreeting = true, replyMsg = "", audioBase64 = null, tokenVersion = 1, sessionSig = "", hasFaceEmbed = false, reqFaceOnLogin = false) {
     lastLoginTimestamp = Date.now();
     currentUser = username || "Guest";
     currentDBUser = (db_username && db_username !== "undefined") ? db_username : resolveDBUser(currentUser);
@@ -867,8 +1047,10 @@ function completeLoginAfterVerification(username, db_username, role, face_id, pl
     if (face_id) safeSetItem('kiza_face', face_id);
 
     applyRoleUI(role);
+    syncStrictFaceToggleUI(hasFaceEmbed, reqFaceOnLogin);
     document.getElementById('authModal').style.display = "none";
     document.getElementById('authError').innerText = "";
+    showAuthFacePreview(false);
     closePinGate();
 
     const cleanName = cleanDisplayNameOnly(currentUser);
@@ -890,19 +1072,20 @@ function completeLoginAfterVerification(username, db_username, role, face_id, pl
         showNotification("Welcome", replyMsg, false, { skipStore: true });
         if (audioBase64) playKizaAudio(audioBase64, replyMsg);
     }
-    document.getElementById('actionLog').innerHTML = '<div>> <b>[KIZA]:</b> Hi! Ask me in English, Hindi, or Punjabi—for live news, bullet points, 3-paragraph answers, native Word (.docx), multi-sheet Excel (.xlsx), or Movie Theater PDFs!</div>';
+    document.getElementById('actionLog').innerHTML = '<div>> <b>[KIZA]:</b> Hi! Ask me in English, Hindi, or Punjabi—for live news, bullet points, 3-paragraph answers, working web apps, native Word (.docx), multi-sheet Excel (.xlsx), or Movie Theater PDFs!</div>';
     checkAndRenderLiveCallMinutes();
     initWebSocket();
+    resetIdleLockTimer();
 }
 
-async function finalizeLogin(username, db_username, role, face_id, playGreeting = true, replyMsg = "", audioBase64 = null, tokenVersion = 1, requirePinChallenge = false, sessionSig = "") {
+async function finalizeLogin(username, db_username, role, face_id, playGreeting = true, replyMsg = "", audioBase64 = null, tokenVersion = 1, requirePinChallenge = false, sessionSig = "", hasFaceEmbed = false, reqFaceOnLogin = false) {
     if (requirePinChallenge) {
         pendingLoginData = { username, db_username, role, face_id, playGreeting, replyMsg, audioBase64, tokenVersion, sessionSig };
         document.getElementById('authModal').style.display = "none";
         openPinGate("verify", "🔑 New browser or unrecognized IP detected! Enter your 4 to 6 digit Backup PIN:");
         return;
     }
-    completeLoginAfterVerification(username, db_username, role, face_id, playGreeting, replyMsg, audioBase64, tokenVersion, sessionSig);
+    completeLoginAfterVerification(username, db_username, role, face_id, playGreeting, replyMsg, audioBase64, tokenVersion, sessionSig, hasFaceEmbed, reqFaceOnLogin);
 }
 
 async function verifySessionWithServer(username, tokenVersion, sessionSig) {
@@ -925,7 +1108,9 @@ async function verifySessionWithServer(username, tokenVersion, sessionSig) {
 }
 
 function forceLogout() {
+    clearTimeout(idleLockTimer);
     closePinGate();
+    showAuthFacePreview(false);
     localStorage.removeItem('kiza_user');
     localStorage.removeItem('kiza_db');
     localStorage.removeItem('kiza_role');
@@ -974,6 +1159,11 @@ async function handleGoogleLogin(response) {
             showNotification("Access Denied", data.message || "Access Denied", true);
             return;
         }
+        // MANDATORY 3D FACE SCAN 2FA AFTER GOOGLE SIGN-IN
+        if (data.require_face_challenge && data.face_challenge_token) {
+            await runMandatoryFaceLoginChallenge(data.face_challenge_token, data.username);
+            return;
+        }
         await finalizeLogin(
             cleanDisplayNameOnly(data.username),
             data.db_username,
@@ -984,7 +1174,9 @@ async function handleGoogleLogin(response) {
             data.audio_base64,
             data.token_version || 1,
             Boolean(data.require_pin_challenge),
-            data.session_sig || ""
+            data.session_sig || "",
+            Boolean(data.has_face_embedding),
+            Boolean(data.require_face_on_login)
         );
     } catch (err) {
         errBox.style.color = "var(--danger)";
@@ -1036,6 +1228,11 @@ async function performAuth() {
             showNotification("Access Denied", data.message || "Invalid credentials.", true);
             return;
         }
+        // MANDATORY 3D FACE SCAN 2FA AFTER PASSWORD SIGN-IN
+        if (data.require_face_challenge && data.face_challenge_token) {
+            await runMandatoryFaceLoginChallenge(data.face_challenge_token, data.username);
+            return;
+        }
         errBox.innerText = "";
         document.getElementById('authPin').value = "";
         await finalizeLogin(
@@ -1048,7 +1245,9 @@ async function performAuth() {
             data.audio_base64,
             data.token_version || 1,
             Boolean(data.require_pin_challenge),
-            data.session_sig || ""
+            data.session_sig || "",
+            Boolean(data.has_face_embedding),
+            Boolean(data.require_face_on_login)
         );
     } catch (err) {
         errBox.style.color = "var(--danger)";
