@@ -1,11 +1,10 @@
 // ==========================================================
-// KIZA v11.1 — AUTH, STRICT 128-D BIOMETRICS & SECURITY CORE
+// KIZA v11.2 — AUTH, STRICT 128-D BIOMETRICS & TIMEOUT-SAFE CORE
 // ==========================================================
 const SERVER_URL = "https://kiza-brain.onrender.com";
 const WS_URL = "wss://kiza-brain.onrender.com/api/ws";
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
 
-// Shared Global State (accessed by studio.js & app.js)
 let currentUser = "Guest";
 let currentDBUser = "guest";
 let currentRole = "LOCKED";
@@ -195,6 +194,26 @@ const CURRENT_DEVICE_ID = getOrCreateBrowserDeviceId();
     };
 })();
 
+async function fetchJsonWithTimeout(url, options = {}, timeoutMs = 25000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        const res = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(timer);
+        if (!res.ok) {
+            const raw = await res.text().catch(() => "");
+            throw new Error(`HTTP ${res.status}${raw ? ": " + raw.slice(0, 90) : ""}`);
+        }
+        return await res.json();
+    } catch (err) {
+        clearTimeout(timer);
+        if (err.name === "AbortError") {
+            throw new Error("Request timed out (25s) — Render is waking up or restarting. Wait 10s and try again.");
+        }
+        throw err;
+    }
+}
+
 // ==========================================================
 // LIVE GPS, COUNTRY CODE & REAL-TIME WEATHER TELEMETRY
 // ==========================================================
@@ -358,15 +377,12 @@ async function loginWithStrictFaceID() {
         errBox.innerText = "Type your Username first, then tap Unlock with Strict 128-D Face ID.";
         return;
     }
-    if (faceBtn) {
-        faceBtn.disabled = true;
-        faceBtn.innerText = "🧬 Scanning Biometrics...";
-    }
+    if (faceBtn) { faceBtn.disabled = true; faceBtn.innerText = "🧬 Scanning Biometrics..."; }
     try {
         errBox.style.color = "var(--accent-primary)";
         const scan = await captureStrictFaceDescriptorWithLiveness((msg) => { errBox.innerText = msg; });
         errBox.innerText = "Verifying 128-D vector with KIZA Server...";
-        const res = await fetch(`${SERVER_URL}/api/biometrics/login`, {
+        const data = await fetchJsonWithTimeout(`${SERVER_URL}/api/biometrics/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -377,8 +393,7 @@ async function loginWithStrictFaceID() {
                 device_name: getFriendlyDeviceName(),
                 client_gps: cachedClientGPS
             })
-        });
-        const data = await res.json();
+        }, 25000);
         if (!data.success) {
             errBox.style.color = "var(--danger)";
             errBox.innerText = data.message || "Strict Face ID rejected.";
@@ -401,10 +416,7 @@ async function loginWithStrictFaceID() {
         errBox.style.color = "var(--danger)";
         errBox.innerText = e.message || "Biometric scan failed.";
     } finally {
-        if (faceBtn) {
-            faceBtn.disabled = false;
-            faceBtn.innerText = "🧬 Unlock with Strict 128-D Face ID";
-        }
+        if (faceBtn) { faceBtn.disabled = false; faceBtn.innerText = "🧬 Unlock with Strict 128-D Face ID"; }
     }
 }
 
@@ -415,7 +427,7 @@ async function updateFaceID() {
         const scan = await captureStrictFaceDescriptorWithLiveness((msg) => {
             document.getElementById("uiStatus").innerText = msg;
         });
-        const res = await fetch(`${SERVER_URL}/api/biometrics/enroll`, {
+        const data = await fetchJsonWithTimeout(`${SERVER_URL}/api/biometrics/enroll`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -423,8 +435,7 @@ async function updateFaceID() {
                 face_id: scan.snapshot,
                 keep_device_id: CURRENT_DEVICE_ID
             })
-        });
-        const data = await res.json();
+        }, 25000);
         document.getElementById("uiStatus").innerText = `${cleanDisplayNameOnly(currentUser)} • Rank ${currentRankNum}`;
         if (data.success) {
             updateRotatedSessionToken(data.new_token_version, data.session_sig);
@@ -467,8 +478,7 @@ async function fetchAndRenderActiveDevices() {
     if (!container) return;
     container.innerHTML = `<div style="text-align:center; padding:6px;">Loading active devices...</div>`;
     try {
-        const res = await fetch(`${SERVER_URL}/api/devices`);
-        const data = await res.json();
+        const data = await fetchJsonWithTimeout(`${SERVER_URL}/api/devices`, {}, 15000);
         container.innerHTML = "";
         const devs = data.devices || [];
         if (devs.length === 0) {
@@ -498,8 +508,7 @@ async function fetchAndRenderLoginAudit() {
     if (!container) return;
     container.innerHTML = `<div style="text-align:center; padding:6px;">Loading login audit...</div>`;
     try {
-        const res = await fetch(`${SERVER_URL}/api/login_audit`);
-        const data = await res.json();
+        const data = await fetchJsonWithTimeout(`${SERVER_URL}/api/login_audit`, {}, 15000);
         container.innerHTML = "";
         const logs = data.logs || [];
         if (logs.length === 0) {
@@ -527,12 +536,12 @@ async function fetchAndRenderLoginAudit() {
 
 async function revokeSingleDeviceSession(targetDevId) {
     try {
-        const res = await fetch(`${SERVER_URL}/api/devices/revoke`, {
+        const data = await fetchJsonWithTimeout(`${SERVER_URL}/api/devices/revoke`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ device_id: targetDevId })
-        });
-        if ((await res.json()).success) {
+        }, 15000);
+        if (data.success) {
             showNotification("Device Signed Out", "Session revoked!", false, { skipStore: true });
             await fetchAndRenderActiveDevices();
         }
@@ -574,12 +583,11 @@ async function logoutOtherDevicesViaPin() {
 
 async function executeRemoteLogoutRequest(payloadObj) {
     try {
-        const res = await fetch(`${SERVER_URL}/api/logout_all_devices`, {
+        const data = await fetchJsonWithTimeout(`${SERVER_URL}/api/logout_all_devices`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payloadObj)
-        });
-        const data = await res.json();
+        }, 20000);
         if (data.success) {
             document.getElementById('remoteLogoutPinInput').value = "";
             updateRotatedSessionToken(data.new_token_version, data.session_sig);
@@ -588,7 +596,9 @@ async function executeRemoteLogoutRequest(payloadObj) {
         } else {
             showNotification("Verification Failed", data.message || "Failed.", true);
         }
-    } catch (e) {}
+    } catch (e) {
+        showNotification("Error", e.message, true, { skipStore: true });
+    }
 }
 
 // ==========================================================
@@ -623,12 +633,11 @@ async function submitPinGate() {
 
     if (pinGateMode === "setup") {
         try {
-            let res = await fetch(`${SERVER_URL}/api/set_pin`, {
+            let data = await fetchJsonWithTimeout(`${SERVER_URL}/api/set_pin`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ pin: pinVal, keep_device_id: CURRENT_DEVICE_ID })
-            });
-            let data = await res.json();
+            }, 20000);
             if (!data.success) {
                 errEl.style.color = "var(--danger)";
                 errEl.innerText = data.message || "Failed.";
@@ -640,12 +649,12 @@ async function submitPinGate() {
             showNotification("Backup PIN Updated", data.message || "Backup PIN saved & older sessions revoked.", false, { skipStore: true });
         } catch (e) {
             errEl.style.color = "var(--danger)";
-            errEl.innerText = "Network error.";
+            errEl.innerText = e.message || "Network error.";
         }
     } else {
         try {
             const targetU = pendingLoginData ? pendingLoginData.username : currentUser;
-            let res = await fetch(`${SERVER_URL}/api/verify_pin`, {
+            let data = await fetchJsonWithTimeout(`${SERVER_URL}/api/verify_pin`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -654,8 +663,7 @@ async function submitPinGate() {
                     security_snap: captureSilentSecurityFrame(),
                     client_gps: cachedClientGPS
                 })
-            });
-            let data = await res.json();
+            }, 20000);
             if (!data.success) {
                 if (data.needs_setup) {
                     openPinGate("setup", "No PIN found on server. Create your 4 to 6 digit backup PIN now:");
@@ -673,7 +681,7 @@ async function submitPinGate() {
             }
         } catch (e) {
             errEl.style.color = "var(--danger)";
-            errEl.innerText = "Network error verifying PIN.";
+            errEl.innerText = e.message || "Network error verifying PIN.";
         }
     }
 }
@@ -900,7 +908,7 @@ async function finalizeLogin(username, db_username, role, face_id, playGreeting 
 async function verifySessionWithServer(username, tokenVersion, sessionSig) {
     if (!sessionSig) return null;
     try {
-        const res = await fetch(`${SERVER_URL}/api/verify_session`, {
+        const data = await fetchJsonWithTimeout(`${SERVER_URL}/api/verify_session`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -909,8 +917,7 @@ async function verifySessionWithServer(username, tokenVersion, sessionSig) {
                 token_version: Number(tokenVersion) || 1,
                 session_sig: sessionSig
             })
-        });
-        const data = await res.json();
+        }, 18000);
         return (data && data.success) ? data : null;
     } catch (e) {
         return null;
@@ -951,7 +958,7 @@ async function handleGoogleLogin(response) {
     errBox.style.color = "var(--accent-primary)";
     errBox.innerText = "Verifying Google Sign-In with KIZA Brain...";
     try {
-        let res = await fetch(`${SERVER_URL}/api/google_auth`, {
+        const data = await fetchJsonWithTimeout(`${SERVER_URL}/api/google_auth`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -960,18 +967,28 @@ async function handleGoogleLogin(response) {
                 device_id: CURRENT_DEVICE_ID,
                 device_name: getFriendlyDeviceName()
             })
-        });
-        let data = await res.json();
+        }, 25000);
         if (!data.success) {
             errBox.style.color = "var(--danger)";
             errBox.innerText = data.message || "Google Sign-In failed.";
             showNotification("Access Denied", data.message || "Access Denied", true);
             return;
         }
-        await finalizeLogin(cleanDisplayNameOnly(data.username), data.db_username, data.role, data.face_id, true, data.reply, data.audio_base64, data.token_version || 1, Boolean(data.require_pin_challenge), data.session_sig || "");
+        await finalizeLogin(
+            cleanDisplayNameOnly(data.username),
+            data.db_username,
+            data.role,
+            data.face_id,
+            true,
+            data.reply,
+            data.audio_base64,
+            data.token_version || 1,
+            Boolean(data.require_pin_challenge),
+            data.session_sig || ""
+        );
     } catch (err) {
         errBox.style.color = "var(--danger)";
-        errBox.innerText = "Server is waking up on Render. Wait 10 seconds and click Google Sign-In again.";
+        errBox.innerText = `Google Sign-In Error: ${err.message}`;
     }
 }
 
@@ -1001,20 +1018,15 @@ async function performAuth() {
     const silentSecuritySnap = captureSilentSecurityFrame();
 
     try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 24000);
-        let res = await fetch(`${SERVER_URL}/api/auth`, {
+        const data = await fetchJsonWithTimeout(`${SERVER_URL}/api/auth`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 username, password, action: authMode, face_id: faceData, security_snap: silentSecuritySnap,
                 pin: authMode === "signup" ? pinInput : null, client_gps: cachedClientGPS,
                 device_id: CURRENT_DEVICE_ID, device_name: getFriendlyDeviceName()
-            }),
-            signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-        let data = await res.json();
+            })
+        }, 25000);
         if (!data.success) {
             errBox.style.color = "var(--danger)";
             errBox.innerText = data.message || "Invalid credentials.";
@@ -1040,7 +1052,7 @@ async function performAuth() {
         );
     } catch (err) {
         errBox.style.color = "var(--danger)";
-        errBox.innerText = "Render server is waking up (cold start). Wait 10 seconds and tap Continue again.";
+        errBox.innerText = `Sign-In Error: ${err.message}`;
     } finally {
         if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = "Continue"; }
     }
