@@ -3,1238 +3,932 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#050811">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>KIZA Live — Voice, Video, Whiteboard & Screen Call</title>
-    <link rel="icon" type="image/png" id="liveFavicon" href="logo.jpg">
+    <meta name="theme-color" content="#050a14">
+    <title>KIZA Live — Voice, Vision & Shared Whiteboard</title>
+    <link rel="icon" type="image/png" href="logo.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --app-height: 100%;
-            --safe-top: env(safe-area-inset-top, 0px);
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-            --bg-deep: #050811;
-            --card-surface: rgba(15, 23, 42, 0.92);
-            --border-cyan: rgba(0, 242, 254, 0.32);
-            --accent-cyan: #00f2fe;
-            --accent-blue: #0284c7;
-            --danger: #ef4444;
-            --warning: #f59e0b;
+            --bg-deep: #040814;
+            --glass: rgba(15, 23, 42, 0.72);
+            --glass-border: rgba(56, 189, 248, 0.22);
+            --accent: #38bdf8;
+            --glow: #00f2fe;
+            --indigo: #818cf8;
             --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text: #f8fafc;
+            --muted: #94a3b8;
         }
-
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-font-smoothing: antialiased;
-        }
-
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html, body {
-            position: fixed;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            overscroll-behavior: none;
-            background: radial-gradient(circle at 50% 28%, #0c1938 0%, #050811 75%);
-            color: #f8fafc;
-            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            touch-action: manipulation;
+            margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: radial-gradient(circle at 20% 15%, rgba(0, 242, 254, 0.12) 0%, transparent 42%),
+                        radial-gradient(circle at 80% 85%, rgba(99, 102, 241, 0.16) 0%, transparent 45%),
+                        var(--bg-deep);
+            color: var(--text);
         }
 
         .live-shell {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            height: var(--app-height, 100%);
-            max-height: var(--app-height, 100%);
-            padding: calc(8px + var(--safe-top)) 12px max(14px, calc(var(--safe-bottom) + 10px)) 12px;
-            position: relative;
-            overflow: hidden;
+            display: flex; flex-direction: column; width: 100%; height: 100%;
+            padding: env(safe-area-inset-top, 10px) 14px env(safe-area-inset-bottom, 12px) 14px;
+            gap: 10px; position: relative;
         }
 
-        /* TOP STATUS BAR */
+        /* TOP GLASS HUD */
         .top-hud {
-            width: 100%;
-            max-width: 660px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 6px;
-            flex-shrink: 0;
-            z-index: 20;
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px; flex-wrap: wrap; z-index: 20;
         }
-
         .hud-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 11px;
-            border-radius: 999px;
-            background: var(--card-surface);
-            border: 1px solid var(--border-cyan);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: clamp(10px, 2.5vw, 11.5px);
-            font-weight: 700;
-            letter-spacing: 0.4px;
-            white-space: nowrap;
+            display: inline-flex; align-items: center; gap: 7px;
+            background: var(--glass); backdrop-filter: blur(14px);
+            border: 1px solid var(--glass-border); border-radius: 999px;
+            padding: 6px 13px; font-size: 11.5px; font-weight: 700;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
         }
-
         .live-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--success);
-            flex-shrink: 0;
-            animation: pulseOpacity 1.4s infinite alternate;
+            width: 8px; height: 8px; border-radius: 50%; background: var(--success);
+            box-shadow: 0 0 10px var(--success); animation: pulseDot 1.6s infinite;
         }
-        @keyframes pulseOpacity { from { opacity: 1; } to { opacity: 0.35; } }
+        @keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 
-        /* FLOATING CAMERA / SCREEN PIP + EXPANDABLE WHITEBOARD SKETCH OVERLAY */
-        .vision-pip {
-            position: absolute;
-            top: calc(50px + var(--safe-top));
-            right: 14px;
-            width: clamp(104px, 25vw, 150px);
-            height: clamp(78px, 18.5vw, 112px);
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1.5px solid var(--accent-cyan);
-            background: #090d16;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
-            z-index: 35;
-            transition: width 0.22s ease, height 0.22s ease, left 0.22s ease, right 0.22s ease;
-            transform: translate3d(0, 0, 0);
+        .lang-select-pill {
+            background: transparent; border: none; color: var(--accent);
+            font-weight: 800; font-size: 11px; outline: none; cursor: pointer;
         }
-        .vision-pip.sketch-expanded {
-            left: 50%;
-            right: auto;
-            transform: translateX(-50%);
-            width: min(92vw, 460px);
-            height: min(44vh, 320px);
-            border: 2px solid var(--warning);
-            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.85);
+        .lang-select-pill option { background: #0f172a; color: #f8fafc; }
+
+        /* MAIN CENTRAL STAGE */
+        .stage-area {
+            flex: 1 1 0%; min-height: 0; position: relative;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 22px; overflow: hidden;
         }
-        .vision-pip video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
+
+        /* ORB AMBIENT STAGE */
+        .orb-stage {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 16px; width: 100%; max-width: 680px; padding: 16px; text-align: center;
+            transition: opacity 0.25s ease;
         }
-        #sketchOverlayCanvas {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 4;
-            touch-action: none;
-        }
-        .vision-pip.sketch-expanded #sketchOverlayCanvas {
-            pointer-events: auto;
-            cursor: crosshair;
-        }
-        .sketch-toolbar {
-            position: absolute;
-            top: 6px;
-            left: 6px;
-            right: 6px;
+        .orb-stage.compact-mode {
             display: none;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 6;
-            background: rgba(5, 8, 17, 0.85);
-            padding: 4px 8px;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.15);
         }
-        .vision-pip.sketch-expanded .sketch-toolbar {
-            display: flex;
+        .orb-ring-outer {
+            position: relative; width: 158px; height: 158px;
+            display: flex; align-items: center; justify-content: center;
         }
-        .color-dot {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            border: 2px solid #fff;
-            cursor: pointer;
+        .orb-ring-outer::before, .orb-ring-outer::after {
+            content: ""; position: absolute; inset: 0; border-radius: 50%;
+            border: 2px solid rgba(0, 242, 254, 0.35);
+            animation: spinRing 9s linear infinite;
         }
-        .vision-badge {
-            position: absolute;
-            bottom: 4px;
-            left: 4px;
-            right: 4px;
-            background: rgba(5, 8, 17, 0.88);
-            color: var(--accent-cyan);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 8.5px;
-            font-weight: 700;
-            padding: 2px 5px;
-            border-radius: 5px;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            z-index: 5;
+        .orb-ring-outer::after {
+            inset: 10px; border-color: rgba(129, 140, 248, 0.45);
+            border-style: dashed; animation-direction: reverse; animation-duration: 14s;
         }
+        @keyframes spinRing { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* CENTER STAGE */
-        .center-stage {
-            flex: 1 1 0%;
-            min-height: 0;
-            width: 100%;
-            max-width: 620px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: clamp(6px, 1.3vh, 11px);
-            z-index: 10;
-            padding: 2px 0;
-            overflow: hidden;
+        .orb-core {
+            width: 112px; height: 112px; border-radius: 50%; overflow: hidden;
+            border: 2.5px solid var(--glow);
+            box-shadow: 0 0 36px rgba(0, 242, 254, 0.55), inset 0 0 18px rgba(0, 242, 254, 0.3);
+            background: #071324; transition: transform 0.14s ease, box-shadow 0.2s ease;
         }
+        .orb-core.speaking {
+            transform: scale(1.09);
+            box-shadow: 0 0 55px rgba(0, 242, 254, 0.9), 0 0 90px rgba(99, 102, 241, 0.5);
+        }
+        .orb-core.thinking {
+            border-color: var(--warning);
+            box-shadow: 0 0 42px rgba(245, 158, 11, 0.7);
+        }
+        .orb-core img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-        .orb-wrapper {
-            position: relative;
-            width: clamp(96px, 17.5vh, 165px);
-            height: clamp(96px, 17.5vh, 165px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            transform: translate3d(0, 0, 0);
-        }
-
-        #liveSpectrumCanvas {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 3;
-        }
-
-        .live-orb {
-            width: 68%;
-            height: 68%;
-            border-radius: 50%;
-            border: 2.5px solid var(--accent-cyan);
-            box-shadow: 0 0 26px rgba(0, 242, 254, 0.45);
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: radial-gradient(circle at 35% 30%, #38bdf8 0%, #4f46e5 55%, #071324 100%);
-            will-change: transform;
-            transition: transform 0.08s linear;
-            z-index: 2;
-        }
-        .live-orb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-            display: block;
-        }
-
-        .state-pill {
-            padding: 5px 14px;
-            border-radius: 999px;
-            background: rgba(2, 132, 199, 0.22);
-            border: 1px solid var(--border-cyan);
-            color: var(--accent-cyan);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: clamp(10px, 1.5vh, 11.5px);
-            font-weight: 700;
+        .status-chip {
+            font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+            color: var(--accent); background: rgba(56, 189, 248, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.35); padding: 5px 14px; border-radius: 999px;
             letter-spacing: 0.7px;
-            text-transform: uppercase;
-            text-align: center;
-            flex-shrink: 0;
         }
 
-        /* PUSH-TO-TALK HOLD BUTTON */
-        #pttHoldBtn {
-            display: none;
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: #050811;
-            border: 2px solid #fde68a;
-            padding: 10px 24px;
-            border-radius: 999px;
-            font-size: 13px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            user-select: none;
-            -webkit-user-select: none;
-            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
-            transition: transform 0.1s ease;
+        /* DEDICATED SHARED WHITEBOARD PANEL */
+        .whiteboard-stage {
+            display: none; flex-direction: column; width: 100%; height: 100%;
+            background: #0b1120; border: 1.5px solid var(--glass-border);
+            border-radius: 20px; overflow: hidden; box-shadow: 0 16px 48px rgba(0,0,0,0.6);
         }
-        #pttHoldBtn.holding {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: #ffffff;
-            border-color: #a7f3d0;
-            transform: scale(1.06);
+        .whiteboard-stage.active { display: flex; }
+
+        .wb-toolbar {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px; padding: 8px 12px; background: rgba(15, 23, 42, 0.92);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2); flex-wrap: wrap;
+        }
+        .wb-tools-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .color-dot {
+            width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+            border: 2px solid transparent; transition: transform 0.12s;
+        }
+        .color-dot.active { border-color: #ffffff; transform: scale(1.15); }
+        .wb-btn {
+            background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(148, 163, 184, 0.28);
+            color: var(--text); font-size: 11px; font-weight: 700; padding: 5px 10px;
+            border-radius: 999px; cursor: pointer;
+        }
+        .wb-btn:hover, .wb-btn.active { border-color: var(--accent); color: var(--accent); }
+
+        .wb-canvas-wrap {
+            flex: 1 1 0%; position: relative; background: #090f1d;
+            background-image: radial-gradient(rgba(148, 163, 184, 0.16) 1px, transparent 1px);
+            background-size: 22px 22px; overflow: hidden; touch-action: none;
+        }
+        #sharedWhiteboard { width: 100%; height: 100%; display: block; cursor: crosshair; }
+
+        /* HD SCREEN SHARE STAGE (SEPARATE FROM CAMERA!) */
+        .screen-stage {
+            display: none; flex-direction: column; width: 100%; height: 100%;
+            background: #020617; border: 1.5px solid rgba(16, 185, 129, 0.45);
+            border-radius: 20px; overflow: hidden; position: relative;
+        }
+        .screen-stage.active { display: flex; }
+        #screenVideo { width: 100%; height: 100%; object-fit: contain; background: #000; }
+        .stage-badge {
+            position: absolute; top: 10px; left: 12px; z-index: 10;
+            background: rgba(2, 6, 23, 0.8); backdrop-filter: blur(8px);
+            border: 1px solid rgba(16, 185, 129, 0.5); color: #34d399;
+            padding: 4px 11px; border-radius: 999px; font-size: 11px; font-weight: 700;
         }
 
-        .subtitle-card {
-            width: 100%;
-            background: var(--card-surface);
-            border: 1px solid var(--border-cyan);
-            border-radius: 16px;
-            padding: clamp(8px, 1.4vh, 13px) 14px;
-            text-align: center;
-            font-size: clamp(13px, 1.85vh, 15px);
-            font-weight: 600;
-            line-height: 1.42;
-            color: #f8fafc;
-            max-height: clamp(64px, 17vh, 135px);
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+        /* UPLOADED PHOTO STAGE (PHONE & DESKTOP) */
+        .photo-stage {
+            display: none; align-items: center; justify-content: center;
+            width: 100%; height: 100%; background: rgba(2, 6, 23, 0.9);
+            border: 1.5px solid var(--glass-border); border-radius: 20px;
+            position: relative; padding: 14px;
+        }
+        .photo-stage.active { display: flex; }
+        #uploadedPhotoPreview {
+            max-width: 100%; max-height: 100%; object-fit: contain;
+            border-radius: 12px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
         }
 
-        .helper-caption {
-            font-size: 10.5px;
-            color: #94a3b8;
-            text-align: center;
-            line-height: 1.3;
-            padding: 0 6px;
-            flex-shrink: 0;
+        /* FLOATING INDEPENDENT CAMERA PiP (ALWAYS ACCESSIBLE EVEN DURING SCREEN SHARE!) */
+        .camera-pip {
+            position: absolute; top: 12px; right: 12px; z-index: 35;
+            width: 175px; height: 124px; border-radius: 16px; overflow: hidden;
+            background: #0f172a; border: 2px solid rgba(56, 189, 248, 0.55);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .camera-pip video { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .cam-pip-label {
+            position: absolute; bottom: 5px; left: 7px; font-size: 9.5px; font-weight: 800;
+            background: rgba(2, 6, 23, 0.72); color: var(--accent); padding: 2px 7px; border-radius: 99px;
+        }
+        .cam-pip-flip {
+            position: absolute; top: 5px; right: 5px; width: 24px; height: 24px;
+            border-radius: 50%; border: none; background: rgba(2, 6, 23, 0.72);
+            color: #fff; font-size: 11px; cursor: pointer;
         }
 
-        /* FLOATING HARDWARE SELECTOR MODAL */
-        #liveDeviceDrawer {
-            display: none;
-            position: absolute;
-            bottom: calc(145px + var(--safe-bottom));
-            left: 50%;
-            transform: translateX(-50%);
-            background: #0f172a;
-            border: 1.5px solid var(--accent-cyan);
-            border-radius: 16px;
-            padding: 12px 14px;
-            width: 92%;
-            max-width: 360px;
-            z-index: 60;
-            flex-direction: column;
-            gap: 7px;
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.75);
-        }
-        #liveDeviceDrawer select {
-            background: #050811;
-            color: #f8fafc;
-            border: 1px solid var(--border-cyan);
-            padding: 7px 9px;
-            border-radius: 8px;
-            font-size: 12px;
-            width: 100%;
-            outline: none;
+        /* LIVE CAPTION BAR */
+        .caption-card {
+            width: 100%; max-width: 760px; margin: 0 auto;
+            background: var(--glass); backdrop-filter: blur(14px);
+            border: 1px solid var(--glass-border); border-radius: 16px;
+            padding: 10px 16px; text-align: center; font-size: 13.5px;
+            line-height: 1.48; min-height: 44px; max-height: 105px; overflow-y: auto;
+            box-shadow: 0 8px 26px rgba(0,0,0,0.4);
         }
 
         /* BOTTOM CONTROLS DOCK */
         .bottom-dock {
-            width: 100%;
-            max-width: 640px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: clamp(6px, 1.1vh, 9px);
-            flex-shrink: 0;
-            z-index: 25;
-            padding-bottom: 2px;
+            display: flex; flex-direction: column; align-items: center; gap: 9px;
+            width: 100%; max-width: 760px; margin: 0 auto; z-index: 25;
         }
-
         .text-bar {
-            width: 100%;
-            display: flex;
-            gap: 6px;
-            align-items: center;
+            display: flex; gap: 7px; width: 100%;
+            background: var(--glass); border: 1px solid var(--glass-border);
+            padding: 5px 7px 5px 14px; border-radius: 999px;
         }
         .text-bar input {
-            flex: 1;
-            min-width: 0;
-            background: var(--card-surface);
-            border: 1px solid var(--border-cyan);
-            color: #f8fafc;
-            padding: 8px 13px;
-            border-radius: 999px;
-            font-size: 14px;
-            outline: none;
+            flex: 1; background: transparent; border: none; outline: none;
+            color: var(--text); font-size: 13.5px; font-family: inherit;
         }
-        .text-bar button {
-            background: linear-gradient(135deg, #00f2fe 0%, #3b82f6 100%);
-            border: none;
-            color: #050811;
-            font-weight: 800;
-            font-size: 11.5px;
-            padding: 8px 16px;
-            border-radius: 999px;
-            cursor: pointer;
-            flex-shrink: 0;
+        .send-pill {
+            background: linear-gradient(135deg, #00f2fe 0%, #0284c7 100%);
+            color: #041020; border: none; padding: 7px 16px; border-radius: 999px;
+            font-weight: 800; font-size: 12px; cursor: pointer;
         }
 
-        .action-dock-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: clamp(5px, 1.6vw, 9px);
-            width: 100%;
-            flex-wrap: nowrap;
+        .controls-row {
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px; flex-wrap: wrap;
         }
-
-        .ctrl-circle {
-            width: clamp(36px, 5.4vh, 44px);
-            height: clamp(36px, 5.4vh, 44px);
-            border-radius: 50%;
-            background: var(--card-surface);
-            border: 1.5px solid var(--border-cyan);
-            color: #f8fafc;
-            font-size: clamp(14px, 2vh, 16px);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: transform 0.15s ease, border-color 0.15s ease;
-            flex-shrink: 0;
-            padding: 0;
+        .ctrl-btn {
+            height: 44px; padding: 0 14px; border-radius: 999px;
+            background: var(--glass); backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border); color: var(--text);
+            font-size: 12px; font-weight: 700; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 6px;
+            transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
         }
-        .ctrl-circle.active {
-            border-color: var(--accent-cyan);
-            background: rgba(0, 242, 254, 0.18);
+        .ctrl-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+        .ctrl-btn.active {
+            background: rgba(56, 189, 248, 0.22); border-color: var(--glow); color: var(--glow);
         }
-        .ctrl-circle.sketch-on {
-            border-color: var(--warning);
-            background: rgba(245, 158, 11, 0.25);
+        .ctrl-btn.ptt-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+            border: none; color: #0f172a; font-weight: 800; padding: 0 20px;
+            user-select: none;
         }
-        .ctrl-circle.muted {
-            border-color: var(--danger);
-            color: var(--danger);
+        .ctrl-btn.ptt-btn.listening {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff; box-shadow: 0 0 24px rgba(16, 185, 129, 0.65);
         }
-
-        .hangup-pill {
+        .ctrl-btn.end-btn {
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            border: none;
-            color: #ffffff;
-            font-family: inherit;
-            font-size: clamp(11px, 1.7vh, 12.5px);
-            font-weight: 800;
-            letter-spacing: 0.4px;
-            height: clamp(36px, 5.4vh, 44px);
-            padding: 0 clamp(12px, 3vw, 18px);
-            border-radius: 999px;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.45);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            white-space: nowrap;
-            flex-shrink: 0;
+            border: none; color: #ffffff; padding: 0 18px;
         }
 
-        @media (max-height: 640px) {
-            .helper-caption { display: none; }
-            .orb-wrapper { width: 88px; height: 88px; }
-            .subtitle-card { max-height: 60px; font-size: 12.5px; padding: 6px 10px; }
+        @media (max-width: 640px) {
+            .camera-pip { width: 116px; height: 84px; top: 8px; right: 8px; }
+            .ctrl-btn { height: 40px; padding: 0 11px; font-size: 11px; }
+            .orb-ring-outer { width: 124px; height: 124px; }
+            .orb-core { width: 88px; height: 88px; }
         }
     </style>
 </head>
 <body>
-    <input type="file" id="mobileScreenShareInput" accept="image/*" style="display:none;">
-
-    <div class="live-shell" id="liveShell">
+    <div class="live-shell">
         <!-- TOP HUD -->
         <div class="top-hud">
             <div class="hud-pill">
-                <span class="live-dot"></span>
-                <span id="liveHeaderTitle">KIZA LIVE • 00:00</span>
+                <span class="live-dot" id="connDot"></span>
+                <span>KIZA LIVE</span>
+                <span style="color:var(--muted);">•</span>
+                <span id="liveUserLabel">USER</span>
+                <span style="color:var(--muted);">•</span>
+                <span id="callTimer" style="font-family:'JetBrains Mono', monospace; color:var(--accent);">00:00</span>
             </div>
+
             <div class="hud-pill">
-                <span id="personaLabel">UK • Witty</span>
-                <span id="pingBadge" style="color:#10b981; font-size:10px;">•⚡Online</span>
+                <span id="activeVisionBadge" style="color:var(--success);">👁️ Camera Ready</span>
+                <span style="color:var(--muted);">|</span>
+                <select id="speechLangSelect" class="lang-select-pill" title="Speech Input Language">
+                    <option value="en-IN" selected>🇮🇳 EN / HI / PA</option>
+                    <option value="hi-IN">🇮🇳 Hindi</option>
+                    <option value="pa-IN">🇮🇳 Punjabi</option>
+                    <option value="en-US">🇺🇸 English</option>
+                </select>
+                <span style="color:var(--muted);">|</span>
+                <span id="livePing" style="font-family:'JetBrains Mono', monospace; color:var(--success);">--ms</span>
             </div>
         </div>
 
-        <!-- FLOATING CAMERA / SCREEN PIP + LIVE WHITEBOARD SKETCH OVERLAY -->
-        <div class="vision-pip" id="visionPipBox">
-            <div class="sketch-toolbar">
-                <div style="display:flex; gap:6px; align-items:center;">
-                    <span style="font-size:10px; font-weight:800; color:#fbbf24;">✍️ DRAW ON VIDEO:</span>
-                    <div class="color-dot" style="background:#00f2fe;" onclick="setSketchColor('#00f2fe')" title="Cyan Ink"></div>
-                    <div class="color-dot" style="background:#ef4444;" onclick="setSketchColor('#ef4444')" title="Red Ink"></div>
-                    <div class="color-dot" style="background:#fbbf24;" onclick="setSketchColor('#fbbf24')" title="Yellow Ink"></div>
+        <!-- MAIN STAGE (ORB / WHITEBOARD / HD SCREEN SHARE / UPLOADED PHOTO) -->
+        <div class="stage-area">
+            <!-- INDEPENDENT LIVE CAMERA PiP (STAYS LIVE EVEN DURING SCREEN SHARE & WHITEBOARD) -->
+            <div class="camera-pip" id="cameraPipBox">
+                <video id="camVideo" autoplay playsinline muted></video>
+                <span id="camOfflineText" style="font-size:10.5px; color:var(--muted);">📷 Cam Off</span>
+                <span class="cam-pip-label">CAM LIVE</span>
+                <button type="button" class="cam-pip-flip" onclick="flipCamera()" title="Switch Front/Back Camera">🔄</button>
+            </div>
+
+            <!-- 1. DEFAULT ORB VIEW -->
+            <div class="orb-stage" id="orbStage">
+                <div class="orb-ring-outer">
+                    <div class="orb-core" id="liveOrb">
+                        <img src="logo.jpg" alt="KIZA" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%224%22/><text x=%2260%22 y=%2270%22 font-family=%22Arial%22 font-weight=%22900%22 font-size=%2226%22 text-anchor=%22middle%22 fill=%22%2300f2fe%22>KIZA</text></svg>';">
+                    </div>
                 </div>
-                <div style="display:flex; gap:5px;">
-                    <button type="button" style="background:#1e293b; color:#fff; border:1px solid #475569; border-radius:6px; font-size:10px; padding:2px 7px; cursor:pointer;" onclick="clearSketchCanvas()">🗑️ Clear</button>
-                    <button type="button" style="background:#10b981; color:#050811; border:none; border-radius:6px; font-size:10px; font-weight:800; padding:2px 8px; cursor:pointer;" onclick="sendAnnotatedSketchToKiza()">📤 Ask KIZA</button>
-                    <button type="button" style="background:none; color:#94a3b8; border:none; font-size:12px; cursor:pointer;" onclick="toggleSketchMode()">✕</button>
+                <div class="status-chip" id="liveStatusChip">CONNECTING TO KIZA BRAIN...</div>
+            </div>
+
+            <!-- 2. SEPARATE SHARED WHITEBOARD (USER + KIZA BOTH DRAW HERE!) -->
+            <div class="whiteboard-stage" id="whiteboardStage">
+                <div class="wb-toolbar">
+                    <div class="wb-tools-group">
+                        <span style="font-size:11.5px; font-weight:800; color:var(--glow);">🎨 Shared AI Whiteboard</span>
+                        <div class="color-dot active" style="background:#38bdf8;" onclick="setWbColor('#38bdf8', this)"></div>
+                        <div class="color-dot" style="background:#fbbf24;" onclick="setWbColor('#fbbf24', this)"></div>
+                        <div class="color-dot" style="background:#f87171;" onclick="setWbColor('#f87171', this)"></div>
+                        <div class="color-dot" style="background:#34d399;" onclick="setWbColor('#34d399', this)"></div>
+                        <div class="color-dot" style="background:#ffffff;" onclick="setWbColor('#ffffff', this)"></div>
+                        <input type="range" id="wbSizeSlider" min="2" max="14" value="4" style="width:68px;">
+                    </div>
+                    <div class="wb-tools-group">
+                        <button type="button" class="wb-btn" id="wbEraserBtn" onclick="toggleWbEraser()">🧹 Eraser</button>
+                        <button type="button" class="wb-btn" onclick="undoWbStroke()">↩️ Undo</button>
+                        <button type="button" class="wb-btn" onclick="clearWhiteboard()">🗑️ Clear</button>
+                        <button type="button" class="wb-btn" style="border-color:var(--success); color:var(--success);" onclick="askKizaAboutWhiteboard()">✨ Ask KIZA</button>
+                        <button type="button" class="wb-btn" onclick="setStageMode('orb')">✕ Hide</button>
+                    </div>
+                </div>
+                <div class="wb-canvas-wrap" id="wbCanvasWrap">
+                    <canvas id="sharedWhiteboard"></canvas>
                 </div>
             </div>
-            <video id="camPreview" autoplay playsinline webkit-playsinline muted></video>
-            <canvas id="sketchOverlayCanvas" width="320" height="240"></canvas>
-            <canvas id="captureCanvas" width="320" height="240" style="display:none;"></canvas>
-            <div class="vision-badge" id="visionModeBadge">👁️ CAM VISION</div>
+
+            <!-- 3. DEDICATED HD SCREEN SHARE STAGE -->
+            <div class="screen-stage" id="screenStage">
+                <span class="stage-badge">🖥️ HD SCREEN SHARE ACTIVE • CAM STILL LIVE</span>
+                <video id="screenVideo" autoplay playsinline muted></video>
+            </div>
+
+            <!-- 4. CRISP PHOTO UPLOAD STAGE (GREAT FOR PHONE USERS) -->
+            <div class="photo-stage" id="photoStage">
+                <span class="stage-badge" style="color:var(--accent); border-color:var(--accent);">📸 HD PHOTO ATTACHED</span>
+                <button type="button" class="wb-btn" style="position:absolute; top:10px; right:196px; z-index:12; border-color:var(--danger); color:var(--danger);" onclick="clearUploadedPhoto()">✕ Remove Photo</button>
+                <img id="uploadedPhotoPreview" alt="Uploaded Photo">
+            </div>
         </div>
 
-        <!-- CENTER STAGE -->
-        <div class="center-stage">
-            <div class="orb-wrapper">
-                <canvas id="liveSpectrumCanvas" width="160" height="160"></canvas>
-                <div class="live-orb" id="liveOrb">
-                    <img id="liveLogoImg" src="logo.jpg" alt="KIZA" onerror="this.style.display='none'">
-                </div>
-            </div>
-
-            <div class="state-pill" id="liveStateText">🎙️ KIZA LISTENING...</div>
-
-            <!-- PUSH-TO-TALK HOLD BUTTON (VISIBLE WHEN PTT MODE IS ACTIVE) -->
-            <button type="button" id="pttHoldBtn">🎙️ HOLD TO SPEAK</button>
-
-            <div class="subtitle-card" id="aiSubtitleBox">
-                Connecting live voice, whiteboard, and vision link...
-            </div>
-
-            <div class="helper-caption">
-                💡 Tap ✏️ to draw on video, 🎚️ for Push-to-Talk, 🖥️ to share screen, or 📞 END to save Call Minutes.
-            </div>
-        </div>
-
-        <!-- FLOATING MIC & CAMERA SELECTOR DRAWER -->
-        <div id="liveDeviceDrawer">
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:700; color:var(--accent-cyan);">
-                <span>🎛️ Camera & Microphone</span>
-                <button type="button" style="background:none; border:none; color:#94a3b8; font-size:15px; cursor:pointer;" onclick="toggleLiveDeviceDrawer()">✕</button>
-            </div>
-            <label style="font-size:10.5px; color:#cbd5e1; font-weight:600;">📷 Select Camera:</label>
-            <select id="liveCamSelect" onchange="switchLiveCameraDevice(this.value)"></select>
-            <label style="font-size:10.5px; color:#cbd5e1; font-weight:600;">🎤 Select Microphone:</label>
-            <select id="liveMicSelect" onchange="switchLiveMicDevice(this.value)"></select>
+        <!-- LIVE CAPTION / TRANSCRIPT BOX -->
+        <div class="caption-card" id="captionBox">
+            Connecting securely to KIZA Live...
         </div>
 
         <!-- BOTTOM CONTROLS DOCK -->
         <div class="bottom-dock">
             <div class="text-bar">
-                <input type="text" id="liveTextInput" placeholder="Type a message during the call..." autocomplete="off">
-                <button type="button" onclick="sendTypedMessage()">SEND</button>
+                <input type="text" id="liveTextInput" placeholder="Ask KIZA anything or say 'Draw a solar system on the whiteboard'..." autocomplete="off">
+                <button type="button" class="send-pill" onclick="sendTypedLiveMessage()">Send</button>
             </div>
 
-            <div class="action-dock-row">
-                <button type="button" class="ctrl-circle active" id="micBtn" onclick="toggleMic()" title="Mute / Unmute Mic">🎤</button>
-                <button type="button" class="ctrl-circle" id="pttToggleBtn" onclick="togglePushToTalkMode()" title="Toggle Push-to-Talk (Hold to Speak)">🎚️</button>
-                <button type="button" class="ctrl-circle active" id="camBtn" onclick="toggleCam()" title="Camera On / Off">📷</button>
-                <button type="button" class="ctrl-circle" id="sketchToggleBtn" onclick="toggleSketchMode()" title="Live Whiteboard / Draw on Video">✏️</button>
-                <button type="button" class="ctrl-circle" id="screenBtn" onclick="toggleScreenShare()" title="Share Screen or Rear Cam">🖥️</button>
-                <button type="button" class="ctrl-circle" onclick="toggleLiveDeviceDrawer()" title="Select Mic & Camera">⚙️</button>
-                <button type="button" class="ctrl-circle" onclick="interruptKiza()" title="Interrupt KIZA">✋</button>
-                <button type="button" class="hangup-pill" onclick="endLiveCall()" title="End Call & Save Minutes">
-                    <span>📞 END</span>
-                </button>
+            <div class="controls-row">
+                <input type="file" id="livePhotoInput" accept="image/*" style="display:none;" onchange="handleLivePhotoUpload(event)">
+                <button type="button" class="ctrl-btn ptt-btn" id="pttBtn">🎙️ Hold to Speak</button>
+                <button type="button" class="ctrl-btn" id="camBtn" onclick="toggleCameraFeed()">📷 Cam: On</button>
+                <button type="button" class="ctrl-btn" id="wbToggleBtn" onclick="toggleWhiteboardMode()">🎨 Whiteboard</button>
+                <button type="button" class="ctrl-btn" id="screenBtn" onclick="toggleScreenShare()">🖥️ Share Screen</button>
+                <button type="button" class="ctrl-btn" onclick="document.getElementById('livePhotoInput').click()" title="Click or Upload Crisp Photo">📸 Photo</button>
+                <button type="button" class="ctrl-btn" id="muteBtn" onclick="toggleSpeakerMute()">🔊 Sound</button>
+                <button type="button" class="ctrl-btn end-btn" onclick="endLiveCall()">📞 End</button>
             </div>
         </div>
     </div>
 
+    <canvas id="captureCanvas" style="display:none;"></canvas>
+
     <script>
         const WS_LIVE_URL = "wss://kiza-brain.onrender.com/api/live/call";
-
-        // ==========================================================
-        // 1. SAFARI & MOBILE VISUAL VIEWPORT LOCK
-        // ==========================================================
-        (function initSafariViewportLock() {
-            function syncViewport() {
-                const vv = window.visualViewport;
-                const h = vv ? Math.round(vv.height) : window.innerHeight;
-                if (h && h > 120) {
-                    document.documentElement.style.setProperty('--app-height', `${h}px`);
-                }
-                if (window.scrollY !== 0 || window.scrollX !== 0) {
-                    window.scrollTo(0, 0);
-                }
-            }
-            syncViewport();
-            window.addEventListener('resize', syncViewport, { passive: true });
-            window.addEventListener('orientationchange', () => setTimeout(syncViewport, 150), { passive: true });
-            if (window.visualViewport) {
-                window.visualViewport.addEventListener('resize', syncViewport, { passive: true });
-                window.visualViewport.addEventListener('scroll', syncViewport, { passive: true });
-            }
-        })();
-
-        // ==========================================================
-        // 2. AUTO-CIRCULAR LOGO CROPPER
-        // ==========================================================
-        (function initCircularLiveLogo() {
-            const img = new Image();
-            img.crossOrigin = "anonymous";
-            img.onload = () => {
-                try {
-                    const c = document.createElement('canvas');
-                    c.width = 256; c.height = 256;
-                    const ctx = c.getContext('2d');
-                    const minDim = Math.min(img.naturalWidth || 256, img.naturalHeight || 256) * 0.94;
-                    const sx = ((img.naturalWidth || 256) - minDim) / 2;
-                    const sy = ((img.naturalHeight || 256) - minDim) / 2;
-                    ctx.beginPath();
-                    ctx.arc(128, 128, 128, 0, Math.PI * 2);
-                    ctx.closePath();
-                    ctx.clip();
-                    ctx.fillStyle = "#071324";
-                    ctx.fillRect(0, 0, 256, 256);
-                    ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, 256, 256);
-                    const dataUrl = c.toDataURL('image/png');
-                    const logoEl = document.getElementById('liveLogoImg');
-                    if (logoEl) logoEl.src = dataUrl;
-                    const fav = document.getElementById('liveFavicon');
-                    if (fav) fav.href = dataUrl;
-                } catch (e) {}
-            };
-            img.src = "logo.jpg";
-        })();
-
         const params = new URLSearchParams(window.location.search);
-        const currentUser = params.get("user") || localStorage.getItem("kiza_user") || "User";
-        const currentPersona = params.get("persona") || "normal";
+        const userName = params.get("user") || localStorage.getItem("kiza_user") || "Guest";
+        const persona = params.get("persona") || "normal";
+        const sessionToken = localStorage.getItem("kiza_sig") || "";
 
-        const personaNames = {
-            normal: "UK • Witty",
-            helpful: "IN • Warm",
-            energetic: "US • Fast",
-            security: "Security"
-        };
-        document.getElementById('personaLabel').innerText = personaNames[currentPersona] || "UK • Witty";
+        document.getElementById("liveUserLabel").textContent = userName.toUpperCase();
 
-        let ws = null;
-        let callSeconds = 0;
-        let micActive = true;
-        let pttModeActive = false;
-        let isHoldingPTT = false;
-        let camActive = true;
-        let isScreenSharing = false;
-        let sketchModeActive = false;
-        let sketchColor = "#00f2fe";
-        let isDrawingSketch = false;
-        let lastSketchPt = null;
+        // Call minutes state
+        const callStartTs = Date.now();
+        const callTopics = [];
+        const callDecisions = [];
 
+        // Media streams (completely independent!)
         let camStream = null;
         let screenStream = null;
-        let liveMicStream = null;
-        let videoDevices = [];
-        let audioDevices = [];
-        let camIdx = 0;
-        let livePreferredCamId = localStorage.getItem('kiza_pref_cam_id') || "";
-        let livePreferredMicId = localStorage.getItem('kiza_pref_mic_id') || "";
+        let camEnabled = true;
+        let facingMode = "user";
+        let uploadedPhotoDataUrl = null;
+        let currentStageMode = "orb"; // 'orb' | 'whiteboard' | 'screen' | 'photo'
+        let speakerMuted = false;
+        let activeAudio = null;
 
-        let recognition = null;
-        let isKizaSpeaking = false;
-        let isWaitingResponse = false;
-        let currentAudio = null;
-        let audioCtx = null;
-        let lastPingSentAt = 0;
+        // WebSocket
+        let ws = null;
+        let pingStart = 0;
 
-        // Transcript log for Auto-Generated Call Minutes on Hangup
-        const callTranscriptLog = [];
-
+        // Timer
         setInterval(() => {
-            callSeconds++;
-            const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
-            const secs = String(callSeconds % 60).padStart(2, '0');
-            const shortUser = currentUser.split(' ')[0].toUpperCase();
-            document.getElementById('liveHeaderTitle').innerText = `KIZA LIVE • ${shortUser} • ${mins}:${secs}`;
+            const sec = Math.floor((Date.now() - callStartTs) / 1000);
+            const m = String(Math.floor(sec / 60)).padStart(2, "0");
+            const s = String(sec % 60).padStart(2, "0");
+            document.getElementById("callTimer").textContent = `${m}:${s}`;
         }, 1000);
 
-        function unlockSafariAudio() {
-            try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-            } catch (e) {}
-        }
-        document.addEventListener('touchstart', unlockSafariAudio, { once: true, passive: true });
-        document.addEventListener('click', unlockSafariAudio, { once: true, passive: true });
-
         // ==========================================================
-        // 3. ✍️ LIVE WHITEBOARD / SKETCH OVERLAY ON VIDEO
+        // 1. STAGE & DUAL VIDEO FEED CONTROLLER
         // ==========================================================
-        const sketchCanvas = document.getElementById('sketchOverlayCanvas');
-        const sketchCtx = sketchCanvas.getContext('2d');
+        function setStageMode(mode) {
+            currentStageMode = mode;
+            document.getElementById("orbStage").classList.toggle("compact-mode", mode !== "orb");
+            document.getElementById("whiteboardStage").classList.toggle("active", mode === "whiteboard");
+            document.getElementById("screenStage").classList.toggle("active", mode === "screen");
+            document.getElementById("photoStage").classList.toggle("active", mode === "photo");
+            document.getElementById("wbToggleBtn").classList.toggle("active", mode === "whiteboard");
+            document.getElementById("screenBtn").classList.toggle("active", Boolean(screenStream));
 
-        function toggleSketchMode() {
-            sketchModeActive = !sketchModeActive;
-            const pipBox = document.getElementById('visionPipBox');
-            const btn = document.getElementById('sketchToggleBtn');
-            pipBox.classList.toggle('sketch-expanded', sketchModeActive);
-            btn.classList.toggle('sketch-on', sketchModeActive);
-            document.getElementById('visionModeBadge').innerText = sketchModeActive ? "✍️ DRAW ON VIDEO & TAP 'ASK KIZA'" : (isScreenSharing ? "🖥️ SCREEN LIVE" : "👁️ CAM VISION");
+            if (mode === "whiteboard") {
+                requestAnimationFrame(resizeWhiteboardCanvas);
+            }
+            updateVisionBadge();
         }
 
-        function setSketchColor(c) {
-            sketchColor = c;
-        }
-
-        function clearSketchCanvas() {
-            sketchCtx.clearRect(0, 0, sketchCanvas.width, sketchCanvas.height);
-        }
-
-        function getSketchCanvasCoords(e) {
-            const rect = sketchCanvas.getBoundingClientRect();
-            const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
-            const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
-            return {
-                x: ((clientX - rect.left) / rect.width) * sketchCanvas.width,
-                y: ((clientY - rect.top) / rect.height) * sketchCanvas.height
-            };
-        }
-
-        sketchCanvas.addEventListener('mousedown', (e) => {
-            if (!sketchModeActive) return;
-            isDrawingSketch = true;
-            lastSketchPt = getSketchCanvasCoords(e);
-        });
-        sketchCanvas.addEventListener('mousemove', (e) => {
-            if (!isDrawingSketch || !sketchModeActive) return;
-            const pt = getSketchCanvasCoords(e);
-            sketchCtx.strokeStyle = sketchColor;
-            sketchCtx.lineWidth = 4;
-            sketchCtx.lineCap = "round";
-            sketchCtx.beginPath();
-            sketchCtx.moveTo(lastSketchPt.x, lastSketchPt.y);
-            sketchCtx.lineTo(pt.x, pt.y);
-            sketchCtx.stroke();
-            lastSketchPt = pt;
-        });
-        window.addEventListener('mouseup', () => { isDrawingSketch = false; });
-
-        sketchCanvas.addEventListener('touchstart', (e) => {
-            if (!sketchModeActive) return;
-            e.preventDefault();
-            isDrawingSketch = true;
-            lastSketchPt = getSketchCanvasCoords(e);
-        }, { passive: false });
-        sketchCanvas.addEventListener('touchmove', (e) => {
-            if (!isDrawingSketch || !sketchModeActive) return;
-            e.preventDefault();
-            const pt = getSketchCanvasCoords(e);
-            sketchCtx.strokeStyle = sketchColor;
-            sketchCtx.lineWidth = 4;
-            sketchCtx.lineCap = "round";
-            sketchCtx.beginPath();
-            sketchCtx.moveTo(lastSketchPt.x, lastSketchPt.y);
-            sketchCtx.lineTo(pt.x, pt.y);
-            sketchCtx.stroke();
-            lastSketchPt = pt;
-        }, { passive: false });
-        window.addEventListener('touchend', () => { isDrawingSketch = false; });
-
-        function sendAnnotatedSketchToKiza() {
-            sendSpeechToServer("Look at what I circled and sketched on my video feed and explain or solve it.");
-            if (sketchModeActive) toggleSketchMode();
-        }
-
-        // ==========================================================
-        // 4. 🎙️ PUSH-TO-TALK (HOLD TO SPEAK) MODE FOR NOISY ROOMS
-        // ==========================================================
-        const pttBtn = document.getElementById('pttHoldBtn');
-
-        function togglePushToTalkMode() {
-            pttModeActive = !pttModeActive;
-            const toggleBtn = document.getElementById('pttToggleBtn');
-            toggleBtn.classList.toggle('active', pttModeActive);
-            pttBtn.style.display = pttModeActive ? "inline-flex" : "none";
-
-            if (pttModeActive) {
-                isHoldingPTT = false;
-                if (recognition) { try { recognition.stop(); } catch (e) {} }
-                document.getElementById('liveStateText').innerText = "🎚️ PUSH-TO-TALK ACTIVE (HOLD BUTTON BELOW)";
+        function updateVisionBadge() {
+            const badge = document.getElementById("activeVisionBadge");
+            if (currentStageMode === "photo" && uploadedPhotoDataUrl) {
+                badge.textContent = "📸 HD Photo Active";
+            } else if (currentStageMode === "whiteboard") {
+                badge.textContent = "🎨 Shared Whiteboard Active";
+            } else if (screenStream && currentStageMode === "screen") {
+                badge.textContent = camEnabled ? "🖥️ HD Screen + 📷 Cam Live" : "🖥️ HD Screen Share";
+            } else if (camEnabled) {
+                badge.textContent = "📷 Camera Vision Live";
             } else {
-                document.getElementById('liveStateText').innerText = micActive ? "🎙️ KIZA LISTENING (AUTO)..." : "🔇 MICROPHONE MUTED";
-                if (micActive && recognition) {
-                    try { recognition.start(); } catch (e) {}
-                }
+                badge.textContent = "🎙️ Audio Only";
             }
         }
 
-        function startPTTHold(e) {
-            if (e) e.preventDefault();
-            if (!pttModeActive) return;
-            interruptKiza();
-            isHoldingPTT = true;
-            pttBtn.classList.add('holding');
-            pttBtn.innerText = "🎙️ LISTENING... RELEASE TO SEND";
-            document.getElementById('liveStateText').innerText = "🎙️ LISTENING TO YOU...";
-            if (recognition) {
-                try { recognition.start(); } catch (err) {}
-            }
-        }
-
-        function endPTTHold(e) {
-            if (e) e.preventDefault();
-            if (!pttModeActive || !isHoldingPTT) return;
-            isHoldingPTT = false;
-            pttBtn.classList.remove('holding');
-            pttBtn.innerText = "🎙️ HOLD TO SPEAK";
-            if (recognition) {
-                setTimeout(() => { try { recognition.stop(); } catch (err) {} }, 250);
-            }
-        }
-
-        pttBtn.addEventListener('mousedown', startPTTHold);
-        window.addEventListener('mouseup', endPTTHold);
-        pttBtn.addEventListener('touchstart', startPTTHold, { passive: false });
-        window.addEventListener('touchend', endPTTHold);
-
-        // ==========================================================
-        // 5. CAMERA, MICROPHONE & COMPOSITE VISION CAPTURE
-        // ==========================================================
-        async function populateLiveHardwareSelectors() {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
-            try {
-                const devs = await navigator.mediaDevices.enumerateDevices();
-                videoDevices = devs.filter(d => d.kind === 'videoinput');
-                audioDevices = devs.filter(d => d.kind === 'audioinput');
-
-                const camSel = document.getElementById('liveCamSelect');
-                if (camSel) {
-                    camSel.innerHTML = '';
-                    videoDevices.forEach((d, i) => {
-                        const opt = document.createElement('option');
-                        opt.value = d.deviceId;
-                        opt.textContent = d.label || `Camera ${i + 1}`;
-                        if (d.deviceId === livePreferredCamId) opt.selected = true;
-                        camSel.appendChild(opt);
-                    });
-                }
-
-                const micSel = document.getElementById('liveMicSelect');
-                if (micSel) {
-                    micSel.innerHTML = '';
-                    audioDevices.forEach((d, i) => {
-                        const opt = document.createElement('option');
-                        opt.value = d.deviceId;
-                        opt.textContent = d.label || `Microphone ${i + 1}`;
-                        if (d.deviceId === livePreferredMicId) opt.selected = true;
-                        micSel.appendChild(opt);
-                    });
-                }
-            } catch (e) {}
-        }
-
-        function toggleLiveDeviceDrawer() {
-            const d = document.getElementById('liveDeviceDrawer');
-            if (!d) return;
-            const isOpening = (d.style.display !== "flex");
-            d.style.display = isOpening ? "flex" : "none";
-            if (isOpening) populateLiveHardwareSelectors();
-        }
-
-        async function switchLiveCameraDevice(deviceId) {
-            livePreferredCamId = deviceId || "";
-            localStorage.setItem('kiza_pref_cam_id', livePreferredCamId);
-            isScreenSharing = false;
-            document.getElementById('screenBtn').classList.remove('active');
-            document.getElementById('visionModeBadge').innerText = "👁️ CAM VISION";
-            await initCamera();
-        }
-
-        async function switchLiveMicDevice(deviceId) {
-            livePreferredMicId = deviceId || "";
-            localStorage.setItem('kiza_pref_mic_id', livePreferredMicId);
-            try {
-                if (liveMicStream) liveMicStream.getTracks().forEach(t => t.stop());
-                liveMicStream = await navigator.mediaDevices.getUserMedia({
-                    audio: livePreferredMicId ? { deviceId: { exact: livePreferredMicId } } : true,
-                    video: false
-                });
-                if (recognition && micActive && !pttModeActive) {
-                    try { recognition.stop(); } catch (e) {}
-                }
-            } catch (e) {}
-        }
-
-        async function initCamera() {
-            if (!camActive || isScreenSharing) return;
+        async function startCameraFeed() {
             try {
                 if (camStream) camStream.getTracks().forEach(t => t.stop());
-                const constraint = livePreferredCamId
-                    ? { deviceId: { exact: livePreferredCamId }, width: { ideal: 480 }, height: { ideal: 360 } }
-                    : { facingMode: "user", width: { ideal: 480 }, height: { ideal: 360 } };
+                camStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+                    audio: false
+                });
+                const v = document.getElementById("camVideo");
+                v.srcObject = camStream;
+                v.style.display = "block";
+                document.getElementById("camOfflineText").style.display = "none";
+                camEnabled = true;
+                document.getElementById("camBtn").textContent = "📷 Cam: On";
+                document.getElementById("camBtn").classList.add("active");
+                updateVisionBadge();
+            } catch (e) {
+                camEnabled = false;
+                document.getElementById("camOfflineText").style.display = "block";
+                document.getElementById("camBtn").textContent = "📷 Cam: Off";
+                document.getElementById("camBtn").classList.remove("active");
+                updateVisionBadge();
+            }
+        }
 
-                try {
-                    camStream = await navigator.mediaDevices.getUserMedia({ video: constraint, audio: false });
-                } catch (errFallback) {
-                    livePreferredCamId = "";
-                    camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
-                }
+        function toggleCameraFeed() {
+            if (camEnabled && camStream) {
+                camStream.getTracks().forEach(t => t.stop());
+                camStream = null;
+                camEnabled = false;
+                document.getElementById("camVideo").style.display = "none";
+                document.getElementById("camOfflineText").style.display = "block";
+                document.getElementById("camBtn").textContent = "📷 Cam: Off";
+                document.getElementById("camBtn").classList.remove("active");
+                updateVisionBadge();
+            } else {
+                startCameraFeed();
+            }
+        }
 
-                const videoEl = document.getElementById('camPreview');
-                videoEl.srcObject = camStream;
-                const track = camStream.getVideoTracks()[0];
-                if (track && track.getSettings().deviceId) {
-                    livePreferredCamId = track.getSettings().deviceId;
-                }
-                await populateLiveHardwareSelectors();
+        function flipCamera() {
+            facingMode = (facingMode === "user") ? "environment" : "user";
+            startCameraFeed();
+        }
+
+        // Independent Screen Share (NEVER touches camStream!)
+        async function toggleScreenShare() {
+            if (screenStream) {
+                screenStream.getTracks().forEach(t => t.stop());
+                screenStream = null;
+                document.getElementById("screenVideo").srcObject = null;
+                document.getElementById("screenBtn").textContent = "🖥️ Share Screen";
+                document.getElementById("screenBtn").classList.remove("active");
+                if (currentStageMode === "screen") setStageMode("orb");
+                updateVisionBadge();
+                return;
+            }
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+                document.getElementById("captionBox").textContent = "Screen sharing isn't supported on this mobile browser—tap 📸 Photo to snap or upload any screenshot in HD!";
+                return;
+            }
+            try {
+                screenStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 15 } },
+                    audio: false
+                });
+                const sv = document.getElementById("screenVideo");
+                sv.srcObject = screenStream;
+                screenStream.getVideoTracks()[0].onended = () => {
+                    screenStream = null;
+                    document.getElementById("screenBtn").textContent = "🖥️ Share Screen";
+                    document.getElementById("screenBtn").classList.remove("active");
+                    if (currentStageMode === "screen") setStageMode("orb");
+                    updateVisionBadge();
+                };
+                document.getElementById("screenBtn").textContent = "🛑 Stop Share";
+                setStageMode("screen");
             } catch (e) {}
         }
 
-        // Composites both the Live Video AND the Whiteboard Sketch Canvas into 1 frame!
-        function captureCurrentVisionFrame() {
-            try {
-                if (!camActive && !isScreenSharing) return null;
-                const videoEl = document.getElementById('camPreview');
-                if (!videoEl || !videoEl.srcObject || videoEl.readyState < 2) return null;
-                const canvas = document.getElementById('captureCanvas');
-                const ctx = canvas.getContext('2d', { alpha: false });
-                ctx.drawImage(videoEl, 0, 0, 320, 240);
-                ctx.drawImage(sketchCanvas, 0, 0, 320, 240);
-                return canvas.toDataURL('image/jpeg', 0.62);
-            } catch (e) {
-                return null;
-            }
-        }
-
-        setInterval(() => {
-            if (ws && ws.readyState === WebSocket.OPEN && !isWaitingResponse && !isKizaSpeaking && (camActive || isScreenSharing)) {
-                const frame = captureCurrentVisionFrame();
-                if (frame) {
-                    ws.send(JSON.stringify({ type: "frame", image_base64: frame }));
-                }
-            }
-        }, 4500);
-
-        document.getElementById('mobileScreenShareInput').addEventListener('change', (ev) => {
-            const file = ev.target.files[0];
+        // Phone & Desktop Crisp HD Photo Upload
+        function handleLivePhotoUpload(event) {
+            const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 const img = new Image();
                 img.onload = () => {
-                    const c = document.createElement('canvas');
-                    c.width = 480; c.height = 360;
-                    c.getContext('2d').drawImage(img, 0, 0, 480, 360);
-                    const snapB64 = c.toDataURL('image/jpeg', 0.72);
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({ type: "frame", image_base64: snapB64 }));
-                        ws.send(JSON.stringify({
-                            type: "speech",
-                            text: "I just shared my screen snapshot with you. Tell me what you see on my screen.",
-                            image_base64: snapB64,
-                            personality: currentPersona
-                        }));
-                    }
-                    document.getElementById('aiSubtitleBox').innerText = "📲 Screen snapshot sent! KIZA is analyzing it now...";
+                    const maxW = 1280;
+                    let w = img.naturalWidth, h = img.naturalHeight;
+                    if (w > maxW) { h = Math.round(h * (maxW / w)); w = maxW; }
+                    const c = document.getElementById("captureCanvas");
+                    c.width = w; c.height = h;
+                    c.getContext("2d").drawImage(img, 0, 0, w, h);
+                    uploadedPhotoDataUrl = c.toDataURL("image/jpeg", 0.92);
+                    document.getElementById("uploadedPhotoPreview").src = uploadedPhotoDataUrl;
+                    setStageMode("photo");
+                    document.getElementById("captionBox").textContent = "📸 HD Photo loaded! Ask KIZA anything about this photo or type below.";
                 };
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
-        });
+            event.target.value = "";
+        }
 
-        async function toggleScreenShare() {
-            const screenBtn = document.getElementById('screenBtn');
-            const videoEl = document.getElementById('camPreview');
-            const badgeEl = document.getElementById('visionModeBadge');
+        function clearUploadedPhoto() {
+            uploadedPhotoDataUrl = null;
+            setStageMode(screenStream ? "screen" : "orb");
+        }
 
-            if (isScreenSharing) {
-                isScreenSharing = false;
-                if (screenStream) {
-                    screenStream.getTracks().forEach(t => t.stop());
-                    screenStream = null;
-                }
-                screenBtn.classList.remove('active');
-                badgeEl.innerText = "👁️ CAM VISION";
-                await initCamera();
-                return;
+        // Crisp HD Frame Grabber (Fixes "Screen is blurry" forever!)
+        function captureCrispActiveFrame() {
+            const c = document.getElementById("captureCanvas");
+            const ctx = c.getContext("2d");
+
+            if (currentStageMode === "photo" && uploadedPhotoDataUrl) {
+                return { image_base64: uploadedPhotoDataUrl, source: "photo" };
             }
+            if (currentStageMode === "whiteboard") {
+                const wb = document.getElementById("sharedWhiteboard");
+                c.width = wb.width; c.height = wb.height;
+                ctx.fillStyle = "#090f1d";
+                ctx.fillRect(0, 0, c.width, c.height);
+                ctx.drawImage(wb, 0, 0);
+                return { image_base64: c.toDataURL("image/png"), source: "whiteboard" };
+            }
+            if (screenStream && (currentStageMode === "screen" || !camEnabled)) {
+                const sv = document.getElementById("screenVideo");
+                if (sv.videoWidth > 0) {
+                    const maxW = 1280;
+                    const scale = Math.min(1, maxW / sv.videoWidth);
+                    c.width = Math.round(sv.videoWidth * scale);
+                    c.height = Math.round(sv.videoHeight * scale);
+                    ctx.drawImage(sv, 0, 0, c.width, c.height);
+                    return { image_base64: c.toDataURL("image/jpeg", 0.90), source: "screen" };
+                }
+            }
+            if (camEnabled && camStream) {
+                const cv = document.getElementById("camVideo");
+                if (cv.videoWidth > 0) {
+                    const maxW = 960;
+                    const scale = Math.min(1, maxW / cv.videoWidth);
+                    c.width = Math.round(cv.videoWidth * scale);
+                    c.height = Math.round(cv.videoHeight * scale);
+                    ctx.drawImage(cv, 0, 0, c.width, c.height);
+                    return { image_base64: c.toDataURL("image/jpeg", 0.86), source: "camera" };
+                }
+            }
+            return { image_base64: null, source: "none" };
+        }
 
-            if (navigator.mediaDevices && typeof navigator.mediaDevices.getDisplayMedia === 'function') {
-                try {
-                    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-                    isScreenSharing = true;
-                    screenBtn.classList.add('active');
-                    videoEl.srcObject = screenStream;
-                    badgeEl.innerText = "🖥️ SCREEN LIVE";
-                    screenStream.getVideoTracks()[0].onended = () => {
-                        if (isScreenSharing) toggleScreenShare();
-                    };
-                    return;
-                } catch (err) {
-                    if (err.name === "NotAllowedError" && !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                        return;
+        // ==========================================================
+        // 2. DEDICATED SHARED WHITEBOARD (USER + KIZA AI DRAWING)
+        // ==========================================================
+        const wbCanvas = document.getElementById("sharedWhiteboard");
+        const wbCtx = wbCanvas.getContext("2d");
+        let wbDrawing = false;
+        let wbColor = "#38bdf8";
+        let wbEraser = false;
+        let wbHistory = [];
+
+        function toggleWhiteboardMode() {
+            setStageMode(currentStageMode === "whiteboard" ? (screenStream ? "screen" : "orb") : "whiteboard");
+        }
+
+        function resizeWhiteboardCanvas() {
+            const wrap = document.getElementById("wbCanvasWrap");
+            if (!wrap || wrap.clientWidth === 0) return;
+            const prev = wbCanvas.width > 0 ? wbCanvas.toDataURL() : null;
+            wbCanvas.width = wrap.clientWidth;
+            wbCanvas.height = wrap.clientHeight;
+            if (prev) {
+                const img = new Image();
+                img.onload = () => wbCtx.drawImage(img, 0, 0, wbCanvas.width, wbCanvas.height);
+                img.src = prev;
+            }
+        }
+        window.addEventListener("resize", () => { if (currentStageMode === "whiteboard") resizeWhiteboardCanvas(); });
+
+        function setWbColor(hex, el) {
+            wbColor = hex; wbEraser = false;
+            document.getElementById("wbEraserBtn").classList.remove("active");
+            document.querySelectorAll(".color-dot").forEach(d => d.classList.remove("active"));
+            if (el) el.classList.add("active");
+        }
+
+        function toggleWbEraser() {
+            wbEraser = !wbEraser;
+            document.getElementById("wbEraserBtn").classList.toggle("active", wbEraser);
+        }
+
+        function saveWbSnapshot() {
+            if (wbCanvas.width > 0) {
+                wbHistory.push(wbCanvas.toDataURL());
+                if (wbHistory.length > 20) wbHistory.shift();
+            }
+        }
+
+        function undoWbStroke() {
+            if (!wbHistory.length) return;
+            const last = wbHistory.pop();
+            const img = new Image();
+            img.onload = () => {
+                wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
+                wbCtx.drawImage(img, 0, 0, wbCanvas.width, wbCanvas.height);
+            };
+            img.src = last;
+        }
+
+        function clearWhiteboard() {
+            saveWbSnapshot();
+            wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
+        }
+
+        function getWbPos(e) {
+            const r = wbCanvas.getBoundingClientRect();
+            const pt = e.touches ? e.touches[0] : e;
+            return { x: pt.clientX - r.left, y: pt.clientY - r.top };
+        }
+
+        function wbStart(e) {
+            e.preventDefault();
+            saveWbSnapshot();
+            wbDrawing = true;
+            const p = getWbPos(e);
+            wbCtx.beginPath();
+            wbCtx.moveTo(p.x, p.y);
+        }
+        function wbMove(e) {
+            if (!wbDrawing) return;
+            e.preventDefault();
+            const p = getWbPos(e);
+            wbCtx.lineCap = "round"; wbCtx.lineJoin = "round";
+            wbCtx.lineWidth = wbEraser ? 20 : Number(document.getElementById("wbSizeSlider").value || 4);
+            wbCtx.strokeStyle = wbEraser ? "#090f1d" : wbColor;
+            wbCtx.lineTo(p.x, p.y);
+            wbCtx.stroke();
+        }
+        function wbEnd() { wbDrawing = false; }
+
+        wbCanvas.addEventListener("mousedown", wbStart);
+        wbCanvas.addEventListener("mousemove", wbMove);
+        window.addEventListener("mouseup", wbEnd);
+        wbCanvas.addEventListener("touchstart", wbStart, { passive: false });
+        wbCanvas.addEventListener("touchmove", wbMove, { passive: false });
+        window.addEventListener("touchend", wbEnd);
+
+        function askKizaAboutWhiteboard() {
+            sendLiveSpeechOrText("Look at my whiteboard and explain or solve what is drawn there.");
+        }
+
+        // KIZA AI ANIMATED WHITEBOARD RENDERER (0..1000 normalized coordinates)
+        async function executeKizaWhiteboardCommands(commands) {
+            if (!Array.isArray(commands) || commands.length === 0) return;
+            if (currentStageMode !== "whiteboard") {
+                setStageMode("whiteboard");
+                await new Promise(r => setTimeout(r, 120));
+            }
+            const W = wbCanvas.width || 800;
+            const H = wbCanvas.height || 450;
+            const sx = (v) => (Number(v) / 1000) * W;
+            const sy = (v) => (Number(v) / 1000) * H;
+            saveWbSnapshot();
+
+            for (const cmd of commands) {
+                const type = (cmd.type || "").toLowerCase();
+                const col = cmd.color || "#00f2fe";
+                const lw = Number(cmd.width || 3.5);
+                wbCtx.strokeStyle = col;
+                wbCtx.fillStyle = col;
+                wbCtx.lineWidth = lw;
+                wbCtx.lineCap = "round";
+                wbCtx.lineJoin = "round";
+
+                if (type === "clear") {
+                    wbCtx.clearRect(0, 0, W, H);
+                } else if (type === "line" || type === "arrow") {
+                    const x1 = sx(cmd.x1), y1 = sy(cmd.y1), x2 = sx(cmd.x2), y2 = sy(cmd.y2);
+                    wbCtx.beginPath(); wbCtx.moveTo(x1, y1); wbCtx.lineTo(x2, y2); wbCtx.stroke();
+                    if (type === "arrow") {
+                        const ang = Math.atan2(y2 - y1, x2 - x1);
+                        wbCtx.beginPath();
+                        wbCtx.moveTo(x2, y2);
+                        wbCtx.lineTo(x2 - 12 * Math.cos(ang - 0.5), y2 - 12 * Math.sin(ang - 0.5));
+                        wbCtx.lineTo(x2 - 12 * Math.cos(ang + 0.5), y2 - 12 * Math.sin(ang + 0.5));
+                        wbCtx.closePath(); wbCtx.fill();
                     }
+                } else if (type === "rect") {
+                    wbCtx.strokeRect(sx(cmd.x), sy(cmd.y), sx(cmd.w), sy(cmd.h));
+                } else if (type === "circle") {
+                    const r = (Number(cmd.r || 60) / 1000) * Math.min(W, H);
+                    wbCtx.beginPath(); wbCtx.arc(sx(cmd.cx), sy(cmd.cy), r, 0, Math.PI * 2); wbCtx.stroke();
+                } else if (type === "path" && Array.isArray(cmd.points) && cmd.points.length > 1) {
+                    wbCtx.beginPath();
+                    wbCtx.moveTo(sx(cmd.points[0][0]), sy(cmd.points[0][1]));
+                    for (let i = 1; i < cmd.points.length; i++) {
+                        wbCtx.lineTo(sx(cmd.points[i][0]), sy(cmd.points[i][1]));
+                    }
+                    wbCtx.stroke();
+                } else if (type === "text" && cmd.text) {
+                    const fSize = Math.max(13, Math.round((Number(cmd.size || 18) / 600) * Math.min(W, H)));
+                    wbCtx.font = `700 ${fSize}px Inter, sans-serif`;
+                    wbCtx.fillText(String(cmd.text), sx(cmd.x), sy(cmd.y));
                 }
-            }
-
-            try {
-                if (camStream) camStream.getTracks().forEach(t => t.stop());
-                screenStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { ideal: "environment" }, width: { ideal: 480 }, height: { ideal: 360 } },
-                    audio: false
-                });
-                isScreenSharing = true;
-                screenBtn.classList.add('active');
-                videoEl.srcObject = screenStream;
-                badgeEl.innerText = "🖥️ WORKSPACE LIVE";
-                document.getElementById('aiSubtitleBox').innerHTML =
-                    `📲 <b>Workspace Vision Active!</b> Point your camera at your notes/laptop, tap ✏️ to circle items, or <u style="color:#00f2fe;cursor:pointer;" onclick="document.getElementById('mobileScreenShareInput').click()">tap here to upload a screenshot</u>!`;
-            } catch (fallbackErr) {
-                document.getElementById('mobileScreenShareInput').click();
+                await new Promise(r => setTimeout(r, 150));
             }
         }
 
-        function toggleCam() {
-            camActive = !camActive;
-            const btn = document.getElementById('camBtn');
-            btn.classList.toggle('active', camActive);
-            btn.classList.toggle('muted', !camActive);
-            if (camActive) {
-                initCamera();
-            } else if (camStream) {
-                camStream.getTracks().forEach(t => t.stop());
-            }
-        }
-
-        function toggleMic() {
-            micActive = !micActive;
-            const btn = document.getElementById('micBtn');
-            btn.classList.toggle('active', micActive);
-            btn.classList.toggle('muted', !micActive);
-            if (!micActive && recognition) {
-                try { recognition.stop(); } catch (e) {}
-                document.getElementById('liveStateText').innerText = "🔇 MICROPHONE MUTED";
-            } else if (micActive && !pttModeActive && recognition) {
-                try { recognition.start(); } catch (e) {}
-                document.getElementById('liveStateText').innerText = "🎙️ KIZA LISTENING...";
-            }
-        }
-
-        function interruptKiza() {
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio = null;
-            }
-            if (window.speechSynthesis) window.speechSynthesis.cancel();
-            isKizaSpeaking = false;
-            isWaitingResponse = false;
-            document.getElementById('liveOrb').style.transform = "scale(1)";
-            document.getElementById('liveStateText').innerText = pttModeActive ? "🎚️ HOLD BUTTON TO SPEAK" : "🎙️ KIZA LISTENING...";
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ type: "interrupt" }));
-            }
-            if (micActive && !pttModeActive && recognition) {
-                setTimeout(() => { try { recognition.start(); } catch (e) {} }, 120);
-            }
-        }
-
-        function playLiveAudio(base64Data, textFallback) {
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio = null;
-            }
-            isWaitingResponse = false;
-            isKizaSpeaking = true;
-            document.getElementById('liveStateText').innerText = "🔊 KIZA SPEAKING (TAP ✋ TO INTERRUPT)";
-            const orb = document.getElementById('liveOrb');
-
-            const onSpeechFinished = () => {
-                isKizaSpeaking = false;
-                orb.style.transform = "scale(1)";
-                document.getElementById('liveStateText').innerText = pttModeActive ? "🎚️ HOLD BUTTON TO SPEAK" : (micActive ? "🎙️ KIZA LISTENING..." : "🔇 MICROPHONE MUTED");
-                if (micActive && !pttModeActive && recognition) {
-                    setTimeout(() => { try { recognition.start(); } catch (e) {} }, 150);
-                }
-            };
-
-            if (!base64Data) {
-                if (window.speechSynthesis && textFallback) {
-                    window.speechSynthesis.cancel();
-                    const u = new SpeechSynthesisUtterance(textFallback);
-                    u.onend = onSpeechFinished;
-                    u.onerror = onSpeechFinished;
-                    window.speechSynthesis.speak(u);
-                } else {
-                    onSpeechFinished();
-                }
+        // ==========================================================
+        // 3. SECURE FIRST-FRAME WEBSOCKET AUTH & MESSAGING
+        // ==========================================================
+        function connectLiveSocket() {
+            if (!sessionToken) {
+                document.getElementById("captionBox").textContent = "🔒 Please sign in to KIZA first before starting a Live Call.";
                 return;
             }
-
-            currentAudio = new Audio("data:audio/mp3;base64," + base64Data);
-            currentAudio.playsInline = true;
-
-            let pulseInterval = setInterval(() => {
-                if (!isKizaSpeaking) {
-                    clearInterval(pulseInterval);
-                    orb.style.transform = "scale(1)";
-                    return;
+            ws = new WebSocket(WS_LIVE_URL);
+            ws.onopen = () => {
+                // Secure First-Frame Auth: token stays inside TLS body, never in URL logs!
+                ws.send(JSON.stringify({ type: "auth", token: sessionToken, personality }));
+                document.getElementById("liveStatusChip").textContent = "AUTHENTICATING...";
+                setInterval(() => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        pingStart = performance.now();
+                        ws.send(JSON.stringify({ type: "ping" }));
+                    }
+                }, 15000);
+            };
+            ws.onmessage = async (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === "pong") {
+                    document.getElementById("livePing").textContent = `${Math.max(12, Math.round(performance.now() - pingStart))}ms`;
+                } else if (data.type === "state") {
+                    const orb = document.getElementById("liveOrb");
+                    orb.classList.toggle("thinking", data.status === "thinking");
+                    document.getElementById("liveStatusChip").textContent = data.status === "thinking" ? "KIZA IS THINKING..." : "LIVE & READY";
+                } else if (data.type === "response") {
+                    const orb = document.getElementById("liveOrb");
+                    orb.classList.remove("thinking");
+                    document.getElementById("liveStatusChip").textContent = "LIVE & READY";
+                    const cleanReply = data.text || "";
+                    document.getElementById("captionBox").textContent = cleanReply;
+                    if (cleanReply) callDecisions.push(cleanReply.slice(0, 110));
+                    if (Array.isArray(data.draw_commands) && data.draw_commands.length > 0) {
+                        executeKizaWhiteboardCommands(data.draw_commands);
+                    }
+                    speakLiveResponse(cleanReply, data.audio_base64);
+                } else if (data.type === "error") {
+                    document.getElementById("captionBox").textContent = `⚠️ ${data.message}`;
                 }
-                const s = (1.03 + Math.random() * 0.14).toFixed(3);
-                orb.style.transform = `scale(${s})`;
-            }, 90);
-
-            currentAudio.onended = () => {
-                clearInterval(pulseInterval);
-                onSpeechFinished();
             };
-            currentAudio.onerror = () => {
-                clearInterval(pulseInterval);
-                onSpeechFinished();
+            ws.onclose = (ev) => {
+                document.getElementById("connDot").style.background = "var(--danger)";
+                document.getElementById("liveStatusChip").textContent = ev.code === 1008 ? "AUTH EXPIRED — SIGN IN AGAIN" : "RECONNECTING...";
+                if (ev.code !== 1008) setTimeout(connectLiveSocket, 3000);
             };
-            currentAudio.play().catch(() => {
-                clearInterval(pulseInterval);
-                onSpeechFinished();
-            });
         }
 
-        function sendSpeechToServer(textStr) {
+        function sendLiveSpeechOrText(textStr) {
             const clean = (textStr || "").trim();
             if (!clean || !ws || ws.readyState !== WebSocket.OPEN) return;
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio = null;
-            }
-            if (window.speechSynthesis) window.speechSynthesis.cancel();
-            isKizaSpeaking = false;
-            isWaitingResponse = true;
-
-            callTranscriptLog.push({ role: "USER", text: clean });
-            document.getElementById('liveStateText').innerText = "⚡ KIZA THINKING...";
-            document.getElementById('aiSubtitleBox').innerText = `You: "${clean}"`;
-            const snap = captureCurrentVisionFrame();
+            callTopics.push(clean.slice(0, 90));
+            const frameObj = captureCrispActiveFrame();
+            document.getElementById("captionBox").textContent = `You: ${clean}`;
             ws.send(JSON.stringify({
                 type: "speech",
                 text: clean,
-                image_base64: snap,
-                personality: currentPersona
+                personality,
+                image_base64: frameObj.image_base64,
+                vision_source: frameObj.source
             }));
         }
 
-        function sendTypedMessage() {
-            const inp = document.getElementById('liveTextInput');
+        function sendTypedLiveMessage() {
+            const inp = document.getElementById("liveTextInput");
             const val = inp.value.trim();
             if (!val) return;
             inp.value = "";
-            inp.blur();
-            sendSpeechToServer(val);
+            sendLiveSpeechOrText(val);
         }
-
-        document.getElementById('liveTextInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendTypedMessage();
+        document.getElementById("liveTextInput").addEventListener("keypress", (e) => {
+            if (e.key === "Enter") sendTypedLiveMessage();
         });
 
-        function initLiveSpeechRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                document.getElementById('liveStateText').innerText = "⌨️ TYPE BELOW TO CHAT LIVE";
+        // ==========================================================
+        // 4. SPEECH-TO-TEXT (EN-IN / HI / PA) & ZERO-LAG PLAYBACK
+        // ==========================================================
+        function toggleSpeakerMute() {
+            speakerMuted = !speakerMuted;
+            document.getElementById("muteBtn").textContent = speakerMuted ? "🔇 Muted" : "🔊 Sound";
+            if (speakerMuted) {
+                if (activeAudio) activeAudio.pause();
+                if (window.speechSynthesis) window.speechSynthesis.cancel();
+            }
+        }
+
+        function speakLiveResponse(text, audioBase64) {
+            if (speakerMuted || !text) return;
+            const orb = document.getElementById("liveOrb");
+            if (activeAudio) { activeAudio.pause(); activeAudio = null; }
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
+
+            if (audioBase64) {
+                activeAudio = new Audio("data:audio/mp3;base64," + audioBase64);
+                orb.classList.add("speaking");
+                activeAudio.onended = () => orb.classList.remove("speaking");
+                activeAudio.onerror = () => orb.classList.remove("speaking");
+                activeAudio.play().catch(() => orb.classList.remove("speaking"));
                 return;
             }
-            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-            recognition = new SpeechRecognition();
-            recognition.continuous = !isSafari;
-            recognition.interimResults = true;
-            recognition.lang = 'en-US';
-
-            recognition.onresult = (event) => {
-                if ((!micActive && !pttModeActive) || isWaitingResponse) return;
-                if (pttModeActive && !isHoldingPTT) return;
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const transcript = event.results[i][0].transcript.trim();
-                    if (isKizaSpeaking && transcript.length > 4) {
-                        interruptKiza();
-                    }
-                    if (event.results[i].isFinal && transcript.length > 1) {
-                        sendSpeechToServer(transcript);
-                    }
-                }
-            };
-            recognition.onerror = () => {};
-            recognition.onend = () => {
-                if (micActive && !pttModeActive && !isKizaSpeaking && !isWaitingResponse) {
-                    setTimeout(() => {
-                        if (micActive && !pttModeActive && !isKizaSpeaking && !isWaitingResponse) {
-                            try { recognition.start(); } catch (e) {}
-                        }
-                    }, 220);
-                }
-            };
-            try { recognition.start(); } catch (e) {}
-        }
-
-        function connectLiveWebSocket() {
-            ws = new WebSocket(`${WS_LIVE_URL}?user=${encodeURIComponent(currentUser)}&personality=${encodeURIComponent(currentPersona)}`);
-            ws.onopen = () => {
-                lastPingSentAt = performance.now();
-                ws.send(JSON.stringify({ type: "ping" }));
-            };
-            ws.onmessage = (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    if (data.type === "pong") {
-                        const rtt = Math.round(performance.now() - lastPingSentAt);
-                        const pb = document.getElementById('pingBadge');
-                        if (pb) pb.innerText = `•⚡${rtt}ms`;
-                    } else if (data.type === "state" && data.status === "thinking") {
-                        document.getElementById('liveStateText').innerText = "⚡ KIZA THINKING...";
-                    } else if (data.type === "response") {
-                        if (data.text) {
-                            callTranscriptLog.push({ role: "KIZA", text: data.text });
-                        }
-                        document.getElementById('aiSubtitleBox').innerText = data.text || "";
-                        playLiveAudio(data.audio_base64, data.text);
-                    } else if (data.type === "error") {
-                        isWaitingResponse = false;
-                        document.getElementById('aiSubtitleBox').innerText = `Notice: ${data.message}`;
-                        document.getElementById('liveStateText').innerText = "🎙️ KIZA LISTENING...";
-                    }
-                } catch (e) {}
-            };
-            ws.onclose = () => {
-                setTimeout(connectLiveWebSocket, 2500);
-            };
-        }
-
-        setInterval(() => {
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                lastPingSentAt = performance.now();
-                ws.send(JSON.stringify({ type: "ping" }));
+            if (window.speechSynthesis) {
+                const u = new SpeechSynthesisUtterance(text);
+                const low = text.toLowerCase();
+                if (/[\u0A00-\u0A7F]/.test(text) || /\b(kive|pra|paaji|veere|tusi|vadiya|sat sri akal)\b/i.test(low)) u.lang = "pa-IN";
+                else if (/[\u0900-\u097F]/.test(text) || /\b(kaise|hoon|aap|theek|kya|bhai|bilkul)\b/i.test(low)) u.lang = "hi-IN";
+                else u.lang = "en-IN";
+                u.onstart = () => orb.classList.add("speaking");
+                u.onend = () => orb.classList.remove("speaking");
+                window.speechSynthesis.speak(u);
             }
-        }, 12000);
+        }
 
-        // ==========================================================
-        // 6. AUTO-GENERATE CALL MINUTES & ACTION ITEMS ON HANGUP
-        // ==========================================================
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let rec = null;
+        let pttTranscript = "";
+        const pttBtn = document.getElementById("pttBtn");
+
+        function startPTT(e) {
+            if (e) e.preventDefault();
+            if (!SR) { document.getElementById("captionBox").textContent = "Speech recognition unavailable in this browser—use the text bar below."; return; }
+            if (activeAudio) activeAudio.pause();
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
+            pttTranscript = "";
+            rec = new SR();
+            rec.lang = document.getElementById("speechLangSelect").value || "en-IN";
+            rec.interimResults = true;
+            rec.continuous = true;
+            rec.onresult = (ev) => {
+                let txt = "";
+                for (let i = 0; i < ev.results.length; i++) txt += ev.results[i][0].transcript;
+                pttTranscript = txt.trim();
+                if (pttTranscript) document.getElementById("captionBox").textContent = `🎙️ ${pttTranscript}`;
+            };
+            try { rec.start(); pttBtn.classList.add("listening"); pttBtn.textContent = "🎙️ Listening..."; } catch (err) {}
+        }
+
+        function stopPTT(e) {
+            if (e) e.preventDefault();
+            pttBtn.classList.remove("listening");
+            pttBtn.textContent = "🎙️ Hold to Speak";
+            if (rec) {
+                try { rec.stop(); } catch (err) {}
+                setTimeout(() => {
+                    if (pttTranscript) {
+                        sendLiveSpeechOrText(pttTranscript);
+                        pttTranscript = "";
+                    }
+                }, 260);
+            }
+        }
+
+        pttBtn.addEventListener("mousedown", startPTT);
+        window.addEventListener("mouseup", () => { if (pttBtn.classList.contains("listening")) stopPTT(); });
+        pttBtn.addEventListener("touchstart", startPTT, { passive: false });
+        pttBtn.addEventListener("touchend", stopPTT, { passive: false });
+
         function endLiveCall() {
-            micActive = false;
-            if (recognition) { try { recognition.stop(); } catch (e) {} }
-            if (currentAudio) { currentAudio.pause(); currentAudio = null; }
             if (camStream) camStream.getTracks().forEach(t => t.stop());
             if (screenStream) screenStream.getTracks().forEach(t => t.stop());
-            if (liveMicStream) liveMicStream.getTracks().forEach(t => t.stop());
-            if (ws) { try { ws.onclose = null; ws.close(); } catch (e) {} }
-
-            const userTurns = callTranscriptLog.filter(t => t.role === "USER").map(t => t.text);
-            const kizaTurns = callTranscriptLog.filter(t => t.role === "KIZA").map(t => t.text);
-            if (userTurns.length > 0 || callSeconds > 5) {
-                const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
-                const secs = String(callSeconds % 60).padStart(2, '0');
-                const summaryObj = {
-                    duration: `${mins}:${secs}`,
-                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    topics: userTurns.slice(0, 4),
-                    decisions: kizaTurns.slice(-3)
-                };
-                try {
-                    localStorage.setItem('kiza_last_call_minutes', JSON.stringify(summaryObj));
-                } catch (e) {}
-            }
+            if (ws) try { ws.close(); } catch (e) {}
+            const summary = {
+                duration: document.getElementById("callTimer").textContent,
+                timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
+                topics: callTopics.slice(-6),
+                decisions: callDecisions.slice(-6)
+            };
+            try { localStorage.setItem("kiza_last_call_minutes", JSON.stringify(summary)); } catch (e) {}
             window.location.href = "index.html";
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            initCamera();
-            connectLiveWebSocket();
-            initLiveSpeechRecognition();
-        });
+        // Boot
+        startCameraFeed();
+        connectLiveSocket();
     </script>
 </body>
 </html>
