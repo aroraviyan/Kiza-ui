@@ -6,17 +6,16 @@
     <meta name="theme-color" content="#050a14">
     <title>KIZA Live — Voice, Vision & Shared Whiteboard</title>
     <link rel="icon" type="image/png" href="logo.jpg">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
+    <link rel="preconnect" href="[https://fonts.gstatic.com](https://fonts.gstatic.com)" crossorigin>
+    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap)" rel="stylesheet">
     <style>
         :root {
             --bg-deep: #040814;
-            --glass: rgba(15, 23, 42, 0.72);
-            --glass-border: rgba(56, 189, 248, 0.22);
+            --glass: rgba(15, 23, 42, 0.78);
+            --glass-border: rgba(56, 189, 248, 0.24);
             --accent: #38bdf8;
             --glow: #00f2fe;
-            --indigo: #818cf8;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
@@ -25,7 +24,7 @@
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html, body {
-            margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+            position: fixed; inset: 0; margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
             font-family: 'Inter', -apple-system, sans-serif;
             background: radial-gradient(circle at 20% 15%, rgba(0, 242, 254, 0.12) 0%, transparent 42%),
                         radial-gradient(circle at 80% 85%, rgba(99, 102, 241, 0.16) 0%, transparent 45%),
@@ -35,114 +34,65 @@
 
         .live-shell {
             display: flex; flex-direction: column; width: 100%; height: 100%;
-            padding: env(safe-area-inset-top, 10px) 14px env(safe-area-inset-bottom, 12px) 14px;
-            gap: 10px; position: relative;
+            padding: max(8px, env(safe-area-inset-top, 8px)) 12px max(10px, env(safe-area-inset-bottom, 10px)) 12px;
+            gap: 8px; position: relative; overflow: hidden;
         }
 
-        /* TOP GLASS HUD */
-        .top-hud {
-            display: flex; align-items: center; justify-content: space-between;
-            gap: 8px; flex-wrap: wrap; z-index: 20;
-        }
+        /* TOP HUD */
+        .top-hud { display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; flex-shrink: 0; z-index: 20; }
         .hud-pill {
             display: inline-flex; align-items: center; gap: 7px;
             background: var(--glass); backdrop-filter: blur(14px);
             border: 1px solid var(--glass-border); border-radius: 999px;
-            padding: 6px 13px; font-size: 11.5px; font-weight: 700;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+            padding: 5px 12px; font-size: 11px; font-weight: 700;
         }
-        .live-dot {
-            width: 8px; height: 8px; border-radius: 50%; background: var(--success);
-            box-shadow: 0 0 10px var(--success); animation: pulseDot 1.6s infinite;
-        }
+        .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--warning); box-shadow: 0 0 10px var(--warning); }
+        .live-dot.online { background: var(--success); box-shadow: 0 0 10px var(--success); animation: pulseDot 1.6s infinite; }
         @keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
-
-        .lang-select-pill {
-            background: transparent; border: none; color: var(--accent);
-            font-weight: 800; font-size: 11px; outline: none; cursor: pointer;
-        }
+        .lang-select-pill { background: transparent; border: none; color: var(--accent); font-weight: 800; font-size: 11px; outline: none; cursor: pointer; }
         .lang-select-pill option { background: #0f172a; color: #f8fafc; }
 
         /* MAIN CENTRAL STAGE */
         .stage-area {
             flex: 1 1 0%; min-height: 0; position: relative;
             display: flex; align-items: center; justify-content: center;
-            border-radius: 22px; overflow: hidden;
+            border-radius: 18px; overflow: hidden;
         }
 
         /* ORB AMBIENT STAGE */
-        .orb-stage {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 16px; width: 100%; max-width: 680px; padding: 16px; text-align: center;
-            transition: opacity 0.25s ease;
-        }
-        .orb-stage.compact-mode {
-            display: none;
-        }
-        .orb-ring-outer {
-            position: relative; width: 158px; height: 158px;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .orb-ring-outer::before, .orb-ring-outer::after {
-            content: ""; position: absolute; inset: 0; border-radius: 50%;
-            border: 2px solid rgba(0, 242, 254, 0.35);
-            animation: spinRing 9s linear infinite;
-        }
-        .orb-ring-outer::after {
-            inset: 10px; border-color: rgba(129, 140, 248, 0.45);
-            border-style: dashed; animation-direction: reverse; animation-duration: 14s;
-        }
+        .orb-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; width: 100%; max-width: 680px; padding: 12px; text-align: center; }
+        .orb-stage.compact-mode { display: none; }
+        .orb-ring-outer { position: relative; width: 144px; height: 144px; display: flex; align-items: center; justify-content: center; }
+        .orb-ring-outer::before, .orb-ring-outer::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(0, 242, 254, 0.35); animation: spinRing 9s linear infinite; }
+        .orb-ring-outer::after { inset: 10px; border-color: rgba(129, 140, 248, 0.45); border-style: dashed; animation-direction: reverse; animation-duration: 14s; }
         @keyframes spinRing { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         .orb-core {
-            width: 112px; height: 112px; border-radius: 50%; overflow: hidden;
-            border: 2.5px solid var(--glow);
-            box-shadow: 0 0 36px rgba(0, 242, 254, 0.55), inset 0 0 18px rgba(0, 242, 254, 0.3);
+            width: 102px; height: 102px; border-radius: 50%; overflow: hidden;
+            border: 2.5px solid var(--glow); box-shadow: 0 0 34px rgba(0, 242, 254, 0.55);
             background: #071324; transition: transform 0.14s ease, box-shadow 0.2s ease;
         }
-        .orb-core.speaking {
-            transform: scale(1.09);
-            box-shadow: 0 0 55px rgba(0, 242, 254, 0.9), 0 0 90px rgba(99, 102, 241, 0.5);
-        }
-        .orb-core.thinking {
-            border-color: var(--warning);
-            box-shadow: 0 0 42px rgba(245, 158, 11, 0.7);
-        }
+        .orb-core.speaking { transform: scale(1.09); box-shadow: 0 0 55px rgba(0, 242, 254, 0.9); }
+        .orb-core.thinking { border-color: var(--warning); box-shadow: 0 0 42px rgba(245, 158, 11, 0.75); }
         .orb-core img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .status-chip { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--accent); background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); padding: 5px 14px; border-radius: 999px; }
 
-        .status-chip {
-            font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
-            color: var(--accent); background: rgba(56, 189, 248, 0.12);
-            border: 1px solid rgba(56, 189, 248, 0.35); padding: 5px 14px; border-radius: 999px;
-            letter-spacing: 0.7px;
-        }
-
-        /* DEDICATED SHARED WHITEBOARD PANEL */
+        /* SHARED WHITEBOARD STAGE */
         .whiteboard-stage {
             display: none; flex-direction: column; width: 100%; height: 100%;
-            background: #0b1120; border: 1.5px solid var(--glass-border);
-            border-radius: 20px; overflow: hidden; box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+            background: #0b1120; border: 1.5px solid var(--glass-border); border-radius: 18px; overflow: hidden;
         }
         .whiteboard-stage.active { display: flex; }
-
         .wb-toolbar {
             display: flex; align-items: center; justify-content: space-between;
-            gap: 8px; padding: 8px 12px; background: rgba(15, 23, 42, 0.92);
-            border-bottom: 1px solid rgba(148, 163, 184, 0.2); flex-wrap: wrap;
+            gap: 8px; padding: 7px 11px; background: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2); flex-wrap: wrap; flex-shrink: 0; z-index: 15;
         }
         .wb-tools-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-        .color-dot {
-            width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
-            border: 2px solid transparent; transition: transform 0.12s;
-        }
+        .color-dot { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
         .color-dot.active { border-color: #ffffff; transform: scale(1.15); }
-        .wb-btn {
-            background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(148, 163, 184, 0.28);
-            color: var(--text); font-size: 11px; font-weight: 700; padding: 5px 10px;
-            border-radius: 999px; cursor: pointer;
-        }
+        .wb-btn { background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(148, 163, 184, 0.3); color: var(--text); font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 999px; cursor: pointer; }
         .wb-btn:hover, .wb-btn.active { border-color: var(--accent); color: var(--accent); }
-
         .wb-canvas-wrap {
             flex: 1 1 0%; position: relative; background: #090f1d;
             background-image: radial-gradient(rgba(148, 163, 184, 0.16) 1px, transparent 1px);
@@ -150,124 +100,77 @@
         }
         #sharedWhiteboard { width: 100%; height: 100%; display: block; cursor: crosshair; }
 
-        /* HD SCREEN SHARE STAGE (SEPARATE FROM CAMERA!) */
-        .screen-stage {
-            display: none; flex-direction: column; width: 100%; height: 100%;
-            background: #020617; border: 1.5px solid rgba(16, 185, 129, 0.45);
-            border-radius: 20px; overflow: hidden; position: relative;
-        }
+        /* SCREEN SHARE & PHOTO STAGES */
+        .screen-stage { display: none; flex-direction: column; width: 100%; height: 100%; background: #020617; border: 1.5px solid rgba(16, 185, 129, 0.45); border-radius: 18px; overflow: hidden; position: relative; }
         .screen-stage.active { display: flex; }
         #screenVideo { width: 100%; height: 100%; object-fit: contain; background: #000; }
-        .stage-badge {
-            position: absolute; top: 10px; left: 12px; z-index: 10;
-            background: rgba(2, 6, 23, 0.8); backdrop-filter: blur(8px);
-            border: 1px solid rgba(16, 185, 129, 0.5); color: #34d399;
-            padding: 4px 11px; border-radius: 999px; font-size: 11px; font-weight: 700;
-        }
+        .stage-badge { position: absolute; top: 10px; left: 12px; z-index: 10; background: rgba(2, 6, 23, 0.85); border: 1px solid rgba(16, 185, 129, 0.5); color: #34d399; padding: 4px 11px; border-radius: 999px; font-size: 11px; font-weight: 700; }
 
-        /* UPLOADED PHOTO STAGE (PHONE & DESKTOP) */
-        .photo-stage {
-            display: none; align-items: center; justify-content: center;
-            width: 100%; height: 100%; background: rgba(2, 6, 23, 0.9);
-            border: 1.5px solid var(--glass-border); border-radius: 20px;
-            position: relative; padding: 14px;
-        }
+        .photo-stage { display: none; align-items: center; justify-content: center; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.92); border: 1.5px solid var(--glass-border); border-radius: 18px; position: relative; padding: 14px; }
         .photo-stage.active { display: flex; }
-        #uploadedPhotoPreview {
-            max-width: 100%; max-height: 100%; object-fit: contain;
-            border-radius: 12px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
-        }
+        #uploadedPhotoPreview { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px; }
 
-        /* FLOATING INDEPENDENT CAMERA PiP (ALWAYS ACCESSIBLE EVEN DURING SCREEN SHARE!) */
+        /* DRAGGABLE CAMERA PiP (DEFAULT BOTTOM-RIGHT SO WHITEBOARD TOOLBAR IS 100% CLEAR!) */
         .camera-pip {
-            position: absolute; top: 12px; right: 12px; z-index: 35;
-            width: 175px; height: 124px; border-radius: 16px; overflow: hidden;
-            background: #0f172a; border: 2px solid rgba(56, 189, 248, 0.55);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+            position: absolute; bottom: 12px; right: 12px; z-index: 40;
+            width: 164px; height: 114px; border-radius: 14px; overflow: hidden;
+            background: #0f172a; border: 2px solid rgba(56, 189, 248, 0.65);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65);
             display: flex; align-items: center; justify-content: center;
+            cursor: grab; touch-action: none; user-select: none;
         }
-        .camera-pip video { width: 100%; height: 100%; object-fit: cover; display: none; }
-        .cam-pip-label {
-            position: absolute; bottom: 5px; left: 7px; font-size: 9.5px; font-weight: 800;
-            background: rgba(2, 6, 23, 0.72); color: var(--accent); padding: 2px 7px; border-radius: 99px;
-        }
-        .cam-pip-flip {
-            position: absolute; top: 5px; right: 5px; width: 24px; height: 24px;
-            border-radius: 50%; border: none; background: rgba(2, 6, 23, 0.72);
-            color: #fff; font-size: 11px; cursor: pointer;
-        }
+        .camera-pip.dragging { cursor: grabbing; border-color: var(--glow); box-shadow: 0 0 24px rgba(0, 242, 254, 0.6); }
+        .camera-pip video { width: 100%; height: 100%; object-fit: cover; display: none; pointer-events: none; }
+        .cam-pip-label { position: absolute; bottom: 5px; left: 6px; font-size: 9px; font-weight: 800; background: rgba(2, 6, 23, 0.78); color: var(--accent); padding: 2px 7px; border-radius: 99px; pointer-events: none; }
+        .cam-pip-flip { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; border-radius: 50%; border: none; background: rgba(2, 6, 23, 0.8); color: #fff; font-size: 11px; cursor: pointer; z-index: 5; }
 
-        /* LIVE CAPTION BAR */
+        /* COMPACT LIVE CAPTION BAR */
         .caption-card {
-            width: 100%; max-width: 760px; margin: 0 auto;
+            width: 100%; max-width: 820px; margin: 0 auto; flex-shrink: 0;
             background: var(--glass); backdrop-filter: blur(14px);
-            border: 1px solid var(--glass-border); border-radius: 16px;
-            padding: 10px 16px; text-align: center; font-size: 13.5px;
-            line-height: 1.48; min-height: 44px; max-height: 105px; overflow-y: auto;
-            box-shadow: 0 8px 26px rgba(0,0,0,0.4);
+            border: 1px solid var(--glass-border); border-radius: 14px;
+            padding: 8px 14px; text-align: center; font-size: 13px;
+            line-height: 1.45; min-height: 38px; max-height: 82px; overflow-y: auto;
         }
 
-        /* BOTTOM CONTROLS DOCK */
+        /* COMPACT NON-CLIPPING BOTTOM DOCK */
         .bottom-dock {
-            display: flex; flex-direction: column; align-items: center; gap: 9px;
-            width: 100%; max-width: 760px; margin: 0 auto; z-index: 25;
+            display: flex; flex-direction: column; align-items: center; gap: 7px;
+            width: 100%; max-width: 820px; margin: 0 auto; flex-shrink: 0; z-index: 25;
         }
         .text-bar {
             display: flex; gap: 7px; width: 100%;
             background: var(--glass); border: 1px solid var(--glass-border);
-            padding: 5px 7px 5px 14px; border-radius: 999px;
+            padding: 4px 6px 4px 13px; border-radius: 999px;
         }
-        .text-bar input {
-            flex: 1; background: transparent; border: none; outline: none;
-            color: var(--text); font-size: 13.5px; font-family: inherit;
-        }
-        .send-pill {
-            background: linear-gradient(135deg, #00f2fe 0%, #0284c7 100%);
-            color: #041020; border: none; padding: 7px 16px; border-radius: 999px;
-            font-weight: 800; font-size: 12px; cursor: pointer;
-        }
+        .text-bar input { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-size: 13px; font-family: inherit; }
+        .send-pill { background: linear-gradient(135deg, #00f2fe 0%, #0284c7 100%); color: #041020; border: none; padding: 6px 15px; border-radius: 999px; font-weight: 800; font-size: 12px; cursor: pointer; }
 
         .controls-row {
             display: flex; align-items: center; justify-content: center;
-            gap: 8px; flex-wrap: wrap;
+            gap: 6px; width: 100%; overflow-x: auto; scrollbar-width: none; padding: 2px 0;
         }
+        .controls-row::-webkit-scrollbar { display: none; }
         .ctrl-btn {
-            height: 44px; padding: 0 14px; border-radius: 999px;
-            background: var(--glass); backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border); color: var(--text);
-            font-size: 12px; font-weight: 700; cursor: pointer;
-            display: inline-flex; align-items: center; gap: 6px;
-            transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
+            height: 38px; padding: 0 12px; border-radius: 999px; flex-shrink: 0;
+            background: var(--glass); border: 1px solid var(--glass-border); color: var(--text);
+            font-size: 11.5px; font-weight: 700; cursor: pointer; white-space: nowrap;
+            display: inline-flex; align-items: center; gap: 5px;
         }
-        .ctrl-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
-        .ctrl-btn.active {
-            background: rgba(56, 189, 248, 0.22); border-color: var(--glow); color: var(--glow);
-        }
-        .ctrl-btn.ptt-btn {
-            background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
-            border: none; color: #0f172a; font-weight: 800; padding: 0 20px;
-            user-select: none;
-        }
-        .ctrl-btn.ptt-btn.listening {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: #ffffff; box-shadow: 0 0 24px rgba(16, 185, 129, 0.65);
-        }
-        .ctrl-btn.end-btn {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            border: none; color: #ffffff; padding: 0 18px;
-        }
+        .ctrl-btn:hover { border-color: var(--accent); }
+        .ctrl-btn.active { background: rgba(56, 189, 248, 0.22); border-color: var(--glow); color: var(--glow); }
+        .ctrl-btn.ptt-btn { background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); border: none; color: #0f172a; font-weight: 800; padding: 0 16px; user-select: none; }
+        .ctrl-btn.ptt-btn.listening { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; }
+        .ctrl-btn.end-btn { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border: none; color: #ffffff; padding: 0 15px; }
 
         @media (max-width: 640px) {
-            .camera-pip { width: 116px; height: 84px; top: 8px; right: 8px; }
-            .ctrl-btn { height: 40px; padding: 0 11px; font-size: 11px; }
-            .orb-ring-outer { width: 124px; height: 124px; }
-            .orb-core { width: 88px; height: 88px; }
+            .camera-pip { width: 116px; height: 84px; }
+            .controls-row { justify-content: flex-start; }
         }
     </style>
 </head>
 <body>
     <div class="live-shell">
-        <!-- TOP HUD -->
         <div class="top-hud">
             <div class="hud-pill">
                 <span class="live-dot" id="connDot"></span>
@@ -277,42 +180,38 @@
                 <span style="color:var(--muted);">•</span>
                 <span id="callTimer" style="font-family:'JetBrains Mono', monospace; color:var(--accent);">00:00</span>
             </div>
-
             <div class="hud-pill">
                 <span id="activeVisionBadge" style="color:var(--success);">👁️ Camera Ready</span>
                 <span style="color:var(--muted);">|</span>
-                <select id="speechLangSelect" class="lang-select-pill" title="Speech Input Language">
+                <select id="speechLangSelect" class="lang-select-pill" title="Voice Input Language">
                     <option value="en-IN" selected>🇮🇳 EN / HI / PA</option>
                     <option value="hi-IN">🇮🇳 Hindi</option>
                     <option value="pa-IN">🇮🇳 Punjabi</option>
                     <option value="en-US">🇺🇸 English</option>
                 </select>
                 <span style="color:var(--muted);">|</span>
-                <span id="livePing" style="font-family:'JetBrains Mono', monospace; color:var(--success);">--ms</span>
+                <span id="livePing" style="font-family:'JetBrains Mono', monospace; color:var(--warning);">Connecting...</span>
             </div>
         </div>
 
-        <!-- MAIN STAGE (ORB / WHITEBOARD / HD SCREEN SHARE / UPLOADED PHOTO) -->
-        <div class="stage-area">
-            <!-- INDEPENDENT LIVE CAMERA PiP (STAYS LIVE EVEN DURING SCREEN SHARE & WHITEBOARD) -->
-            <div class="camera-pip" id="cameraPipBox">
+        <div class="stage-area" id="stageContainer">
+            <!-- DRAGGABLE INDEPENDENT CAMERA PiP -->
+            <div class="camera-pip" id="cameraPipBox" title="Drag anywhere to move">
                 <video id="camVideo" autoplay playsinline muted></video>
-                <span id="camOfflineText" style="font-size:10.5px; color:var(--muted);">📷 Cam Off</span>
-                <span class="cam-pip-label">CAM LIVE</span>
-                <button type="button" class="cam-pip-flip" onclick="flipCamera()" title="Switch Front/Back Camera">🔄</button>
+                <span id="camOfflineText" style="font-size:10px; color:var(--muted); pointer-events:none;">📷 Cam Off</span>
+                <span class="cam-pip-label">⠿ CAM LIVE</span>
+                <button type="button" class="cam-pip-flip" id="camFlipBtn" title="Flip Camera">🔄</button>
             </div>
 
-            <!-- 1. DEFAULT ORB VIEW -->
             <div class="orb-stage" id="orbStage">
                 <div class="orb-ring-outer">
                     <div class="orb-core" id="liveOrb">
-                        <img src="logo.jpg" alt="KIZA" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%224%22/><text x=%2260%22 y=%2270%22 font-family=%22Arial%22 font-weight=%22900%22 font-size=%2226%22 text-anchor=%22middle%22 fill=%22%2300f2fe%22>KIZA</text></svg>';">
+                        <img src="logo.jpg" alt="KIZA" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22[http://www.w3.org/2000/svg%22](http://www.w3.org/2000/svg%22) viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%224%22/><text x=%2260%22 y=%2270%22 font-family=%22Arial%22 font-weight=%22900%22 font-size=%2226%22 text-anchor=%22middle%22 fill=%22%2300f2fe%22>KIZA</text></svg>';">
                     </div>
                 </div>
                 <div class="status-chip" id="liveStatusChip">CONNECTING TO KIZA BRAIN...</div>
             </div>
 
-            <!-- 2. SEPARATE SHARED WHITEBOARD (USER + KIZA BOTH DRAW HERE!) -->
             <div class="whiteboard-stage" id="whiteboardStage">
                 <div class="wb-toolbar">
                     <div class="wb-tools-group">
@@ -322,7 +221,7 @@
                         <div class="color-dot" style="background:#f87171;" onclick="setWbColor('#f87171', this)"></div>
                         <div class="color-dot" style="background:#34d399;" onclick="setWbColor('#34d399', this)"></div>
                         <div class="color-dot" style="background:#ffffff;" onclick="setWbColor('#ffffff', this)"></div>
-                        <input type="range" id="wbSizeSlider" min="2" max="14" value="4" style="width:68px;">
+                        <input type="range" id="wbSizeSlider" min="2" max="14" value="4" style="width:64px;">
                     </div>
                     <div class="wb-tools-group">
                         <button type="button" class="wb-btn" id="wbEraserBtn" onclick="toggleWbEraser()">🧹 Eraser</button>
@@ -337,39 +236,32 @@
                 </div>
             </div>
 
-            <!-- 3. DEDICATED HD SCREEN SHARE STAGE -->
             <div class="screen-stage" id="screenStage">
-                <span class="stage-badge">🖥️ HD SCREEN SHARE ACTIVE • CAM STILL LIVE</span>
+                <span class="stage-badge">🖥️ HD SCREEN SHARE • CAM STILL LIVE</span>
                 <video id="screenVideo" autoplay playsinline muted></video>
             </div>
 
-            <!-- 4. CRISP PHOTO UPLOAD STAGE (GREAT FOR PHONE USERS) -->
             <div class="photo-stage" id="photoStage">
                 <span class="stage-badge" style="color:var(--accent); border-color:var(--accent);">📸 HD PHOTO ATTACHED</span>
-                <button type="button" class="wb-btn" style="position:absolute; top:10px; right:196px; z-index:12; border-color:var(--danger); color:var(--danger);" onclick="clearUploadedPhoto()">✕ Remove Photo</button>
+                <button type="button" class="wb-btn" style="position:absolute; top:10px; right:12px; z-index:12; border-color:var(--danger); color:var(--danger);" onclick="clearUploadedPhoto()">✕ Remove</button>
                 <img id="uploadedPhotoPreview" alt="Uploaded Photo">
             </div>
         </div>
 
-        <!-- LIVE CAPTION / TRANSCRIPT BOX -->
-        <div class="caption-card" id="captionBox">
-            Connecting securely to KIZA Live...
-        </div>
+        <div class="caption-card" id="captionBox">Connecting securely to KIZA Live...</div>
 
-        <!-- BOTTOM CONTROLS DOCK -->
         <div class="bottom-dock">
             <div class="text-bar">
-                <input type="text" id="liveTextInput" placeholder="Ask KIZA anything or say 'Draw a solar system on the whiteboard'..." autocomplete="off">
+                <input type="text" id="liveTextInput" placeholder="Ask KIZA anything or say 'Draw a right triangle and explain'..." autocomplete="off">
                 <button type="button" class="send-pill" onclick="sendTypedLiveMessage()">Send</button>
             </div>
-
             <div class="controls-row">
                 <input type="file" id="livePhotoInput" accept="image/*" style="display:none;" onchange="handleLivePhotoUpload(event)">
                 <button type="button" class="ctrl-btn ptt-btn" id="pttBtn">🎙️ Hold to Speak</button>
                 <button type="button" class="ctrl-btn" id="camBtn" onclick="toggleCameraFeed()">📷 Cam: On</button>
                 <button type="button" class="ctrl-btn" id="wbToggleBtn" onclick="toggleWhiteboardMode()">🎨 Whiteboard</button>
-                <button type="button" class="ctrl-btn" id="screenBtn" onclick="toggleScreenShare()">🖥️ Share Screen</button>
-                <button type="button" class="ctrl-btn" onclick="document.getElementById('livePhotoInput').click()" title="Click or Upload Crisp Photo">📸 Photo</button>
+                <button type="button" class="ctrl-btn" id="screenBtn" onclick="toggleScreenShare()">🖥️ Screen</button>
+                <button type="button" class="ctrl-btn" onclick="document.getElementById('livePhotoInput').click()">📸 Photo</button>
                 <button type="button" class="ctrl-btn" id="muteBtn" onclick="toggleSpeakerMute()">🔊 Sound</button>
                 <button type="button" class="ctrl-btn end-btn" onclick="endLiveCall()">📞 End</button>
             </div>
@@ -379,7 +271,8 @@
     <canvas id="captureCanvas" style="display:none;"></canvas>
 
     <script>
-        const WS_LIVE_URL = "wss://kiza-brain.onrender.com/api/live/call";
+        const SERVER_HTTP = "[https://kiza-brain.onrender.com](https://kiza-brain.onrender.com)";
+        const WS_LIVE_URL = "wss://[kiza-brain.onrender.com/api/live/call](https://kiza-brain.onrender.com/api/live/call)";
         const params = new URLSearchParams(window.location.search);
         const userName = params.get("user") || localStorage.getItem("kiza_user") || "Guest";
         const persona = params.get("persona") || "normal";
@@ -387,35 +280,67 @@
 
         document.getElementById("liveUserLabel").textContent = userName.toUpperCase();
 
-        // Call minutes state
+        // Pre-warm Render before opening WebSocket
+        fetch(`${SERVER_HTTP}/health`).catch(() => {});
+
         const callStartTs = Date.now();
-        const callTopics = [];
-        const callDecisions = [];
+        const callTopics = [], callDecisions = [];
+        let camStream = null, screenStream = null, camEnabled = true, facingMode = "user";
+        let uploadedPhotoDataUrl = null, currentStageMode = "orb", speakerMuted = false, activeAudio = null;
+        let ws = null, wsReady = false, pingStart = 0, pingInterval = null, replyTimeout = null;
 
-        // Media streams (completely independent!)
-        let camStream = null;
-        let screenStream = null;
-        let camEnabled = true;
-        let facingMode = "user";
-        let uploadedPhotoDataUrl = null;
-        let currentStageMode = "orb"; // 'orb' | 'whiteboard' | 'screen' | 'photo'
-        let speakerMuted = false;
-        let activeAudio = null;
-
-        // WebSocket
-        let ws = null;
-        let pingStart = 0;
-
-        // Timer
         setInterval(() => {
             const sec = Math.floor((Date.now() - callStartTs) / 1000);
-            const m = String(Math.floor(sec / 60)).padStart(2, "0");
-            const s = String(sec % 60).padStart(2, "0");
-            document.getElementById("callTimer").textContent = `${m}:${s}`;
+            document.getElementById("callTimer").textContent = `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
         }, 1000);
 
         // ==========================================================
-        // 1. STAGE & DUAL VIDEO FEED CONTROLLER
+        // 1. FREELY DRAGGABLE CAMERA PiP (POINTER EVENTS: MOUSE + TOUCH)
+        // ==========================================================
+        (function initDraggableCameraPip() {
+            const pip = document.getElementById("cameraPipBox");
+            const stage = document.getElementById("stageContainer");
+            const flipBtn = document.getElementById("camFlipBtn");
+            let dragging = false, offsetX = 0, offsetY = 0;
+
+            flipBtn.addEventListener("pointerdown", (e) => e.stopPropagation());
+            flipBtn.addEventListener("click", (e) => { e.stopPropagation(); flipCamera(); });
+
+            pip.addEventListener("pointerdown", (e) => {
+                if (e.target === flipBtn) return;
+                dragging = true;
+                pip.classList.add("dragging");
+                pip.setPointerCapture(e.pointerId);
+                const pr = pip.getBoundingClientRect();
+                offsetX = e.clientX - pr.left;
+                offsetY = e.clientY - pr.top;
+            });
+
+            pip.addEventListener("pointermove", (e) => {
+                if (!dragging) return;
+                const sr = stage.getBoundingClientRect();
+                const maxL = Math.max(0, sr.width - pip.offsetWidth - 8);
+                const maxT = Math.max(0, sr.height - pip.offsetHeight - 8);
+                const newLeft = Math.min(maxL, Math.max(8, e.clientX - sr.left - offsetX));
+                const newTop = Math.min(maxT, Math.max(8, e.clientY - sr.top - offsetY));
+                pip.style.right = "auto";
+                pip.style.bottom = "auto";
+                pip.style.left = `${newLeft}px`;
+                pip.style.top = `${newTop}px`;
+            });
+
+            const endDrag = (e) => {
+                if (!dragging) return;
+                dragging = false;
+                pip.classList.remove("dragging");
+                try { pip.releasePointerCapture(e.pointerId); } catch (err) {}
+            };
+            pip.addEventListener("pointerup", endDrag);
+            pip.addEventListener("pointercancel", endDrag);
+        })();
+
+        // ==========================================================
+        // 2. DUAL CAMERA + SCREEN SHARE + PHOTO + COMPACT HD CAPTURE
         // ==========================================================
         function setStageMode(mode) {
             currentStageMode = mode;
@@ -425,391 +350,263 @@
             document.getElementById("photoStage").classList.toggle("active", mode === "photo");
             document.getElementById("wbToggleBtn").classList.toggle("active", mode === "whiteboard");
             document.getElementById("screenBtn").classList.toggle("active", Boolean(screenStream));
-
-            if (mode === "whiteboard") {
-                requestAnimationFrame(resizeWhiteboardCanvas);
-            }
+            if (mode === "whiteboard") requestAnimationFrame(resizeWhiteboardCanvas);
             updateVisionBadge();
         }
 
         function updateVisionBadge() {
-            const badge = document.getElementById("activeVisionBadge");
-            if (currentStageMode === "photo" && uploadedPhotoDataUrl) {
-                badge.textContent = "📸 HD Photo Active";
-            } else if (currentStageMode === "whiteboard") {
-                badge.textContent = "🎨 Shared Whiteboard Active";
-            } else if (screenStream && currentStageMode === "screen") {
-                badge.textContent = camEnabled ? "🖥️ HD Screen + 📷 Cam Live" : "🖥️ HD Screen Share";
-            } else if (camEnabled) {
-                badge.textContent = "📷 Camera Vision Live";
-            } else {
-                badge.textContent = "🎙️ Audio Only";
-            }
+            const b = document.getElementById("activeVisionBadge");
+            if (currentStageMode === "photo" && uploadedPhotoDataUrl) b.textContent = "📸 HD Photo Active";
+            else if (currentStageMode === "whiteboard") b.textContent = "🎨 Shared Whiteboard";
+            else if (screenStream && currentStageMode === "screen") b.textContent = camEnabled ? "🖥️ Screen + 📷 Cam" : "🖥️ HD Screen";
+            else b.textContent = camEnabled ? "📷 Camera Live" : "🎙️ Audio Only";
         }
 
         async function startCameraFeed() {
             try {
                 if (camStream) camStream.getTracks().forEach(t => t.stop());
-                camStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
-                    audio: false
-                });
-                const v = document.getElementById("camVideo");
-                v.srcObject = camStream;
-                v.style.display = "block";
+                camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+                const v = document.getElementById("camVideo"); v.srcObject = camStream; v.style.display = "block";
                 document.getElementById("camOfflineText").style.display = "none";
-                camEnabled = true;
-                document.getElementById("camBtn").textContent = "📷 Cam: On";
-                document.getElementById("camBtn").classList.add("active");
+                camEnabled = true; document.getElementById("camBtn").textContent = "📷 Cam: On"; document.getElementById("camBtn").classList.add("active");
                 updateVisionBadge();
             } catch (e) {
-                camEnabled = false;
-                document.getElementById("camOfflineText").style.display = "block";
-                document.getElementById("camBtn").textContent = "📷 Cam: Off";
-                document.getElementById("camBtn").classList.remove("active");
+                camEnabled = false; document.getElementById("camOfflineText").style.display = "block";
+                document.getElementById("camBtn").textContent = "📷 Cam: Off"; document.getElementById("camBtn").classList.remove("active");
                 updateVisionBadge();
             }
         }
 
         function toggleCameraFeed() {
             if (camEnabled && camStream) {
-                camStream.getTracks().forEach(t => t.stop());
-                camStream = null;
-                camEnabled = false;
-                document.getElementById("camVideo").style.display = "none";
-                document.getElementById("camOfflineText").style.display = "block";
-                document.getElementById("camBtn").textContent = "📷 Cam: Off";
-                document.getElementById("camBtn").classList.remove("active");
+                camStream.getTracks().forEach(t => t.stop()); camStream = null; camEnabled = false;
+                document.getElementById("camVideo").style.display = "none"; document.getElementById("camOfflineText").style.display = "block";
+                document.getElementById("camBtn").textContent = "📷 Cam: Off"; document.getElementById("camBtn").classList.remove("active");
                 updateVisionBadge();
-            } else {
-                startCameraFeed();
-            }
+            } else startCameraFeed();
         }
+        function flipCamera() { facingMode = (facingMode === "user") ? "environment" : "user"; startCameraFeed(); }
 
-        function flipCamera() {
-            facingMode = (facingMode === "user") ? "environment" : "user";
-            startCameraFeed();
-        }
-
-        // Independent Screen Share (NEVER touches camStream!)
         async function toggleScreenShare() {
             if (screenStream) {
-                screenStream.getTracks().forEach(t => t.stop());
-                screenStream = null;
+                screenStream.getTracks().forEach(t => t.stop()); screenStream = null;
                 document.getElementById("screenVideo").srcObject = null;
-                document.getElementById("screenBtn").textContent = "🖥️ Share Screen";
-                document.getElementById("screenBtn").classList.remove("active");
+                document.getElementById("screenBtn").textContent = "🖥️ Screen";
                 if (currentStageMode === "screen") setStageMode("orb");
                 updateVisionBadge();
                 return;
             }
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-                document.getElementById("captionBox").textContent = "Screen sharing isn't supported on this mobile browser—tap 📸 Photo to snap or upload any screenshot in HD!";
+            if (!navigator.mediaDevices?.getDisplayMedia) {
+                document.getElementById("captionBox").textContent = "Screen share isn't available on this mobile browser—tap 📸 Photo to snap or upload any screenshot!";
                 return;
             }
             try {
-                screenStream = await navigator.mediaDevices.getDisplayMedia({
-                    video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 15 } },
-                    audio: false
-                });
-                const sv = document.getElementById("screenVideo");
-                sv.srcObject = screenStream;
+                screenStream = await navigator.mediaDevices.getDisplayMedia({ video: { width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+                document.getElementById("screenVideo").srcObject = screenStream;
                 screenStream.getVideoTracks()[0].onended = () => {
-                    screenStream = null;
-                    document.getElementById("screenBtn").textContent = "🖥️ Share Screen";
-                    document.getElementById("screenBtn").classList.remove("active");
+                    screenStream = null; document.getElementById("screenBtn").textContent = "🖥️ Screen";
                     if (currentStageMode === "screen") setStageMode("orb");
                     updateVisionBadge();
                 };
-                document.getElementById("screenBtn").textContent = "🛑 Stop Share";
+                document.getElementById("screenBtn").textContent = "🛑 Stop";
                 setStageMode("screen");
             } catch (e) {}
         }
 
-        // Phone & Desktop Crisp HD Photo Upload
         function handleLivePhotoUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+            const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 const img = new Image();
                 img.onload = () => {
-                    const maxW = 1280;
+                    const maxW = 960;
                     let w = img.naturalWidth, h = img.naturalHeight;
                     if (w > maxW) { h = Math.round(h * (maxW / w)); w = maxW; }
                     const c = document.getElementById("captureCanvas");
-                    c.width = w; c.height = h;
-                    c.getContext("2d").drawImage(img, 0, 0, w, h);
-                    uploadedPhotoDataUrl = c.toDataURL("image/jpeg", 0.92);
+                    c.width = w; c.height = h; c.getContext("2d").drawImage(img, 0, 0, w, h);
+                    uploadedPhotoDataUrl = c.toDataURL("image/jpeg", 0.85);
                     document.getElementById("uploadedPhotoPreview").src = uploadedPhotoDataUrl;
                     setStageMode("photo");
-                    document.getElementById("captionBox").textContent = "📸 HD Photo loaded! Ask KIZA anything about this photo or type below.";
+                    document.getElementById("captionBox").textContent = "📸 HD Photo ready! Ask KIZA anything about it.";
                 };
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
             event.target.value = "";
         }
+        function clearUploadedPhoto() { uploadedPhotoDataUrl = null; setStageMode(screenStream ? "screen" : "orb"); }
 
-        function clearUploadedPhoto() {
-            uploadedPhotoDataUrl = null;
-            setStageMode(screenStream ? "screen" : "orb");
-        }
-
-        // Crisp HD Frame Grabber (Fixes "Screen is blurry" forever!)
+        // Compact Crisp JPEG (< 200KB) so FastAPI/Uvicorn WebSockets NEVER drop the frame!
         function captureCrispActiveFrame() {
-            const c = document.getElementById("captureCanvas");
-            const ctx = c.getContext("2d");
-
+            const c = document.getElementById("captureCanvas"), ctx = c.getContext("2d");
             if (currentStageMode === "photo" && uploadedPhotoDataUrl) {
                 return { image_base64: uploadedPhotoDataUrl, source: "photo" };
             }
             if (currentStageMode === "whiteboard") {
                 const wb = document.getElementById("sharedWhiteboard");
-                c.width = wb.width; c.height = wb.height;
+                const maxW = 960, scale = Math.min(1, maxW / (wb.width || 960));
+                c.width = Math.max(320, Math.round(wb.width * scale));
+                c.height = Math.max(240, Math.round(wb.height * scale));
                 ctx.fillStyle = "#090f1d";
                 ctx.fillRect(0, 0, c.width, c.height);
-                ctx.drawImage(wb, 0, 0);
-                return { image_base64: c.toDataURL("image/png"), source: "whiteboard" };
+                ctx.drawImage(wb, 0, 0, c.width, c.height);
+                return { image_base64: c.toDataURL("image/jpeg", 0.82), source: "whiteboard" };
             }
             if (screenStream && (currentStageMode === "screen" || !camEnabled)) {
                 const sv = document.getElementById("screenVideo");
                 if (sv.videoWidth > 0) {
-                    const maxW = 1280;
-                    const scale = Math.min(1, maxW / sv.videoWidth);
-                    c.width = Math.round(sv.videoWidth * scale);
-                    c.height = Math.round(sv.videoHeight * scale);
+                    const maxW = 1024, scale = Math.min(1, maxW / sv.videoWidth);
+                    c.width = Math.round(sv.videoWidth * scale); c.height = Math.round(sv.videoHeight * scale);
                     ctx.drawImage(sv, 0, 0, c.width, c.height);
-                    return { image_base64: c.toDataURL("image/jpeg", 0.90), source: "screen" };
+                    return { image_base64: c.toDataURL("image/jpeg", 0.82), source: "screen" };
                 }
             }
             if (camEnabled && camStream) {
                 const cv = document.getElementById("camVideo");
                 if (cv.videoWidth > 0) {
-                    const maxW = 960;
-                    const scale = Math.min(1, maxW / cv.videoWidth);
-                    c.width = Math.round(cv.videoWidth * scale);
-                    c.height = Math.round(cv.videoHeight * scale);
+                    const maxW = 800, scale = Math.min(1, maxW / cv.videoWidth);
+                    c.width = Math.round(cv.videoWidth * scale); c.height = Math.round(cv.videoHeight * scale);
                     ctx.drawImage(cv, 0, 0, c.width, c.height);
-                    return { image_base64: c.toDataURL("image/jpeg", 0.86), source: "camera" };
+                    return { image_base64: c.toDataURL("image/jpeg", 0.80), source: "camera" };
                 }
             }
             return { image_base64: null, source: "none" };
         }
 
         // ==========================================================
-        // 2. DEDICATED SHARED WHITEBOARD (USER + KIZA AI DRAWING)
+        // 3. SHARED WHITEBOARD (USER + KIZA AI ANIMATED DRAWING)
         // ==========================================================
-        const wbCanvas = document.getElementById("sharedWhiteboard");
-        const wbCtx = wbCanvas.getContext("2d");
-        let wbDrawing = false;
-        let wbColor = "#38bdf8";
-        let wbEraser = false;
-        let wbHistory = [];
+        const wbCanvas = document.getElementById("sharedWhiteboard"), wbCtx = wbCanvas.getContext("2d");
+        let wbDrawing = false, wbColor = "#38bdf8", wbEraser = false, wbHistory = [];
 
-        function toggleWhiteboardMode() {
-            setStageMode(currentStageMode === "whiteboard" ? (screenStream ? "screen" : "orb") : "whiteboard");
-        }
-
+        function toggleWhiteboardMode() { setStageMode(currentStageMode === "whiteboard" ? (screenStream ? "screen" : "orb") : "whiteboard"); }
         function resizeWhiteboardCanvas() {
             const wrap = document.getElementById("wbCanvasWrap");
             if (!wrap || wrap.clientWidth === 0) return;
             const prev = wbCanvas.width > 0 ? wbCanvas.toDataURL() : null;
-            wbCanvas.width = wrap.clientWidth;
-            wbCanvas.height = wrap.clientHeight;
-            if (prev) {
-                const img = new Image();
-                img.onload = () => wbCtx.drawImage(img, 0, 0, wbCanvas.width, wbCanvas.height);
-                img.src = prev;
-            }
+            wbCanvas.width = wrap.clientWidth; wbCanvas.height = wrap.clientHeight;
+            if (prev) { const img = new Image(); img.onload = () => wbCtx.drawImage(img, 0, 0, wbCanvas.width, wbCanvas.height); img.src = prev; }
         }
         window.addEventListener("resize", () => { if (currentStageMode === "whiteboard") resizeWhiteboardCanvas(); });
 
-        function setWbColor(hex, el) {
-            wbColor = hex; wbEraser = false;
-            document.getElementById("wbEraserBtn").classList.remove("active");
-            document.querySelectorAll(".color-dot").forEach(d => d.classList.remove("active"));
-            if (el) el.classList.add("active");
-        }
+        function setWbColor(hex, el) { wbColor = hex; wbEraser = false; document.getElementById("wbEraserBtn").classList.remove("active"); document.querySelectorAll(".color-dot").forEach(d => d.classList.remove("active")); if (el) el.classList.add("active"); }
+        function toggleWbEraser() { wbEraser = !wbEraser; document.getElementById("wbEraserBtn").classList.toggle("active", wbEraser); }
+        function saveWbSnapshot() { if (wbCanvas.width > 0) { wbHistory.push(wbCanvas.toDataURL()); if (wbHistory.length > 20) wbHistory.shift(); } }
+        function undoWbStroke() { if (!wbHistory.length) return; const last = wbHistory.pop(); const img = new Image(); img.onload = () => { wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height); wbCtx.drawImage(img, 0, 0, wbCanvas.width, wbCanvas.height); }; img.src = last; }
+        function clearWhiteboard() { saveWbSnapshot(); wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height); }
 
-        function toggleWbEraser() {
-            wbEraser = !wbEraser;
-            document.getElementById("wbEraserBtn").classList.toggle("active", wbEraser);
-        }
-
-        function saveWbSnapshot() {
-            if (wbCanvas.width > 0) {
-                wbHistory.push(wbCanvas.toDataURL());
-                if (wbHistory.length > 20) wbHistory.shift();
-            }
-        }
-
-        function undoWbStroke() {
-            if (!wbHistory.length) return;
-            const last = wbHistory.pop();
-            const img = new Image();
-            img.onload = () => {
-                wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
-                wbCtx.drawImage(img, 0, 0, wbCanvas.width, wbCanvas.height);
-            };
-            img.src = last;
-        }
-
-        function clearWhiteboard() {
-            saveWbSnapshot();
-            wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
-        }
-
-        function getWbPos(e) {
-            const r = wbCanvas.getBoundingClientRect();
-            const pt = e.touches ? e.touches[0] : e;
-            return { x: pt.clientX - r.left, y: pt.clientY - r.top };
-        }
-
-        function wbStart(e) {
-            e.preventDefault();
-            saveWbSnapshot();
-            wbDrawing = true;
-            const p = getWbPos(e);
-            wbCtx.beginPath();
-            wbCtx.moveTo(p.x, p.y);
-        }
-        function wbMove(e) {
-            if (!wbDrawing) return;
-            e.preventDefault();
-            const p = getWbPos(e);
-            wbCtx.lineCap = "round"; wbCtx.lineJoin = "round";
-            wbCtx.lineWidth = wbEraser ? 20 : Number(document.getElementById("wbSizeSlider").value || 4);
-            wbCtx.strokeStyle = wbEraser ? "#090f1d" : wbColor;
-            wbCtx.lineTo(p.x, p.y);
-            wbCtx.stroke();
-        }
+        function getWbPos(e) { const r = wbCanvas.getBoundingClientRect(); const pt = e.touches ? e.touches[0] : e; return { x: pt.clientX - r.left, y: pt.clientY - r.top }; }
+        function wbStart(e) { e.preventDefault(); saveWbSnapshot(); wbDrawing = true; const p = getWbPos(e); wbCtx.beginPath(); wbCtx.moveTo(p.x, p.y); }
+        function wbMove(e) { if (!wbDrawing) return; e.preventDefault(); const p = getWbPos(e); wbCtx.lineCap = "round"; wbCtx.lineJoin = "round"; wbCtx.lineWidth = wbEraser ? 22 : Number(document.getElementById("wbSizeSlider").value || 4); wbCtx.strokeStyle = wbEraser ? "#090f1d" : wbColor; wbCtx.lineTo(p.x, p.y); wbCtx.stroke(); }
         function wbEnd() { wbDrawing = false; }
 
-        wbCanvas.addEventListener("mousedown", wbStart);
-        wbCanvas.addEventListener("mousemove", wbMove);
-        window.addEventListener("mouseup", wbEnd);
-        wbCanvas.addEventListener("touchstart", wbStart, { passive: false });
-        wbCanvas.addEventListener("touchmove", wbMove, { passive: false });
-        window.addEventListener("touchend", wbEnd);
+        wbCanvas.addEventListener("mousedown", wbStart); wbCanvas.addEventListener("mousemove", wbMove); window.addEventListener("mouseup", wbEnd);
+        wbCanvas.addEventListener("touchstart", wbStart, { passive: false }); wbCanvas.addEventListener("touchmove", wbMove, { passive: false }); window.addEventListener("touchend", wbEnd);
 
-        function askKizaAboutWhiteboard() {
-            sendLiveSpeechOrText("Look at my whiteboard and explain or solve what is drawn there.");
-        }
+        function askKizaAboutWhiteboard() { sendLiveSpeechOrText("Look at my whiteboard and solve or explain what is drawn there."); }
 
-        // KIZA AI ANIMATED WHITEBOARD RENDERER (0..1000 normalized coordinates)
         async function executeKizaWhiteboardCommands(commands) {
-            if (!Array.isArray(commands) || commands.length === 0) return;
-            if (currentStageMode !== "whiteboard") {
-                setStageMode("whiteboard");
-                await new Promise(r => setTimeout(r, 120));
-            }
-            const W = wbCanvas.width || 800;
-            const H = wbCanvas.height || 450;
-            const sx = (v) => (Number(v) / 1000) * W;
-            const sy = (v) => (Number(v) / 1000) * H;
+            if (!Array.isArray(commands) || !commands.length) return;
+            if (currentStageMode !== "whiteboard") { setStageMode("whiteboard"); await new Promise(r => setTimeout(r, 120)); }
+            const W = wbCanvas.width || 800, H = wbCanvas.height || 450;
+            const sx = (v) => (Number(v) / 1000) * W, sy = (v) => (Number(v) / 1000) * H;
             saveWbSnapshot();
-
             for (const cmd of commands) {
-                const type = (cmd.type || "").toLowerCase();
-                const col = cmd.color || "#00f2fe";
-                const lw = Number(cmd.width || 3.5);
-                wbCtx.strokeStyle = col;
-                wbCtx.fillStyle = col;
-                wbCtx.lineWidth = lw;
-                wbCtx.lineCap = "round";
-                wbCtx.lineJoin = "round";
-
-                if (type === "clear") {
-                    wbCtx.clearRect(0, 0, W, H);
-                } else if (type === "line" || type === "arrow") {
+                const type = (cmd.type || "").toLowerCase(), col = cmd.color || "#00f2fe";
+                wbCtx.strokeStyle = col; wbCtx.fillStyle = col; wbCtx.lineWidth = Number(cmd.width || 3.5); wbCtx.lineCap = "round"; wbCtx.lineJoin = "round";
+                if (type === "clear") wbCtx.clearRect(0, 0, W, H);
+                else if (type === "line" || type === "arrow") {
                     const x1 = sx(cmd.x1), y1 = sy(cmd.y1), x2 = sx(cmd.x2), y2 = sy(cmd.y2);
                     wbCtx.beginPath(); wbCtx.moveTo(x1, y1); wbCtx.lineTo(x2, y2); wbCtx.stroke();
-                    if (type === "arrow") {
-                        const ang = Math.atan2(y2 - y1, x2 - x1);
-                        wbCtx.beginPath();
-                        wbCtx.moveTo(x2, y2);
-                        wbCtx.lineTo(x2 - 12 * Math.cos(ang - 0.5), y2 - 12 * Math.sin(ang - 0.5));
-                        wbCtx.lineTo(x2 - 12 * Math.cos(ang + 0.5), y2 - 12 * Math.sin(ang + 0.5));
-                        wbCtx.closePath(); wbCtx.fill();
-                    }
-                } else if (type === "rect") {
-                    wbCtx.strokeRect(sx(cmd.x), sy(cmd.y), sx(cmd.w), sy(cmd.h));
-                } else if (type === "circle") {
-                    const r = (Number(cmd.r || 60) / 1000) * Math.min(W, H);
-                    wbCtx.beginPath(); wbCtx.arc(sx(cmd.cx), sy(cmd.cy), r, 0, Math.PI * 2); wbCtx.stroke();
-                } else if (type === "path" && Array.isArray(cmd.points) && cmd.points.length > 1) {
-                    wbCtx.beginPath();
-                    wbCtx.moveTo(sx(cmd.points[0][0]), sy(cmd.points[0][1]));
-                    for (let i = 1; i < cmd.points.length; i++) {
-                        wbCtx.lineTo(sx(cmd.points[i][0]), sy(cmd.points[i][1]));
-                    }
-                    wbCtx.stroke();
-                } else if (type === "text" && cmd.text) {
-                    const fSize = Math.max(13, Math.round((Number(cmd.size || 18) / 600) * Math.min(W, H)));
-                    wbCtx.font = `700 ${fSize}px Inter, sans-serif`;
-                    wbCtx.fillText(String(cmd.text), sx(cmd.x), sy(cmd.y));
-                }
-                await new Promise(r => setTimeout(r, 150));
+                    if (type === "arrow") { const a = Math.atan2(y2 - y1, x2 - x1); wbCtx.beginPath(); wbCtx.moveTo(x2, y2); wbCtx.lineTo(x2 - 12 * Math.cos(a - 0.5), y2 - 12 * Math.sin(a - 0.5)); wbCtx.lineTo(x2 - 12 * Math.cos(a + 0.5), y2 - 12 * Math.sin(a + 0.5)); wbCtx.closePath(); wbCtx.fill(); }
+                } else if (type === "rect") wbCtx.strokeRect(sx(cmd.x), sy(cmd.y), sx(cmd.w), sy(cmd.h));
+                else if (type === "circle") { wbCtx.beginPath(); wbCtx.arc(sx(cmd.cx), sy(cmd.cy), (Number(cmd.r || 60) / 1000) * Math.min(W, H), 0, Math.PI * 2); wbCtx.stroke(); }
+                else if (type === "path" && Array.isArray(cmd.points) && cmd.points.length > 1) { wbCtx.beginPath(); wbCtx.moveTo(sx(cmd.points[0][0]), sy(cmd.points[0][1])); for (let i = 1; i < cmd.points.length; i++) wbCtx.lineTo(sx(cmd.points[i][0]), sy(cmd.points[i][1])); wbCtx.stroke(); }
+                else if (type === "text" && cmd.text) { wbCtx.font = `700 ${Math.max(13, Math.round((Number(cmd.size || 18) / 600) * Math.min(W, H)))}px Inter, sans-serif`; wbCtx.fillText(String(cmd.text), sx(cmd.x), sy(cmd.y)); }
+                await new Promise(r => setTimeout(r, 140));
             }
         }
 
         // ==========================================================
-        // 3. SECURE FIRST-FRAME WEBSOCKET AUTH & MESSAGING
+        // 4. SECURE FIRST-FRAME WEBSOCKET + TIMEOUT RECOVERY
         // ==========================================================
         function connectLiveSocket() {
             if (!sessionToken) {
-                document.getElementById("captionBox").textContent = "🔒 Please sign in to KIZA first before starting a Live Call.";
+                document.getElementById("captionBox").textContent = "🔒 Sign in on KIZA home screen first before starting Live Call.";
                 return;
             }
+            if (ws) { try { ws.onclose = null; ws.close(); } catch (e) {} }
+            wsReady = false;
             ws = new WebSocket(WS_LIVE_URL);
+
             ws.onopen = () => {
-                // Secure First-Frame Auth: token stays inside TLS body, never in URL logs!
                 ws.send(JSON.stringify({ type: "auth", token: sessionToken, personality }));
                 document.getElementById("liveStatusChip").textContent = "AUTHENTICATING...";
-                setInterval(() => {
+                if (pingInterval) clearInterval(pingInterval);
+                pingInterval = setInterval(() => {
                     if (ws && ws.readyState === WebSocket.OPEN) {
                         pingStart = performance.now();
                         ws.send(JSON.stringify({ type: "ping" }));
                     }
-                }, 15000);
+                }, 12000);
             };
-            ws.onmessage = async (event) => {
+
+            ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 if (data.type === "pong") {
-                    document.getElementById("livePing").textContent = `${Math.max(12, Math.round(performance.now() - pingStart))}ms`;
+                    const rtt = Math.max(12, Math.round(performance.now() - pingStart));
+                    const pEl = document.getElementById("livePing");
+                    pEl.textContent = `${rtt}ms`; pEl.style.color = "var(--success)";
                 } else if (data.type === "state") {
-                    const orb = document.getElementById("liveOrb");
-                    orb.classList.toggle("thinking", data.status === "thinking");
+                    document.getElementById("liveOrb").classList.toggle("thinking", data.status === "thinking");
                     document.getElementById("liveStatusChip").textContent = data.status === "thinking" ? "KIZA IS THINKING..." : "LIVE & READY";
+                    if (data.status === "thinking") document.getElementById("captionBox").textContent = "🧠 KIZA is analyzing your request...";
                 } else if (data.type === "response") {
-                    const orb = document.getElementById("liveOrb");
-                    orb.classList.remove("thinking");
+                    clearTimeout(replyTimeout);
+                    wsReady = true;
+                    document.getElementById("connDot").classList.add("online");
+                    document.getElementById("liveOrb").classList.remove("thinking");
                     document.getElementById("liveStatusChip").textContent = "LIVE & READY";
+                    if (document.getElementById("livePing").textContent === "Connecting...") {
+                        pingStart = performance.now();
+                        ws.send(JSON.stringify({ type: "ping" }));
+                    }
                     const cleanReply = data.text || "";
                     document.getElementById("captionBox").textContent = cleanReply;
                     if (cleanReply) callDecisions.push(cleanReply.slice(0, 110));
-                    if (Array.isArray(data.draw_commands) && data.draw_commands.length > 0) {
-                        executeKizaWhiteboardCommands(data.draw_commands);
-                    }
+                    if (Array.isArray(data.draw_commands) && data.draw_commands.length > 0) executeKizaWhiteboardCommands(data.draw_commands);
                     speakLiveResponse(cleanReply, data.audio_base64);
                 } else if (data.type === "error") {
+                    clearTimeout(replyTimeout);
                     document.getElementById("captionBox").textContent = `⚠️ ${data.message}`;
                 }
             };
+
             ws.onclose = (ev) => {
-                document.getElementById("connDot").style.background = "var(--danger)";
-                document.getElementById("liveStatusChip").textContent = ev.code === 1008 ? "AUTH EXPIRED — SIGN IN AGAIN" : "RECONNECTING...";
-                if (ev.code !== 1008) setTimeout(connectLiveSocket, 3000);
+                wsReady = false;
+                document.getElementById("connDot").classList.remove("online");
+                document.getElementById("livePing").textContent = "Offline";
+                document.getElementById("livePing").style.color = "var(--danger)";
+                if (ev.code === 1008) {
+                    document.getElementById("captionBox").textContent = "🔒 Session expired or server.py v11.1 not deployed yet. Sign in again on KIZA.";
+                } else {
+                    document.getElementById("liveStatusChip").textContent = "RECONNECTING...";
+                    setTimeout(connectLiveSocket, 3000);
+                }
             };
         }
 
         function sendLiveSpeechOrText(textStr) {
             const clean = (textStr || "").trim();
-            if (!clean || !ws || ws.readyState !== WebSocket.OPEN) return;
+            if (!clean) return;
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                document.getElementById("captionBox").textContent = "⏳ Connecting to KIZA Brain on Render... tap again in 3 seconds.";
+                connectLiveSocket();
+                return;
+            }
             callTopics.push(clean.slice(0, 90));
             const frameObj = captureCrispActiveFrame();
-            document.getElementById("captionBox").textContent = `You: ${clean}`;
+            document.getElementById("captionBox").textContent = `⏳ Sending to KIZA (${frameObj.source}): "${clean}"...`;
             ws.send(JSON.stringify({
                 type: "speech",
                 text: clean,
@@ -817,29 +614,19 @@
                 image_base64: frameObj.image_base64,
                 vision_source: frameObj.source
             }));
+            clearTimeout(replyTimeout);
+            replyTimeout = setTimeout(() => {
+                document.getElementById("captionBox").textContent = "⚠️ No reply from server after 25s—make sure server.py v11.1 is live on Render and try again.";
+            }, 25000);
         }
 
-        function sendTypedLiveMessage() {
-            const inp = document.getElementById("liveTextInput");
-            const val = inp.value.trim();
-            if (!val) return;
-            inp.value = "";
-            sendLiveSpeechOrText(val);
-        }
-        document.getElementById("liveTextInput").addEventListener("keypress", (e) => {
-            if (e.key === "Enter") sendTypedLiveMessage();
-        });
+        function sendTypedLiveMessage() { const i = document.getElementById("liveTextInput"), v = i.value.trim(); if (!v) return; i.value = ""; sendLiveSpeechOrText(v); }
+        document.getElementById("liveTextInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendTypedLiveMessage(); });
 
-        // ==========================================================
-        // 4. SPEECH-TO-TEXT (EN-IN / HI / PA) & ZERO-LAG PLAYBACK
-        // ==========================================================
         function toggleSpeakerMute() {
             speakerMuted = !speakerMuted;
             document.getElementById("muteBtn").textContent = speakerMuted ? "🔇 Muted" : "🔊 Sound";
-            if (speakerMuted) {
-                if (activeAudio) activeAudio.pause();
-                if (window.speechSynthesis) window.speechSynthesis.cancel();
-            }
+            if (speakerMuted) { if (activeAudio) activeAudio.pause(); if (window.speechSynthesis) window.speechSynthesis.cancel(); }
         }
 
         function speakLiveResponse(text, audioBase64) {
@@ -847,7 +634,6 @@
             const orb = document.getElementById("liveOrb");
             if (activeAudio) { activeAudio.pause(); activeAudio = null; }
             if (window.speechSynthesis) window.speechSynthesis.cancel();
-
             if (audioBase64) {
                 activeAudio = new Audio("data:audio/mp3;base64," + audioBase64);
                 orb.classList.add("speaking");
@@ -869,44 +655,23 @@
         }
 
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let rec = null;
-        let pttTranscript = "";
+        let rec = null, pttTranscript = "";
         const pttBtn = document.getElementById("pttBtn");
-
         function startPTT(e) {
             if (e) e.preventDefault();
-            if (!SR) { document.getElementById("captionBox").textContent = "Speech recognition unavailable in this browser—use the text bar below."; return; }
+            if (!SR) { document.getElementById("captionBox").textContent = "Speech recognition unavailable—use the text bar."; return; }
             if (activeAudio) activeAudio.pause();
             if (window.speechSynthesis) window.speechSynthesis.cancel();
             pttTranscript = "";
-            rec = new SR();
-            rec.lang = document.getElementById("speechLangSelect").value || "en-IN";
-            rec.interimResults = true;
-            rec.continuous = true;
-            rec.onresult = (ev) => {
-                let txt = "";
-                for (let i = 0; i < ev.results.length; i++) txt += ev.results[i][0].transcript;
-                pttTranscript = txt.trim();
-                if (pttTranscript) document.getElementById("captionBox").textContent = `🎙️ ${pttTranscript}`;
-            };
+            rec = new SR(); rec.lang = document.getElementById("speechLangSelect").value || "en-IN"; rec.interimResults = true; rec.continuous = true;
+            rec.onresult = (ev) => { let t = ""; for (let i = 0; i < ev.results.length; i++) t += ev.results[i][0].transcript; pttTranscript = t.trim(); if (pttTranscript) document.getElementById("captionBox").textContent = `🎙️ ${pttTranscript}`; };
             try { rec.start(); pttBtn.classList.add("listening"); pttBtn.textContent = "🎙️ Listening..."; } catch (err) {}
         }
-
         function stopPTT(e) {
             if (e) e.preventDefault();
-            pttBtn.classList.remove("listening");
-            pttBtn.textContent = "🎙️ Hold to Speak";
-            if (rec) {
-                try { rec.stop(); } catch (err) {}
-                setTimeout(() => {
-                    if (pttTranscript) {
-                        sendLiveSpeechOrText(pttTranscript);
-                        pttTranscript = "";
-                    }
-                }, 260);
-            }
+            pttBtn.classList.remove("listening"); pttBtn.textContent = "🎙️ Hold to Speak";
+            if (rec) { try { rec.stop(); } catch (err) {} setTimeout(() => { if (pttTranscript) { sendLiveSpeechOrText(pttTranscript); pttTranscript = ""; } }, 260); }
         }
-
         pttBtn.addEventListener("mousedown", startPTT);
         window.addEventListener("mouseup", () => { if (pttBtn.classList.contains("listening")) stopPTT(); });
         pttBtn.addEventListener("touchstart", startPTT, { passive: false });
@@ -916,17 +681,17 @@
             if (camStream) camStream.getTracks().forEach(t => t.stop());
             if (screenStream) screenStream.getTracks().forEach(t => t.stop());
             if (ws) try { ws.close(); } catch (e) {}
-            const summary = {
-                duration: document.getElementById("callTimer").textContent,
-                timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
-                topics: callTopics.slice(-6),
-                decisions: callDecisions.slice(-6)
-            };
-            try { localStorage.setItem("kiza_last_call_minutes", JSON.stringify(summary)); } catch (e) {}
+            try {
+                localStorage.setItem("kiza_last_call_minutes", JSON.stringify({
+                    duration: document.getElementById("callTimer").textContent,
+                    timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
+                    topics: callTopics.slice(-6),
+                    decisions: callDecisions.slice(-6)
+                }));
+            } catch (e) {}
             window.location.href = "index.html";
         }
 
-        // Boot
         startCameraFeed();
         connectLiveSocket();
     </script>
