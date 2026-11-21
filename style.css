@@ -1175,3 +1175,47 @@ input[type="text"], input[type="password"], input[type="email"], input[type="num
     .status-text { max-width: 78px; font-size: 9.5px; padding: 2px 6px; }
     #wakeToggleBtn { display: none; }
 }
+/* ==========================================================
+   SPLIT-SCREEN LIVE STUDIO MODE (CHAT LEFT | STUDIO RIGHT)
+   ========================================================== */
+body.split-studio-open .app-shell {
+    width: 48vw;
+    transition: width 0.22s ease;
+}
+
+body.split-studio-open .modal-overlay.split-docked {
+    left: 48vw !important;
+    width: 52vw !important;
+    background: transparent !important;
+    padding: 0 !important;
+    pointer-events: none;
+    justify-content: flex-end;
+    align-items: stretch;
+}
+
+body.split-studio-open .modal-overlay.split-docked .logs-card {
+    pointer-events: auto;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+    border-left: 2px solid var(--accent-primary) !important;
+    box-shadow: -8px 0 30px rgba(0, 0, 0, 0.25);
+}
+
+body.split-studio-open .modal-overlay.split-docked #filePreviewViewport,
+body.split-studio-open .modal-overlay.split-docked #codeSandboxIframe {
+    max-height: calc(100vh - 145px) !important;
+    height: calc(100vh - 145px) !important;
+}
+
+@media (max-width: 960px) {
+    body.split-studio-open .app-shell { width: 100vw; }
+    body.split-studio-open .modal-overlay.split-docked {
+        left: 0 !important;
+        width: 100vw !important;
+        padding: 10px !important;
+        background: rgba(15, 23, 42, 0.65) !important;
+    }
+}
