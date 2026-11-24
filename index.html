@@ -99,7 +99,7 @@
                 <div class="telemetry-box"><div style="font-size:10px; color:var(--text-muted); font-weight:700;">🔌 WEBSOCKETS</div><div class="telemetry-val" id="teleWsCount">0</div></div>
                 <div class="telemetry-box"><div style="font-size:10px; color:var(--text-muted); font-weight:700;">🗄️ STORAGE</div><div class="telemetry-val" id="teleDbStatus" style="font-size:12px; color:var(--success);">HEALTHY</div></div>
                 <div class="telemetry-box"><div style="font-size:10px; color:var(--text-muted); font-weight:700;">🛡️ THREATS</div><div class="telemetry-val" id="teleThreatsCount" style="color:var(--danger);">0</div></div>
-                <div class="telemetry-box"><div style="font-size:10px; color:var(--text-muted); font-weight:700;">🚫 IP BANS</div><div class="telemetry-val" id="teleBansCount" style="color:var(--warning);">0</div></div>
+                <div class="telemetry-box"><div style="font-size:10px; color:var(--text-muted); font-weight:700;">🚫 ACTIVE BANS</div><div class="telemetry-val" id="teleBansCount" style="color:var(--warning);">0</div></div>
                 <div class="telemetry-box"><div style="font-size:10px; color:var(--text-muted); font-weight:700;">👥 USERS</div><div class="telemetry-val" id="teleUsersCount">0</div></div>
                 <div class="telemetry-box"><div style="font-size:10px; color:var(--text-muted); font-weight:700;">⏱️ UPTIME</div><div class="telemetry-val" id="teleUptime">0s</div></div>
                 <div class="telemetry-box"><div style="font-size:10px; color:var(--text-muted); font-weight:700;">📡 REQUESTS</div><div class="telemetry-val" id="teleReqCount">0</div></div>
@@ -128,13 +128,14 @@
         </div>
     </div>
 
-    <!-- ISOLATED LIVE CODE SANDBOX (ZERO TOKEN ACCESS!) -->
+    <!-- ISOLATED LIVE CODE SANDBOX (ZERO TOKEN ACCESS + SPLIT VIEW) -->
     <div id="codeSandboxModal" class="modal-overlay" style="display:none; z-index: 635;">
         <div class="logs-card" style="max-width: 960px; width: 96%;">
             <div class="section-title">
-                <span id="codeSandboxTitle">💻 KIZA Isolated Live Code Sandbox</span>
+                <span id="codeSandboxTitle">💻 KIZA Isolated Sandbox</span>
                 <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; border-color:var(--accent-primary); color:var(--accent-primary);" onclick="shareCurrentSandboxMiniAppUrl()">🔗 Share App Link</button>
+                    <button type="button" id="splitSandboxBtn" class="chip-btn" style="width:auto; padding:4px 10px; border-color:var(--accent-primary); color:var(--accent-primary);" onclick="toggleSplitStudioMode()">◧ Split View</button>
+                    <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; border-color:var(--accent-primary); color:var(--accent-primary);" onclick="shareCurrentSandboxMiniAppUrl()">🔗 Share App</button>
                     <button type="button" class="chip-btn" style="width:auto; padding:4px 10px; border-color:var(--warning); color:var(--warning);" onclick="autoFixCurrentSandboxCode()">⚡ Auto-Fix</button>
                     <button type="button" class="chip-btn" style="width:auto; padding:4px 10px;" onclick="reloadCurrentSandboxIframe()">🔄 Reload</button>
                     <button type="button" class="chip-btn" style="width:auto; padding:4px 10px;" onclick="copyCurrentSandboxCode()">📋 Copy</button>
@@ -150,12 +151,15 @@
         </div>
     </div>
 
-    <!-- MULTI-FORMAT STUDIO MODAL (.PDF, NATIVE .DOCX, MULTI-SHEET .XLSX, .PPTX, .CSV) -->
+    <!-- PRO MULTI-FORMAT STUDIO MODAL (.PDF, NATIVE .DOCX, MULTI-SHEET .XLSX, .PPTX, .CSV + SPLIT VIEW) -->
     <div id="filePreviewModal" class="modal-overlay" style="display:none; z-index: 620;">
         <div class="logs-card" style="max-width: 940px; width: 96%;">
             <div class="section-title">
-                <span id="filePreviewModalTitle">🎨 KIZA Multi-Format Document Studio</span>
-                <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 4px 10px; width:auto;" onclick="closeFilePreviewModal()">✕ Close</button>
+                <span id="filePreviewModalTitle">🎨 KIZA Pro Studio</span>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <button type="button" id="splitDocBtn" class="chip-btn" style="width:auto; padding:4px 10px; border-color:var(--accent-primary); color:var(--accent-primary);" onclick="toggleSplitStudioMode()">◧ Split View</button>
+                    <button type="button" class="chip-btn" style="border-color:var(--danger); color:var(--danger); padding: 4px 10px; width:auto;" onclick="closeFilePreviewModal()">✕ Close</button>
+                </div>
             </div>
             <div id="previewFormattingToolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:var(--bg-surface); padding:9px 11px; border-radius:12px; border:1px solid var(--card-border);">
                 <div id="previewLayoutThemeSelectors" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
@@ -182,7 +186,7 @@
                         <option value="csv">📊 CSV Dataset (.csv)</option>
                     </select>
                 </div>
-                <button type="button" id="confirmDownloadBtn" class="send-btn" style="padding:7px 14px; font-size:11.5px; margin-left:auto;" onclick="confirmAndDownloadPreviewedFile()">⬇️ Confirm & Download</button>
+                <button type="button" id="confirmDownloadBtn" class="send-btn" style="padding:7px 14px; font-size:11.5px; margin-left:auto;" onclick="confirmAndDownloadPreviewedFile()">⬇️ Download</button>
             </div>
             <div id="filePreviewViewport" spellcheck="false" style="max-height: 58vh; overflow-y: auto; border: 1px solid var(--card-border); border-radius: 12px; background: #cbd5e1; padding: 14px; outline: none;"></div>
         </div>
@@ -209,7 +213,7 @@
         </div>
     </div>
 
-    <!-- PIN GATE / IDLE LOCK MODAL -->
+    <!-- PIN GATE / BACKUP PIN 2FA FALLBACK & IDLE LOCK MODAL -->
     <div id="pinGateModal" class="modal-overlay" style="display:none; z-index: 650;">
         <div class="auth-card">
             <div class="section-title"><span id="pinGateTitle">🔑 Security Backup PIN</span></div>
@@ -245,15 +249,15 @@
         </div>
     </div>
 
-    <!-- SECURITY THREATS MODAL -->
+    <!-- SECURITY THREATS & MODERATION LOGS MODAL -->
     <div id="threatsModal" class="modal-overlay" style="display:none;">
         <div class="logs-card">
             <div class="section-title">
-                <span>🛡️ Security Activity, IP Bans & Whitelist</span>
+                <span>🛡️ Security, Moderation Bans & Whitelist</span>
                 <button type="button" class="chip-btn" style="width:auto; padding: 3px 9px;" onclick="closeThreatsModal()">✕</button>
             </div>
             <div style="font-size:11px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-                <span>Timed IP Bans + Owner Whitelist</span>
+                <span>3-Strike Auto-Bans + Timed IP Bans + Whitelist</span>
                 <div style="display:flex; gap:5px; flex-wrap:wrap;">
                     <button type="button" class="chip-btn" style="width:auto; padding:4px 9px;" onclick="exportSecurityReportCSV()">📊 CSV</button>
                     <button type="button" class="chip-btn" style="width:auto; padding:4px 9px;" onclick="exportSecurityReportTXT()">📄 .TXT</button>
@@ -325,7 +329,7 @@
             <div id="ownerUpdatePublisher" style="display:none; flex-direction:column; gap:7px; padding:11px; border-radius:12px; background:var(--bg-surface);">
                 <div style="font-size:11.5px; font-weight:700; color:var(--accent-primary);">Publish New Update</div>
                 <div style="display:flex; gap:7px;">
-                    <input type="text" id="newUpdateVersion" placeholder="v11.3" style="width:100px;">
+                    <input type="text" id="newUpdateVersion" placeholder="v11.5" style="width:100px;">
                     <input type="text" id="newUpdateTitle" placeholder="Headline...">
                 </div>
                 <input type="text" id="newUpdateDesc" placeholder="Details of what changed...">
@@ -335,7 +339,7 @@
         </div>
     </div>
 
-    <!-- CLEAN 4-TAB SETTINGS MODAL WITH MANDATORY FACE SCAN 2FA -->
+    <!-- CLEAN 4-TAB SETTINGS MODAL WITH MANDATORY 3D FACE 2FA -->
     <div id="settingsModal" class="modal-overlay" style="display:none;">
         <div class="auth-card" style="max-width:520px; padding:16px; gap:12px;">
             <div class="section-title" style="margin-bottom:0;">
@@ -353,7 +357,7 @@
             <div id="setPaneGeneral" style="display:flex; flex-direction:column; gap:10px;">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
                     <div><label style="font-size:11px; font-weight:600; color:var(--text-muted);">Appearance</label><select id="themeSelect" onchange="saveSettings()"><option value="light">☀️ Light Mode</option><option value="dark">🌙 Dark Mode</option></select></div>
-                    <div><label style="font-size:11px; font-weight:600; color:var(--text-muted);">Voice Accent</label><select id="personaSelect" onchange="handlePersonaChange()"><option value="helpful" selected>🇮🇳 IN • Neural</option><option value="normal">🇬🇧 UK • Witty</option><option value="energetic">⚡ IN • Neerja</option><option value="security">🛡️ Security</option></select></div>
+                    <div><label style="font-size:11px; font-weight:600; color:var(--text-muted);">Voice Accent</label><select id="personaSelect" onchange="handlePersonaChange()"><option value="helpful" selected>🇮🇳 IN • Neural</option><option value="energetic">⚡ IN • Neerja</option><option value="normal">🇬🇧 UK • Witty</option><option value="security">🛡️ Security</option></select></div>
                     <div><label style="font-size:11px; font-weight:600; color:var(--text-muted);">Startup Voice</label><select id="voiceDefaultSelect" onchange="saveSettings()"><option value="off">Muted</option><option value="on">Speaking</option></select></div>
                     <div><label style="font-size:11px; font-weight:600; color:var(--text-muted);">Pop-up Alerts</label><select id="notifToggleSelect" onchange="saveSettings()"><option value="on">Show</option><option value="off">Silent</option></select></div>
                     <div><label style="font-size:11px; font-weight:600; color:var(--text-muted);">📷 Camera</label><select id="settingsCamSelect" onchange="selectPreferredCamera(this.value)"><option value="">Default Camera</option></select></div>
@@ -377,7 +381,7 @@
                         <span>🛡️ Require 128-D Face Scan on every login (2FA)</span>
                         <input type="checkbox" id="requireFaceLoginToggle" style="width:18px; height:18px; cursor:pointer; flex-shrink:0;" onchange="toggleRequireFaceOnLogin(this.checked)">
                     </label>
-                    <div id="strictFaceToggleHint" style="font-size:10.5px; color:var(--text-muted);">When ON, both Google and Password logins require a live 3D blink/head-turn scan before unlocking.</div>
+                    <div id="strictFaceToggleHint" style="font-size:10.5px; color:var(--text-muted);">When ON, both Google and Password logins require a live 3D blink/head-turn scan (with Backup PIN fallback if camera fails).</div>
                 </div>
                 <div style="background:var(--bg-surface); border:1px solid var(--card-border); border-radius:12px; padding:11px; display:flex; flex-direction:column; gap:8px;">
                     <div style="font-size:11.5px; font-weight:700; color:var(--danger);">📲 Emergency Remote Sign-Out</div>
@@ -455,10 +459,10 @@
             <div style="text-align:center; margin-bottom:2px;">
                 <img src="logo.jpg" alt="KIZA Logo" class="kiza-auth-logo" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22><circle cx=%2260%22 cy=%2260%22 r=%2256%22 fill=%22%23071324%22 stroke=%22%2300f2fe%22 stroke-width=%224%22/><text x=%2260%22 y=%2270%22 font-family=%22Arial%22 font-weight=%22900%22 font-size=%2224%22 text-anchor=%22middle%22 fill=%22%2300f2fe%22>KIZA</text></svg>';">
                 <h2 style="margin:0; font-size:19px;">Welcome to KIZA</h2>
-                <div style="font-size:11px; font-weight:600; color:var(--accent-primary); margin-top:2px;">Kinda Intelligent Zippy Assistant • v11.3 Secured</div>
+                <div style="font-size:11px; font-weight:600; color:var(--accent-primary); margin-top:2px;">Kinda Intelligent Zippy Assistant • v11.5 Secured</div>
             </div>
 
-            <!-- Live 3D Face Scan Preview (opens automatically during Face ID or 2FA scan) -->
+            <!-- Live 3D Anti-Spoof Face Scan Preview -->
             <div id="authFaceScannerBox" style="display:none; flex-direction:column; align-items:center; gap:6px; background:#071324; border:2px solid var(--accent-glow); border-radius:14px; padding:8px;">
                 <video id="authFacePreview" autoplay playsinline muted style="width:100%; max-height:170px; object-fit:cover; border-radius:10px; transform:scaleX(-1);"></video>
                 <div id="authFacePromptText" style="font-size:11.5px; font-weight:700; color:#00f2fe; text-align:center;">🧬 Look at the camera and blink or turn your head...</div>
