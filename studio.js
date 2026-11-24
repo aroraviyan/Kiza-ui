@@ -1,5 +1,5 @@
 // ==========================================================
-// KIZA v11.1 — MULTI-FORMAT DOCUMENT, EXCEL, DOCX & SANDBOX STUDIO
+// KIZA v11.5 — PRO MULTI-FORMAT STUDIO, SPLIT-SCREEN & SANDBOX ENGINE
 // ==========================================================
 let attachedImageBase64 = null;
 let attachedImageName = "";
@@ -10,10 +10,11 @@ let isScanningAttachment = false;
 let attachmentScanPromise = null;
 
 let lastCompiledFileCache = null;
-let currentSandboxCodeObj = { lang: "html", code: "", filename: "kiza_app.html" };
+let currentSandboxCodeObj = { lang: "html", code: "", filename: "index.html" };
 let generatedCodeSnippetsStore = [];
 const activeChartInstances = {};
 const webImageCache = {};
+let isSplitStudioActive = false;
 
 const THEME_PALETTES = {
     movie_theater: { bgHex: "0D0205", cardHex: "1A050A", accentHex: "FBBF24", secHex: "DC2626", textHex: "FFFBEB", subHex: "FCA5A5", pdfHero: "linear-gradient(135deg, #450a0a 0%, #1a050a 50%, #78350f 100%)", pdfPageBg: "#0d0205", pdfText: "#fffbeb", pdfCardBg: "#1a050a" },
@@ -45,7 +46,7 @@ const FILE_TYPE_FORMATS = {
         { value: "docx_minutes", label: "🗒️ Meeting Minutes" }
     ],
     xlsx: [
-        { value: "xlsx_budget", label: "💰 Financial Budget (=SUM & =AVG)" },
+        { value: "xlsx_budget", label: "💰 Financial Workbook (=SUM & =AVG)" },
         { value: "xlsx_marksheet", label: "🎓 Student Marksheet (=SUM & =AVG)" },
         { value: "xlsx_tracker", label: "📋 Project / Study Tracker" },
         { value: "xlsx_comparison", label: "⚖️ Comparison Matrix" }
@@ -60,6 +61,43 @@ const FILE_TYPE_FORMATS = {
     ]
 };
 
+// ==========================================================
+// SPLIT-SCREEN STUDIO CONTROLLER (CHAT LEFT | STUDIO RIGHT)
+// ==========================================================
+function toggleSplitStudioMode(forceState = null) {
+    isSplitStudioActive = (forceState !== null) ? Boolean(forceState) : !isSplitStudioActive;
+    document.body.classList.toggle('split-studio-open', isSplitStudioActive);
+
+    const fileModal = document.getElementById('filePreviewModal');
+    const sandModal = document.getElementById('codeSandboxModal');
+    if (fileModal) fileModal.classList.toggle('split-docked', isSplitStudioActive);
+    if (sandModal) sandModal.classList.toggle('split-docked', isSplitStudioActive);
+
+    const label = isSplitStudioActive ? "⛶ Full View" : "◧ Split View";
+    const docBtn = document.getElementById('splitDocBtn');
+    const sandBtn = document.getElementById('splitSandboxBtn');
+    if (docBtn) docBtn.innerText = label;
+    if (sandBtn) sandBtn.innerText = label;
+
+    if (isSplitStudioActive) {
+        document.getElementById('appSidebar')?.classList.add('collapsed');
+        const inputEl = document.getElementById('textInput');
+        if (inputEl) inputEl.focus();
+    }
+}
+
+function getActiveStudioDraftContext() {
+    const fileModal = document.getElementById('filePreviewModal');
+    if (fileModal && fileModal.style.display === 'flex' && isSplitStudioActive && lastCompiledFileCache && !lastCompiledFileCache.isPreRenderedAuditHtml) {
+        return `ACTIVE DOCUMENT TYPE: .${lastCompiledFileCache.ext.toUpperCase()} | TOPIC: ${lastCompiledFileCache.topic} | THEME: ${lastCompiledFileCache.styleTheme}\nDRAFT:\n${lastCompiledFileCache.rawContent}`;
+    }
+    const sandModal = document.getElementById('codeSandboxModal');
+    if (sandModal && sandModal.style.display === 'flex' && isSplitStudioActive && currentSandboxCodeObj && currentSandboxCodeObj.code) {
+        return `ACTIVE CODE SANDBOX FILE: ${currentSandboxCodeObj.filename} (${currentSandboxCodeObj.lang})\nReturn the COMPLETE updated single-file HTML5 app inside \`\`\`html ... \`\`\`.\nCODE:\n${currentSandboxCodeObj.code}`;
+    }
+    return null;
+}
+
 function syncFormatDropdownForFileType(ext, currentLayout) {
     const sel = document.getElementById('previewLayoutFormatSelect');
     if (!sel) return currentLayout;
@@ -71,7 +109,7 @@ function syncFormatDropdownForFileType(ext, currentLayout) {
 }
 
 // ==========================================================
-// INTENT & THEME PARSERS
+// INTENT, CLEAN TITLE & THEME PARSERS
 // ==========================================================
 function extractClientTopicAndStyle(rawStr) {
     let s = (rawStr || "").trim();
@@ -114,6 +152,8 @@ function extractClientTopicAndStyle(rawStr) {
     else if (/\b(magazine|editorial)\b/i.test(low)) layoutFormat = "magazine";
     else if (/\b(minimal|clean\s*memo)\b/i.test(low)) layoutFormat = "minimal";
 
+    s = s.replace(/\s*(?:,|and|with|using|by)?\s*\b(?:take|use|add|generate|pick|create|make\s+up|fill)\s+(?:any\s+|some\s+|random\s+|sample\s+|dummy\s+|fake\s+|your\s+|ur\s+)*data(?:\s+on\s+(?:your|ur)\s+own)?\b.*$/i, '').trim();
+    s = s.replace(/\s*\bon\s+(?:your|ur)\s+own\b.*$/i, '').trim();
     s = s.replace(/\s+(?:with|in|using|having|featuring|and)\s+(?:a\s+|an\s+|the\s+)?(?:[a-z]+\s+){0,3}(?:background|bg|theme|style|color|design|template|layout|mode|format)\b.*$/i, '').trim();
     s = s.replace(/\s+(?:with|in|having|for|of)\s+\d+\s+(?:slides|pages|sections|points|bullets)\b.*$/i, '').trim();
     s = s.replace(/^(a|an|the|topic|subject)\s+/i, '').replace(/[.,;:-]+$/, '').trim();
@@ -168,7 +208,7 @@ function analyzeImageVisualTelemetry(imgEl, filename) {
         }
         const brightness = Math.round((brightSum / pixels / 255) * 100);
         const tone = brightness > 65 ? "Bright/Light-themed" : (brightness < 35 ? "Dark/Futuristic-themed" : "Balanced contrast");
-        return `Image File Name: '${filename}' (${imgEl.naturalWidth}x${imgEl.naturalHeight}px, ${tone}, Dominant RGB(${Math.round(rSum/pixels)},${Math.round(gSum/pixels)},${Math.round(bSum/pixels)}))`;
+        return `Image File Name: '${filename}' (${imgEl.naturalWidth}x${imgEl.naturalHeight}px, ${tone}, Dominant RGB(${Math.round(rSum / pixels)},${Math.round(gSum / pixels)},${Math.round(bSum / pixels)}))`;
     } catch (e) {
         return `Image File Name: '${filename}'`;
     }
@@ -467,11 +507,12 @@ function getVisualImageUrlSync(queryStr) {
 }
 
 // ==========================================================
-// 1. PDF REPORT & MOVIE THEATER STAGE RENDERER
+// 1. PUBLICATION-GRADE PDF DOSSIER & MOVIE THEATER RENDERER
 // ==========================================================
 function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark", layoutFormat = "infographic") {
+    const titleOverride = stripSlashesFromText(rawContent).match(/^TITLE\s*:\s*([^\n]+)/im);
     const parsedTopic = extractClientTopicAndStyle(topicTitle);
-    const cleanTopic = parsedTopic.cleanTopic.toUpperCase();
+    const cleanTopic = (titleOverride ? titleOverride[1].trim() : parsedTopic.cleanTopic).toUpperCase();
 
     const isMovieMode = (
         styleTheme === "movie_theater" ||
@@ -491,13 +532,13 @@ function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = n
         .replace(/\*\*/g, '')
         .split('\n');
 
-    let subtitle = isMovieMode ? "🎬 IMAX & STAGE PRODUCTION DOSSIER" : "COMPREHENSIVE VISUAL REPORT & DATA ANALYSIS";
+    let subtitle = isMovieMode ? "🎬 IMAX & STAGE PRODUCTION DOSSIER" : "EXECUTIVE BRIEFING & DATA ANALYSIS";
     const kpis = [], charts = [], tableRows = [], bodyBlocks = [];
-    let tableHeaders = [], lastSeenHeading = "";
+    let tableHeaders = [], lastSeenHeading = cleanTopic.toLowerCase();
 
     rawLines.forEach(line => {
         const t = line.trim();
-        if (!t || /^(LAYOUT|SHEET)\s*:/i.test(t)) return;
+        if (!t || /^(LAYOUT|SHEET|NOTES)\s*:/i.test(t)) return;
 
         if (/^(SLIDE|PAGE)\s*(\d+)\s*:\s*(.*)$/i.test(t)) {
             const m = t.match(/^(SLIDE|PAGE)\s*(\d+)\s*:\s*(.*)$/i);
@@ -507,14 +548,8 @@ function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = n
             if (pTitle) lastSeenHeading = pTitle.toLowerCase();
             return;
         }
-        if (/^TITLE\s*:/i.test(t)) {
-            const titleTxt = t.replace(/^TITLE\s*:\s*/i, '').trim();
-            if (titleTxt && titleTxt.toLowerCase() !== lastSeenHeading) {
-                bodyBlocks.push({ type: 'section', text: titleTxt });
-                lastSeenHeading = titleTxt.toLowerCase();
-            }
-            return;
-        }
+        if (/^TITLE\s*:/i.test(t)) return;
+
         if (/^SUBTITLE:/i.test(t)) {
             subtitle = t.replace(/^SUBTITLE:\s*/i, '').trim();
         } else if (/^(?:IMAGE_QUERY|FIGURE):/i.test(t)) {
@@ -586,7 +621,7 @@ function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = n
                 ${(tableHeaders.length ? tableHeaders : ['Parameter', 'Category A', 'Category B']).map(h => `<th style="padding:9px 12px; font-weight:800; border-bottom:2px solid #fbbf24; color:#fde68a;">${escapeHtml(h)}</th>`).join('')}
             </tr></thead>
             <tbody>${tableRows.map((row, rIdx) => `
-                <tr style="background:${isMovieMode ? (rIdx % 2 === 0 ? '#1a050a' : '#2a0810') : (isDarkDoc ? (rIdx % 2 === 0 ? '#111827' : '#1e293b') : (rIdx % 2 === 0 ? '#ffffff' : '#f1f5f9'))}; border-bottom:1px solid #450a0a;">
+                <tr style="background:${isMovieMode ? (rIdx % 2 === 0 ? '#1a050a' : '#2a0810') : (isDarkDoc ? (rIdx % 2 === 0 ? '#111827' : '#1e293b') : (rIdx % 2 === 0 ? '#ffffff' : '#f1f5f9'))}; border-bottom:1px solid ${isMovieMode ? '#450a0a' : '#e2e8f0'};">
                     ${row.map((cell, cIdx) => `<td style="padding:8px 12px; color:${pal.pdfText}; ${cIdx === 0 ? 'font-weight:700; color:' + (isMovieMode ? '#fbbf24' : '#0284c7') + ';' : ''}">${escapeHtml(cell)}</td>`).join('')}
                 </tr>`).join('')}
             </tbody>
@@ -631,6 +666,8 @@ function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = n
     } else if (activeFormat === "academic") {
         headerBannerHTML = `<div style="border-bottom:3px double #0284c7; padding-bottom:14px; margin-bottom:20px;"><div style="font-size:10px; font-weight:800; color:#0284c7; letter-spacing:1.5px;">ACADEMIC STUDY MODULE • NCERT & CBSE</div><h1 style="margin:4px 0; font-size:23px; font-weight:800; color:${pal.pdfText}; font-family:Georgia, serif;">${escapeHtml(cleanTopic)}</h1><div style="font-size:12px; font-style:italic; color:#64748b;">${escapeHtml(subtitle)}</div></div>`;
         mainContentWrapperHTML = `${kpiHtml}<div style="column-count:2; column-gap:22px; text-align:justify;">${imgBlockHtml}${renderedBody}</div>`;
+    } else if (activeFormat === "magazine") {
+        headerBannerHTML = `<div style="border-top:6px solid #0f172a; border-bottom:2px solid #0f172a; padding:18px 0; margin-bottom:20px; text-align:center;"><div style="font-size:10px; font-weight:800; letter-spacing:3px; color:#0284c7;">KIZA EDITORIAL FEATURE</div><h1 style="margin:6px 0; font-size:27px; font-family:Georgia, serif; color:${pal.pdfText};">${escapeHtml(cleanTopic)}</h1><div style="font-size:12.5px; color:#64748b;">${escapeHtml(subtitle)} • By ${escapeHtml(cleanDisplayNameOnly(currentUser))}</div></div>`;
     } else {
         headerBannerHTML = `<div style="background:${pal.pdfHero}; color:#ffffff; padding:22px 26px; border-radius:14px; margin-bottom:22px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;"><div><div style="font-size:10px; font-weight:700; color:#38bdf8; letter-spacing:2px; text-transform:uppercase;">KIZA INTELLIGENCE DOSSIER • ${activeTheme.toUpperCase()}</div><h1 style="margin:6px 0 4px 0; font-size:22px; font-weight:800; color:#ffffff;">${escapeHtml(cleanTopic)}</h1><div style="font-size:11.5px; color:#cbd5e1;">${escapeHtml(subtitle)}</div></div><div style="text-align:right; font-family:monospace; font-size:10px; color:#94a3b8; border-left:1px solid rgba(255,255,255,0.2); padding-left:14px;"><div style="color:#ffffff; font-weight:bold;">AUTHOR: ${escapeHtml(cleanDisplayNameOnly(currentUser).toUpperCase())}</div><div>DATE: ${new Date().toLocaleDateString('en-IN')}</div></div></div>`;
     }
@@ -641,7 +678,7 @@ function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = n
 
     return {
         cleanTopic, subtitle, kpis, charts, tableHeaders, tableRows, activeTheme,
-        html: `<div style="${outerShellStyle}">${headerBannerHTML}${mainContentWrapperHTML}<div style="margin-top:30px; border-top:2px solid ${isMovieMode ? '#fbbf24' : '#334155'}; padding-top:10px; font-size:9.5px; color:${isMovieMode ? '#fde68a' : '#64748b'}; display:flex; justify-content:space-between; font-family:monospace;"><span>GENERATED BY KIZA AI • FORMAT: ${activeFormat.toUpperCase()}</span><span>DATE: ${new Date().toLocaleDateString('en-IN')}</span></div></div>`
+        html: `<div style="${outerShellStyle}">${headerBannerHTML}${mainContentWrapperHTML}<div style="margin-top:30px; border-top:2px solid ${isMovieMode ? '#fbbf24' : '#334155'}; padding-top:10px; font-size:9.5px; color:${isMovieMode ? '#fde68a' : '#64748b'}; display:flex; justify-content:space-between; font-family:monospace;"><span>GENERATED BY KIZA PRO STUDIO • FORMAT: ${activeFormat.toUpperCase()}</span><span>DATE: ${new Date().toLocaleDateString('en-IN')}</span></div></div>`
     };
 }
 
@@ -649,7 +686,10 @@ function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = n
 // 2. TRUE NATIVE OPENXML WORD (.DOCX) PREVIEW & EXPORTER (docx.js)
 // ==========================================================
 function parseStructuredWordBlocks(topicTitle, rawContent) {
+    const titleOverride = stripSlashesFromText(rawContent).match(/^TITLE\s*:\s*([^\n]+)/im);
     const parsedTopic = extractClientTopicAndStyle(topicTitle);
+    const finalTitle = titleOverride ? titleOverride[1].trim() : parsedTopic.cleanTopic;
+
     const lines = stripSlashesFromText(rawContent)
         .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
         .replace(/AI_INTRO:[^\n]*/gi, '')
@@ -662,7 +702,7 @@ function parseStructuredWordBlocks(topicTitle, rawContent) {
 
     lines.forEach(raw => {
         const t = raw.trim();
-        if (!t || /^(KPI|CHART|IMAGE_QUERY|FIGURE|LAYOUT|SHEET):/i.test(t)) return;
+        if (!t || /^(KPI|CHART|IMAGE_QUERY|FIGURE|LAYOUT|SHEET|NOTES|TITLE):/i.test(t)) return;
 
         if (/^TABLE_HEADER:/i.test(t)) {
             const headers = t.replace(/^TABLE_HEADER:\s*/i, '').split('|').map(x => x.trim());
@@ -683,8 +723,8 @@ function parseStructuredWordBlocks(topicTitle, rawContent) {
 
         if (/^SUBTITLE:/i.test(t)) {
             subtitle = t.replace(/^SUBTITLE:\s*/i, '').trim();
-        } else if (/^(SECTION|PAGE|SLIDE|TITLE)\s*\d*\s*:/i.test(t)) {
-            blocks.push({ type: 'heading', text: t.replace(/^(SECTION|PAGE|SLIDE|TITLE)\s*\d*\s*:\s*/i, '').trim() });
+        } else if (/^(SECTION|PAGE|SLIDE)\s*\d*\s*:/i.test(t)) {
+            blocks.push({ type: 'heading', text: t.replace(/^(SECTION|PAGE|SLIDE)\s*\d*\s*:\s*/i, '').trim() });
         } else if (/^CALLOUT:/i.test(t)) {
             blocks.push({ type: 'callout', text: t.replace(/^CALLOUT:\s*/i, '').trim() });
         } else if (/^[-•*◆]\s+/.test(t)) {
@@ -694,7 +734,7 @@ function parseStructuredWordBlocks(topicTitle, rawContent) {
         }
     });
 
-    return { title: parsedTopic.cleanTopic, subtitle, blocks };
+    return { title: finalTitle, subtitle, blocks };
 }
 
 function buildWordDocumentHTML(topicTitle, rawContent, layoutFormat = "docx_report") {
@@ -710,7 +750,7 @@ function buildWordDocumentHTML(topicTitle, rawContent, layoutFormat = "docx_repo
             return `<div style="margin:4px 0 4px 16px;">• ${escapeHtml(b.text)}</div>`;
         }
         if (b.type === 'callout') {
-            return `<div style="background:#eff6ff; border-left:4px solid #2563eb; padding:9px 13px; margin:10px 0; font-size:12.5px;"><b>Note:</b> ${escapeHtml(b.text)}</div>`;
+            return `<div style="background:#eff6ff; border-left:4px solid #2563eb; padding:9px 13px; margin:10px 0; font-size:12.5px;"><b>Key Note:</b> ${escapeHtml(b.text)}</div>`;
         }
         if (b.type === 'table') {
             return `<table style="width:100%; border-collapse:collapse; margin:14px 0; font-size:12px; border:1px solid #cbd5e1;">
@@ -758,12 +798,12 @@ function buildWordDocumentHTML(topicTitle, rawContent, layoutFormat = "docx_repo
 }
 
 async function compileAndDownloadNativeDOCX(topicTitle, rawContent, layoutFormat = "docx_report") {
-    const safeTopic = (topicTitle || "KIZA_Document").replace(/[^a-zA-Z0-9]/g, '_').slice(0, 32);
+    const docData = parseStructuredWordBlocks(topicTitle, rawContent);
+    const safeTopic = (docData.title || "KIZA_Document").replace(/[^a-zA-Z0-9]/g, '_').slice(0, 32);
     const author = cleanDisplayNameOnly(currentUser);
     const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
 
     if (typeof window.docx === "undefined") {
-        // Fallback only if CDN failed to load
         const htmlDoc = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'></head><body>${document.getElementById('filePreviewViewport').innerHTML}</body></html>`;
         const blob = new Blob(['\ufeff', htmlDoc], { type: 'application/msword' });
         const url = URL.createObjectURL(blob);
@@ -772,8 +812,7 @@ async function compileAndDownloadNativeDOCX(topicTitle, rawContent, layoutFormat
         return;
     }
 
-    const { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, AlignmentType, ShadingType } = window.docx;
-    const docData = parseStructuredWordBlocks(topicTitle, rawContent);
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, AlignmentType, ShadingType, Footer, PageNumber } = window.docx;
     const children = [];
 
     if (layoutFormat === "docx_letter") {
@@ -806,15 +845,11 @@ async function compileAndDownloadNativeDOCX(topicTitle, rawContent, layoutFormat
                 spacing: { before: 240, after: 120 }
             }));
         } else if (b.type === 'bullet') {
-            children.push(new Paragraph({
-                text: b.text,
-                bullet: { level: 0 },
-                spacing: { after: 80 }
-            }));
+            children.push(new Paragraph({ text: b.text, bullet: { level: 0 }, spacing: { after: 80 } }));
         } else if (b.type === 'callout') {
             children.push(new Paragraph({
                 shading: { type: ShadingType.CLEAR, fill: "EFF6FF" },
-                children: [new TextRun({ text: "Note: ", bold: true, color: "1D4ED8" }), new TextRun({ text: b.text, color: "0F172A" })],
+                children: [new TextRun({ text: "Key Note: ", bold: true, color: "1D4ED8" }), new TextRun({ text: b.text, color: "0F172A" })],
                 spacing: { before: 120, after: 140 }
             }));
         } else if (b.type === 'table' && b.headers.length > 0) {
@@ -831,16 +866,10 @@ async function compileAndDownloadNativeDOCX(topicTitle, rawContent, layoutFormat
                     children: [new Paragraph({ children: [new TextRun({ text: String(r[ci] || ""), size: 20 })] })]
                 }))
             }));
-            children.push(new Table({
-                width: { size: 100, type: WidthType.PERCENTAGE },
-                rows: [headerRow, ...dataRows]
-            }));
+            children.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: [headerRow, ...dataRows] }));
             children.push(new Paragraph({ text: "", spacing: { after: 140 } }));
         } else {
-            children.push(new Paragraph({
-                children: [new TextRun({ text: b.text, size: 22 })],
-                spacing: { after: 140 }
-            }));
+            children.push(new Paragraph({ children: [new TextRun({ text: b.text, size: 22 })], spacing: { after: 140 } }));
         }
     });
 
@@ -852,23 +881,32 @@ async function compileAndDownloadNativeDOCX(topicTitle, rawContent, layoutFormat
     const doc = new Document({
         creator: author,
         title: docData.title,
-        sections: [{ properties: {}, children }]
+        sections: [{
+            properties: {},
+            footers: {
+                default: new Footer({
+                    children: [new Paragraph({
+                        alignment: AlignmentType.RIGHT,
+                        children: [
+                            new TextRun({ text: `KIZA Pro Studio • ${author} • Page `, color: "64748B", size: 18 }),
+                            new TextRun({ children: [PageNumber.CURRENT], color: "64748B", size: 18 })
+                        ]
+                    })]
+                })
+            },
+            children
+        }]
     });
 
     const blob = await Packer.toBlob(doc);
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `KIZA_${safeTopic}.docx`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showNotification("📘 Native .DOCX Saved", `Downloaded real Microsoft Word file KIZA_${safeTopic}.docx!`, false, { skipStore: true });
+    const a = document.createElement('a'); a.href = url; a.download = `KIZA_${safeTopic}.docx`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    showNotification("📘 Native .DOCX Saved", `Downloaded Microsoft Word file KIZA_${safeTopic}.docx!`, false, { skipStore: true });
 }
 
 // ==========================================================
-// 3. MULTI-SHEET EXCEL (.XLSX) PREVIEW & FORMULA EXPORTER
+// 3. BOARDROOM MULTI-SHEET EXCEL (.XLSX) WITH LIVE CROSS-SHEET FORMULAS
 // ==========================================================
 function parseMultiSheetExcelData(topicTitle, rawContent) {
     const lines = stripSlashesFromText(rawContent)
@@ -878,7 +916,6 @@ function parseMultiSheetExcelData(topicTitle, rawContent) {
 
     const sheets = [];
     let currentSheet = null;
-
     const ensureSheet = (defaultName = "Sheet_1") => {
         if (!currentSheet) {
             currentSheet = { name: defaultName, headers: [], rows: [] };
@@ -889,7 +926,7 @@ function parseMultiSheetExcelData(topicTitle, rawContent) {
 
     lines.forEach(raw => {
         const t = raw.trim();
-        if (!t) return;
+        if (!t || /^TITLE\s*:/i.test(t)) return;
         if (/^SHEET\s*:/i.test(t)) {
             const sName = t.replace(/^SHEET\s*:\s*/i, '').replace(/[\[\]:*?/\\]/g, '').trim().slice(0, 28) || `Sheet_${sheets.length + 1}`;
             currentSheet = { name: sName, headers: [], rows: [] };
@@ -924,42 +961,129 @@ function parseMultiSheetExcelData(topicTitle, rawContent) {
     return validSheets;
 }
 
+function evaluateExcelFormulaForPreview(formulaStr, sheets) {
+    const m = String(formulaStr || "").trim().match(/^=(SUM|AVERAGE|AVG|MIN|MAX|COUNT)\(\s*(?:([A-Za-z0-9_]+)!)?([A-Z]+)(\d+)\s*:\s*([A-Z]+)(\d+)\s*\)$/i);
+    if (!m) return null;
+    const fn = m[1].toUpperCase();
+    const targetSheetName = m[2];
+    const colStart = m[3].toUpperCase().charCodeAt(0) - 65;
+    const rowStart = Math.max(0, parseInt(m[4], 10) - 2);
+    const colEnd = m[5].toUpperCase().charCodeAt(0) - 65;
+    const rowEnd = Math.max(0, parseInt(m[6], 10) - 2);
+
+    const sh = targetSheetName
+        ? sheets.find(s => s.name.toLowerCase() === targetSheetName.toLowerCase()) || sheets[0]
+        : sheets[0];
+    if (!sh || !sh.rows) return null;
+
+    const nums = [];
+    for (let r = rowStart; r <= Math.min(rowEnd, sh.rows.length - 1); r++) {
+        for (let c = colStart; c <= colEnd; c++) {
+            const raw = String(sh.rows[r]?.[c] ?? "").replace(/[%$,₹,\s]/g, '');
+            const val = Number(raw);
+            if (raw !== "" && !isNaN(val)) nums.push(val);
+        }
+    }
+    if (!nums.length) return null;
+
+    let res = 0;
+    if (fn === "SUM") res = nums.reduce((a, b) => a + b, 0);
+    else if (fn === "AVERAGE" || fn === "AVG") res = nums.reduce((a, b) => a + b, 0) / nums.length;
+    else if (fn === "MIN") res = Math.min(...nums);
+    else if (fn === "MAX") res = Math.max(...nums);
+    else if (fn === "COUNT") res = nums.length;
+
+    return Number.isInteger(res) ? res.toLocaleString('en-IN') : Number(res.toFixed(2)).toLocaleString('en-IN');
+}
+
+function recalculateExcelPreviewFormulasFromDOM() {
+    const tables = Array.from(document.querySelectorAll('#filePreviewViewport table.excel-preview-table'));
+    if (!tables.length) return;
+    const liveSheets = tables.map(tbl => ({
+        name: tbl.getAttribute('data-sheet-name') || "Sheet",
+        rows: Array.from(tbl.querySelectorAll('tbody tr')).map(tr =>
+            Array.from(tr.querySelectorAll('td')).map(td => td.innerText.trim())
+        )
+    }));
+    document.querySelectorAll('#filePreviewViewport td[data-formula]').forEach(td => {
+        const f = td.getAttribute('data-formula');
+        const val = evaluateExcelFormulaForPreview(f, liveSheets);
+        if (val !== null) td.innerText = val;
+    });
+}
+
+function switchExcelPreviewTab(tabIndex) {
+    const panels = document.querySelectorAll('#filePreviewViewport .excel-sheet-panel');
+    const btns = document.querySelectorAll('#filePreviewViewport .excel-tab-btn');
+    panels.forEach((p, i) => { p.style.display = (tabIndex === -1 || i === tabIndex) ? "block" : "none"; });
+    btns.forEach((b) => {
+        const isAct = Number(b.getAttribute('data-tab-idx')) === tabIndex;
+        b.style.background = isAct ? "#059669" : "#f1f5f9";
+        b.style.color = isAct ? "#ffffff" : "#0f172a";
+    });
+}
+
 function buildExcelSheetPreviewHTML(topicTitle, rawContent, layoutFormat = "xlsx_budget") {
-    const parsedTopic = extractClientTopicAndStyle(topicTitle);
+    const titleMatch = stripSlashesFromText(rawContent).match(/^TITLE\s*:\s*([^\n]+)/im);
+    const displayTitle = titleMatch ? titleMatch[1].trim() : extractClientTopicAndStyle(topicTitle).cleanTopic;
     const sheets = parseMultiSheetExcelData(topicTitle, rawContent);
+
     const headerColors = { xlsx_budget: "#059669", xlsx_marksheet: "#2563eb", xlsx_tracker: "#7c3aed", xlsx_comparison: "#0f766e" };
     const hdrBg = headerColors[layoutFormat] || "#059669";
     const badgeText = {
-        xlsx_budget: "💰 BUDGET WORKBOOK (=SUM & =AVERAGE)",
+        xlsx_budget: "💰 FINANCIAL WORKBOOK (=SUM & =AVERAGE)",
         xlsx_marksheet: "🎓 MARKSHEET WORKBOOK (=SUM & =AVERAGE)",
         xlsx_tracker: "📋 TRACKER WORKBOOK",
         xlsx_comparison: "⚖️ COMPARISON WORKBOOK"
     }[layoutFormat] || "📗 MULTI-SHEET EXCEL WORKBOOK";
 
+    const tabButtonsHtml = `
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;" contenteditable="false">
+            <button type="button" class="excel-tab-btn" data-tab-idx="-1" onclick="switchExcelPreviewTab(-1)" style="border:1px solid #cbd5e1; background:#059669; color:#fff; font-size:11px; font-weight:700; padding:5px 11px; border-radius:999px; cursor:pointer;">📑 All Tabs (${sheets.length})</button>
+            ${sheets.map((sh, i) => `
+                <button type="button" class="excel-tab-btn" data-tab-idx="${i}" onclick="switchExcelPreviewTab(${i})" style="border:1px solid #cbd5e1; background:#f1f5f9; color:#0f172a; font-size:11px; font-weight:700; padding:5px 11px; border-radius:999px; cursor:pointer;">${escapeHtml(sh.name.replace(/_/g, ' '))}</button>
+            `).join('')}
+        </div>
+    `;
+
     const tablesHtml = sheets.map((sh, sIdx) => {
         const hdrs = sh.headers.length ? sh.headers : ["Item", "Value", "Notes"];
         return `
-            <div style="margin-bottom:16px;">
-                <div style="display:inline-block; background:${hdrBg}; color:#ffffff; font-size:11px; font-weight:800; padding:4px 12px; border-radius:8px 8px 0 0;">📑 Tab ${sIdx + 1}: ${escapeHtml(sh.name)}</div>
+            <div class="excel-sheet-panel" style="margin-bottom:16px;">
+                <div contenteditable="false" style="display:inline-block; background:${hdrBg}; color:#ffffff; font-size:11px; font-weight:800; padding:4px 12px; border-radius:8px 8px 0 0; user-select:none;">📑 Tab ${sIdx + 1}: ${escapeHtml(sh.name.replace(/_/g, ' '))}</div>
                 <table class="excel-preview-table" data-sheet-name="${escapeHtml(sh.name)}">
-                    <thead><tr>${hdrs.map(h => `<th style="background:${hdrBg};">${escapeHtml(h)}</th>`).join('')}</tr></thead>
-                    <tbody>${sh.rows.map(r => `<tr>${hdrs.map((_, cIdx) => `<td>${escapeHtml(r[cIdx] !== undefined ? r[cIdx] : '')}</td>`).join('')}</tr>`).join('')}</tbody>
+                    <thead><tr>${hdrs.map(h => `<th contenteditable="true" spellcheck="false" style="background:${hdrBg}; outline:none;">${escapeHtml(h)}</th>`).join('')}</tr></thead>
+                    <tbody>${sh.rows.map(r => `<tr>${hdrs.map((_, cIdx) => {
+                        const rawVal = r[cIdx] !== undefined ? String(r[cIdx]).trim() : '';
+                        if (rawVal.startsWith('=')) {
+                            const computed = evaluateExcelFormulaForPreview(rawVal, sheets);
+                            const shown = computed !== null ? computed : rawVal;
+                            return `<td contenteditable="true" spellcheck="false" data-formula="${escapeHtml(rawVal)}" title="Live Excel Formula: ${escapeHtml(rawVal)}" oninput="this.removeAttribute('data-formula')" style="font-weight:700; color:#047857; background:#ecfdf5; outline:none;">${escapeHtml(shown)}</td>`;
+                        }
+                        return `<td contenteditable="true" spellcheck="false" oninput="recalculateExcelPreviewFormulasFromDOM()" style="outline:none;">${escapeHtml(rawVal)}</td>`;
+                    }).join('')}</tr>`).join('')}</tbody>
                 </table>
             </div>
         `;
     }).join('');
 
-    return `<div style="background:#ffffff; padding:20px; border-radius:12px; color:#0f172a;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:2px solid ${hdrBg}; padding-bottom:8px;">
-            <div><span style="font-size:10px; font-weight:800; color:${hdrBg};">${badgeText} • ${sheets.length} TAB(S) • CLICK ANY CELL TO EDIT</span><h2 style="margin:3px 0 0 0; font-size:18px;">${escapeHtml(parsedTopic.cleanTopic)}</h2></div>
-            <span style="font-size:11px; color:#64748b;">Auto-Formulas Included</span>
+    return `<div contenteditable="false" style="background:#ffffff; padding:20px; border-radius:12px; color:#0f172a; user-select:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:2px solid ${hdrBg}; padding-bottom:8px; flex-wrap:wrap; gap:8px;">
+            <div>
+                <span style="font-size:10px; font-weight:800; color:${hdrBg};">${badgeText} • ${sheets.length} TAB(S) • CLICK ANY CELL TO EDIT</span>
+                <h2 contenteditable="true" spellcheck="false" style="margin:3px 0 0 0; font-size:18px; outline:none; user-select:text;">${escapeHtml(displayTitle)}</h2>
+            </div>
+            <span style="font-size:11px; color:#64748b;">Green cells auto-recalculate live</span>
         </div>
-        ${tablesHtml}
+        ${tabButtonsHtml}
+        <div style="user-select:text;">${tablesHtml}</div>
     </div>`;
 }
 
 function compileAndDownloadXLSX(topicTitle, rawContent) {
-    const safeTopic = (topicTitle || "KIZA_Workbook").replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30);
+    const titleMatch = stripSlashesFromText(rawContent).match(/^TITLE\s*:\s*([^\n]+)/im);
+    const cleanName = titleMatch ? titleMatch[1].trim() : extractClientTopicAndStyle(topicTitle).cleanTopic;
+    const safeTopic = (cleanName || "KIZA_Workbook").replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30);
     if (typeof XLSX === "undefined") { triggerTextDownload(`${safeTopic}.csv`, rawContent); return; }
 
     try {
@@ -977,27 +1101,41 @@ function compileAndDownloadXLSX(topicTitle, rawContent) {
 
         const addSheetAoaToBook = (sheetName, aoa) => {
             if (!aoa || aoa.length === 0) return;
-            if (aoa.length >= 3) {
+            const alreadyHasFormulas = aoa.slice(1).some(r => r.some(cell => cell && typeof cell === "object" && cell.f));
+            if (aoa.length >= 3 && !alreadyHasFormulas) {
                 const lastDataRow = aoa.length;
                 const colCount = aoa[0].length;
                 const totalRow = ["TOTAL"];
                 const avgRow = ["AVERAGE"];
+                let addedAnyFormula = false;
                 for (let c = 1; c < colCount; c++) {
                     const colLetter = XLSX.utils.encode_col(c);
                     if (aoa.slice(1).some(r => typeof r[c] === "number")) {
                         totalRow.push({ t: 'n', f: `SUM(${colLetter}2:${colLetter}${lastDataRow})` });
                         avgRow.push({ t: 'n', f: `AVERAGE(${colLetter}2:${colLetter}${lastDataRow})` });
+                        addedAnyFormula = true;
                     } else {
                         totalRow.push("");
                         avgRow.push("");
                     }
                 }
-                aoa.push(totalRow);
-                aoa.push(avgRow);
+                if (addedAnyFormula) { aoa.push(totalRow); aoa.push(avgRow); }
             }
             const ws = XLSX.utils.aoa_to_sheet(aoa);
-            ws['!cols'] = aoa[0].map(() => ({ wch: 20 }));
+            ws['!cols'] = aoa[0].map((_, ci) => {
+                const maxLen = Math.max(14, ...aoa.map(r => String(r[ci]?.f || r[ci] || "").length));
+                return { wch: Math.min(34, maxLen + 4) };
+            });
             XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        };
+
+        const parseCellForXlsx = (txt, formulaAttr = "") => {
+            const fStr = (formulaAttr && formulaAttr.startsWith('=')) ? formulaAttr : (txt.startsWith('=') ? txt : "");
+            if (fStr) return { t: 'n', f: fStr.slice(1) };
+            const cleanNumStr = txt.replace(/[₹$,%\s,]/g, '');
+            const numVal = Number(cleanNumStr);
+            if (cleanNumStr !== "" && !isNaN(numVal) && /^[0-9.,%₹$\s-]+$/.test(txt)) return numVal;
+            return txt;
         };
 
         if (domTables.length > 0) {
@@ -1006,11 +1144,9 @@ function compileAndDownloadXLSX(topicTitle, rawContent) {
                 const ths = Array.from(tbl.querySelectorAll('thead th')).map(th => th.innerText.trim());
                 if (ths.length) aoa.push(ths);
                 tbl.querySelectorAll('tbody tr').forEach(tr => {
-                    const tds = Array.from(tr.querySelectorAll('td')).map(td => {
-                        const txt = td.innerText.trim();
-                        const numVal = Number(txt.replace(/[%$,₹]/g, ''));
-                        return (!isNaN(numVal) && txt !== "" && /^[0-9.,%₹$-]+$/.test(txt)) ? numVal : txt;
-                    });
+                    const tds = Array.from(tr.querySelectorAll('td')).map(td =>
+                        parseCellForXlsx(td.innerText.trim(), td.getAttribute('data-formula') || "")
+                    );
                     if (tds.some(v => v !== "")) aoa.push(tds);
                 });
                 addSheetAoaToBook(makeUniqueSheetName(tbl.getAttribute('data-sheet-name'), idx), aoa);
@@ -1019,23 +1155,20 @@ function compileAndDownloadXLSX(topicTitle, rawContent) {
             const sheets = parseMultiSheetExcelData(topicTitle, rawContent);
             sheets.forEach((sh, idx) => {
                 const aoa = [sh.headers.length ? sh.headers : ["Item", "Value", "Notes"]];
-                sh.rows.forEach(r => aoa.push(r.map(v => {
-                    const num = Number(String(v).replace(/[%$,₹]/g, ''));
-                    return (!isNaN(num) && String(v).trim() !== "" && /^[0-9.,%₹$-]+$/.test(String(v).trim())) ? num : v;
-                })));
+                sh.rows.forEach(r => aoa.push(r.map(v => parseCellForXlsx(String(v).trim()))));
                 addSheetAoaToBook(makeUniqueSheetName(sh.name, idx), aoa);
             });
         }
 
         XLSX.writeFile(wb, `KIZA_${safeTopic}.xlsx`);
-        showNotification("📗 Multi-Sheet Excel Saved", `Downloaded KIZA_${safeTopic}.xlsx (${wb.SheetNames.length} tab(s) with =SUM & =AVERAGE)!`, false, { skipStore: true });
+        showNotification("📗 Multi-Sheet Excel Saved", `Downloaded KIZA_${safeTopic}.xlsx (${wb.SheetNames.length} tabs with live formulas)!`, false, { skipStore: true });
     } catch (e) {
         triggerTextDownload(`${safeTopic}.csv`, rawContent);
     }
 }
 
 // ==========================================================
-// 4. POWERPOINT (.PPTX) STUDIO
+// 4. EXECUTIVE POWERPOINT (.PPTX) STUDIO WITH SPEAKER NOTES
 // ==========================================================
 function parseSlideBlocksFromContent(rawContent) {
     const cleanBody = stripSlashesFromText(rawContent).replace(/\[GENERATE_FILE:[^\]]+\]/g, '').replace(/AI_INTRO:[^\n]*/gi, '').replace(/\*/g, '').trim();
@@ -1046,52 +1179,92 @@ function parseSlideBlocksFromContent(rawContent) {
         idx++;
         const title = match[1].trim();
         const lines = match[2].trim().split(/\n+/).map(l => l.trim()).filter(Boolean);
-        let imageQuery = "", statValue = `0${idx}`, statLabel = "KEY METRIC";
+        let imageQuery = "", statValue = `0${idx}`, statLabel = "KEY METRIC", notes = "";
         const bullets = [];
         lines.forEach(l => {
-            if (/^LAYOUT:/i.test(l)) return;
+            if (/^(LAYOUT|TITLE|SUBTITLE):/i.test(l)) return;
             if (/^IMAGE_QUERY:/i.test(l)) imageQuery = l.replace(/^IMAGE_QUERY:\s*/i, '').trim();
+            else if (/^NOTES:/i.test(l)) notes = l.replace(/^NOTES:\s*/i, '').trim();
             else if (/^STAT:/i.test(l)) { const sp = l.replace(/^STAT:\s*/i, '').split('|').map(x => x.trim()); if (sp[0]) statValue = sp[0]; if (sp[1]) statLabel = sp[1]; }
             else bullets.push(l.replace(/^[-•*\d.)\s]+/, '').trim());
         });
-        slides.push({ idx, title, imageQuery, statValue, statLabel, bullets });
+        slides.push({ idx, title, imageQuery, statValue, statLabel, bullets, notes });
     }
     return slides;
 }
 
 function buildPPTXSlidePreviewHTML(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark") {
+    const titleOverride = stripSlashesFromText(rawContent).match(/^TITLE\s*:\s*([^\n]+)/im);
+    const subOverride = stripSlashesFromText(rawContent).match(/^SUBTITLE\s*:\s*([^\n]+)/im);
     const parsedTopic = extractClientTopicAndStyle(topicTitle);
-    const cleanTopic = parsedTopic.cleanTopic.toUpperCase();
+    const cleanTopic = (titleOverride ? titleOverride[1].trim() : parsedTopic.cleanTopic).toUpperCase();
     const activeTheme = (styleTheme && styleTheme !== "cyber_dark") ? styleTheme : parsedTopic.styleTheme;
     const pal = THEME_PALETTES[activeTheme] || THEME_PALETTES.cyber_dark;
     const slides = parseSlideBlocksFromContent(rawContent);
+
     const slideCards = slides.map(s => {
         const rightHTML = s.imageQuery
             ? `<div style="flex:1; min-width:180px; background:#${pal.cardHex}; border:1.5px solid #${pal.secHex}; border-radius:8px; padding:8px; text-align:center;"><img src="${getVisualImageUrlSync(s.imageQuery)}" crossorigin="anonymous" style="width:100%; height:135px; object-fit:cover; border-radius:6px;" onerror="this.src='${generateCustomHighResArtworkDataUrl(s.imageQuery)}'"><div style="font-size:9.5px; color:#${pal.subHex}; margin-top:5px; font-family:monospace;">📸 ${escapeHtml(s.imageQuery.toUpperCase())}</div></div>`
             : `<div style="flex:1; min-width:130px; background:#${pal.cardHex}; border:2px solid #${pal.secHex}; border-radius:8px; padding:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;"><div style="font-size:26px; font-weight:800; color:#${pal.accentHex};">${escapeHtml(s.statValue)}</div><div style="font-size:10px; font-weight:700; color:#${pal.subHex}; margin-top:4px; font-family:monospace;">${escapeHtml(s.statLabel.toUpperCase())}</div></div>`;
-        return `<div class="ppt-slide-preview" style="background:#${pal.bgHex}; color:#${pal.textHex}; border:2px solid #${pal.accentHex};"><div style="font-size:10px; color:#${pal.accentHex}; font-family:monospace; margin-bottom:4px;">SLIDE 0${s.idx} • ${activeTheme.toUpperCase()}</div><div style="font-size:18px; font-weight:800; margin-bottom:12px; border-bottom:1px solid #${pal.accentHex}44; padding-bottom:8px;">${escapeHtml(s.title.toUpperCase())}</div><div style="display:flex; gap:14px; align-items:stretch; flex-wrap:wrap;"><div style="flex:2; min-width:220px; background:#${pal.cardHex}; border:1px solid #${pal.accentHex}33; border-radius:8px; padding:12px;">${s.bullets.map(b => `<div style="margin-bottom:7px; font-size:12.5px; display:flex; gap:8px;"><span style="color:#${pal.accentHex};">▸</span><span>${escapeHtml(b)}</span></div>`).join('')}</div>${rightHTML}</div></div>`;
+        const notesHTML = s.notes ? `<div style="margin-top:9px; padding-top:7px; border-top:1px dashed #${pal.accentHex}44; font-size:10.5px; color:#${pal.subHex}; font-style:italic;">🎤 Speaker Note: ${escapeHtml(s.notes)}</div>` : '';
+        return `<div class="ppt-slide-preview" style="background:#${pal.bgHex}; color:#${pal.textHex}; border:2px solid #${pal.accentHex};"><div style="font-size:10px; color:#${pal.accentHex}; font-family:monospace; margin-bottom:4px;">SLIDE 0${s.idx} • ${activeTheme.toUpperCase()}</div><div style="font-size:18px; font-weight:800; margin-bottom:12px; border-bottom:1px solid #${pal.accentHex}44; padding-bottom:8px;">${escapeHtml(s.title.toUpperCase())}</div><div style="display:flex; gap:14px; align-items:stretch; flex-wrap:wrap;"><div style="flex:2; min-width:220px; background:#${pal.cardHex}; border:1px solid #${pal.accentHex}33; border-radius:8px; padding:12px;">${s.bullets.map(b => `<div style="margin-bottom:7px; font-size:12.5px; display:flex; gap:8px;"><span style="color:#${pal.accentHex};">▸</span><span>${escapeHtml(b)}</span></div>`).join('')}</div>${rightHTML}</div>${notesHTML}</div>`;
     });
-    return `<div style="padding:10px;"><div class="ppt-slide-preview" style="background:#${pal.bgHex}; color:#${pal.textHex}; border:2px solid #${pal.accentHex};"><div style="font-size:10px; color:#${pal.accentHex}; font-family:monospace;">COVER SLIDE • ${activeTheme.toUpperCase()}</div><div style="font-size:24px; font-weight:800; margin:10px 0;">${escapeHtml(cleanTopic)}</div><div style="font-size:11px; color:#${pal.subHex}; font-family:monospace;">Prepared by ${escapeHtml(cleanDisplayNameOnly(currentUser).toUpperCase())}</div></div>${slideCards.join('')}</div>`;
+    return `<div style="padding:10px;"><div class="ppt-slide-preview" style="background:#${pal.bgHex}; color:#${pal.textHex}; border:2px solid #${pal.accentHex};"><div style="font-size:10px; color:#${pal.accentHex}; font-family:monospace;">COVER SLIDE • ${activeTheme.toUpperCase()}</div><div style="font-size:24px; font-weight:800; margin:10px 0 4px 0;">${escapeHtml(cleanTopic)}</div>${subOverride ? `<div style="font-size:13px; color:#${pal.subHex}; margin-bottom:8px;">${escapeHtml(subOverride[1].trim())}</div>` : ''}<div style="font-size:11px; color:#${pal.subHex}; font-family:monospace;">Prepared by ${escapeHtml(cleanDisplayNameOnly(currentUser).toUpperCase())} • ${slides.length} Slides</div></div>${slideCards.join('')}</div>`;
 }
 
 function compileAndDownloadPPTX(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark") {
+    const titleOverride = stripSlashesFromText(rawContent).match(/^TITLE\s*:\s*([^\n]+)/im);
+    const subOverride = stripSlashesFromText(rawContent).match(/^SUBTITLE\s*:\s*([^\n]+)/im);
     const parsed = extractClientTopicAndStyle(topicTitle);
-    const cleanTopic = parsed.cleanTopic.toUpperCase();
+    const cleanTopic = (titleOverride ? titleOverride[1].trim() : parsed.cleanTopic).toUpperCase();
     const activeTheme = (styleTheme && styleTheme !== "cyber_dark") ? styleTheme : parsed.styleTheme;
     const pal = THEME_PALETTES[activeTheme] || THEME_PALETTES.cyber_dark;
+
     if (typeof PptxGenJS === "undefined") { triggerTextDownload(`KIZA_Presentation_${Date.now()}.txt`, rawContent); return; }
     try {
         const pptx = new PptxGenJS();
         pptx.layout = "LAYOUT_16x9"; pptx.author = cleanDisplayNameOnly(currentUser); pptx.title = cleanTopic;
-        let titleSlide = pptx.addSlide(); titleSlide.background = { color: pal.bgHex };
-        titleSlide.addText(cleanTopic, { x: 0.8, y: 1.4, w: 8.4, h: 1.8, fontSize: 30, color: pal.textHex, bold: true });
-        parseSlideBlocksFromContent(rawContent).forEach(s => {
-            let slide = pptx.addSlide(); slide.background = { color: pal.bgHex };
-            slide.addText(`0${s.idx} // ${s.title.toUpperCase()}`, { x: 0.5, y: 0.35, w: 9.0, h: 0.55, fontSize: 20, color: pal.accentHex, bold: true });
-            if (s.bullets.length > 0) slide.addText(s.bullets.map(b => ({ text: b, options: { bullet: true, color: pal.textHex, fontSize: 14, breakLine: true } })), { x: 0.6, y: 1.2, w: 8.6, h: 3.8, valign: "top" });
+
+        // Executive Cover Slide
+        let titleSlide = pptx.addSlide();
+        titleSlide.background = { color: pal.bgHex };
+        titleSlide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 0.22, h: 5.625, fill: { color: pal.accentHex } });
+        titleSlide.addText("KIZA EXECUTIVE PRESENTATION", { x: 0.75, y: 1.0, w: 8.5, h: 0.4, fontSize: 11, color: pal.accentHex, bold: true, charSpacing: 3 });
+        titleSlide.addText(cleanTopic, { x: 0.75, y: 1.5, w: 8.5, h: 1.6, fontSize: 32, color: pal.textHex, bold: true });
+        if (subOverride) titleSlide.addText(subOverride[1].trim(), { x: 0.75, y: 3.15, w: 8.5, h: 0.7, fontSize: 15, color: pal.subHex });
+        titleSlide.addText(`Prepared by ${cleanDisplayNameOnly(currentUser)} • ${new Date().toLocaleDateString('en-IN')}`, { x: 0.75, y: 4.85, w: 8.5, h: 0.35, fontSize: 10.5, color: pal.subHex });
+
+        const slides = parseSlideBlocksFromContent(rawContent);
+        slides.forEach(s => {
+            let slide = pptx.addSlide();
+            slide.background = { color: pal.bgHex };
+            slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: pal.accentHex } });
+            slide.addText(`0${s.idx}  |  ${s.title.toUpperCase()}`, { x: 0.5, y: 0.32, w: 9.0, h: 0.55, fontSize: 20, color: pal.accentHex, bold: true });
+
+            // Left Content Card
+            slide.addShape(pptx.ShapeType.roundRect, { x: 0.5, y: 1.05, w: 6.1, h: 3.9, fill: { color: pal.cardHex }, line: { color: pal.accentHex, pt: 1 } });
+            if (s.bullets.length > 0) {
+                slide.addText(
+                    s.bullets.map(b => ({ text: b, options: { bullet: true, color: pal.textHex, fontSize: 14, breakLine: true, paraSpaceAfter: 10 } })),
+                    { x: 0.7, y: 1.25, w: 5.7, h: 3.5, valign: "top" }
+                );
+            }
+
+            // Right Highlight Stat Card
+            slide.addShape(pptx.ShapeType.roundRect, { x: 6.85, y: 1.05, w: 2.65, h: 3.9, fill: { color: pal.cardHex }, line: { color: pal.secHex, pt: 1.5 } });
+            slide.addText(String(s.statValue), { x: 6.95, y: 2.0, w: 2.45, h: 0.9, fontSize: 34, color: pal.accentHex, bold: true, align: "center" });
+            slide.addText(String(s.statLabel).toUpperCase(), { x: 6.95, y: 2.95, w: 2.45, h: 0.8, fontSize: 11, color: pal.subHex, bold: true, align: "center" });
+
+            // Footer & Speaker Notes
+            slide.addText(`KIZA Pro Studio • Slide ${s.idx} of ${slides.length}`, { x: 0.5, y: 5.18, w: 9.0, h: 0.3, fontSize: 9, color: pal.subHex, align: "right" });
+            if (s.notes) slide.addNotes(s.notes);
         });
+
         pptx.writeFile({ fileName: `KIZA_${cleanTopic.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 28)}.pptx` });
-    } catch (err) { triggerTextDownload(`KIZA_Presentation_${Date.now()}.txt`, rawContent); }
+        showNotification("📙 PowerPoint Saved", `Downloaded ${slides.length + 1}-slide executive deck with speaker notes!`, false, { skipStore: true });
+    } catch (err) {
+        triggerTextDownload(`KIZA_Presentation_${Date.now()}.txt`, rawContent);
+    }
 }
 
 // ==========================================================
@@ -1123,7 +1296,7 @@ async function prepareAndPreviewUniversalFile(ext, topic, rawContent, embeddedIm
     if (typeof playTacticalSFX === "function") playTacticalSFX("complete");
     renderInChatVisualFileCard(cleanExt, parsed.cleanTopic, rawContent, embeddedImgBase64, finalTheme, finalLayout);
     openFilePreviewModal();
-    showNotification("Studio Ready", `View, edit directly, or download .${cleanExt.toUpperCase()}!`, false, { skipStore: true });
+    showNotification("Studio Ready", `View, edit directly, or switch to Split View for live .${cleanExt.toUpperCase()} edits!`, false, { skipStore: true });
 }
 
 function switchPreviewExportFormat(newExt) {
@@ -1152,48 +1325,64 @@ function openFilePreviewModal() {
     const layoutFormat = syncFormatDropdownForFileType(ext, lastCompiledFileCache.layoutFormat);
     lastCompiledFileCache.layoutFormat = layoutFormat;
 
+    const titleMatch = stripSlashesFromText(rawContent).match(/^TITLE\s*:\s*([^\n]+)/im);
+    const cleanDisplayTopic = titleMatch ? titleMatch[1].trim() : extractClientTopicAndStyle(topic).cleanTopic;
+
     const modal = document.getElementById('filePreviewModal');
-    document.getElementById('filePreviewModalTitle').innerText = `🎨 KIZA Multi-Format Studio • ${topic || 'Document'} (.${ext.toUpperCase()})`;
-    document.getElementById('confirmDownloadBtn').innerText = `⬇️ Confirm & Download .${ext.toUpperCase()}`;
+    document.getElementById('filePreviewModalTitle').innerText = `🎨 KIZA Pro Studio • ${cleanDisplayTopic} (.${ext.toUpperCase()})`;
+    document.getElementById('confirmDownloadBtn').innerText = `⬇️ Download .${ext.toUpperCase()}`;
     const expSel = document.getElementById('previewExportTypeSelect');
     if (expSel && Array.from(expSel.options).some(o => o.value === ext)) expSel.value = ext;
 
     const viewport = document.getElementById('filePreviewViewport');
     const selectorsBox = document.getElementById('previewLayoutThemeSelectors');
+    viewport.spellcheck = false;
 
     if (isPreRenderedAuditHtml) {
         if (selectorsBox) selectorsBox.style.display = "none";
+        viewport.contentEditable = "false";
         viewport.innerHTML = rawContent;
     } else if (ext === "xlsx" || ext === "xls") {
         if (selectorsBox) selectorsBox.style.display = "flex";
-        viewport.innerHTML = buildExcelSheetPreviewHTML(topic, rawContent, layoutFormat);
+        viewport.contentEditable = "false";
+        viewport.innerHTML = buildExcelSheetPreviewHTML(cleanDisplayTopic, rawContent, layoutFormat);
     } else if (ext === "docx" || ext === "doc") {
         if (selectorsBox) selectorsBox.style.display = "flex";
-        viewport.innerHTML = buildWordDocumentHTML(topic, rawContent, layoutFormat);
+        viewport.contentEditable = "true";
+        viewport.innerHTML = buildWordDocumentHTML(cleanDisplayTopic, rawContent, layoutFormat);
     } else if (ext === "pptx" || ext === "ppt") {
         if (selectorsBox) selectorsBox.style.display = "flex";
-        viewport.innerHTML = buildPPTXSlidePreviewHTML(topic, rawContent, embeddedImgBase64, styleTheme);
+        viewport.contentEditable = "true";
+        viewport.innerHTML = buildPPTXSlidePreviewHTML(cleanDisplayTopic, rawContent, embeddedImgBase64, styleTheme);
     } else if (ext === "pdf") {
         if (selectorsBox) selectorsBox.style.display = "flex";
-        viewport.innerHTML = buildDecorativeReportHTML(topic, rawContent, embeddedImgBase64, styleTheme, layoutFormat || "infographic").html;
+        viewport.contentEditable = "true";
+        viewport.innerHTML = buildDecorativeReportHTML(cleanDisplayTopic, rawContent, embeddedImgBase64, styleTheme, layoutFormat || "infographic").html;
     } else {
         if (selectorsBox) selectorsBox.style.display = "none";
+        viewport.contentEditable = "true";
         const cleanBody = stripSlashesFromText(rawContent).replace(/\[GENERATE_FILE:[^\]]+\]/g, '').replace(/AI_INTRO:[^\n]*/gi, '').trim();
         viewport.innerHTML = `<pre style="background:#0f172a; color:#f8fafc; padding:18px; border-radius:10px; overflow-x:auto; font-family:'JetBrains Mono', monospace; font-size:12px;">${escapeHtml(cleanBody)}</pre>`;
     }
     renderMathInElementSafe(viewport);
+    modal.classList.toggle('split-docked', isSplitStudioActive);
     modal.style.display = "flex";
 }
 
 function closeFilePreviewModal() {
     document.getElementById('filePreviewModal').style.display = "none";
+    if (isSplitStudioActive && document.getElementById('codeSandboxModal')?.style.display !== 'flex') {
+        toggleSplitStudioMode(false);
+    }
 }
 
 async function confirmAndDownloadPreviewedFile() {
     if (!lastCompiledFileCache) return;
     const { ext, topic, rawContent, embeddedImgBase64, styleTheme, layoutFormat } = lastCompiledFileCache;
     const cleanExt = (ext || "pdf").toLowerCase().trim();
-    const safeTopic = (topic || "KIZA_Export").replace(/[^a-zA-Z0-9]/g, '_').slice(0, 32);
+    const titleMatch = stripSlashesFromText(rawContent).match(/^TITLE\s*:\s*([^\n]+)/im);
+    const finalName = titleMatch ? titleMatch[1].trim() : topic;
+    const safeTopic = (finalName || "KIZA_Export").replace(/[^a-zA-Z0-9]/g, '_').slice(0, 32);
 
     if (cleanExt === "xlsx" || cleanExt === "xls") { compileAndDownloadXLSX(topic, rawContent); return; }
     if (cleanExt === "doc" || cleanExt === "docx") { await compileAndDownloadNativeDOCX(topic, rawContent, layoutFormat); return; }
@@ -1230,10 +1419,11 @@ function renderInChatVisualFileCard(ext, topic, rawContent, embeddedImgBase64 = 
             </div>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
                 <button type="button" class="chip-btn" style="width:auto; padding:6px 12px; font-size:11px;" onclick="openFilePreviewModal()">👁️ View & Edit</button>
+                <button type="button" class="chip-btn" style="width:auto; padding:6px 12px; font-size:11px; border-color:var(--accent-primary); color:var(--accent-primary);" onclick="openFilePreviewModal(); toggleSplitStudioMode(true);">◧ Split View</button>
                 <button type="button" class="send-btn" style="padding:6px 13px; font-size:11px;" onclick="confirmAndDownloadPreviewedFile()">⬇️ Download .${ext.toUpperCase()}</button>
             </div>
         </div>
-        <div style="font-size:11.5px; color:var(--text-muted);">Switch formats anytime inside Studio or ask KIZA in chat to revise!</div>
+        <div style="font-size:11.5px; color:var(--text-muted);">Edit cells/text directly or open Split View to tell KIZA what to update live!</div>
     `;
     logBox.appendChild(card);
     logBox.scrollTop = logBox.scrollHeight;
@@ -1367,18 +1557,26 @@ function extractAndRenderCodeBlocks(rawText) {
     let match;
     const logBox = document.getElementById('actionLog');
     while ((match = codeRegex.exec(rawText)) !== null) {
-        let lang = (match[1] || "html").toLowerCase().trim();
+        let lang = (match[1] || "").toLowerCase().trim();
         if (lang === "mermaid") continue;
         let codeContent = match[2].replace(/https:\s*•\s*/g, 'https://').replace(/http:\s*•\s*/g, 'http://').trim();
         if (!codeContent) continue;
-        const extMap = { html: "html", javascript: "js", js: "js", css: "css", python: "py", py: "py", json: "json", sql: "sql", c: "c", cpp: "cpp" };
-        const filename = `index.${extMap[lang] || "html"}`;
+
+        if (!lang) {
+            if (/<!doctype|<html|<body|<div|<canvas|<style/i.test(codeContent)) lang = "html";
+            else if (/\bdef\s+\w+\(|import\s+\w+|print\(/i.test(codeContent)) lang = "python";
+            else lang = "javascript";
+        }
+
+        const extMap = { html: "html", htm: "html", javascript: "js", js: "js", css: "css", python: "py", py: "py", json: "json", sql: "sql", c: "c", cpp: "cpp", svg: "svg" };
+        const filename = `index.${extMap[lang] || "txt"}`;
         const snippetIdx = generatedCodeSnippetsStore.length;
         generatedCodeSnippetsStore.push({ lang, code: codeContent, filename });
-        const canRunLive = ["html", "javascript", "js", "svg"].includes(lang) || codeContent.includes("<html") || codeContent.includes("<body");
+        const canRunLive = ["html", "htm", "javascript", "js", "svg"].includes(lang);
+
         const card = document.createElement('div');
         card.className = "code-block-card";
-        card.innerHTML = `<div class="code-block-header"><div style="display:flex; align-items:center; gap:8px;"><span style="background:rgba(56,189,248,0.15); color:#38bdf8; padding:3px 8px; border-radius:6px; font-weight:700;">${escapeHtml(lang.toUpperCase())}</span><span style="color:#e2e8f0; font-weight:600;">${escapeHtml(filename)}</span></div><div style="display:flex; gap:6px; flex-wrap:wrap;">${canRunLive ? `<button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#10b981; color:#ffffff; border:none;" onclick="openCodeSandboxByIndex(${snippetIdx})">▶ Run Live</button>` : ''}${canRunLive ? `<button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#4f46e5; color:#ffffff; border:none;" onclick="currentSandboxCodeObj=generatedCodeSnippetsStore[${snippetIdx}]; shareCurrentSandboxMiniAppUrl();">🔗 Share</button>` : ''}<button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#f59e0b; color:#000000; border:none;" onclick="currentSandboxCodeObj=generatedCodeSnippetsStore[${snippetIdx}]; autoFixCurrentSandboxCode();">⚡ Fix</button><button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#334155; color:#f8fafc; border:1px solid #475569;" onclick="copyCodeSnippetByIndex(${snippetIdx})">📋 Copy</button><button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#0284c7; color:#ffffff; border:none;" onclick="downloadCodeSnippetByIndex(${snippetIdx})">⬇️ Save</button></div></div><pre class="code-block-pre"><code>${escapeHtml(codeContent)}</code></pre>`;
+        card.innerHTML = `<div class="code-block-header"><div style="display:flex; align-items:center; gap:8px;"><span style="background:rgba(56,189,248,0.15); color:#38bdf8; padding:3px 8px; border-radius:6px; font-weight:700;">${escapeHtml(lang.toUpperCase())}</span><span style="color:#e2e8f0; font-weight:600;">${escapeHtml(filename)}</span></div><div style="display:flex; gap:6px; flex-wrap:wrap;">${canRunLive ? `<button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#10b981; color:#ffffff; border:none;" onclick="openCodeSandboxByIndex(${snippetIdx})">▶ Run Live</button>` : ''}${canRunLive ? `<button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#0284c7; color:#ffffff; border:none;" onclick="openCodeSandboxByIndex(${snippetIdx}); toggleSplitStudioMode(true);">◧ Split</button>` : ''}${canRunLive ? `<button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#4f46e5; color:#ffffff; border:none;" onclick="currentSandboxCodeObj=generatedCodeSnippetsStore[${snippetIdx}]; shareCurrentSandboxMiniAppUrl();">🔗 Share</button>` : ''}<button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#f59e0b; color:#000000; border:none;" onclick="currentSandboxCodeObj=generatedCodeSnippetsStore[${snippetIdx}]; autoFixCurrentSandboxCode();">⚡ Fix</button><button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#334155; color:#f8fafc; border:1px solid #475569;" onclick="copyCodeSnippetByIndex(${snippetIdx})">📋 Copy</button><button type="button" class="chip-btn" style="width:auto; padding:4px 11px; font-size:11px; background:#0284c7; color:#ffffff; border:none;" onclick="downloadCodeSnippetByIndex(${snippetIdx})">⬇️ Save</button></div></div><pre class="code-block-pre"><code>${escapeHtml(codeContent)}</code></pre>`;
         logBox.appendChild(card);
         logBox.scrollTop = logBox.scrollHeight;
     }
@@ -1388,17 +1586,28 @@ function openCodeSandboxByIndex(idx) {
     const item = generatedCodeSnippetsStore[idx];
     if (!item) return;
     currentSandboxCodeObj = item;
-    document.getElementById('codeSandboxTitle').innerText = `💻 KIZA Live Code Sandbox • ${item.filename}`;
+    document.getElementById('codeSandboxTitle').innerText = `💻 KIZA Isolated Sandbox • ${item.filename}`;
     const banner = document.getElementById('sandboxDiagnosticBanner');
-    if (banner) banner.style.display = "none";
+    const bannerTxt = document.getElementById('sandboxDiagnosticText');
     let htmlToRun = item.code;
+
+    const looksCutOff = (item.lang === "html" || /<!doctype|<html|<style/i.test(htmlToRun)) && (!/<\/body>/i.test(htmlToRun) || (/<script/i.test(htmlToRun) && !/<\/script>/i.test(htmlToRun)));
+    if (looksCutOff && banner && bannerTxt) {
+        bannerTxt.innerText = "⚠️ Code was cut off before finishing! Tap '⚡ Fix Now' to complete the working app.";
+        banner.style.display = "flex";
+    } else if (banner) {
+        banner.style.display = "none";
+    }
+
     if (item.lang === "javascript" || item.lang === "js") {
-        htmlToRun = `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:20px;"><h3>JavaScript Output:</h3><pre id="out"></pre><script>const origLog = console.log; console.log = (...a) => { document.getElementById('out').innerText += a.join(' ') + '\\n'; origLog(...a); }; try { ${item.code} } catch(e) { document.getElementById('out').innerText += 'Error: ' + e.message; }<\/script></body></html>`;
+        htmlToRun = `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:20px;background:#0f172a;color:#f8fafc;"><h3>JavaScript Output:</h3><pre id="out"></pre><script>const origLog = console.log; console.log = (...a) => { document.getElementById('out').innerText += a.join(' ') + '\\n'; origLog(...a); }; try { ${item.code} } catch(e) { document.getElementById('out').innerText += 'Error: ' + e.message; }<\/script></body></html>`;
     }
     const errorHook = `<script>window.onerror = function(msg, src, line) { window.parent.postMessage({ type: 'kiza_sandbox_error', message: msg + ' (Line ' + line + ')' }, '*'); };<\/script>`;
     htmlToRun = htmlToRun.includes("<head>") ? htmlToRun.replace("<head>", "<head>" + errorHook) : (errorHook + htmlToRun);
     document.getElementById('codeSandboxIframe').srcdoc = htmlToRun;
-    document.getElementById('codeSandboxModal').style.display = "flex";
+    const modal = document.getElementById('codeSandboxModal');
+    modal.classList.toggle('split-docked', isSplitStudioActive);
+    modal.style.display = "flex";
 }
 
 window.addEventListener('message', (e) => {
@@ -1410,8 +1619,14 @@ window.addEventListener('message', (e) => {
 });
 
 function reloadCurrentSandboxIframe() { const i = document.getElementById('codeSandboxIframe'); if (i && i.srcdoc) { const d = i.srcdoc; i.srcdoc = ""; setTimeout(() => { i.srcdoc = d; }, 40); } }
-function autoFixCurrentSandboxCode() { if (!currentSandboxCodeObj?.code) return; closeCodeSandboxModal(); document.getElementById('textInput').value = `Fix and complete this HTML web app cleanly:\n${currentSandboxCodeObj.code.slice(0, 600)}`; submitCommand(); }
-function closeCodeSandboxModal() { document.getElementById('codeSandboxModal').style.display = "none"; document.getElementById('codeSandboxIframe').srcdoc = ""; }
+function autoFixCurrentSandboxCode() { if (!currentSandboxCodeObj?.code) return; closeCodeSandboxModal(); document.getElementById('textInput').value = `Fix and complete this single-file HTML5 web app cleanly so it runs with zero errors:\n${currentSandboxCodeObj.code.slice(0, 700)}`; submitCommand(); }
+function closeCodeSandboxModal() {
+    document.getElementById('codeSandboxModal').style.display = "none";
+    document.getElementById('codeSandboxIframe').srcdoc = "";
+    if (isSplitStudioActive && document.getElementById('filePreviewModal')?.style.display !== 'flex') {
+        toggleSplitStudioMode(false);
+    }
+}
 function copyCodeSnippetByIndex(idx) { const i = generatedCodeSnippetsStore[idx]; if (i) { navigator.clipboard.writeText(i.code); showNotification("Copied", `Copied ${i.filename}`, false, { skipStore: true }); } }
 function downloadCodeSnippetByIndex(idx) { const i = generatedCodeSnippetsStore[idx]; if (i) { triggerTextDownload(i.filename, i.code); showNotification("Downloaded", `Saved ${i.filename}`, false, { skipStore: true }); } }
 function copyCurrentSandboxCode() { if (currentSandboxCodeObj?.code) { navigator.clipboard.writeText(currentSandboxCodeObj.code); showNotification("Copied", "Code copied!", false, { skipStore: true }); } }
