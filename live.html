@@ -127,7 +127,7 @@
         .photo-stage.active { display: flex; }
         #uploadedPhotoPreview { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px; }
 
-        /* DRAGGABLE CAMERA PiP (BOTTOM-RIGHT BY DEFAULT) */
+        /* DRAGGABLE CAMERA PiP (BOTTOM-RIGHT BY DEFAULT SO WHITEBOARD TOOLBAR IS 100% VISIBLE) */
         .camera-pip {
             position: absolute; bottom: 12px; right: 12px; z-index: 40;
             width: 164px; height: 114px; border-radius: 14px; overflow: hidden;
@@ -208,7 +208,7 @@
         </div>
 
         <div class="stage-area" id="stageContainer">
-            <!-- DRAGGABLE CAMERA PiP -->
+            <!-- DRAGGABLE INDEPENDENT CAMERA PiP -->
             <div class="camera-pip" id="cameraPipBox" title="Drag anywhere to move">
                 <video id="camVideo" autoplay playsinline muted></video>
                 <span id="camOfflineText" style="font-size:10px; color:var(--muted); pointer-events:none;">📷 Cam Off</span>
@@ -263,7 +263,7 @@
                 <video id="screenVideo" autoplay playsinline muted></video>
             </div>
 
-            <!-- 4. HD PHOTO STAGE -->
+            <!-- 4. HD PHOTO UPLOAD STAGE -->
             <div class="photo-stage" id="photoStage">
                 <span class="stage-badge" style="color:var(--accent); border-color:var(--accent);">📸 HD PHOTO ATTACHED</span>
                 <button type="button" class="wb-btn" style="position:absolute; top:10px; right:12px; z-index:12; border-color:var(--danger); color:var(--danger);" onclick="clearUploadedPhoto()">✕ Remove</button>
@@ -311,7 +311,7 @@
         let uploadedPhotoDataUrl = null, currentStageMode = "orb", speakerMuted = false;
         let activeAudio = null, isKizaSpeaking = false, lastKizaReplyText = "";
         let ws = null, wsReady = false, useHttpFallback = false, wsWatchdog = null;
-        let pingStart = 0, pingInterval = null, replyTimeout = null;
+        let pingStart = 0, pingInterval = null, ackTimeout = null, replyTimeout = null;
 
         setInterval(() => {
             const sec = Math.floor((Date.now() - callStartTs) / 1000);
@@ -326,7 +326,7 @@
         });
 
         // ==========================================================
-        // 1. DRAGGABLE CAMERA PiP
+        // 1. DRAGGABLE CAMERA PiP (MOUSE & TOUCH POINTER EVENTS)
         // ==========================================================
         (function initDraggableCameraPip() {
             const pip = document.getElementById("cameraPipBox");
@@ -364,7 +364,7 @@
         })();
 
         // ==========================================================
-        // 2. DUAL CAMERA + SCREEN SHARE + PHOTO + COMPACT HD CAPTURE
+        // 2. DUAL CAMERA + SCREEN SHARE + SMART ZERO-LAG CAPTURE
         // ==========================================================
         function setStageMode(mode) {
             currentStageMode = mode;
@@ -448,7 +448,7 @@
                     if (w > maxW) { h = Math.round(h * (maxW / w)); w = maxW; }
                     const c = document.getElementById("captureCanvas");
                     c.width = w; c.height = h; c.getContext("2d").drawImage(img, 0, 0, w, h);
-                    uploadedPhotoDataUrl = c.toDataURL("image/jpeg", 0.85);
+                    uploadedPhotoDataUrl = c.toDataURL("image/jpeg", 0.84);
                     document.getElementById("uploadedPhotoPreview").src = uploadedPhotoDataUrl;
                     setStageMode("photo");
                     document.getElementById("captionBox").textContent = "📸 HD Photo ready! Ask KIZA anything about it.";
@@ -460,9 +460,24 @@
         }
         function clearUploadedPhoto() { uploadedPhotoDataUrl = null; setStageMode(screenStream ? "screen" : "orb"); }
 
-        function captureCrispActiveFrame() {
+        function shouldSendCameraFrame(textStr) {
+            return /\b(see|look\s+at|camera|webcam|holding|in\s+my\s+hand|what\s+is\s+this|read\s+this|behind\s+me|wearing|my\s+face|show\s+you)\b/i.test(textStr || "");
+        }
+
+        function isPureDrawPrompt(textStr) {
+            const t = textStr || "";
+            return /\b(draw|sketch|scribble|diagram|plot|illustrate)\b/i.test(t) &&
+                   !/\b(my\s+(?:board|whiteboard|drawing)|look\s+at|solve\s+(?:this|what|my))\b/i.test(t);
+        }
+
+        function captureCrispActiveFrame(userText = "") {
             const c = document.getElementById("captureCanvas"), ctx = c.getContext("2d");
-            if (currentStageMode === "photo" && uploadedPhotoDataUrl) return { image_base64: uploadedPhotoDataUrl, source: "photo" };
+            if (isPureDrawPrompt(userText)) {
+                return { image_base64: null, source: "whiteboard_draw" };
+            }
+            if (currentStageMode === "photo" && uploadedPhotoDataUrl) {
+                return { image_base64: uploadedPhotoDataUrl, source: "photo" };
+            }
             if (currentStageMode === "whiteboard") {
                 const wb = document.getElementById("sharedWhiteboard");
                 const maxW = 960, scale = Math.min(1, maxW / (wb.width || 960));
@@ -470,7 +485,7 @@
                 c.height = Math.max(240, Math.round(wb.height * scale));
                 ctx.fillStyle = "#090f1d"; ctx.fillRect(0, 0, c.width, c.height);
                 ctx.drawImage(wb, 0, 0, c.width, c.height);
-                return { image_base64: c.toDataURL("image/jpeg", 0.82), source: "whiteboard" };
+                return { image_base64: c.toDataURL("image/jpeg", 0.80), source: "whiteboard" };
             }
             if (screenStream && (currentStageMode === "screen" || !camEnabled)) {
                 const sv = document.getElementById("screenVideo");
@@ -478,23 +493,23 @@
                     const maxW = 1024, scale = Math.min(1, maxW / sv.videoWidth);
                     c.width = Math.round(sv.videoWidth * scale); c.height = Math.round(sv.videoHeight * scale);
                     ctx.drawImage(sv, 0, 0, c.width, c.height);
-                    return { image_base64: c.toDataURL("image/jpeg", 0.82), source: "screen" };
+                    return { image_base64: c.toDataURL("image/jpeg", 0.80), source: "screen" };
                 }
             }
-            if (camEnabled && camStream) {
+            if (camEnabled && camStream && shouldSendCameraFrame(userText)) {
                 const cv = document.getElementById("camVideo");
                 if (cv.videoWidth > 0) {
-                    const maxW = 800, scale = Math.min(1, maxW / cv.videoWidth);
+                    const maxW = 720, scale = Math.min(1, maxW / cv.videoWidth);
                     c.width = Math.round(cv.videoWidth * scale); c.height = Math.round(cv.videoHeight * scale);
                     ctx.drawImage(cv, 0, 0, c.width, c.height);
-                    return { image_base64: c.toDataURL("image/jpeg", 0.80), source: "camera" };
+                    return { image_base64: c.toDataURL("image/jpeg", 0.78), source: "camera" };
                 }
             }
-            return { image_base64: null, source: "none" };
+            return { image_base64: null, source: "voice" };
         }
 
         // ==========================================================
-        // 3. SHARED WHITEBOARD + EXPORT TO PNG / PDF / MAIN CHAT
+        // 3. SHARED WHITEBOARD + EXPORT TO PNG / STUDY PDF / CHAT
         // ==========================================================
         const wbCanvas = document.getElementById("sharedWhiteboard"), wbCtx = wbCanvas.getContext("2d");
         let wbDrawing = false, wbColor = "#38bdf8", wbEraser = false, wbHistory = [];
@@ -523,7 +538,6 @@
         wbCanvas.addEventListener("touchstart", wbStart, { passive: false }); wbCanvas.addEventListener("touchmove", wbMove, { passive: false }); window.addEventListener("touchend", wbEnd);
 
         function askKizaAboutWhiteboard() { sendLiveSpeechOrText("Look at my whiteboard and solve or explain what is drawn there."); }
-
         function toggleWbSaveMenu(e) { if (e) e.stopPropagation(); document.getElementById("wbSaveMenu").classList.toggle("open"); }
 
         function renderCompositeWhiteboardDataUrl(mime = "image/png", quality = 0.94) {
@@ -575,7 +589,7 @@
                     note: lastKizaReplyText || "Saved from KIZA Live Whiteboard",
                     timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })
                 }));
-                document.getElementById("captionBox").textContent = "💬 Saved! Your whiteboard will appear in your main KIZA chat as soon as you end the call.";
+                document.getElementById("captionBox").textContent = "💬 Saved! Your whiteboard will appear in your main KIZA chat when you end the call.";
             } catch (e) {
                 document.getElementById("captionBox").textContent = "⚠️ Board image too large for local storage—use PNG or PDF export instead.";
             }
@@ -583,7 +597,11 @@
 
         async function executeKizaWhiteboardCommands(commands) {
             if (!Array.isArray(commands) || !commands.length) return;
-            if (currentStageMode !== "whiteboard") { setStageMode("whiteboard"); await new Promise(r => setTimeout(r, 120)); }
+            if (currentStageMode !== "whiteboard") {
+                setStageMode("whiteboard");
+                await new Promise(r => setTimeout(r, 150));
+                resizeWhiteboardCanvas();
+            }
             const W = wbCanvas.width || 800, H = wbCanvas.height || 450;
             const sx = (v) => (Number(v) / 1000) * W, sy = (v) => (Number(v) / 1000) * H;
             saveWbSnapshot();
@@ -594,17 +612,31 @@
                 else if (type === "line" || type === "arrow") {
                     const x1 = sx(cmd.x1), y1 = sy(cmd.y1), x2 = sx(cmd.x2), y2 = sy(cmd.y2);
                     wbCtx.beginPath(); wbCtx.moveTo(x1, y1); wbCtx.lineTo(x2, y2); wbCtx.stroke();
-                    if (type === "arrow") { const a = Math.atan2(y2 - y1, x2 - x1); wbCtx.beginPath(); wbCtx.moveTo(x2, y2); wbCtx.lineTo(x2 - 12 * Math.cos(a - 0.5), y2 - 12 * Math.sin(a - 0.5)); wbCtx.lineTo(x2 - 12 * Math.cos(a + 0.5), y2 - 12 * Math.sin(a + 0.5)); wbCtx.closePath(); wbCtx.fill(); }
-                } else if (type === "rect") wbCtx.strokeRect(sx(cmd.x), sy(cmd.y), sx(cmd.w), sy(cmd.h));
-                else if (type === "circle") { wbCtx.beginPath(); wbCtx.arc(sx(cmd.cx), sy(cmd.cy), (Number(cmd.r || 60) / 1000) * Math.min(W, H), 0, Math.PI * 2); wbCtx.stroke(); }
-                else if (type === "path" && Array.isArray(cmd.points) && cmd.points.length > 1) { wbCtx.beginPath(); wbCtx.moveTo(sx(cmd.points[0][0]), sy(cmd.points[0][1])); for (let i = 1; i < cmd.points.length; i++) wbCtx.lineTo(sx(cmd.points[i][0]), sy(cmd.points[i][1])); wbCtx.stroke(); }
-                else if (type === "text" && cmd.text) { wbCtx.font = `700 ${Math.max(13, Math.round((Number(cmd.size || 18) / 600) * Math.min(W, H)))}px Inter, sans-serif`; wbCtx.fillText(String(cmd.text), sx(cmd.x), sy(cmd.y)); }
-                await new Promise(r => setTimeout(r, 140));
+                    if (type === "arrow") {
+                        const a = Math.atan2(y2 - y1, x2 - x1);
+                        wbCtx.beginPath(); wbCtx.moveTo(x2, y2);
+                        wbCtx.lineTo(x2 - 12 * Math.cos(a - 0.5), y2 - 12 * Math.sin(a - 0.5));
+                        wbCtx.lineTo(x2 - 12 * Math.cos(a + 0.5), y2 - 12 * Math.sin(a + 0.5));
+                        wbCtx.closePath(); wbCtx.fill();
+                    }
+                } else if (type === "rect") {
+                    wbCtx.strokeRect(sx(cmd.x), sy(cmd.y), sx(cmd.w), sy(cmd.h));
+                } else if (type === "circle") {
+                    wbCtx.beginPath(); wbCtx.arc(sx(cmd.cx), sy(cmd.cy), (Number(cmd.r || 60) / 1000) * Math.min(W, H), 0, Math.PI * 2); wbCtx.stroke();
+                } else if (type === "path" && Array.isArray(cmd.points) && cmd.points.length > 1) {
+                    wbCtx.beginPath(); wbCtx.moveTo(sx(cmd.points[0][0]), sy(cmd.points[0][1]));
+                    for (let i = 1; i < cmd.points.length; i++) wbCtx.lineTo(sx(cmd.points[i][0]), sy(cmd.points[i][1]));
+                    wbCtx.stroke();
+                } else if (type === "text" && cmd.text) {
+                    wbCtx.font = `700 ${Math.max(13, Math.round((Number(cmd.size || 18) / 600) * Math.min(W, H)))}px Inter, sans-serif`;
+                    wbCtx.fillText(String(cmd.text), sx(cmd.x), sy(cmd.y));
+                }
+                await new Promise(r => setTimeout(r, 130));
             }
         }
 
         // ==========================================================
-        // 4. ZERO-HANG CONNECTION (WS + 3.5s AUTO-HTTPS FALLBACK)
+        // 4. ZERO-HANG CONNECTION (WS + 3s ACK WATCHDOG + HTTPS FALLBACK)
         // ==========================================================
         function activateLiveReadyUI(modeLabel) {
             document.getElementById("connDot").classList.add("online");
@@ -629,7 +661,7 @@
                 if (!wsReady) {
                     useHttpFallback = true;
                     activateLiveReadyUI("HTTPS Live");
-                    document.getElementById("captionBox").textContent = `Keeza Live ready (HTTPS mode), ${userName}! Tap 🟢 Hands-Free, hold to speak, or open the Whiteboard.`;
+                    document.getElementById("captionBox").textContent = `Keeza Live ready (HTTPS mode), ${userName}! Tap 🟢 Hands-Free, hold to speak, or ask me to draw on the Whiteboard.`;
                 }
             }, 3500);
 
@@ -648,6 +680,7 @@
             };
 
             ws.onmessage = (event) => {
+                clearTimeout(ackTimeout);
                 const data = JSON.parse(event.data);
                 if (data.type === "pong") {
                     const pEl = document.getElementById("livePing");
@@ -668,6 +701,8 @@
                     speakLiveResponse(cleanReply, data.audio_base64);
                 } else if (data.type === "error") {
                     clearTimeout(replyTimeout);
+                    document.getElementById("liveOrb").classList.remove("thinking");
+                    document.getElementById("liveStatusChip").textContent = "LIVE & READY";
                     document.getElementById("captionBox").textContent = `⚠️ ${data.message}`;
                 }
             };
@@ -677,7 +712,8 @@
                 if (ev.code === 1008) {
                     clearTimeout(wsWatchdog);
                     document.getElementById("connDot").classList.remove("online");
-                    document.getElementById("captionBox").textContent = "🔒 Session expired. Return to KIZA and sign in again.";
+                    document.getElementById("captionBox").textContent = "🔒 Session ended or temporarily banned. Returning to KIZA...";
+                    setTimeout(() => { window.location.href = "index.html"; }, 2200);
                 } else {
                     useHttpFallback = true; activateLiveReadyUI("HTTPS Live");
                 }
@@ -688,41 +724,82 @@
             const clean = (textStr || "").trim();
             if (!clean) return;
             callTopics.push(clean.slice(0, 90));
-            const frameObj = captureCrispActiveFrame();
+            const frameObj = captureCrispActiveFrame(clean);
 
             if (wsReady && ws && ws.readyState === WebSocket.OPEN && !useHttpFallback) {
                 document.getElementById("captionBox").textContent = `⏳ Sending (${frameObj.source}): "${clean}"...`;
-                ws.send(JSON.stringify({ type: "speech", text: clean, personality, image_base64: frameObj.image_base64, vision_source: frameObj.source }));
+                try {
+                    ws.send(JSON.stringify({
+                        type: "speech",
+                        text: clean,
+                        personality,
+                        image_base64: frameObj.image_base64,
+                        vision_source: frameObj.source
+                    }));
+                } catch (err) {
+                    useHttpFallback = true;
+                    await sendLiveViaHttp(clean, frameObj);
+                    return;
+                }
+                clearTimeout(ackTimeout);
+                ackTimeout = setTimeout(() => {
+                    useHttpFallback = true;
+                    sendLiveViaHttp(clean, frameObj);
+                }, 3000);
                 clearTimeout(replyTimeout);
-                replyTimeout = setTimeout(() => { useHttpFallback = true; sendLiveViaHttp(clean, frameObj); }, 10000);
+                replyTimeout = setTimeout(() => {
+                    useHttpFallback = true;
+                    sendLiveViaHttp(clean, frameObj);
+                }, 14000);
                 return;
             }
             await sendLiveViaHttp(clean, frameObj);
         }
 
         async function sendLiveViaHttp(cleanText, frameObj) {
+            clearTimeout(ackTimeout);
+            clearTimeout(replyTimeout);
             document.getElementById("liveOrb").classList.add("thinking");
             document.getElementById("liveStatusChip").textContent = "KIZA IS THINKING...";
-            document.getElementById("captionBox").textContent = `🧠 Analyzing (${frameObj.source}): "${cleanText}"...`;
+            document.getElementById("captionBox").textContent = `🧠 Thinking (${frameObj.source}): "${cleanText}"...`;
+            const controller = new AbortController();
+            const httpTimer = setTimeout(() => controller.abort(), 20000);
             try {
                 const t0 = performance.now();
                 const res = await fetch(`${SERVER_HTTP}/api/live/turn`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json", "X-KIZA-Token": sessionToken },
-                    body: JSON.stringify({ text: cleanText, personality, image_base64: frameObj.image_base64, vision_source: frameObj.source })
+                    body: JSON.stringify({
+                        text: cleanText,
+                        personality,
+                        image_base64: frameObj.image_base64,
+                        vision_source: frameObj.source
+                    }),
+                    signal: controller.signal
                 });
+                clearTimeout(httpTimer);
                 const rtt = Math.max(20, Math.round(performance.now() - t0));
                 const data = await res.json();
                 activateLiveReadyUI(`${rtt}ms`);
                 const replyTxt = data.text || data.message || "Done.";
                 lastKizaReplyText = replyTxt;
                 document.getElementById("captionBox").textContent = replyTxt;
+                if (data.user_banned || data.ip_banned) {
+                    setTimeout(() => { window.location.href = "index.html"; }, 2500);
+                    return;
+                }
                 if (replyTxt) callDecisions.push(replyTxt.slice(0, 110));
-                if (Array.isArray(data.draw_commands) && data.draw_commands.length > 0) executeKizaWhiteboardCommands(data.draw_commands);
+                if (Array.isArray(data.draw_commands) && data.draw_commands.length > 0) {
+                    executeKizaWhiteboardCommands(data.draw_commands);
+                }
                 speakLiveResponse(replyTxt, data.audio_base64);
             } catch (e) {
+                clearTimeout(httpTimer);
                 document.getElementById("liveOrb").classList.remove("thinking");
-                document.getElementById("captionBox").textContent = `⚠️ Error: ${e.message}`;
+                document.getElementById("liveStatusChip").textContent = "LIVE & READY";
+                document.getElementById("captionBox").textContent = e.name === "AbortError"
+                    ? "⚠️ Server took too long (>20s). Try again in a moment."
+                    : `⚠️ Error: ${e.message}`;
             }
         }
 
@@ -760,7 +837,7 @@
         function speakLiveResponse(text, audioBase64) {
             if (speakerMuted || !text) { if (vadEnabled) startVadRecognition(); return; }
             interruptKizaSpeech();
-            stopVadRecognitionTemporarily(); // Pause STT while KIZA talks; AnalyserNode stays live for Barge-In!
+            stopVadRecognitionTemporarily();
 
             const orb = document.getElementById("liveOrb");
             const onSpeechEnd = () => {
@@ -854,13 +931,11 @@
             }
             const rms = Math.sqrt(sum / buf.length);
 
-            // Live 3-bar mic meter
             const h = Math.min(14, Math.max(3, Math.round(rms * 110)));
             document.getElementById("vb1").style.height = `${Math.max(3, Math.round(h * 0.7))}px`;
             document.getElementById("vb2").style.height = `${h}px`;
             document.getElementById("vb3").style.height = `${Math.max(3, Math.round(h * 0.85))}px`;
 
-            // REAL-TIME BARGE-IN: Speaking over KIZA immediately cuts off playback and listens!
             if (isKizaSpeaking) {
                 if (rms > 0.072) {
                     bargeInTicks++;
@@ -912,7 +987,7 @@
             try { vadRec.start(); } catch (e) { vadRec = null; }
         }
 
-        // Manual Push-to-Talk fallback (works alongside or without VAD)
+        // Manual Push-to-Talk fallback
         let pttRec = null, pttTranscript = "";
         const pttBtn = document.getElementById("pttBtn");
         function startPTT(e) {
