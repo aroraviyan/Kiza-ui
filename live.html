@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="referrer" content="no-referrer">
     <meta name="theme-color" content="#050a14">
-    <title>KIZA Live — Hands-Free VAD, Vision & Pro Vector Whiteboard</title>
+    <title>KIZA Live — Hands-Free VAD, Vision & Hybrid AI Whiteboard</title>
     <link rel="icon" type="image/png" href="logo.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -226,11 +226,11 @@
                 <div class="status-chip" id="liveStatusChip">CONNECTING TO KIZA BRAIN...</div>
             </div>
 
-            <!-- 2. SHARED AI PRO VECTOR WHITEBOARD -->
+            <!-- 2. SHARED HYBRID AI WHITEBOARD (FLUX ART + VECTOR SVG + FREEHAND) -->
             <div class="whiteboard-stage" id="whiteboardStage">
                 <div class="wb-toolbar">
                     <div class="wb-tools-group">
-                        <span style="font-size:11.5px; font-weight:800; color:var(--glow);">🎨 Shared AI Whiteboard</span>
+                        <span style="font-size:11.5px; font-weight:800; color:var(--glow);">🎨 Hybrid AI Whiteboard</span>
                         <div class="color-dot active" style="background:#38bdf8;" onclick="setWbColor('#38bdf8', this)"></div>
                         <div class="color-dot" style="background:#fbbf24;" onclick="setWbColor('#fbbf24', this)"></div>
                         <div class="color-dot" style="background:#f87171;" onclick="setWbColor('#f87171', this)"></div>
@@ -275,7 +275,7 @@
 
         <div class="bottom-dock">
             <div class="text-bar">
-                <input type="text" id="liveTextInput" placeholder="Ask KIZA anything or say 'Draw Gojo Satoru with Hollow Purple'..." autocomplete="off">
+                <input type="text" id="liveTextInput" placeholder="Ask KIZA anything or say 'Draw Gojo Satoru vs Ryomen Sukuna'..." autocomplete="off">
                 <button type="button" class="send-pill" onclick="sendTypedLiveMessage()">Send</button>
             </div>
             <div class="controls-row">
@@ -386,7 +386,7 @@
         function updateVisionBadge() {
             const b = document.getElementById("activeVisionBadge");
             if (currentStageMode === "photo" && uploadedPhotoDataUrl) b.textContent = "📸 HD Photo";
-            else if (currentStageMode === "whiteboard") b.textContent = "🎨 Pro Whiteboard";
+            else if (currentStageMode === "whiteboard") b.textContent = "🎨 Hybrid Board";
             else if (screenStream && currentStageMode === "screen") b.textContent = camEnabled ? "🖥️ Screen + 📷 Cam" : "🖥️ HD Screen";
             else b.textContent = camEnabled ? "📷 Cam Live" : "🎙️ Audio";
         }
@@ -471,7 +471,7 @@
 
         function isPureDrawPrompt(textStr) {
             const t = textStr || "";
-            return /\b(draw|sketch|scribble|diagram|plot|illustrate|paint|banao|bana\s+de|bana\s+do|banado)\b/i.test(t) &&
+            return /\b(draw|sketch|scribble|diagram|plot|illustrate|paint|banao|bana\s+de|bana\s+do|banado|chitra)\b/i.test(t) &&
                    !/\b(my\s+(?:board|whiteboard|drawing)|look\s+at|solve\s+(?:this|what|my))\b/i.test(t);
         }
 
@@ -514,7 +514,7 @@
         }
 
         // ==========================================================
-        // 3. PRO VECTOR WHITEBOARD (TRANSPARENT ERASER + SVG ART + SHAPES)
+        // 3. HYBRID WHITEBOARD (FLUX ARTWORK + VECTOR SVG + SHAPES)
         // ==========================================================
         const wbCanvas = document.getElementById("sharedWhiteboard"), wbCtx = wbCanvas.getContext("2d");
         let wbDrawing = false, wbColor = "#38bdf8", wbEraser = false, wbHistory = [], wbLastPos = null;
@@ -637,7 +637,42 @@
             }
         }
 
-        // High-Detail Vector SVG Renderer onto Shared Whiteboard Canvas
+        // Engine 1: Real AI Illustration (FLUX Base64) Renderer onto Whiteboard
+        async function renderKizaImageOnWhiteboard(imgDataUrl, additive = false) {
+            if (!imgDataUrl) return;
+            if (currentStageMode !== "whiteboard") {
+                setStageMode("whiteboard");
+                await new Promise(r => setTimeout(r, 160));
+                resizeWhiteboardCanvas();
+            }
+            const W = wbCanvas.width || 1000, H = wbCanvas.height || 600;
+            await new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    saveWbSnapshot();
+                    wbCtx.save();
+                    wbCtx.globalCompositeOperation = "source-over";
+                    if (!additive) wbCtx.clearRect(0, 0, W, H);
+                    const pad = 20;
+                    const scale = Math.min((W - pad * 2) / img.naturalWidth, (H - pad * 2) / img.naturalHeight);
+                    const drawW = img.naturalWidth * scale;
+                    const drawH = img.naturalHeight * scale;
+                    const dx = (W - drawW) / 2;
+                    const dy = (H - drawH) / 2;
+                    wbCtx.beginPath();
+                    if (wbCtx.roundRect) wbCtx.roundRect(dx, dy, drawW, drawH, 14);
+                    else wbCtx.rect(dx, dy, drawW, drawH);
+                    wbCtx.clip();
+                    wbCtx.drawImage(img, dx, dy, drawW, drawH);
+                    wbCtx.restore();
+                    resolve();
+                };
+                img.onerror = () => resolve();
+                img.src = imgDataUrl;
+            });
+        }
+
+        // Engine 2: High-Detail Vector SVG Renderer onto Whiteboard (Math/Science Diagrams)
         async function renderKizaSvgOnWhiteboard(svgString, additive = false) {
             if (!svgString || typeof svgString !== "string") return;
             if (currentStageMode !== "whiteboard") {
@@ -710,6 +745,7 @@
             }).filter(p => p && !isNaN(p[0]) && !isNaN(p[1]));
         }
 
+        // Engine 3: Fallback Canvas Primitives Renderer
         async function executeKizaWhiteboardCommands(commands) {
             if (!Array.isArray(commands) || !commands.length) return;
             if (currentStageMode !== "whiteboard") {
@@ -824,7 +860,9 @@
         }
 
         async function handleWhiteboardPayload(data) {
-            if (data.draw_svg && typeof data.draw_svg === "string" && data.draw_svg.includes("<svg")) {
+            if (data.draw_image_base64 && typeof data.draw_image_base64 === "string") {
+                await renderKizaImageOnWhiteboard(data.draw_image_base64, Boolean(data.draw_additive));
+            } else if (data.draw_svg && typeof data.draw_svg === "string" && data.draw_svg.includes("<svg")) {
                 await renderKizaSvgOnWhiteboard(data.draw_svg, Boolean(data.draw_additive));
             } else if (Array.isArray(data.draw_commands) && data.draw_commands.length > 0) {
                 await executeKizaWhiteboardCommands(data.draw_commands);
@@ -857,7 +895,7 @@
                 if (!wsReady) {
                     useHttpFallback = true;
                     activateLiveReadyUI("HTTPS Live");
-                    document.getElementById("captionBox").textContent = `Keeza Live ready (HTTPS mode), ${userName}! Tap 🟢 Hands-Free, hold to speak, or ask me to illustrate on the Pro Whiteboard.`;
+                    document.getElementById("captionBox").textContent = `Keeza Live ready (HTTPS mode), ${userName}! Tap 🟢 Hands-Free, hold to speak, or ask me to draw anything on the Hybrid Whiteboard.`;
                 }
             }, 3500);
 
@@ -883,8 +921,8 @@
                 } else if (data.type === "state") {
                     clearTimeout(ackTimeout);
                     document.getElementById("liveOrb").classList.toggle("thinking", data.status === "thinking");
-                    document.getElementById("liveStatusChip").textContent = data.status === "thinking" ? "KIZA IS DRAWING / THINKING..." : "LIVE & READY";
-                    if (data.status === "thinking") document.getElementById("captionBox").textContent = "🎨 Working on your request...";
+                    document.getElementById("liveStatusChip").textContent = data.status === "thinking" ? "KIZA IS CREATING..." : "LIVE & READY";
+                    if (data.status === "thinking") document.getElementById("captionBox").textContent = "🎨 Creating your artwork / response...";
                 } else if (data.type === "response") {
                     clearTimeout(ackTimeout); clearTimeout(replyTimeout); clearTimeout(wsWatchdog);
                     wsReady = true; useHttpFallback = false;
@@ -922,9 +960,12 @@
             if (!clean) return;
             callTopics.push(clean.slice(0, 90));
             const frameObj = captureCrispActiveFrame(clean);
+            const isDraw = frameObj.source === "whiteboard_draw";
 
             if (wsReady && ws && ws.readyState === WebSocket.OPEN && !useHttpFallback) {
-                document.getElementById("captionBox").textContent = `⏳ Sending (${frameObj.source}): "${clean}"...`;
+                document.getElementById("captionBox").textContent = isDraw
+                    ? `🎨 Generating illustration / diagram for "${clean}"...`
+                    : `⏳ Sending (${frameObj.source}): "${clean}"...`;
                 try {
                     ws.send(JSON.stringify({
                         type: "speech",
@@ -947,7 +988,7 @@
                 replyTimeout = setTimeout(() => {
                     useHttpFallback = true;
                     sendLiveViaHttp(clean, frameObj);
-                }, 24000);
+                }, 35000);
                 return;
             }
             await sendLiveViaHttp(clean, frameObj);
@@ -956,11 +997,14 @@
         async function sendLiveViaHttp(cleanText, frameObj) {
             clearTimeout(ackTimeout);
             clearTimeout(replyTimeout);
+            const isDraw = frameObj.source === "whiteboard_draw";
             document.getElementById("liveOrb").classList.add("thinking");
-            document.getElementById("liveStatusChip").textContent = "KIZA IS DRAWING / THINKING...";
-            document.getElementById("captionBox").textContent = `🎨 Thinking (${frameObj.source}): "${cleanText}"...`;
+            document.getElementById("liveStatusChip").textContent = isDraw ? "GENERATING ARTWORK..." : "KIZA IS THINKING...";
+            document.getElementById("captionBox").textContent = isDraw
+                ? `🎨 Generating illustration / diagram for "${cleanText}"...`
+                : `🧠 Thinking (${frameObj.source}): "${cleanText}"...`;
             const controller = new AbortController();
-            const httpTimer = setTimeout(() => controller.abort(), 28000);
+            const httpTimer = setTimeout(() => controller.abort(), 35000);
             try {
                 const t0 = performance.now();
                 const res = await fetch(`${SERVER_HTTP}/api/live/turn`, {
@@ -998,7 +1042,7 @@
                 document.getElementById("liveOrb").classList.remove("thinking");
                 document.getElementById("liveStatusChip").textContent = "LIVE & READY";
                 document.getElementById("captionBox").textContent = e.name === "AbortError"
-                    ? "⚠️ Server took too long (>28s). Try again in a moment."
+                    ? "⚠️ Server took too long (>35s). Try again in a moment."
                     : `⚠️ Error: ${e.message}`;
             }
         }
