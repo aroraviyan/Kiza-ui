@@ -1,11 +1,11 @@
 // ==========================================================
-// KIZA v11.1 — MAIN WORKSPACE, VOICE (EN/HI/PA), WS & CHAT ENGINE
+// KIZA v11.5 — MAIN WORKSPACE, INDIAN VOICE, ZERO-TRUST & CHAT ENGINE
 // ==========================================================
 if (typeof pdfjsLib !== "undefined") {
     pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 }
 
-// Render Cold-Start Pre-Warmer (wakes backend silently while you sign in)
+// Silently wake Render container on page load
 fetch(`${SERVER_URL}/health`).catch(() => {});
 
 // ==========================================================
@@ -85,17 +85,22 @@ let voiceEnabled = false;
 let currentAudio = null;
 let audioCtx = null;
 let isKizaSpeaking = false;
-let typingTimer = null;
 
 const PERSONA_VOICE_CONFIG = {
+    helpful: { label: "IN • NEURAL", rate: 1.03 },
+    energetic: { label: "IN • NEERJA", rate: 1.08 },
     normal: { label: "UK • DRY WIT", rate: 1.04 },
-    energetic: { label: "US • FAST WIT", rate: 1.15 },
-    security: { label: "UK • TACTICAL", rate: 0.94 },
-    helpful: { label: "IN • EXECUTIVE", rate: 1.06 }
+    security: { label: "UK • TACTICAL", rate: 0.94 }
 };
 
 const DEFAULT_UPDATES_FALLBACK = [
-    { version: "v11.1", title: "AES Encryption, Shared AI Whiteboard & Modular Studio", description: "Added AES-Fernet encryption at rest, draggable Live Call PiP, AI Whiteboard drawing, native OpenXML .docx, multi-sheet .xlsx, and EN/HI/PA speech recognition.", author: "Viyan Arora", date: "LIVE" }
+    {
+        version: "v11.5",
+        title: "3-Strike Moderation Guard, Instant Live Whiteboard & Pro Studio",
+        description: "Added 3-strike profanity moderation with Rank 1-3 alerts & 15-min auto-bans, instant Live Whiteboard drawing, Split-Screen Studio, Hands-Free VAD + Barge-In, Indian Neural Voice, and 3D Anti-Spoof Face 2FA.",
+        author: "Viyan Arora",
+        date: "LIVE"
+    }
 ];
 
 function togglePowerSaverMode(forceState = null) {
@@ -177,7 +182,7 @@ document.addEventListener('click', (e) => {
 });
 
 // ==========================================================
-// 3. TEXT SANITIZERS, VOICE ENGINE (AUTO PA/HI) & SPEECH INPUT
+// 3. TEXT SANITIZERS, INDIAN VOICE + EMOJI REACTIONS & SPEECH INPUT
 // ==========================================================
 function stripSlashesFromText(textStr) {
     if (!textStr) return "";
@@ -198,6 +203,7 @@ function extractFriendlyAssistantMessage(fullText) {
         .replace(/\[ACTION:[A-Z_]+\]/g, '')
         .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
         .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
+        .replace(/\[ZERO_TRUST_CONFIRM:[^\]]+\]/g, '')
         .replace(/\[SYSTEM[^\]]*\]/gi, '')
         .replace(/\*\*/g, '')
         .trim();
@@ -206,9 +212,9 @@ function extractFriendlyAssistantMessage(fullText) {
     if (introMatch) return introMatch[1].trim();
     if (/SLIDE\s*1\s*:|PAGE\s*1\s*:|SUBTITLE:|KPI:|SECTION:|SHEET:|TABLE_HEADER:/i.test(cleaned)) {
         const beforeTags = cleaned.split(/SLIDE\s*1\s*:|PAGE\s*1\s*:|SUBTITLE:|KPI:|SECTION:|SHEET:|TABLE_HEADER:/i)[0].trim();
-        return beforeTags || "I've compiled your file and opened it in the KIZA Multi-Format Studio!";
+        return beforeTags || "I've compiled your file and opened it in KIZA Pro Studio!";
     }
-    return cleaned || (fullText.includes("```") ? "Your interactive code module is ready below!" : "");
+    return cleaned || (fullText.includes("```") ? "Your interactive module is ready below!" : "");
 }
 
 function detectSpokenLangCode(text) {
@@ -221,28 +227,48 @@ function detectSpokenLangCode(text) {
     return null;
 }
 
+function humanizeEmojisForSpeech(text) {
+    let s = String(text || "").replace(/\bK\.?\s*I\.?\s*Z\.?\s*A\.?\b/gi, "Keeza");
+    s = s.replace(/[💖💕💗💓💞💘❤️🩷🥰😍🥺🎀🥹🤗🫶]+/gu, " awww, ");
+    s = s.replace(/[😂🤣😆😹]+/gu, " haha, ");
+    s = s.replace(/[😮‍💨😌😩😫🫠✨]+/gu, " ahhh, ");
+    s = s.replace(/[😮🤯😱🔥⚡]+/gu, " oooh, ");
+    s = s.replace(/[😢😭😔💔]+/gu, " oh no, ");
+    s = s.replace(/[\p{Extended_Pictographic}\uFE0F\u200D]/gu, " ");
+    s = s.replace(/(\b(?:awww|ahhh|haha|oooh|oh no)\b,?\s*){2,}/gi, "$1");
+    return s.replace(/\s+/g, " ").trim();
+}
+
+function pickAuthenticIndianVoice(targetLang, voices) {
+    if (!voices || !voices.length) return null;
+    const indianNames = /neerja|prabhat|heera|ravi|madhur|swara|india|indian/i;
+    if (targetLang === "en-IN" || targetLang === "hi-IN" || targetLang === "pa-IN") {
+        return (
+            voices.find(v => v.lang.toLowerCase() === targetLang.toLowerCase() && indianNames.test(v.name)) ||
+            voices.find(v => indianNames.test(v.name)) ||
+            voices.find(v => v.lang.toLowerCase() === targetLang.toLowerCase()) ||
+            voices.find(v => v.lang.toLowerCase() === "en-in") ||
+            voices.find(v => v.lang.toLowerCase() === "hi-in")
+        );
+    }
+    return voices.find(v => v.lang.toLowerCase() === targetLang.toLowerCase()) ||
+           voices.find(v => v.lang.toLowerCase().startsWith(targetLang.slice(0, 2)));
+}
+
 function speakMessageDirectly(textToRead) {
     if (!window.speechSynthesis || !textToRead) return;
     try {
         window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(textToRead.slice(0, 320));
+        const spoken = humanizeEmojisForSpeech(textToRead.slice(0, 320));
+        if (!spoken) return;
+        const utter = new SpeechSynthesisUtterance(spoken);
         const detectedLang = detectSpokenLangCode(textToRead);
-        const voices = window.speechSynthesis.getVoices() || [];
-
-        if (detectedLang) {
-            utter.lang = detectedLang;
-            const matchVoice =
-                voices.find(v => v.lang.toLowerCase() === detectedLang.toLowerCase()) ||
-                voices.find(v => v.lang.toLowerCase().startsWith(detectedLang.slice(0, 2))) ||
-                voices.find(v => v.lang.toLowerCase() === "hi-in") ||
-                voices.find(v => v.lang.toLowerCase() === "en-in");
-            if (matchVoice) utter.voice = matchVoice;
-            utter.rate = 1.02;
-        } else {
-            const p = document.getElementById('personaSelect')?.value || "normal";
-            utter.rate = (PERSONA_VOICE_CONFIG[p] || PERSONA_VOICE_CONFIG.normal).rate;
-            utter.lang = p === "helpful" ? "en-IN" : "en-GB";
-        }
+        const p = document.getElementById('personaSelect')?.value || "helpful";
+        const targetLang = detectedLang || (p === "helpful" || p === "energetic" ? "en-IN" : "en-GB");
+        utter.lang = targetLang;
+        const chosen = pickAuthenticIndianVoice(targetLang, window.speechSynthesis.getVoices() || []);
+        if (chosen) utter.voice = chosen;
+        utter.rate = detectedLang ? 1.02 : (PERSONA_VOICE_CONFIG[p] || PERSONA_VOICE_CONFIG.helpful).rate;
         isKizaSpeaking = true;
         utter.onend = () => { isKizaSpeaking = false; };
         utter.onerror = () => { isKizaSpeaking = false; };
@@ -258,7 +284,7 @@ function playKizaAudio(base64Data, fallbackText = "") {
     isKizaSpeaking = true;
     currentAudio = new Audio("data:audio/mp3;base64," + base64Data);
     currentAudio.playsInline = true;
-    currentAudio.playbackRate = (PERSONA_VOICE_CONFIG[document.getElementById('personaSelect')?.value || "normal"] || PERSONA_VOICE_CONFIG.normal).rate;
+    currentAudio.playbackRate = (PERSONA_VOICE_CONFIG[document.getElementById('personaSelect')?.value || "helpful"] || PERSONA_VOICE_CONFIG.helpful).rate;
     currentAudio.onended = () => { isKizaSpeaking = false; };
     currentAudio.onerror = () => { isKizaSpeaking = false; if (fallbackText) speakMessageDirectly(fallbackText); };
     currentAudio.play().catch(() => { isKizaSpeaking = false; });
@@ -276,8 +302,8 @@ function updateVoiceUI() {
 }
 function toggleVoiceMute() { voiceEnabled = !voiceEnabled; updateVoiceUI(); }
 function handlePersonaChange() {
-    const pVal = document.getElementById('personaSelect').value || "normal";
-    logAction(`[KIZA]: Switched English voice accent to ${pVal.toUpperCase()} (Punjabi & Hindi auto-detect stays active).`);
+    const pVal = document.getElementById('personaSelect').value || "helpful";
+    logAction(`[KIZA]: Switched voice preset to ${pVal.toUpperCase()} (Indian Neural + Emoji Reactions active).`);
 }
 
 function showVoiceHologram(textStr) {
@@ -290,17 +316,13 @@ let recognition = null, isRecording = false;
 let wakeWordEnabled = false, wakeRecognition = null, awaitingWakeCommand = false, wakeCommandTimeout = null;
 const WAKE_WORD_VARIATIONS = ["hello", "helo", "listen", "lissen", "kiza"];
 
-function getSelectedSpeechLocale() {
-    return document.getElementById('micLangSelect')?.value || "en-IN";
-}
+function getSelectedSpeechLocale() { return document.getElementById('micLangSelect')?.value || "en-IN"; }
 
 function initSpeechRecognition() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) return null;
     const rec = new SR();
-    rec.continuous = false;
-    rec.interimResults = true;
-    rec.lang = getSelectedSpeechLocale();
+    rec.continuous = false; rec.interimResults = true; rec.lang = getSelectedSpeechLocale();
     rec.onstart = () => { isRecording = true; showVoiceHologram(`Listening (${rec.lang})...`); };
     rec.onresult = (event) => {
         let finalText = "";
@@ -756,7 +778,7 @@ function showNotification(title, message, isError = false, options = {}) {
     notifBox.classList.add('show');
     setTimeout(() => notifBox.classList.remove('show'), 4500);
 }
-function openNotifCenter() { if (isPinLocked) { openPinGate(pinGateMode); return; } toggleMobileSidebar(false); document.getElementById('notifCenterModal').style.display = "flex"; document.getElementById('notifModalUserLabel').innerText = `${cleanDisplayNameOnly(currentUser)} (Rank ${currentRankNum})`; renderNotificationCentre(); }
+function openNotifCenter() { if (isPinLocked) { openPinGate(pinGateMode); return; } toggleMobileSidebar(false); document.getElementById('notifCenterModal').style.display = "flex"; document.getElementById('notifModalUserLabel').innerText = `${cleanDisplayNameOnly(currentUser)} (Rank ${currentRankNum})`; renderNotificationCentre(); syncNotificationsFromServer(false); }
 function closeNotifCenter() { document.getElementById('notifCenterModal').style.display = "none"; }
 function setNotifFilter(f) { currentNotifFilter = f; ['All', 'Unread', 'Lockdown', 'Error'].forEach(t => document.getElementById(`notifTab${t}`).classList.toggle('active', f === t.toLowerCase())); renderNotificationCentre(); }
 function markNotificationRead(id) { let l = getUserNotifications(currentDBUser), it = l.find(n => n.id === id); if (it && !it.read) { it.read = true; it.readAt = Date.now(); markAlertIdAsSeen(id, currentDBUser); saveUserNotifications(l, currentDBUser); renderNotificationCentre(); } }
@@ -899,7 +921,7 @@ async function fetchAndRenderThreats() {
         const canDel = Boolean(data.can_delete);
         document.getElementById('wipeAllThreatsBtn').style.display = canDel ? "inline-flex" : "none";
         let bp = [];
-        if (data.banned_ips?.length) bp.push(`🚫 Banned IPs: ` + data.banned_ips.map(b => `${b.ip} (${b.remaining_seconds}s)`).join(" | "));
+        if (data.banned_ips?.length) bp.push(`🚫 Banned: ` + data.banned_ips.map(b => `${b.ip} (${b.remaining_seconds}s)`).join(" | "));
         if (data.whitelisted_ips?.length) bp.push(`🛡️ Whitelisted: ` + data.whitelisted_ips.join(", "));
         banner.style.display = bp.length ? "block" : "none"; banner.innerText = bp.join(" • ");
         c.innerHTML = cachedThreatLogs.length ? "" : `<div style="text-align:center; margin-top:35px; color:var(--success);">✓ No security alerts recorded.</div>`;
@@ -1058,15 +1080,38 @@ async function deleteSelectedArchiveSessionPermanently() {
 function resumeArchive() { const sid = document.getElementById('logSessionSelect').value; if (!sid) return; closeLogsModal(); loadSessionDirectlyFromSidebar(sid); }
 
 // ==========================================================
-// 7. FIRST-FRAME AUTHENTICATED WEBSOCKET & LIVE CALL MINUTES
+// 7. WEBSOCKET, GUARANTEED BROADCASTS & SAVED WHITEBOARD CARD
 // ==========================================================
+async function syncNotificationsFromServer(showToastForLatest = false) {
+    if (!currentUser || currentUser === "Guest" || !currentSessionSig) return;
+    try {
+        const res = await fetch(`${SERVER_URL}/api/notifications`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.success && Array.isArray(data.notifications)) {
+            let latestAdded = null;
+            data.notifications.slice().reverse().forEach(alert => {
+                const uid = getAlertUniqueId(alert);
+                if (hasUserSeenOrDeletedAlert(uid, currentDBUser)) return;
+                const added = addNotificationToUserStore(alert.title, alert.message, alert.category || "broadcast", currentDBUser, uid, alert.timestamp);
+                if (added) latestAdded = alert;
+            });
+            updateUnreadBadges();
+            if (document.getElementById('notifCenterModal')?.style.display === "flex") renderNotificationCentre();
+            if (showToastForLatest && latestAdded) {
+                showNotification(latestAdded.title, latestAdded.message, latestAdded.category === "lockdown" || latestAdded.category === "security_owner", { skipStore: true });
+            }
+        }
+    } catch (e) {}
+}
+
 function handleServerStatusPayload(data) {
     if (!data) return;
     if (data.type === "pong" && wsLastPingSent > 0) {
         const p = document.getElementById('pingHudPill');
         if (p) p.innerText = `⚡ ${Math.max(12, Math.round(performance.now() - wsLastPingSent))}ms`;
     }
-    if (data.ip_banned) { forceLogout(); showNotification("Global IP Ban", data.reason || "IP banned.", true, { skipStore: true }); return; }
+    if (data.ip_banned) { forceLogout(); showNotification("Temporarily Banned", data.reason || "Access restricted.", true, { skipStore: true }); return; }
     if (data.revoked_device_id && data.revoked_device_id === CURRENT_DEVICE_ID) { forceLogout(); showNotification("Device Signed Out", "Session revoked.", true, { skipStore: true }); return; }
 
     const withinGrace = (Date.now() - lastLoginTimestamp) < 12000;
@@ -1081,7 +1126,6 @@ function handleServerStatusPayload(data) {
         data.new_alerts.forEach(alert => {
             const uid = getAlertUniqueId(alert);
             if (hasUserSeenOrDeletedAlert(uid, currentDBUser)) return;
-            if ((alert.target === "owner" || alert.category === "security_owner") && currentRankNum > 2) return;
             const cat = alert.category || "broadcast";
             showNotification(alert.title, alert.message, cat === "lockdown" || cat === "security_owner", { category: cat, serverId: uid, timestamp: alert.timestamp });
         });
@@ -1091,9 +1135,9 @@ function handleServerStatusPayload(data) {
 
 function initWebSocket() {
     if (currentUser === "Guest" || !currentSessionSig) return;
+    syncNotificationsFromServer(true);
     if (ws) { try { ws.onclose = null; ws.close(); } catch (e) {} }
     try {
-        // First-frame JSON auth: keeps HMAC token out of URL & proxy logs!
         ws = new WebSocket(WS_URL);
         ws.onopen = () => {
             wsConnected = true;
@@ -1114,14 +1158,29 @@ function initWebSocket() {
 }
 
 function checkAndRenderLiveCallMinutes() {
+    const logBox = document.getElementById('actionLog');
+    if (!logBox) return;
+
+    try {
+        const wbRaw = localStorage.getItem('kiza_saved_whiteboard');
+        if (wbRaw) {
+            localStorage.removeItem('kiza_saved_whiteboard');
+            const wbObj = JSON.parse(wbRaw);
+            if (wbObj && wbObj.image) {
+                const wbCard = document.createElement('div');
+                wbCard.style.cssText = "background:var(--card-bg); border:1.5px solid var(--accent-primary); border-radius:16px; padding:12px; margin-top:6px; white-space:normal;";
+                wbCard.innerHTML = `<div style="font-weight:800; font-size:12.5px; color:var(--accent-primary); margin-bottom:8px;">🎨 Saved Whiteboard (${escapeHtml(wbObj.timestamp || '')})</div><img src="${wbObj.image}" style="width:100%; max-height:280px; object-fit:contain; border-radius:10px; background:#090f1d; margin-bottom:8px;"><div style="font-size:12px; color:var(--text-muted);">${escapeHtml(wbObj.note || '')}</div>`;
+                logBox.appendChild(wbCard);
+            }
+        }
+    } catch (e) {}
+
     try {
         const raw = localStorage.getItem('kiza_last_call_minutes');
         if (!raw) return;
         localStorage.removeItem('kiza_last_call_minutes');
         const minObj = JSON.parse(raw);
         if (!minObj) return;
-        const logBox = document.getElementById('actionLog');
-        if (!logBox) return;
         const topicsHtml = minObj.topics?.length ? minObj.topics.map(t => `<div style="font-size:12px;">• ${escapeHtml(t)}</div>`).join('') : `<div style="font-size:12px; color:var(--text-muted);">• Voice & vision session</div>`;
         const decHtml = minObj.decisions?.length ? minObj.decisions.map(d => `<div style="font-size:12px;">✓ ${escapeHtml(d)}</div>`).join('') : `<div style="font-size:12px; color:var(--text-muted);">✓ Completed</div>`;
         const card = document.createElement('div'); card.className = "call-minutes-card";
@@ -1131,7 +1190,7 @@ function checkAndRenderLiveCallMinutes() {
 }
 
 // ==========================================================
-// 8. CHAT FEED, SLASH AUTOCOMPLETE & STREAMING SUBMITTER
+// 8. CHAT FEED, ZERO-TRUST CONFIRMATIONS & STREAMING SUBMITTER
 // ==========================================================
 const SLASH_COMMANDS_CATALOG = [
     { cmd: "/help", desc: "Open Official Guide PDF & manifest", maxRank: 5 },
@@ -1141,12 +1200,12 @@ const SLASH_COMMANDS_CATALOG = [
     { cmd: "/health", desc: "Server diagnostics", maxRank: 4 },
     { cmd: "/operative", desc: "Online users", maxRank: 4 },
     { cmd: "/userdata", desc: "Registered users", maxRank: 4 },
-    { cmd: "/threats", desc: "Security incidents & IP bans", maxRank: 4 },
-    { cmd: "/wrongpass", desc: "Failed login attempts", maxRank: 4 },
+    { cmd: "/threats", desc: "Security incidents & IP/user bans", maxRank: 4 },
+    { cmd: "/wrongpass", desc: "Failed login & moderation logs", maxRank: 4 },
     { cmd: "/notify ", desc: "Broadcast: /notify [target] [msg]", maxRank: 4 },
     { cmd: "/lockdown ", desc: "Lockdown: /lockdown [reason]", maxRank: 4 },
     { cmd: "/banip ", desc: "Timed IP ban: /banip [ip] [1h|24h|perm]", maxRank: 3 },
-    { cmd: "/unban ", desc: "Unban IP: /unban [ip|all]", maxRank: 3 },
+    { cmd: "/unban ", desc: "Unban user/IP: /unban [user|ip|all]", maxRank: 3 },
     { cmd: "/giverank ", desc: "Set role: /giverank [user] [role]", maxRank: 3 },
     { cmd: "/purgelog", desc: "View user removal logs", maxRank: 3 },
     { cmd: "/purge ", desc: "Remove user: /purge [user] | [pin]", maxRank: 3 },
@@ -1201,6 +1260,30 @@ function appendMessageActionBar(msgEl, cleanText, origPrompt = "") {
     msgEl.appendChild(bar);
 }
 
+function renderZeroTrustConfirmationCard(pendingCmd) {
+    const logBox = document.getElementById('actionLog');
+    const card = document.createElement('div');
+    card.style.cssText = "background:var(--card-bg); border:1.5px solid var(--warning); border-radius:14px; padding:12px; margin-top:6px; white-space:normal;";
+    card.innerHTML = `
+        <div style="font-size:12px; font-weight:700; color:var(--warning); margin-bottom:8px;">🛡️ Zero-Trust Action Guard: Confirm execution of <code>${escapeHtml(pendingCmd)}</code></div>
+        <div style="display:flex; gap:8px;">
+            <button type="button" class="send-btn" style="background:var(--danger); color:#fff; padding:6px 14px; font-size:11.5px;">✓ Confirm & Execute</button>
+            <button type="button" class="chip-btn" style="width:auto; padding:6px 12px; font-size:11.5px;">✕ Cancel</button>
+        </div>
+    `;
+    const [confirmBtn, cancelBtn] = card.querySelectorAll('button');
+    confirmBtn.onclick = () => {
+        card.remove();
+        document.getElementById('textInput').value = pendingCmd;
+        submitCommand({ humanConfirmed: true });
+    };
+    cancelBtn.onclick = () => {
+        card.innerHTML = `<span style="font-size:11.5px; color:var(--text-muted);">Cancelled <code>${escapeHtml(pendingCmd)}</code>.</span>`;
+    };
+    logBox.appendChild(card);
+    logBox.scrollTop = logBox.scrollHeight;
+}
+
 function logAction(message) {
     const logBox = document.getElementById('actionLog');
     const div = document.createElement('div');
@@ -1236,11 +1319,10 @@ function stopActiveKizaResponse() {
 
 function launchLiveCallMode() {
     if (isPinLocked) { openPinGate(pinGateMode); return; }
-    const persona = document.getElementById('personaSelect')?.value || "normal";
+    const persona = document.getElementById('personaSelect')?.value || "helpful";
     window.location.href = `live.html?user=${encodeURIComponent(currentUser)}&persona=${encodeURIComponent(persona)}`;
 }
 
-// Clean Country-Aware Today's News Trigger
 function askTodaysNewsForMyCountry() {
     document.getElementById('textInput').value = "What's the news today?";
     submitCommand();
@@ -1280,7 +1362,7 @@ function executeAIActionTags(r) {
     if (r.includes("[ACTION:NEW_CHAT]")) startNewSession();
 }
 
-async function submitCommand() {
+async function submitCommand(opts = {}) {
     if (isPinLocked) { openPinGate(pinGateMode); return; }
     const inputField = document.getElementById('textInput');
     let rawText = inputField.value.trim();
@@ -1298,6 +1380,7 @@ async function submitCommand() {
         return;
     }
 
+    const studioDraftCtx = (typeof getActiveStudioDraftContext === "function") ? getActiveStudioDraftContext() : null;
     inputField.value = "";
     if (isScanningAttachment && attachmentScanPromise) {
         document.getElementById('uiStatus').innerText = "Scanning file...";
@@ -1330,7 +1413,7 @@ async function submitCommand() {
         logAction(`[${cleanSpeaker}]: ${displayUserCmd}`);
         if (lastUploadedDocumentContext && /(this pdf|this doc|this word|this excel|attached|same format|edit page)/i.test(rawText)) {
             text = `${text}\n\n${lastUploadedDocumentContext}\n[FORMAT INSTRUCTION: Copy and preserve the exact format of the uploaded document!]`;
-        } else if (lastCompiledFileCache && !text.startsWith("/") && /\b(revise|change\s+format|change\s+background|change\s+theme|edit\s+page|update\s+it|make\s+it\s+\d+\s+pages|movie\s*theat)/i.test(rawText)) {
+        } else if (!studioDraftCtx && lastCompiledFileCache && !text.startsWith("/") && /\b(revise|change\s+format|change\s+background|change\s+theme|edit\s+page|update\s+it|make\s+it\s+\d+\s+pages|movie\s*theat)/i.test(rawText)) {
             text = `Make a ${lastCompiledFileCache.ext.toUpperCase()} on ${lastCompiledFileCache.topic}: ${rawText}\n\n[CURRENT DOCUMENT DRAFT TO REVISE:\n${lastCompiledFileCache.rawContent.slice(0, 3500)}]`;
         }
     }
@@ -1349,7 +1432,7 @@ async function submitCommand() {
     const orbEl = document.getElementById('orb');
     orbEl.classList.add('processing');
 
-    let selectedPersona = document.getElementById('personaSelect').value;
+    let selectedPersona = document.getElementById('personaSelect').value || "helpful";
     let finalVisionFrame = currentAttachedImg;
     if (!finalVisionFrame && isCameraActive && cameraReady && isVisualQuestion(rawText)) {
         try {
@@ -1374,6 +1457,8 @@ async function submitCommand() {
         is_attached_image: Boolean(finalVisionFrame),
         personality: selectedPersona,
         session_id: currentSessionId,
+        human_confirmed: Boolean(opts.humanConfirmed),
+        studio_context: studioDraftCtx,
         custom_gem_name: activeCustomGem ? activeCustomGem.name : null,
         custom_gem_prompt: activeCustomGem ? activeCustomGem.prompt : null,
         client_gps: cachedClientGPS,
@@ -1387,7 +1472,16 @@ async function submitCommand() {
             body: JSON.stringify(reqPayload), signal: activeChatAbortController.signal
         });
 
-        if (response.ok && response.body) {
+        const ctype = (response.headers.get("content-type") || "").toLowerCase();
+        if (response.ok && ctype.includes("application/json")) {
+            const jsonData = await response.json();
+            accumulatedText = jsonData.reply || jsonData.message || "";
+            isStreamError = Boolean(jsonData.is_error);
+            if (jsonData.ip_banned) {
+                kizaSpan.textContent = accumulatedText;
+                setTimeout(() => forceLogout(), 2500);
+            }
+        } else if (response.ok && response.body) {
             const reader = response.body.getReader(), decoder = new TextDecoder("utf-8");
             let buffer = "";
             while (true) {
@@ -1436,6 +1530,11 @@ async function submitCommand() {
 
         if (accumulatedText.includes("[PURGE_PIN_REQUIRED]")) openPurgeModal();
 
+        const ztMatch = accumulatedText.match(/\[ZERO_TRUST_CONFIRM:([^\]]+)\]/);
+        if (ztMatch) {
+            renderZeroTrustConfirmationCard(ztMatch[1].trim());
+        }
+
         if (accumulatedText.includes("[GENERATE_FILE:")) {
             const fm = accumulatedText.match(/\[GENERATE_FILE:([^:]+):([^:\]]+)(?::([^\]]+))?\]/);
             const fileExt = clientFileIntent ? clientFileIntent.ext : (fm ? fm[1] : "pdf");
@@ -1445,11 +1544,25 @@ async function submitCommand() {
             await prepareAndPreviewUniversalFile(fileExt, fileTopic, accumulatedText, currentAttachedImg, fileTheme, layoutToUse);
         } else if (clientFileIntent && !isStreamError) {
             await prepareAndPreviewUniversalFile(clientFileIntent.ext, clientFileIntent.topic, accumulatedText, currentAttachedImg, clientFileIntent.styleTheme, clientFileIntent.layoutFormat);
+        } else if (studioDraftCtx && lastCompiledFileCache && document.getElementById('filePreviewModal')?.style.display === 'flex' && !isStreamError) {
+            lastCompiledFileCache.rawContent = accumulatedText;
+            const themeMatch = rawText.match(/\b(movie\s*theat|black|light|blue|purple|green|red|gold)\b/i);
+            if (themeMatch) {
+                const mapT = { movie: "movie_theater", black: "black", light: "light", blue: "blue", purple: "purple", green: "green", red: "red", gold: "gold" };
+                const k = Object.keys(mapT).find(x => themeMatch[0].toLowerCase().includes(x));
+                if (k) lastCompiledFileCache.styleTheme = mapT[k];
+            }
+            openFilePreviewModal();
         }
 
         if (/```mermaid/i.test(accumulatedText)) await extractAndRenderMermaidBlocks(accumulatedText);
         if (accumulatedText.includes("[CHART_DATA]")) extractAndRenderChartBlocks(accumulatedText);
-        if (accumulatedText.includes("```")) extractAndRenderCodeBlocks(accumulatedText);
+        if (accumulatedText.includes("```")) {
+            extractAndRenderCodeBlocks(accumulatedText);
+            if (studioDraftCtx && document.getElementById('codeSandboxModal')?.style.display === 'flex' && generatedCodeSnippetsStore.length > 0) {
+                openCodeSandboxByIndex(generatedCodeSnippetsStore.length - 1);
+            }
+        }
         if (accumulatedText.includes("[QUIZ_DATA]")) extractAndRenderInteractiveQuiz(accumulatedText);
 
         executeAIActionTags(accumulatedText);
@@ -1459,7 +1572,12 @@ async function submitCommand() {
         appendMessageActionBar(streamEntry, finalCleaned, rawText);
         logBox.scrollTop = logBox.scrollHeight;
 
-        // Instant Zero-Lag Voice for Latin/Romanized Punjabi/Hindi/English
+        if (accumulatedText.includes("BANNED FOR 15 MINUTES")) {
+            showNotification("15-Minute Auto-Ban", finalCleaned, true, { skipStore: true });
+            setTimeout(() => forceLogout(), 2800);
+            return;
+        }
+
         if (!playedAudioFromStream && !isStreamError && voiceEnabled) speakMessageDirectly(finalCleaned);
         if (!isStreamError) playTacticalSFX("complete");
         else { streamEntry.style.borderLeftColor = "var(--danger)"; showNotification("Alert", finalCleaned, true); }
@@ -1526,7 +1644,11 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (errBox) { errBox.style.color = "var(--accent-primary)"; errBox.innerText = "Verifying HMAC session..."; }
         const verified = await verifySessionWithServer(savedUser, savedTokVer, savedSig);
         if (verified) {
-            completeLoginAfterVerification(verified.username, verified.db_username, verified.role, savedFace, false, "", null, verified.token_version, verified.session_sig);
+            completeLoginAfterVerification(
+                verified.username, verified.db_username, verified.role, savedFace,
+                false, "", null, verified.token_version, verified.session_sig,
+                Boolean(verified.has_face_embedding), Boolean(verified.require_face_on_login)
+            );
         } else {
             forceLogout();
             if (errBox) { errBox.style.color = "var(--danger)"; errBox.innerText = "Session expired or invalid. Please sign in."; }
