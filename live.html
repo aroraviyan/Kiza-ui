@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="referrer" content="no-referrer">
     <meta name="theme-color" content="#050a14">
-    <title>KIZA Live — Hands-Free VAD, Vision & Shared Whiteboard</title>
+    <title>KIZA Live — Hands-Free VAD, Vision & Pro Vector Whiteboard</title>
     <link rel="icon" type="image/png" href="logo.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -226,7 +226,7 @@
                 <div class="status-chip" id="liveStatusChip">CONNECTING TO KIZA BRAIN...</div>
             </div>
 
-            <!-- 2. SHARED AI WHITEBOARD WITH TRANSPARENT ERASER & 1-TAP SAVE -->
+            <!-- 2. SHARED AI PRO VECTOR WHITEBOARD -->
             <div class="whiteboard-stage" id="whiteboardStage">
                 <div class="wb-toolbar">
                     <div class="wb-tools-group">
@@ -275,7 +275,7 @@
 
         <div class="bottom-dock">
             <div class="text-bar">
-                <input type="text" id="liveTextInput" placeholder="Ask KIZA anything or say 'Draw a right triangle and label it'..." autocomplete="off">
+                <input type="text" id="liveTextInput" placeholder="Ask KIZA anything or say 'Draw Gojo Satoru with Hollow Purple'..." autocomplete="off">
                 <button type="button" class="send-pill" onclick="sendTypedLiveMessage()">Send</button>
             </div>
             <div class="controls-row">
@@ -386,7 +386,7 @@
         function updateVisionBadge() {
             const b = document.getElementById("activeVisionBadge");
             if (currentStageMode === "photo" && uploadedPhotoDataUrl) b.textContent = "📸 HD Photo";
-            else if (currentStageMode === "whiteboard") b.textContent = "🎨 Whiteboard";
+            else if (currentStageMode === "whiteboard") b.textContent = "🎨 Pro Whiteboard";
             else if (screenStream && currentStageMode === "screen") b.textContent = camEnabled ? "🖥️ Screen + 📷 Cam" : "🖥️ HD Screen";
             else b.textContent = camEnabled ? "📷 Cam Live" : "🎙️ Audio";
         }
@@ -471,7 +471,7 @@
 
         function isPureDrawPrompt(textStr) {
             const t = textStr || "";
-            return /\b(draw|sketch|scribble|diagram|plot|illustrate)\b/i.test(t) &&
+            return /\b(draw|sketch|scribble|diagram|plot|illustrate|paint|banao|bana\s+de|bana\s+do|banado)\b/i.test(t) &&
                    !/\b(my\s+(?:board|whiteboard|drawing)|look\s+at|solve\s+(?:this|what|my))\b/i.test(t);
         }
 
@@ -514,7 +514,7 @@
         }
 
         // ==========================================================
-        // 3. SHARED WHITEBOARD (TRANSPARENT ERASER + FULL SHAPE ENGINE)
+        // 3. PRO VECTOR WHITEBOARD (TRANSPARENT ERASER + SVG ART + SHAPES)
         // ==========================================================
         const wbCanvas = document.getElementById("sharedWhiteboard"), wbCtx = wbCanvas.getContext("2d");
         let wbDrawing = false, wbColor = "#38bdf8", wbEraser = false, wbHistory = [], wbLastPos = null;
@@ -637,6 +637,70 @@
             }
         }
 
+        // High-Detail Vector SVG Renderer onto Shared Whiteboard Canvas
+        async function renderKizaSvgOnWhiteboard(svgString, additive = false) {
+            if (!svgString || typeof svgString !== "string") return;
+            if (currentStageMode !== "whiteboard") {
+                setStageMode("whiteboard");
+                await new Promise(r => setTimeout(r, 160));
+                resizeWhiteboardCanvas();
+            }
+            let clean = svgString
+                .replace(/<script[\s\S]*?<\/script>/gi, "")
+                .replace(/<foreignObject[\s\S]*?<\/foreignObject>/gi, "")
+                .replace(/\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+                .trim();
+
+            const svgMatch = clean.match(/<svg[\s\S]*<\/svg>/i);
+            if (!svgMatch) return;
+            clean = svgMatch[0];
+
+            if (!/xmlns=/i.test(clean)) {
+                clean = clean.replace(/<svg/i, '<svg xmlns="http://www.w3.org/2000/svg"');
+            }
+            let vbW = 1000, vbH = 600;
+            const vbMatch = clean.match(/viewBox\s*=\s*["']\s*[\d.-]+\s+[\d.-]+\s+([\d.]+)\s+([\d.]+)\s*["']/i);
+            if (vbMatch) {
+                vbW = Number(vbMatch[1]) || 1000;
+                vbH = Number(vbMatch[2]) || 600;
+            } else {
+                clean = clean.replace(/<svg/i, '<svg viewBox="0 0 1000 600"');
+            }
+            clean = clean.replace(/<svg([^>]*)>/i, (full, attrs) => {
+                const stripped = attrs.replace(/\s(width|height)\s*=\s*["'][^"']*["']/gi, "");
+                return `<svg${stripped} width="${vbW}" height="${vbH}">`;
+            });
+
+            const W = wbCanvas.width || 1000, H = wbCanvas.height || 600;
+            const blob = new Blob([clean], { type: "image/svg+xml;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+
+            await new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    saveWbSnapshot();
+                    wbCtx.save();
+                    wbCtx.globalCompositeOperation = "source-over";
+                    if (!additive) wbCtx.clearRect(0, 0, W, H);
+                    const pad = 18;
+                    const scale = Math.min((W - pad * 2) / vbW, (H - pad * 2) / vbH);
+                    const drawW = vbW * scale;
+                    const drawH = vbH * scale;
+                    const dx = (W - drawW) / 2;
+                    const dy = (H - drawH) / 2;
+                    wbCtx.drawImage(img, dx, dy, drawW, drawH);
+                    wbCtx.restore();
+                    URL.revokeObjectURL(url);
+                    resolve();
+                };
+                img.onerror = () => {
+                    URL.revokeObjectURL(url);
+                    resolve();
+                };
+                img.src = url;
+            });
+        }
+
         function extractNormPoints(pts) {
             if (!Array.isArray(pts)) return [];
             return pts.map(pt => {
@@ -686,9 +750,18 @@
                 wbCtx.lineWidth = lw;
                 wbCtx.lineCap = "round";
                 wbCtx.lineJoin = "round";
+                if (cmd.glow) {
+                    wbCtx.shadowColor = col;
+                    wbCtx.shadowBlur = Number(cmd.glow) || 14;
+                }
 
                 if (type === "clear") {
                     wbCtx.clearRect(0, 0, W, H);
+                } else if (type === "svg_path" && cmd.d && typeof Path2D !== "undefined") {
+                    wbCtx.scale(W / coordDiv, H / coordDiv);
+                    const p2d = new Path2D(cmd.d);
+                    if (cmd.fill) wbCtx.fill(p2d);
+                    if (cmd.stroke !== "none") wbCtx.stroke(p2d);
                 } else if (type === "line" || type === "arrow") {
                     const x1 = sx(cmd.x1), y1 = sy(cmd.y1), x2 = sx(cmd.x2), y2 = sy(cmd.y2);
                     if (![x1, y1, x2, y2].some(isNaN)) {
@@ -706,7 +779,7 @@
                     const rw = sx(cmd.w !== undefined ? cmd.w : cmd.width);
                     const rh = sy(cmd.h !== undefined ? cmd.h : (cmd.height !== undefined ? cmd.height : cmd.w));
                     if (![rx, ry, rw, rh].some(isNaN)) {
-                        if (cmd.fill) { wbCtx.globalAlpha = 0.2; wbCtx.fillRect(rx, ry, rw, rh); wbCtx.globalAlpha = 1; }
+                        if (cmd.fill) { wbCtx.globalAlpha = 0.28; wbCtx.fillRect(rx, ry, rw, rh); wbCtx.globalAlpha = 1; }
                         wbCtx.strokeRect(rx, ry, rw, rh);
                     }
                 } else if (type === "circle" || type === "ellipse") {
@@ -716,7 +789,7 @@
                     const rad = (Number(rVal) / coordDiv) * Math.min(W, H);
                     if (![cx, cy, rad].some(isNaN)) {
                         wbCtx.beginPath(); wbCtx.arc(cx, cy, Math.max(2, rad), 0, Math.PI * 2);
-                        if (cmd.fill) { wbCtx.globalAlpha = 0.2; wbCtx.fill(); wbCtx.globalAlpha = 1; }
+                        if (cmd.fill) { wbCtx.globalAlpha = 0.28; wbCtx.fill(); wbCtx.globalAlpha = 1; }
                         wbCtx.stroke();
                     }
                 } else if (type === "triangle" || type === "polygon" || type === "path" || type === "polyline") {
@@ -731,7 +804,7 @@
                         if (type === "triangle" || type === "polygon" || cmd.closed === true || (type === "path" && pts.length === 3)) {
                             wbCtx.closePath();
                         }
-                        if (cmd.fill) { wbCtx.globalAlpha = 0.2; wbCtx.fill(); wbCtx.globalAlpha = 1; }
+                        if (cmd.fill) { wbCtx.globalAlpha = 0.28; wbCtx.fill(); wbCtx.globalAlpha = 1; }
                         wbCtx.stroke();
                     }
                 } else if (type === "text" || type === "label") {
@@ -746,12 +819,20 @@
                     }
                 }
                 wbCtx.restore();
-                await new Promise(r => setTimeout(r, 110));
+                await new Promise(r => setTimeout(r, 95));
+            }
+        }
+
+        async function handleWhiteboardPayload(data) {
+            if (data.draw_svg && typeof data.draw_svg === "string" && data.draw_svg.includes("<svg")) {
+                await renderKizaSvgOnWhiteboard(data.draw_svg, Boolean(data.draw_additive));
+            } else if (Array.isArray(data.draw_commands) && data.draw_commands.length > 0) {
+                await executeKizaWhiteboardCommands(data.draw_commands);
             }
         }
 
         // ==========================================================
-        // 4. ZERO-HANG CONNECTION (WS + 3s ACK WATCHDOG + HTTPS FALLBACK)
+        // 4. ZERO-HANG CONNECTION (WS + ACK WATCHDOG + HTTPS FALLBACK)
         // ==========================================================
         function activateLiveReadyUI(modeLabel) {
             document.getElementById("connDot").classList.add("online");
@@ -776,7 +857,7 @@
                 if (!wsReady) {
                     useHttpFallback = true;
                     activateLiveReadyUI("HTTPS Live");
-                    document.getElementById("captionBox").textContent = `Keeza Live ready (HTTPS mode), ${userName}! Tap 🟢 Hands-Free, hold to speak, or ask me to draw on the Whiteboard.`;
+                    document.getElementById("captionBox").textContent = `Keeza Live ready (HTTPS mode), ${userName}! Tap 🟢 Hands-Free, hold to speak, or ask me to illustrate on the Pro Whiteboard.`;
                 }
             }, 3500);
 
@@ -802,8 +883,8 @@
                 } else if (data.type === "state") {
                     clearTimeout(ackTimeout);
                     document.getElementById("liveOrb").classList.toggle("thinking", data.status === "thinking");
-                    document.getElementById("liveStatusChip").textContent = data.status === "thinking" ? "KIZA IS THINKING..." : "LIVE & READY";
-                    if (data.status === "thinking") document.getElementById("captionBox").textContent = "🧠 Analyzing your request...";
+                    document.getElementById("liveStatusChip").textContent = data.status === "thinking" ? "KIZA IS DRAWING / THINKING..." : "LIVE & READY";
+                    if (data.status === "thinking") document.getElementById("captionBox").textContent = "🎨 Working on your request...";
                 } else if (data.type === "response") {
                     clearTimeout(ackTimeout); clearTimeout(replyTimeout); clearTimeout(wsWatchdog);
                     wsReady = true; useHttpFallback = false;
@@ -812,7 +893,7 @@
                     lastKizaReplyText = cleanReply;
                     document.getElementById("captionBox").textContent = cleanReply;
                     if (cleanReply) callDecisions.push(cleanReply.slice(0, 110));
-                    if (Array.isArray(data.draw_commands) && data.draw_commands.length > 0) executeKizaWhiteboardCommands(data.draw_commands);
+                    handleWhiteboardPayload(data);
                     speakLiveResponse(cleanReply, data.audio_base64);
                 } else if (data.type === "error") {
                     clearTimeout(ackTimeout); clearTimeout(replyTimeout);
@@ -861,12 +942,12 @@
                 ackTimeout = setTimeout(() => {
                     useHttpFallback = true;
                     sendLiveViaHttp(clean, frameObj);
-                }, 3000);
+                }, 4000);
                 clearTimeout(replyTimeout);
                 replyTimeout = setTimeout(() => {
                     useHttpFallback = true;
                     sendLiveViaHttp(clean, frameObj);
-                }, 14000);
+                }, 24000);
                 return;
             }
             await sendLiveViaHttp(clean, frameObj);
@@ -876,10 +957,10 @@
             clearTimeout(ackTimeout);
             clearTimeout(replyTimeout);
             document.getElementById("liveOrb").classList.add("thinking");
-            document.getElementById("liveStatusChip").textContent = "KIZA IS THINKING...";
-            document.getElementById("captionBox").textContent = `🧠 Thinking (${frameObj.source}): "${cleanText}"...`;
+            document.getElementById("liveStatusChip").textContent = "KIZA IS DRAWING / THINKING...";
+            document.getElementById("captionBox").textContent = `🎨 Thinking (${frameObj.source}): "${cleanText}"...`;
             const controller = new AbortController();
-            const httpTimer = setTimeout(() => controller.abort(), 20000);
+            const httpTimer = setTimeout(() => controller.abort(), 28000);
             try {
                 const t0 = performance.now();
                 const res = await fetch(`${SERVER_HTTP}/api/live/turn`, {
@@ -910,16 +991,14 @@
                     return;
                 }
                 if (replyTxt) callDecisions.push(replyTxt.slice(0, 110));
-                if (Array.isArray(data.draw_commands) && data.draw_commands.length > 0) {
-                    executeKizaWhiteboardCommands(data.draw_commands);
-                }
+                await handleWhiteboardPayload(data);
                 speakLiveResponse(replyTxt, data.audio_base64);
             } catch (e) {
                 clearTimeout(httpTimer);
                 document.getElementById("liveOrb").classList.remove("thinking");
                 document.getElementById("liveStatusChip").textContent = "LIVE & READY";
                 document.getElementById("captionBox").textContent = e.name === "AbortError"
-                    ? "⚠️ Server took too long (>20s). Try again in a moment."
+                    ? "⚠️ Server took too long (>28s). Try again in a moment."
                     : `⚠️ Error: ${e.message}`;
             }
         }
