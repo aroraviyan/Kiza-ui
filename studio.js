@@ -1,5 +1,5 @@
 // ==========================================================
-// KIZA v11.5 — PRO MULTI-FORMAT STUDIO, SPLIT-SCREEN & SANDBOX ENGINE
+// KIZA v11.6 — PRO MULTI-FORMAT STUDIO, PUBLICATION PDF & SANDBOX ENGINE
 // ==========================================================
 let attachedImageBase64 = null;
 let attachedImageName = "";
@@ -17,25 +17,25 @@ const webImageCache = {};
 let isSplitStudioActive = false;
 
 const THEME_PALETTES = {
-    movie_theater: { bgHex: "0D0205", cardHex: "1A050A", accentHex: "FBBF24", secHex: "DC2626", textHex: "FFFBEB", subHex: "FCA5A5", pdfHero: "linear-gradient(135deg, #450a0a 0%, #1a050a 50%, #78350f 100%)", pdfPageBg: "#0d0205", pdfText: "#fffbeb", pdfCardBg: "#1a050a" },
-    black: { bgHex: "000000", cardHex: "0A0A0A", accentHex: "00F2FE", secHex: "A855F7", textHex: "FFFFFF", subHex: "94A3B8", pdfHero: "linear-gradient(135deg, #000000 0%, #111111 70%, #1e293b 100%)", pdfPageBg: "#090d16", pdfText: "#f8fafc", pdfCardBg: "#111827" },
-    cyber_dark: { bgHex: "060A17", cardHex: "111827", accentHex: "38BDF8", secHex: "A855F7", textHex: "F8FAFC", subHex: "94A3B8", pdfHero: "linear-gradient(135deg, #090d16 0%, #0f172a 55%, #0284c7 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#f8fafc" },
-    light: { bgHex: "F8FAFC", cardHex: "FFFFFF", accentHex: "0284C7", secHex: "2563EB", textHex: "0F172A", subHex: "475569", pdfHero: "linear-gradient(135deg, #0284c7 0%, #2563eb 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#f1f5f9" },
-    blue: { bgHex: "071936", cardHex: "0C264E", accentHex: "38BDF8", secHex: "60A5FA", textHex: "FFFFFF", subHex: "93C5FD", pdfHero: "linear-gradient(135deg, #071936 0%, #1d4ed8 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#eff6ff" },
-    purple: { bgHex: "130726", cardHex: "210E3D", accentHex: "C084FC", secHex: "F472B6", textHex: "FFFFFF", subHex: "D8B4FE", pdfHero: "linear-gradient(135deg, #130726 0%, #7e22ce 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#faf5ff" },
-    green: { bgHex: "041E16", cardHex: "062E22", accentHex: "10B981", secHex: "34D399", textHex: "FFFFFF", subHex: "A7F3D0", pdfHero: "linear-gradient(135deg, #041e16 0%, #059669 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#ecfdf5" },
-    red: { bgHex: "28070C", cardHex: "3F0B13", accentHex: "FB7185", secHex: "F43F5E", textHex: "FFFFFF", subHex: "FDA4AF", pdfHero: "linear-gradient(135deg, #28070c 0%, #e11d48 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#fff1f2" },
-    gold: { bgHex: "1C1605", cardHex: "2E2408", accentHex: "FBBF24", secHex: "F59E0B", textHex: "FFFFFF", subHex: "FDE68A", pdfHero: "linear-gradient(135deg, #1c1605 0%, #d97706 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#fffbeb" }
+    movie_theater: { bgHex: "0D0205", cardHex: "1A050A", accentHex: "FBBF24", secHex: "DC2626", textHex: "FFFBEB", subHex: "FCA5A5", pdfHero: "linear-gradient(135deg, #450a0a 0%, #1a050a 50%, #78350f 100%)", pdfPageBg: "#0d0205", pdfText: "#fffbeb", pdfCardBg: "#1a050a", pdfAccent: "#fbbf24", pdfMuted: "#fca5a5" },
+    black: { bgHex: "000000", cardHex: "0A0A0A", accentHex: "00F2FE", secHex: "A855F7", textHex: "FFFFFF", subHex: "94A3B8", pdfHero: "linear-gradient(135deg, #000000 0%, #111111 70%, #1e293b 100%)", pdfPageBg: "#090d16", pdfText: "#f8fafc", pdfCardBg: "#111827", pdfAccent: "#38bdf8", pdfMuted: "#94a3b8" },
+    cyber_dark: { bgHex: "060A17", cardHex: "111827", accentHex: "38BDF8", secHex: "A855F7", textHex: "F8FAFC", subHex: "94A3B8", pdfHero: "linear-gradient(135deg, #090d16 0%, #0f172a 55%, #0284c7 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#f8fafc", pdfAccent: "#0284c7", pdfMuted: "#64748b" },
+    light: { bgHex: "F8FAFC", cardHex: "FFFFFF", accentHex: "0284C7", secHex: "2563EB", textHex: "0F172A", subHex: "475569", pdfHero: "linear-gradient(135deg, #0284c7 0%, #2563eb 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#f8fafc", pdfAccent: "#0284c7", pdfMuted: "#64748b" },
+    blue: { bgHex: "071936", cardHex: "0C264E", accentHex: "38BDF8", secHex: "60A5FA", textHex: "FFFFFF", subHex: "93C5FD", pdfHero: "linear-gradient(135deg, #071936 0%, #1d4ed8 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#eff6ff", pdfAccent: "#1d4ed8", pdfMuted: "#475569" },
+    purple: { bgHex: "130726", cardHex: "210E3D", accentHex: "C084FC", secHex: "F472B6", textHex: "FFFFFF", subHex: "D8B4FE", pdfHero: "linear-gradient(135deg, #130726 0%, #7e22ce 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#faf5ff", pdfAccent: "#7e22ce", pdfMuted: "#475569" },
+    green: { bgHex: "041E16", cardHex: "062E22", accentHex: "10B981", secHex: "34D399", textHex: "FFFFFF", subHex: "A7F3D0", pdfHero: "linear-gradient(135deg, #041e16 0%, #059669 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#ecfdf5", pdfAccent: "#059669", pdfMuted: "#475569" },
+    red: { bgHex: "28070C", cardHex: "3F0B13", accentHex: "FB7185", secHex: "F43F5E", textHex: "FFFFFF", subHex: "FDA4AF", pdfHero: "linear-gradient(135deg, #28070c 0%, #e11d48 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#fff1f2", pdfAccent: "#e11d48", pdfMuted: "#475569" },
+    gold: { bgHex: "1C1605", cardHex: "2E2408", accentHex: "FBBF24", secHex: "F59E0B", textHex: "FFFFFF", subHex: "FDE68A", pdfHero: "linear-gradient(135deg, #1c1605 0%, #d97706 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#fffbeb", pdfAccent: "#d97706", pdfMuted: "#475569" }
 };
 
 const FILE_TYPE_FORMATS = {
     pdf: [
-        { value: "movie_theater", label: "🎬 Movie Theater Stage" },
         { value: "infographic", label: "📊 Infographic Dossier" },
+        { value: "magazine", label: "📰 Editorial Magazine" },
+        { value: "movie_theater", label: "🎬 Movie Theater Stage" },
         { value: "academic", label: "📚 Academic / NCERT" },
         { value: "exam_paper", label: "📝 CBSE Exam Paper" },
         { value: "lab_manual", label: "🔬 Lab Practical File" },
-        { value: "magazine", label: "📰 Editorial Magazine" },
         { value: "minimal", label: "💼 Clean Minimalist" }
     ],
     docx: [
@@ -60,6 +60,22 @@ const FILE_TYPE_FORMATS = {
         { value: "csv_raw", label: "📊 Clean Raw CSV Table" }
     ]
 };
+
+// ==========================================================
+// CLEAN PDF / DOCUMENT TEXT & CURRENCY SANITIZER
+// ==========================================================
+function sanitizePdfText(rawStr) {
+    let s = String(rawStr == null ? "" : rawStr);
+    // Fix LaTeX-wrapped currency like $\$5/TB$, $\$15 billion$, \$15
+    s = s.replace(/\$\s*\\\$\s*([^$\n]+?)\s*\$/g, '$$$1');
+    s = s.replace(/\\\$/g, '$');
+    // Fix simple inline $A/B$ or $N$ tokens that shouldn't print literal dollar signs
+    s = s.replace(/\$([A-Za-z][A-Za-z0-9\/._-]{0,12})\$/g, '$1');
+    // Convert plain powers like 10^18 to crisp Unicode superscripts
+    const supMap = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '-': '⁻', '+': '⁺' };
+    s = s.replace(/(\d+)\^([0-9+-]+)/g, (_, base, exp) => base + exp.split('').map(c => supMap[c] || c).join(''));
+    return s.replace(/\s{2,}/g, ' ').trim();
+}
 
 // ==========================================================
 // SPLIT-SCREEN STUDIO CONTROLLER (CHAT LEFT | STUDIO RIGHT)
@@ -437,61 +453,128 @@ function convertHandwrittenPhotoToCleanPDF() {
         return;
     }
     const cleanTitle = (lastAttachedFileTopic || "Handwritten Study Notes").replace(/[_-]+/g, ' ');
-    document.getElementById('textInput').value = `Make a clean typed PDF report on ${cleanTitle} by transcribing all handwritten text, cleaning up grammar, formatting math/science equations in LaTeX ($...$), and organizing into clear study sections.`;
+    document.getElementById('textInput').value = `Make a clean typed PDF report on ${cleanTitle} by transcribing all handwritten text, cleaning up grammar, and organizing into clear study sections.`;
     submitCommand();
 }
 
 // ==========================================================
-// WIKIMEDIA + CUSTOM HIGH-RES SVG VISUALS ENGINE
+// SMART WIKIMEDIA + TOPIC-SPECIFIC VECTOR GRAPHICS ENGINE
 // ==========================================================
-function generateCustomHighResArtworkDataUrl(queryStr) {
-    const cleanTitle = (queryStr || "KIZA Visual").replace(/[^a-zA-Z0-9\s:.-]/g, '').trim().toUpperCase().slice(0, 44);
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="340" viewBox="0 0 720 340">
+function generateCustomHighResArtworkDataUrl(queryStr, themeKey = "cyber_dark", idxHint = 0) {
+    const cleanLabel = sanitizePdfText(queryStr || "Visual Diagram").replace(/[^a-zA-Z0-9\s,&:.-]/g, '').trim();
+    const shortTitle = (cleanLabel.length > 52 ? cleanLabel.slice(0, 49) + "..." : cleanLabel).toUpperCase();
+    const qLow = cleanLabel.toLowerCase();
+    const isMovie = themeKey === "movie_theater";
+    const isDark = (themeKey === "black" || themeKey === "movie_theater");
+
+    const bg1 = isMovie ? "#2a0810" : (isDark ? "#0f172a" : "#eff6ff");
+    const bg2 = isMovie ? "#0d0205" : (isDark ? "#020617" : "#f8fafc");
+    const primary = isMovie ? "#fbbf24" : (isDark ? "#38bdf8" : "#0284c7");
+    const secondary = isMovie ? "#f87171" : (isDark ? "#a855f7" : "#4f46e5");
+    const gridCol = isDark ? "rgba(148,163,184,0.12)" : "rgba(15,23,42,0.07)";
+    const titleCol = isMovie ? "#fde68a" : (isDark ? "#f8fafc" : "#0f172a");
+    const subCol = isMovie ? "#fca5a5" : (isDark ? "#94a3b8" : "#475569");
+
+    // Pick a distinct vector graphic matching the topic instead of repeating one icon
+    let artSvg = "";
+    if (/lock|cyber|security|encrypt|binary|shield/.test(qLow) || idxHint % 5 === 0) {
+        artSvg = `
+            <g stroke="${primary}" stroke-width="2.5" fill="none">
+                <path d="M360 44 L415 68 V116 C415 152 390 176 360 188 C330 176 305 152 305 116 V68 Z" fill="${primary}" fill-opacity="0.12"/>
+                <rect x="340" y="106" width="40" height="34" rx="5" fill="${bg1}"/>
+                <path d="M348 106 V94 A12 12 0 0 1 372 94 V106"/>
+                <circle cx="360" cy="123" r="4" fill="${secondary}" stroke="none"/>
+                <line x1="160" y1="115" x2="290" y2="115" stroke-dasharray="6 6" opacity="0.6"/>
+                <line x1="430" y1="115" x2="560" y2="115" stroke-dasharray="6 6" opacity="0.6"/>
+                <circle cx="160" cy="115" r="7" fill="${secondary}"/><circle cx="560" cy="115" r="7" fill="${secondary}"/>
+            </g>`;
+    } else if (/algorithm|chip|processor|flow|circuit|compute/.test(qLow) || idxHint % 5 === 1) {
+        artSvg = `
+            <g stroke="${primary}" stroke-width="2.5" fill="none">
+                <rect x="308" y="64" width="104" height="104" rx="14" fill="${primary}" fill-opacity="0.12"/>
+                <rect x="330" y="86" width="60" height="60" rx="8" stroke="${secondary}"/>
+                <path d="M265 92 H308 M265 116 H308 M265 140 H308 M412 92 H455 M412 116 H455 M412 140 H455 M340 36 V64 M380 36 V64 M340 168 V196 M380 168 V196"/>
+                <circle cx="260" cy="92" r="5" fill="${secondary}"/><circle cx="460" cy="140" r="5" fill="${secondary}"/>
+                <path d="M344 116 L356 128 L378 102" stroke="${primary}" stroke-width="3.5"/>
+            </g>`;
+    } else if (/neural|brain|ai|network|learning|model/.test(qLow) || idxHint % 5 === 2) {
+        artSvg = `
+            <g stroke="${primary}" stroke-width="2" fill="none">
+                <line x1="230" y1="72" x2="360" y2="62" opacity="0.55"/><line x1="230" y1="72" x2="360" y2="116" opacity="0.55"/><line x1="230" y1="72" x2="360" y2="170" opacity="0.55"/>
+                <line x1="230" y1="158" x2="360" y2="62" opacity="0.55"/><line x1="230" y1="158" x2="360" y2="116" opacity="0.55"/><line x1="230" y1="158" x2="360" y2="170" opacity="0.55"/>
+                <line x1="360" y1="62" x2="490" y2="88" opacity="0.55"/><line x1="360" y1="116" x2="490" y2="88" opacity="0.55"/><line x1="360" y1="170" x2="490" y2="88" opacity="0.55"/>
+                <line x1="360" y1="62" x2="490" y2="146" opacity="0.55"/><line x1="360" y1="116" x2="490" y2="146" opacity="0.55"/><line x1="360" y1="170" x2="490" y2="146" opacity="0.55"/>
+                <circle cx="230" cy="72" r="11" fill="${bg1}" stroke="${primary}" stroke-width="3"/><circle cx="230" cy="158" r="11" fill="${bg1}" stroke="${primary}" stroke-width="3"/>
+                <circle cx="360" cy="62" r="12" fill="${secondary}"/><circle cx="360" cy="116" r="14" fill="${primary}"/><circle cx="360" cy="170" r="12" fill="${secondary}"/>
+                <circle cx="490" cy="88" r="11" fill="${bg1}" stroke="${primary}" stroke-width="3"/><circle cx="490" cy="146" r="11" fill="${bg1}" stroke="${primary}" stroke-width="3"/>
+            </g>`;
+    } else if (/chart|data|stat|graph|analytics|finance|market/.test(qLow) || idxHint % 5 === 3) {
+        artSvg = `
+            <g>
+                <line x1="210" y1="174" x2="510" y2="174" stroke="${subCol}" stroke-width="2"/>
+                <rect x="236" y="124" width="38" height="50" rx="5" fill="${primary}" fill-opacity="0.55"/>
+                <rect x="296" y="96" width="38" height="78" rx="5" fill="${primary}" fill-opacity="0.75"/>
+                <rect x="356" y="108" width="38" height="66" rx="5" fill="${secondary}" fill-opacity="0.75"/>
+                <rect x="416" y="64" width="38" height="110" rx="5" fill="${primary}"/>
+                <polyline points="255,112 315,84 375,96 435,50 485,68" fill="none" stroke="${secondary}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="435" cy="50" r="6" fill="${secondary}"/>
+            </g>`;
+    } else {
+        artSvg = `
+            <g stroke="${primary}" stroke-width="2.4" fill="none">
+                <ellipse cx="360" cy="116" rx="135" ry="44" transform="rotate(-18 360 116)" opacity="0.85"/>
+                <ellipse cx="360" cy="116" rx="135" ry="44" transform="rotate(18 360 116)" stroke="${secondary}" opacity="0.85"/>
+                <ellipse cx="360" cy="116" rx="44" ry="86" opacity="0.55"/>
+                <circle cx="360" cy="116" r="18" fill="${primary}" fill-opacity="0.9" stroke="none"/>
+                <circle cx="476" cy="82" r="7" fill="${secondary}" stroke="none"/>
+                <circle cx="246" cy="148" r="7" fill="${primary}" stroke="none"/>
+            </g>`;
+    }
+
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="270" viewBox="0 0 720 270">
         <defs>
             <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#1a050a"/><stop offset="50%" stop-color="#090d16"/><stop offset="100%" stop-color="#1e1b4b"/>
+                <stop offset="0%" stop-color="${bg1}"/><stop offset="100%" stop-color="${bg2}"/>
             </linearGradient>
-            <radialGradient id="glow" cx="50%" cy="45%" r="45%">
-                <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.42"/><stop offset="55%" stop-color="#dc2626" stop-opacity="0.18"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/>
-            </radialGradient>
+            <pattern id="g" width="24" height="24" patternUnits="userSpaceOnUse">
+                <path d="M 24 0 L 0 0 0 24" fill="none" stroke="${gridCol}" stroke-width="1"/>
+            </pattern>
         </defs>
-        <rect width="720" height="340" fill="url(#bg)"/>
-        <circle cx="360" cy="155" r="180" fill="url(#glow)"/>
-        <rect x="0" y="0" width="720" height="22" fill="#050811"/>
-        <rect x="0" y="318" width="720" height="22" fill="#050811"/>
-        <ellipse cx="360" cy="155" rx="165" ry="40" fill="none" stroke="#fbbf24" stroke-width="5" opacity="0.85"/>
-        <circle cx="360" cy="155" r="52" fill="#050811" stroke="#f59e0b" stroke-width="4"/>
-        <text x="360" y="262" font-family="Arial, sans-serif" font-size="16" font-weight="900" fill="#fbbf24" text-anchor="middle" letter-spacing="2">🎬 ${cleanTitle}</text>
-        <text x="360" y="286" font-family="monospace" font-size="11" fill="#cbd5e1" text-anchor="middle" letter-spacing="1.5">KIZA HIGH-RES STAGE VISUALIZATION</text>
+        <rect width="720" height="270" rx="12" fill="url(#bg)"/>
+        <rect width="720" height="270" rx="12" fill="url(#g)"/>
+        ${artSvg}
+        <text x="360" y="226" font-family="Inter, Arial, sans-serif" font-size="13.5" font-weight="800" fill="${titleCol}" text-anchor="middle" letter-spacing="1.2">${shortTitle}</text>
+        <text x="360" y="246" font-family="monospace" font-size="10" fill="${subCol}" text-anchor="middle" letter-spacing="1.5">CONCEPT FIGURE • KIZA STUDIO</text>
     </svg>`;
     return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
 }
 
 async function fetchTopicWebImageUrl(queryStr) {
-    const rawClean = (queryStr || "space science")
-        .replace(/\b(theatre|theater|stage|lighting|set|costume|production|library|poster)\b/gi, '')
-        .replace(/[^a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
-    const shortQuery = rawClean.split(' ').slice(0, 3).join(' ') || "galaxy";
     if (webImageCache[queryStr]) return webImageCache[queryStr];
+    // Use ONLY the first focused phrase before a comma so Wikimedia finds real photographs
+    const firstPhrase = String(queryStr || "science")
+        .split(/[,;|]/)[0]
+        .replace(/\b(theatre|theater|stage|lighting|set|costume|production|poster)\b/gi, '')
+        .replace(/[^a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    const shortQuery = firstPhrase.split(' ').slice(0, 2).join(' ') || "technology";
 
     try {
-        const commonsUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(shortQuery + " filetype:bitmap")}&gsrnamespace=6&gsrlimit=3&prop=imageinfo&iiprop=url&iiurlwidth=640&format=json&origin=*`;
+        const commonsUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(shortQuery + " filetype:bitmap")}&gsrnamespace=6&gsrlimit=4&prop=imageinfo&iiprop=url&iiurlwidth=680&format=json&origin=*`;
         const res = await fetch(commonsUrl);
         const data = await res.json();
         if (data && data.query && data.query.pages) {
             for (const p of Object.values(data.query.pages)) {
                 const thumbUrl = p?.imageinfo?.[0]?.thumburl || p?.imageinfo?.[0]?.url;
                 if (thumbUrl && /\.(jpg|jpeg|png|webp)$/i.test(thumbUrl)) {
-                    webImageCache[queryStr] = thumbUrl;
-                    return thumbUrl;
+                    webImageCache[queryStr] = { url: thumbUrl, isPhoto: true };
+                    return webImageCache[queryStr];
                 }
             }
         }
     } catch (e) {}
 
-    const customSvgUrl = generateCustomHighResArtworkDataUrl(queryStr);
-    webImageCache[queryStr] = customSvgUrl;
-    return customSvgUrl;
+    webImageCache[queryStr] = { url: null, isPhoto: false };
+    return webImageCache[queryStr];
 }
 
 async function preloadAllQueryImagesInContent(rawContent) {
@@ -502,26 +585,29 @@ async function preloadAllQueryImagesInContent(rawContent) {
     await Promise.all(queries.map(q => fetchTopicWebImageUrl(q)));
 }
 
-function getVisualImageUrlSync(queryStr) {
-    return webImageCache[queryStr] || generateCustomHighResArtworkDataUrl(queryStr);
+function getVisualAssetSync(queryStr, themeKey, idxHint) {
+    const cached = webImageCache[queryStr];
+    if (cached && cached.isPhoto && cached.url) {
+        return { url: cached.url, isPhoto: true };
+    }
+    return { url: generateCustomHighResArtworkDataUrl(queryStr, themeKey, idxHint), isPhoto: false };
 }
 
 // ==========================================================
-// 1. PUBLICATION-GRADE PDF DOSSIER & MOVIE THEATER RENDERER
+// 1. PUBLICATION-GRADE PDF DOSSIER RENDERER (ZERO ORPHAN PAGES)
 // ==========================================================
 function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark", layoutFormat = "infographic") {
     const titleOverride = stripSlashesFromText(rawContent).match(/^TITLE\s*:\s*([^\n]+)/im);
     const parsedTopic = extractClientTopicAndStyle(topicTitle);
-    const cleanTopic = (titleOverride ? titleOverride[1].trim() : parsedTopic.cleanTopic).toUpperCase();
+    const cleanTopic = sanitizePdfText(titleOverride ? titleOverride[1].trim() : parsedTopic.cleanTopic).toUpperCase();
 
     const isMovieMode = (
         styleTheme === "movie_theater" ||
         layoutFormat === "movie_theater" ||
-        parsedTopic.styleTheme === "movie_theater" ||
-        /\b(movie\s*theat|stage\s*production|cinema)\b/i.test(rawContent)
+        parsedTopic.styleTheme === "movie_theater"
     );
     const activeTheme = isMovieMode ? "movie_theater" : ((styleTheme && styleTheme !== "cyber_dark") ? styleTheme : parsedTopic.styleTheme);
-    const activeFormat = isMovieMode ? "movie_theater" : layoutFormat;
+    const activeFormat = isMovieMode ? "movie_theater" : (layoutFormat || "infographic");
     const pal = THEME_PALETTES[activeTheme] || THEME_PALETTES.cyber_dark;
     const isDarkDoc = (activeTheme === "black" || activeTheme === "movie_theater");
 
@@ -532,153 +618,172 @@ function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = n
         .replace(/\*\*/g, '')
         .split('\n');
 
-    let subtitle = isMovieMode ? "🎬 IMAX & STAGE PRODUCTION DOSSIER" : "EXECUTIVE BRIEFING & DATA ANALYSIS";
+    let subtitle = isMovieMode ? "IMAX & Stage Production Dossier" : "Executive Briefing & Technical Analysis";
     const kpis = [], charts = [], tableRows = [], bodyBlocks = [];
-    let tableHeaders = [], lastSeenHeading = cleanTopic.toLowerCase();
+    let tableHeaders = [], lastSeenHeading = cleanTopic.toLowerCase(), imgCounter = 0;
 
     rawLines.forEach(line => {
         const t = line.trim();
-        if (!t || /^(LAYOUT|SHEET|NOTES)\s*:/i.test(t)) return;
+        if (!t || /^(LAYOUT|SHEET|NOTES|TITLE)\s*:/i.test(t)) return;
 
         if (/^(SLIDE|PAGE)\s*(\d+)\s*:\s*(.*)$/i.test(t)) {
             const m = t.match(/^(SLIDE|PAGE)\s*(\d+)\s*:\s*(.*)$/i);
             const pNum = parseInt(m[2], 10);
-            const pTitle = (m[3] || "").trim();
+            const pTitle = sanitizePdfText((m[3] || "").trim());
             bodyBlocks.push({ type: 'page_break', pageNum: pNum, title: pTitle });
             if (pTitle) lastSeenHeading = pTitle.toLowerCase();
             return;
         }
-        if (/^TITLE\s*:/i.test(t)) return;
 
         if (/^SUBTITLE:/i.test(t)) {
-            subtitle = t.replace(/^SUBTITLE:\s*/i, '').trim();
+            subtitle = sanitizePdfText(t.replace(/^SUBTITLE:\s*/i, '').trim());
         } else if (/^(?:IMAGE_QUERY|FIGURE):/i.test(t)) {
-            const q = t.replace(/^(?:IMAGE_QUERY|FIGURE):\s*/i, '').trim();
-            const url = getVisualImageUrlSync(q);
+            const q = sanitizePdfText(t.replace(/^(?:IMAGE_QUERY|FIGURE):\s*/i, '').trim());
+            const asset = getVisualAssetSync(q, activeTheme, imgCounter++);
             const prevBlock = bodyBlocks[bodyBlocks.length - 1];
             if (!prevBlock || prevBlock.type !== 'web_image' || prevBlock.query !== q) {
-                bodyBlocks.push({ type: 'web_image', query: q, url });
+                bodyBlocks.push({ type: 'web_image', query: q, url: asset.url, isPhoto: asset.isPhoto, idx: imgCounter });
             }
         } else if (/^KPI:/i.test(t)) {
-            const parts = t.replace(/^KPI:\s*/i, '').split('|').map(s => s.trim());
+            const parts = t.replace(/^KPI:\s*/i, '').split('|').map(s => sanitizePdfText(s.trim()));
             if (parts.length >= 2) kpis.push({ label: parts[0], value: parts[1], sub: parts[2] || "Key Metric" });
         } else if (/^CHART:/i.test(t)) {
-            const parts = t.replace(/^CHART:\s*/i, '').split('|').map(s => s.trim());
+            const parts = t.replace(/^CHART:\s*/i, '').split('|').map(s => sanitizePdfText(s.trim()));
             if (parts.length >= 2) {
                 let pct = parseInt(parts[1].replace(/[^0-9]/g, ''), 10);
                 charts.push({ label: parts[0], pct: isNaN(pct) ? 80 : Math.min(100, Math.max(5, pct)) });
             }
         } else if (/^TABLE_HEADER:/i.test(t)) {
-            tableHeaders = t.replace(/^TABLE_HEADER:\s*/i, '').split('|').map(s => s.trim());
+            tableHeaders = t.replace(/^TABLE_HEADER:\s*/i, '').split('|').map(s => sanitizePdfText(s.trim()));
         } else if (/^TABLE_ROW:/i.test(t)) {
-            tableRows.push(t.replace(/^TABLE_ROW:\s*/i, '').split('|').map(s => s.trim()));
+            tableRows.push(t.replace(/^TABLE_ROW:\s*/i, '').split('|').map(s => sanitizePdfText(s.trim())));
         } else if (/^SECTION:/i.test(t)) {
-            const secTxt = t.replace(/^SECTION:\s*/i, '').trim();
+            const secTxt = sanitizePdfText(t.replace(/^SECTION:\s*/i, '').trim());
             if (secTxt && secTxt.toLowerCase() !== lastSeenHeading) {
                 bodyBlocks.push({ type: 'section', text: secTxt });
                 lastSeenHeading = secTxt.toLowerCase();
             }
         } else if (/^(?:CALLOUT|KEY CONCEPT):/i.test(t)) {
-            bodyBlocks.push({ type: 'callout', text: t.replace(/^(?:CALLOUT|KEY CONCEPT):\s*/i, '').trim() });
+            bodyBlocks.push({ type: 'callout', text: sanitizePdfText(t.replace(/^(?:CALLOUT|KEY CONCEPT):\s*/i, '').trim()) });
         } else if (/^[-•*◆]\s+/.test(t)) {
-            bodyBlocks.push({ type: 'bullet', text: t.replace(/^[-•*◆]\s+/, '').trim() });
+            bodyBlocks.push({ type: 'bullet', text: sanitizePdfText(t.replace(/^[-•*◆]\s+/, '').trim()) });
         } else if (t.toLowerCase() !== lastSeenHeading) {
-            bodyBlocks.push({ type: 'p', text: t });
+            bodyBlocks.push({ type: 'p', text: sanitizePdfText(t) });
         }
     });
 
     const kpiHtml = kpis.length > 0 ? `
-        <div style="display:flex; gap:14px; margin-bottom:20px; flex-wrap:wrap;">
+        <div class="kiza-avoid-break" style="display:grid; grid-template-columns:repeat(${Math.min(3, kpis.length)}, minmax(0, 1fr)); gap:12px; margin-bottom:18px; page-break-inside:avoid; break-inside:avoid;">
             ${kpis.slice(0, 3).map((k, idx) => {
-                const colors = isMovieMode ? ['#fbbf24', '#ef4444', '#f59e0b'] : ['#0284c7', '#7c3aed', '#059669'];
-                const bgColors = isMovieMode ? ['#2a0810', '#2a0810', '#2a0810'] : (isDarkDoc ? ['#111827', '#1e1b4b', '#062e22'] : ['#f0f9ff', '#f5f3ff', '#ecfdf5']);
+                const colors = isMovieMode ? ['#fbbf24', '#ef4444', '#f59e0b'] : ['#0284c7', '#4f46e5', '#059669'];
+                const bgColors = isMovieMode ? ['#2a0810', '#2a0810', '#2a0810'] : (isDarkDoc ? ['#111827', '#1e1b4b', '#062e22'] : ['#f0f9ff', '#eef2ff', '#ecfdf5']);
                 const c = colors[idx % 3], bg = bgColors[idx % 3];
-                return `<div style="flex:1; min-width:150px; background:${bg}; border:1.5px solid ${c}88; border-top:4px solid ${c}; border-radius:10px; padding:12px 14px;">
-                    <div style="font-size:10px; font-weight:800; color:${isDarkDoc ? '#fde68a' : '#475569'}; text-transform:uppercase; letter-spacing:1px;">${isMovieMode ? '🎟️ ' : ''}${escapeHtml(k.label)}</div>
-                    <div style="font-size:21px; font-weight:800; color:${c}; margin:4px 0;">${escapeHtml(k.value)}</div>
-                    <div style="font-size:10.5px; color:${isDarkDoc ? '#fca5a5' : '#64748b'};">${escapeHtml(k.sub)}</div>
+                return `<div style="background:${bg}; border:1px solid ${c}55; border-top:3.5px solid ${c}; border-radius:9px; padding:10px 12px;">
+                    <div style="font-size:9.5px; font-weight:800; color:${isDarkDoc ? '#fde68a' : '#475569'}; text-transform:uppercase; letter-spacing:0.8px;">${escapeHtml(k.label)}</div>
+                    <div style="font-size:18px; font-weight:800; color:${c}; margin:4px 0 2px 0; line-height:1.2;">${escapeHtml(k.value)}</div>
+                    <div style="font-size:10px; color:${isDarkDoc ? '#fca5a5' : '#64748b'}; line-height:1.3;">${escapeHtml(k.sub)}</div>
                 </div>`;
             }).join('')}
         </div>` : '';
 
     const chartHtml = charts.length > 0 ? `
-        <div style="background:${pal.pdfCardBg}; border:1.5px solid ${isMovieMode ? '#fbbf24' : (isDarkDoc ? '#334155' : '#cbd5e1')}; border-radius:12px; padding:15px 18px; margin:16px 0;">
-            <div style="font-size:11px; font-weight:800; color:${isMovieMode ? '#fbbf24' : pal.pdfText}; letter-spacing:1.4px; text-transform:uppercase; margin-bottom:12px;">📊 DATA & BENCHMARK GRAPH</div>
+        <div class="kiza-avoid-break" style="background:${pal.pdfCardBg}; border:1.5px solid ${isMovieMode ? '#fbbf24' : (isDarkDoc ? '#334155' : '#cbd5e1')}; border-radius:10px; padding:14px 16px; margin:14px 0; page-break-inside:avoid; break-inside:avoid;">
+            <div style="font-size:10.5px; font-weight:800; color:${isMovieMode ? '#fbbf24' : pal.pdfAccent}; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:10px;">DATA & BENCHMARK METRICS</div>
             ${charts.map((ch, idx) => {
                 const barColors = isMovieMode
                     ? ['linear-gradient(90deg, #dc2626, #fbbf24)', 'linear-gradient(90deg, #b91c1c, #f59e0b)', 'linear-gradient(90deg, #991b1b, #fde047)']
-                    : ['linear-gradient(90deg, #0284c7, #38bdf8)', 'linear-gradient(90deg, #6366f1, #a855f7)', 'linear-gradient(90deg, #059669, #10b981)'];
-                return `<div style="margin-bottom:9px;">
-                    <div style="display:flex; justify-content:space-between; font-size:11.5px; font-weight:700; color:${pal.pdfText}; margin-bottom:4px;"><span>${escapeHtml(ch.label)}</span><span style="color:${isMovieMode ? '#fbbf24' : '#0284c7'};">${ch.pct}%</span></div>
-                    <div style="width:100%; height:11px; background:${isDarkDoc ? '#2e0912' : '#e2e8f0'}; border-radius:999px; overflow:hidden;"><div style="width:${ch.pct}%; height:100%; background:${barColors[idx % 3]}; border-radius:999px;"></div></div>
+                    : ['linear-gradient(90deg, #0284c7, #38bdf8)', 'linear-gradient(90deg, #4f46e5, #818cf8)', 'linear-gradient(90deg, #059669, #34d399)'];
+                return `<div style="margin-bottom:8px;">
+                    <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:${pal.pdfText}; margin-bottom:3px;"><span>${escapeHtml(ch.label)}</span><span style="color:${pal.pdfAccent};">${ch.pct}%</span></div>
+                    <div style="width:100%; height:9px; background:${isDarkDoc ? '#1e293b' : '#e2e8f0'}; border-radius:999px; overflow:hidden;"><div style="width:${ch.pct}%; height:100%; background:${barColors[idx % 3]}; border-radius:999px;"></div></div>
                 </div>`;
             }).join('')}
         </div>` : '';
 
     const tableHtml = tableRows.length > 0 ? `
-        <table style="width:100%; border-collapse:collapse; margin:18px 0; font-size:11.5px; border-radius:8px; overflow:hidden; border:1.5px solid ${isMovieMode ? '#fbbf24' : '#334155'};">
-            <thead><tr style="background:${isMovieMode ? '#7f1d1d' : '#' + (pal.bgHex === 'F8FAFC' ? '0f172a' : pal.bgHex)}; color:#ffffff; text-align:left;">
-                ${(tableHeaders.length ? tableHeaders : ['Parameter', 'Category A', 'Category B']).map(h => `<th style="padding:9px 12px; font-weight:800; border-bottom:2px solid #fbbf24; color:#fde68a;">${escapeHtml(h)}</th>`).join('')}
+        <table class="kiza-avoid-break" style="width:100%; border-collapse:collapse; margin:14px 0; font-size:11px; border:1px solid ${isMovieMode ? '#fbbf24' : '#cbd5e1'}; page-break-inside:avoid; break-inside:avoid;">
+            <thead><tr style="background:${isMovieMode ? '#7f1d1d' : '#0f172a'}; color:#ffffff; text-align:left;">
+                ${(tableHeaders.length ? tableHeaders : ['Dimension', 'Current', 'Target']).map(h => `<th style="padding:8px 10px; font-weight:700; border-bottom:2px solid ${pal.pdfAccent}; color:#f8fafc;">${escapeHtml(h)}</th>`).join('')}
             </tr></thead>
             <tbody>${tableRows.map((row, rIdx) => `
-                <tr style="background:${isMovieMode ? (rIdx % 2 === 0 ? '#1a050a' : '#2a0810') : (isDarkDoc ? (rIdx % 2 === 0 ? '#111827' : '#1e293b') : (rIdx % 2 === 0 ? '#ffffff' : '#f1f5f9'))}; border-bottom:1px solid ${isMovieMode ? '#450a0a' : '#e2e8f0'};">
-                    ${row.map((cell, cIdx) => `<td style="padding:8px 12px; color:${pal.pdfText}; ${cIdx === 0 ? 'font-weight:700; color:' + (isMovieMode ? '#fbbf24' : '#0284c7') + ';' : ''}">${escapeHtml(cell)}</td>`).join('')}
+                <tr style="background:${isMovieMode ? (rIdx % 2 === 0 ? '#1a050a' : '#2a0810') : (isDarkDoc ? (rIdx % 2 === 0 ? '#111827' : '#1e293b') : (rIdx % 2 === 0 ? '#ffffff' : '#f8fafc'))}; border-bottom:1px solid ${isMovieMode ? '#450a0a' : '#e2e8f0'}; page-break-inside:avoid;">
+                    ${row.map((cell, cIdx) => `<td style="padding:7px 10px; color:${pal.pdfText}; ${cIdx === 0 ? 'font-weight:700; color:' + pal.pdfAccent + ';' : ''}">${escapeHtml(cell)}</td>`).join('')}
                 </tr>`).join('')}
             </tbody>
         </table>` : '';
 
     const imgBlockHtml = embeddedImgBase64 ? `
-        <div style="margin:14px 0 20px 0; text-align:center; background:${pal.pdfCardBg}; padding:14px; border-radius:12px; border:1.5px dashed #fbbf24;">
-            <img src="${embeddedImgBase64}" crossorigin="anonymous" style="max-width:82%; max-height:220px; border-radius:8px;">
-            <div style="font-size:10px; color:#fde68a; margin-top:6px; font-weight:600;">ATTACHED VISUAL FIGURE</div>
+        <div class="kiza-avoid-break" style="margin:12px 0 16px 0; text-align:center; background:${pal.pdfCardBg}; padding:10px; border-radius:10px; border:1px dashed ${pal.pdfAccent}; page-break-inside:avoid;">
+            <img src="${embeddedImgBase64}" crossorigin="anonymous" style="max-width:80%; max-height:190px; border-radius:6px;">
+            <div style="font-size:9.5px; color:${pal.pdfMuted}; margin-top:5px; font-weight:600;">ATTACHED REFERENCE FIGURE</div>
         </div>` : '';
 
     let renderedBody = "";
     bodyBlocks.forEach(b => {
         if (b.type === 'page_break') {
-            const breakCss = b.pageNum > 1 ? "page-break-before: always; break-before: page; margin-top: 24px; padding-top: 16px; border-top: 2px dashed rgba(251, 191, 36, 0.45);" : "margin-top: 8px;";
-            renderedBody += `<div style="${breakCss}"><div style="display:flex; justify-content:space-between; align-items:center; background:${isMovieMode ? 'linear-gradient(90deg, #7f1d1d 0%, #450a0a 60%, #1a050a 100%)' : 'linear-gradient(90deg, #0284c7 0%, #1e293b 100%)'}; color:#fde68a; padding:10px 16px; border-radius:10px; border:1px solid #fbbf24; margin-bottom:12px;"><span style="font-size:13px; font-weight:900; letter-spacing:1.2px;">${isMovieMode ? '🎬 SCENE / PAGE ' + b.pageNum : '📄 PAGE ' + b.pageNum}${b.title ? ' — ' + escapeHtml(b.title.toUpperCase()) : ''}</span><span style="font-size:10px; font-family:monospace; color:#ffffff; background:rgba(0,0,0,0.45); padding:2px 8px; border-radius:99px;">PAGE ${b.pageNum}</span></div></div>`;
+            const breakClass = b.pageNum > 1 ? 'kiza-page-break' : '';
+            const breakCss = b.pageNum > 1 ? "page-break-before: always; break-before: page; margin-top: 8px;" : "margin-top: 4px;";
+            renderedBody += `
+                <div class="${breakClass}" style="${breakCss} margin-bottom:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; background:${isMovieMode ? 'linear-gradient(90deg, #7f1d1d 0%, #450a0a 100%)' : 'linear-gradient(90deg, #0f172a 0%, #1e3a8a 100%)'}; color:#ffffff; padding:9px 14px; border-radius:8px; border-left:4px solid ${pal.pdfAccent};">
+                        <span style="font-size:12.5px; font-weight:800; letter-spacing:0.4px; line-height:1.3;">${escapeHtml(b.title ? b.title.toUpperCase() : ('SECTION ' + b.pageNum))}</span>
+                        <span style="font-size:10px; font-family:monospace; font-weight:700; color:${pal.pdfAccent}; background:rgba(0,0,0,0.4); padding:3px 9px; border-radius:99px; white-space:nowrap; flex-shrink:0;">PAGE ${b.pageNum}</span>
+                    </div>
+                </div>`;
         } else if (b.type === 'web_image') {
-            renderedBody += `<div style="margin:12px 0; text-align:center; background:${isMovieMode ? '#090204' : pal.pdfCardBg}; padding:10px; border-radius:12px; border:2px solid ${isMovieMode ? '#fbbf24' : (isDarkDoc ? '#334155' : '#e2e8f0')};"><img src="${b.url}" crossorigin="anonymous" style="width:100%; max-width:520px; height:200px; object-fit:cover; border-radius:8px; display:block; margin:0 auto;" onerror="this.src='${generateCustomHighResArtworkDataUrl(b.query)}'"><div style="font-size:10px; color:${isMovieMode ? '#fbbf24' : '#64748b'}; margin-top:6px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">🎞️ ${escapeHtml(b.query)}</div></div>`;
+            const fallbackUrl = generateCustomHighResArtworkDataUrl(b.query, activeTheme, b.idx);
+            const captionRow = b.isPhoto ? `<div style="font-size:9.5px; color:${pal.pdfMuted}; margin-top:5px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px;">Figure ${b.idx}: ${escapeHtml(b.query)}</div>` : '';
+            renderedBody += `
+                <div class="kiza-avoid-break" style="margin:10px 0 12px 0; text-align:center; background:${pal.pdfCardBg}; padding:8px; border-radius:10px; border:1px solid ${isMovieMode ? '#fbbf24' : (isDarkDoc ? '#334155' : '#e2e8f0')}; page-break-inside:avoid; break-inside:avoid;">
+                    <img src="${b.url}" crossorigin="anonymous" style="width:100%; max-width:520px; height:172px; object-fit:${b.isPhoto ? 'cover' : 'contain'}; border-radius:6px; display:block; margin:0 auto;" onerror="this.src='${fallbackUrl}'; this.style.objectFit='contain';">
+                    ${captionRow}
+                </div>`;
         } else if (b.type === 'section') {
-            renderedBody += `<h2 style="font-size:14px; font-weight:800; color:${isMovieMode ? '#fbbf24' : pal.pdfText}; text-transform:uppercase; letter-spacing:1px; border-left:4px solid ${isMovieMode ? '#dc2626' : '#0284c7'}; padding-left:10px; margin:18px 0 9px 0;">${escapeHtml(b.text)}</h2>`;
+            renderedBody += `<h2 style="font-size:13.5px; font-weight:800; color:${pal.pdfText}; text-transform:uppercase; letter-spacing:0.6px; border-left:3.5px solid ${pal.pdfAccent}; padding-left:9px; margin:14px 0 7px 0; page-break-after:avoid;">${escapeHtml(b.text)}</h2>`;
         } else if (b.type === 'callout') {
-            renderedBody += `<div style="background:${isMovieMode ? '#2a0810' : pal.pdfCardBg}; border-left:4px solid ${isMovieMode ? '#fbbf24' : '#7c3aed'}; padding:11px 15px; border-radius:0 8px 8px 0; margin:12px 0; font-size:12px; font-weight:600; color:${pal.pdfText};">📌 <b>KEY INSIGHT:</b> ${escapeHtml(b.text)}</div>`;
+            renderedBody += `<div class="kiza-avoid-break" style="background:${isMovieMode ? '#2a0810' : pal.pdfCardBg}; border-left:3.5px solid ${isMovieMode ? '#fbbf24' : '#4f46e5'}; padding:9px 13px; border-radius:0 7px 7px 0; margin:10px 0; font-size:11.5px; font-weight:600; color:${pal.pdfText}; line-height:1.45; page-break-inside:avoid; break-inside:avoid;"><b style="color:${pal.pdfAccent};">KEY INSIGHT:</b> ${escapeHtml(b.text)}</div>`;
         } else if (b.type === 'bullet') {
-            renderedBody += `<div style="display:flex; align-items:flex-start; gap:8px; margin:5px 0 5px 8px; font-size:12.5px; color:${pal.pdfText};"><span style="color:${isMovieMode ? '#fbbf24' : '#0284c7'}; font-weight:bold;">◆</span><span>${escapeHtml(b.text)}</span></div>`;
+            renderedBody += `<div style="display:flex; align-items:flex-start; gap:7px; margin:4px 0 4px 6px; font-size:11.8px; color:${pal.pdfText}; line-height:1.48;"><span style="color:${pal.pdfAccent}; font-weight:800;">◆</span><span>${escapeHtml(b.text)}</span></div>`;
         } else {
-            renderedBody += `<p style="font-size:12.5px; color:${pal.pdfText}; margin:7px 0; line-height:1.62; text-align:justify;">${escapeHtml(b.text)}</p>`;
+            renderedBody += `<p style="font-size:11.8px; color:${pal.pdfText}; margin:6px 0; line-height:1.55; text-align:justify;">${escapeHtml(b.text)}</p>`;
         }
     });
 
-    if (chartHtml) renderedBody += chartHtml;
-    if (tableHtml) renderedBody += tableHtml;
+    // Attach charts, comparison table, and footer together cleanly so the footer NEVER creates a blank orphan page
+    const closingBlock = `
+        <div class="kiza-avoid-break" style="page-break-inside:avoid; break-inside:avoid;">
+            ${chartHtml}
+            ${tableHtml}
+            <div style="margin-top:14px; border-top:1.5px solid ${isMovieMode ? '#fbbf24' : '#cbd5e1'}; padding-top:8px; font-size:9px; color:${pal.pdfMuted}; display:flex; justify-content:space-between; font-family:monospace; page-break-before:avoid; break-before:avoid;">
+                <span>KIZA PRO STUDIO • ${activeFormat.toUpperCase()} EDITION</span>
+                <span>PREPARED BY ${escapeHtml(cleanDisplayNameOnly(currentUser).toUpperCase())} • ${new Date().toLocaleDateString('en-IN')}</span>
+            </div>
+        </div>`;
 
     let headerBannerHTML = "";
-    let mainContentWrapperHTML = `${kpiHtml}${imgBlockHtml}${renderedBody}`;
+    let mainContentWrapperHTML = `${kpiHtml}${imgBlockHtml}${renderedBody}${closingBlock}`;
 
     if (isMovieMode) {
-        headerBannerHTML = `<div style="background:radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.35) 0%, rgba(127,29,29,0.85) 55%, #0d0205 100%); border:2.5px solid #fbbf24; color:#fffbeb; padding:24px 28px; border-radius:14px; margin-bottom:22px; text-align:center;"><div style="font-size:10.5px; font-weight:900; color:#fbbf24; letter-spacing:3px;">★ NOW SHOWING • KIZA CINEMA STAGE EDITION ★</div><h1 style="margin:8px 0 5px 0; font-size:26px; font-weight:900; color:#ffffff;">${escapeHtml(cleanTopic)}</h1><div style="font-size:12px; color:#fde68a; font-style:italic;">${escapeHtml(subtitle)}</div><div style="margin-top:10px; font-size:10px; font-family:monospace; color:#fca5a5;">AUTHOR: ${escapeHtml(cleanDisplayNameOnly(currentUser).toUpperCase())} • DATE: ${new Date().toLocaleDateString('en-IN')}</div></div>`;
+        headerBannerHTML = `<div class="kiza-avoid-break" style="background:radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.32) 0%, rgba(127,29,29,0.85) 55%, #0d0205 100%); border:2px solid #fbbf24; color:#fffbeb; padding:18px 22px; border-radius:12px; margin-bottom:16px; text-align:center;"><div style="font-size:9.5px; font-weight:900; color:#fbbf24; letter-spacing:2.5px;">★ KIZA CINEMA STAGE EDITION ★</div><h1 style="margin:6px 0 4px 0; font-size:22px; font-weight:900; color:#ffffff; line-height:1.2;">${escapeHtml(cleanTopic)}</h1><div style="font-size:11.5px; color:#fde68a; font-style:italic;">${escapeHtml(subtitle)}</div><div style="margin-top:8px; font-size:9.5px; font-family:monospace; color:#fca5a5;">AUTHOR: ${escapeHtml(cleanDisplayNameOnly(currentUser).toUpperCase())} • ${new Date().toLocaleDateString('en-IN')}</div></div>`;
     } else if (activeFormat === "exam_paper") {
-        headerBannerHTML = `<div style="border:2px solid #0f172a; padding:16px 20px; margin-bottom:20px; text-align:center; background:#ffffff; color:#0f172a;"><div style="font-size:11px; font-weight:800; letter-spacing:1.5px;">CBSE PATTERN ASSESSMENT • QUESTION PAPER</div><h1 style="margin:6px 0; font-size:21px; font-weight:800;">${escapeHtml(cleanTopic)}</h1><div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; border-top:1px solid #cbd5e1; padding-top:8px; margin-top:8px;"><span>Time: 2 Hours</span><span>Candidate: ${escapeHtml(cleanDisplayNameOnly(currentUser))}</span><span>Max Marks: 40</span></div></div>`;
+        headerBannerHTML = `<div class="kiza-avoid-break" style="border:2px solid #0f172a; padding:14px 18px; margin-bottom:16px; text-align:center; background:#ffffff; color:#0f172a;"><div style="font-size:10px; font-weight:800; letter-spacing:1.4px;">CBSE PATTERN ASSESSMENT • QUESTION PAPER</div><h1 style="margin:5px 0; font-size:19px; font-weight:800;">${escapeHtml(cleanTopic)}</h1><div style="display:flex; justify-content:space-between; font-size:10.5px; font-weight:700; border-top:1px solid #cbd5e1; padding-top:7px; margin-top:7px;"><span>Time: 2 Hours</span><span>Candidate: ${escapeHtml(cleanDisplayNameOnly(currentUser))}</span><span>Max Marks: 40</span></div></div>`;
     } else if (activeFormat === "lab_manual") {
-        headerBannerHTML = `<div style="border-left:6px solid #059669; background:#ecfdf5; color:#064e3b; padding:16px 20px; border-radius:0 10px 10px 0; margin-bottom:20px;"><div style="font-size:10px; font-weight:800; letter-spacing:1.5px; color:#059669;">PRACTICAL LAB RECORD</div><h1 style="margin:4px 0; font-size:21px; font-weight:800;">${escapeHtml(cleanTopic)}</h1><div style="font-size:11px;">Student: <b>${escapeHtml(cleanDisplayNameOnly(currentUser))}</b> • Date: ${new Date().toLocaleDateString('en-IN')}</div></div>`;
+        headerBannerHTML = `<div class="kiza-avoid-break" style="border-left:5px solid #059669; background:#ecfdf5; color:#064e3b; padding:14px 18px; border-radius:0 8px 8px 0; margin-bottom:16px;"><div style="font-size:9.5px; font-weight:800; letter-spacing:1.4px; color:#059669;">PRACTICAL LAB RECORD</div><h1 style="margin:4px 0; font-size:19px; font-weight:800;">${escapeHtml(cleanTopic)}</h1><div style="font-size:10.5px;">Student: <b>${escapeHtml(cleanDisplayNameOnly(currentUser))}</b> • Date: ${new Date().toLocaleDateString('en-IN')}</div></div>`;
     } else if (activeFormat === "academic") {
-        headerBannerHTML = `<div style="border-bottom:3px double #0284c7; padding-bottom:14px; margin-bottom:20px;"><div style="font-size:10px; font-weight:800; color:#0284c7; letter-spacing:1.5px;">ACADEMIC STUDY MODULE • NCERT & CBSE</div><h1 style="margin:4px 0; font-size:23px; font-weight:800; color:${pal.pdfText}; font-family:Georgia, serif;">${escapeHtml(cleanTopic)}</h1><div style="font-size:12px; font-style:italic; color:#64748b;">${escapeHtml(subtitle)}</div></div>`;
-        mainContentWrapperHTML = `${kpiHtml}<div style="column-count:2; column-gap:22px; text-align:justify;">${imgBlockHtml}${renderedBody}</div>`;
+        headerBannerHTML = `<div class="kiza-avoid-break" style="border-bottom:3px double #0284c7; padding-bottom:12px; margin-bottom:16px;"><div style="font-size:9.5px; font-weight:800; color:#0284c7; letter-spacing:1.4px;">ACADEMIC STUDY MODULE • NCERT & CBSE</div><h1 style="margin:4px 0; font-size:20px; font-weight:800; color:${pal.pdfText}; font-family:Georgia, serif;">${escapeHtml(cleanTopic)}</h1><div style="font-size:11px; font-style:italic; color:${pal.pdfMuted};">${escapeHtml(subtitle)}</div></div>`;
     } else if (activeFormat === "magazine") {
-        headerBannerHTML = `<div style="border-top:6px solid #0f172a; border-bottom:2px solid #0f172a; padding:18px 0; margin-bottom:20px; text-align:center;"><div style="font-size:10px; font-weight:800; letter-spacing:3px; color:#0284c7;">KIZA EDITORIAL FEATURE</div><h1 style="margin:6px 0; font-size:27px; font-family:Georgia, serif; color:${pal.pdfText};">${escapeHtml(cleanTopic)}</h1><div style="font-size:12.5px; color:#64748b;">${escapeHtml(subtitle)} • By ${escapeHtml(cleanDisplayNameOnly(currentUser))}</div></div>`;
+        headerBannerHTML = `<div class="kiza-avoid-break" style="border-top:5px solid #0f172a; border-bottom:2px solid #0f172a; padding:14px 0; margin-bottom:16px; text-align:center;"><div style="font-size:9.5px; font-weight:800; letter-spacing:2.5px; color:${pal.pdfAccent};">KIZA EDITORIAL FEATURE</div><h1 style="margin:5px 0; font-size:22px; font-family:Georgia, serif; color:${pal.pdfText}; line-height:1.2;">${escapeHtml(cleanTopic)}</h1><div style="font-size:11.5px; color:${pal.pdfMuted};">${escapeHtml(subtitle)} • By ${escapeHtml(cleanDisplayNameOnly(currentUser))}</div></div>`;
     } else {
-        headerBannerHTML = `<div style="background:${pal.pdfHero}; color:#ffffff; padding:22px 26px; border-radius:14px; margin-bottom:22px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;"><div><div style="font-size:10px; font-weight:700; color:#38bdf8; letter-spacing:2px; text-transform:uppercase;">KIZA INTELLIGENCE DOSSIER • ${activeTheme.toUpperCase()}</div><h1 style="margin:6px 0 4px 0; font-size:22px; font-weight:800; color:#ffffff;">${escapeHtml(cleanTopic)}</h1><div style="font-size:11.5px; color:#cbd5e1;">${escapeHtml(subtitle)}</div></div><div style="text-align:right; font-family:monospace; font-size:10px; color:#94a3b8; border-left:1px solid rgba(255,255,255,0.2); padding-left:14px;"><div style="color:#ffffff; font-weight:bold;">AUTHOR: ${escapeHtml(cleanDisplayNameOnly(currentUser).toUpperCase())}</div><div>DATE: ${new Date().toLocaleDateString('en-IN')}</div></div></div>`;
+        headerBannerHTML = `<div class="kiza-avoid-break" style="background:${pal.pdfHero}; color:#ffffff; padding:18px 22px; border-radius:12px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; gap:12px;"><div style="flex:1;"><div style="font-size:9.5px; font-weight:700; color:#38bdf8; letter-spacing:1.8px; text-transform:uppercase;">KIZA INTELLIGENCE DOSSIER</div><h1 style="margin:5px 0 3px 0; font-size:20px; font-weight:800; color:#ffffff; line-height:1.2;">${escapeHtml(cleanTopic)}</h1><div style="font-size:11px; color:#cbd5e1;">${escapeHtml(subtitle)}</div></div><div style="text-align:right; font-family:monospace; font-size:9.5px; color:#94a3b8; border-left:1px solid rgba(255,255,255,0.2); padding-left:12px; white-space:nowrap;"><div style="color:#ffffff; font-weight:bold;">${escapeHtml(cleanDisplayNameOnly(currentUser).toUpperCase())}</div><div>${new Date().toLocaleDateString('en-IN')}</div></div></div>`;
     }
 
     const outerShellStyle = isMovieMode
-        ? `font-family:'Inter', Arial, sans-serif; color:#fffbeb; background:linear-gradient(90deg, #5c0a14 0%, #881322 4%, #3b040a 7%, #0d0205 10%, #0d0205 90%, #3b040a 93%, #881322 96%, #5c0a14 100%); padding:28px 46px; border-radius:12px; border:3px solid #fbbf24;`
-        : `font-family:'Inter', Arial, sans-serif; color:${pal.pdfText}; background:${pal.pdfPageBg}; padding:28px 34px; border-radius:10px;`;
+        ? `font-family:'Inter', Arial, sans-serif; color:#fffbeb; background:linear-gradient(90deg, #5c0a14 0%, #881322 3%, #3b040a 6%, #0d0205 9%, #0d0205 91%, #3b040a 94%, #881322 97%, #5c0a14 100%); padding:20px 36px; border-radius:10px; border:2.5px solid #fbbf24; box-sizing:border-box;`
+        : `font-family:'Inter', Arial, sans-serif; color:${pal.pdfText}; background:${pal.pdfPageBg}; padding:20px 26px; border-radius:8px; box-sizing:border-box;`;
 
     return {
         cleanTopic, subtitle, kpis, charts, tableHeaders, tableRows, activeTheme,
-        html: `<div style="${outerShellStyle}">${headerBannerHTML}${mainContentWrapperHTML}<div style="margin-top:30px; border-top:2px solid ${isMovieMode ? '#fbbf24' : '#334155'}; padding-top:10px; font-size:9.5px; color:${isMovieMode ? '#fde68a' : '#64748b'}; display:flex; justify-content:space-between; font-family:monospace;"><span>GENERATED BY KIZA PRO STUDIO • FORMAT: ${activeFormat.toUpperCase()}</span><span>DATE: ${new Date().toLocaleDateString('en-IN')}</span></div></div>`
+        html: `<div style="${outerShellStyle}">${headerBannerHTML}${mainContentWrapperHTML}</div>`
     };
 }
 
@@ -688,7 +793,7 @@ function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = n
 function parseStructuredWordBlocks(topicTitle, rawContent) {
     const titleOverride = stripSlashesFromText(rawContent).match(/^TITLE\s*:\s*([^\n]+)/im);
     const parsedTopic = extractClientTopicAndStyle(topicTitle);
-    const finalTitle = titleOverride ? titleOverride[1].trim() : parsedTopic.cleanTopic;
+    const finalTitle = sanitizePdfText(titleOverride ? titleOverride[1].trim() : parsedTopic.cleanTopic);
 
     const lines = stripSlashesFromText(rawContent)
         .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
@@ -705,13 +810,13 @@ function parseStructuredWordBlocks(topicTitle, rawContent) {
         if (!t || /^(KPI|CHART|IMAGE_QUERY|FIGURE|LAYOUT|SHEET|NOTES|TITLE):/i.test(t)) return;
 
         if (/^TABLE_HEADER:/i.test(t)) {
-            const headers = t.replace(/^TABLE_HEADER:\s*/i, '').split('|').map(x => x.trim());
+            const headers = t.replace(/^TABLE_HEADER:\s*/i, '').split('|').map(x => sanitizePdfText(x.trim()));
             activeTable = { type: 'table', headers, rows: [] };
             blocks.push(activeTable);
             return;
         }
         if (/^TABLE_ROW:/i.test(t)) {
-            const cols = t.replace(/^TABLE_ROW:\s*/i, '').split('|').map(x => x.trim());
+            const cols = t.replace(/^TABLE_ROW:\s*/i, '').split('|').map(x => sanitizePdfText(x.trim()));
             if (!activeTable) {
                 activeTable = { type: 'table', headers: cols.map((_, i) => `Column ${i + 1}`), rows: [] };
                 blocks.push(activeTable);
@@ -722,15 +827,15 @@ function parseStructuredWordBlocks(topicTitle, rawContent) {
         activeTable = null;
 
         if (/^SUBTITLE:/i.test(t)) {
-            subtitle = t.replace(/^SUBTITLE:\s*/i, '').trim();
+            subtitle = sanitizePdfText(t.replace(/^SUBTITLE:\s*/i, '').trim());
         } else if (/^(SECTION|PAGE|SLIDE)\s*\d*\s*:/i.test(t)) {
-            blocks.push({ type: 'heading', text: t.replace(/^(SECTION|PAGE|SLIDE)\s*\d*\s*:\s*/i, '').trim() });
+            blocks.push({ type: 'heading', text: sanitizePdfText(t.replace(/^(SECTION|PAGE|SLIDE)\s*\d*\s*:\s*/i, '').trim()) });
         } else if (/^CALLOUT:/i.test(t)) {
-            blocks.push({ type: 'callout', text: t.replace(/^CALLOUT:\s*/i, '').trim() });
+            blocks.push({ type: 'callout', text: sanitizePdfText(t.replace(/^CALLOUT:\s*/i, '').trim()) });
         } else if (/^[-•*◆]\s+/.test(t)) {
-            blocks.push({ type: 'bullet', text: t.replace(/^[-•*◆]\s+/, '').trim() });
+            blocks.push({ type: 'bullet', text: sanitizePdfText(t.replace(/^[-•*◆]\s+/, '').trim()) });
         } else {
-            blocks.push({ type: 'p', text: t });
+            blocks.push({ type: 'p', text: sanitizePdfText(t) });
         }
     });
 
@@ -743,15 +848,9 @@ function buildWordDocumentHTML(topicTitle, rawContent, layoutFormat = "docx_repo
     const author = cleanDisplayNameOnly(currentUser);
 
     const bodyHtml = docData.blocks.map(b => {
-        if (b.type === 'heading') {
-            return `<h2 style="color:#1e3a8a; border-bottom:1.5px solid #cbd5e1; padding-bottom:4px; margin-top:18px; font-size:15px;">${escapeHtml(b.text)}</h2>`;
-        }
-        if (b.type === 'bullet') {
-            return `<div style="margin:4px 0 4px 16px;">• ${escapeHtml(b.text)}</div>`;
-        }
-        if (b.type === 'callout') {
-            return `<div style="background:#eff6ff; border-left:4px solid #2563eb; padding:9px 13px; margin:10px 0; font-size:12.5px;"><b>Key Note:</b> ${escapeHtml(b.text)}</div>`;
-        }
+        if (b.type === 'heading') return `<h2 style="color:#1e3a8a; border-bottom:1.5px solid #cbd5e1; padding-bottom:4px; margin-top:18px; font-size:15px;">${escapeHtml(b.text)}</h2>`;
+        if (b.type === 'bullet') return `<div style="margin:4px 0 4px 16px;">• ${escapeHtml(b.text)}</div>`;
+        if (b.type === 'callout') return `<div style="background:#eff6ff; border-left:4px solid #2563eb; padding:9px 13px; margin:10px 0; font-size:12.5px;"><b>Key Note:</b> ${escapeHtml(b.text)}</div>`;
         if (b.type === 'table') {
             return `<table style="width:100%; border-collapse:collapse; margin:14px 0; font-size:12px; border:1px solid #cbd5e1;">
                 <thead><tr style="background:#1e3a8a; color:#fff;">${b.headers.map(h => `<th style="padding:7px 10px; text-align:left; border:1px solid #1e3a8a;">${escapeHtml(h)}</th>`).join('')}</tr></thead>
@@ -839,32 +938,18 @@ async function compileAndDownloadNativeDOCX(topicTitle, rawContent, layoutFormat
 
     docData.blocks.forEach(b => {
         if (b.type === 'heading') {
-            children.push(new Paragraph({
-                heading: HeadingLevel.HEADING_2,
-                children: [new TextRun({ text: b.text, bold: true, color: "1E3A8A", size: 28 })],
-                spacing: { before: 240, after: 120 }
-            }));
+            children.push(new Paragraph({ heading: HeadingLevel.HEADING_2, children: [new TextRun({ text: b.text, bold: true, color: "1E3A8A", size: 28 })], spacing: { before: 240, after: 120 } }));
         } else if (b.type === 'bullet') {
             children.push(new Paragraph({ text: b.text, bullet: { level: 0 }, spacing: { after: 80 } }));
         } else if (b.type === 'callout') {
-            children.push(new Paragraph({
-                shading: { type: ShadingType.CLEAR, fill: "EFF6FF" },
-                children: [new TextRun({ text: "Key Note: ", bold: true, color: "1D4ED8" }), new TextRun({ text: b.text, color: "0F172A" })],
-                spacing: { before: 120, after: 140 }
-            }));
+            children.push(new Paragraph({ shading: { type: ShadingType.CLEAR, fill: "EFF6FF" }, children: [new TextRun({ text: "Key Note: ", bold: true, color: "1D4ED8" }), new TextRun({ text: b.text, color: "0F172A" })], spacing: { before: 120, after: 140 } }));
         } else if (b.type === 'table' && b.headers.length > 0) {
             const headerRow = new TableRow({
                 tableHeader: true,
-                children: b.headers.map(h => new TableCell({
-                    shading: { type: ShadingType.CLEAR, fill: "1E3A8A" },
-                    children: [new Paragraph({ children: [new TextRun({ text: h, bold: true, color: "FFFFFF", size: 20 })] })]
-                }))
+                children: b.headers.map(h => new TableCell({ shading: { type: ShadingType.CLEAR, fill: "1E3A8A" }, children: [new Paragraph({ children: [new TextRun({ text: h, bold: true, color: "FFFFFF", size: 20 })] })] }))
             });
             const dataRows = b.rows.map((r, rIdx) => new TableRow({
-                children: b.headers.map((_, ci) => new TableCell({
-                    shading: rIdx % 2 === 1 ? { type: ShadingType.CLEAR, fill: "F8FAFC" } : undefined,
-                    children: [new Paragraph({ children: [new TextRun({ text: String(r[ci] || ""), size: 20 })] })]
-                }))
+                children: b.headers.map((_, ci) => new TableCell({ shading: rIdx % 2 === 1 ? { type: ShadingType.CLEAR, fill: "F8FAFC" } : undefined, children: [new Paragraph({ children: [new TextRun({ text: String(r[ci] || ""), size: 20 })] })] }))
             }));
             children.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: [headerRow, ...dataRows] }));
             children.push(new Paragraph({ text: "", spacing: { after: 140 } }));
@@ -933,10 +1018,10 @@ function parseMultiSheetExcelData(topicTitle, rawContent) {
             sheets.push(currentSheet);
         } else if (/^TABLE_HEADER\s*:/i.test(t)) {
             const sh = ensureSheet("Primary_Data");
-            sh.headers = t.replace(/^TABLE_HEADER\s*:\s*/i, '').split('|').map(x => x.trim());
+            sh.headers = t.replace(/^TABLE_HEADER\s*:\s*/i, '').split('|').map(x => sanitizePdfText(x.trim()));
         } else if (/^TABLE_ROW\s*:/i.test(t)) {
             const sh = ensureSheet("Primary_Data");
-            sh.rows.push(t.replace(/^TABLE_ROW\s*:\s*/i, '').split('|').map(x => x.trim()));
+            sh.rows.push(t.replace(/^TABLE_ROW\s*:\s*/i, '').split('|').map(x => sanitizePdfText(x.trim())));
         }
     });
 
@@ -944,18 +1029,10 @@ function parseMultiSheetExcelData(topicTitle, rawContent) {
     if (validSheets.length === 0) {
         const parsed = buildDecorativeReportHTML(topicTitle, rawContent);
         if (parsed.charts.length > 0) {
-            validSheets.push({
-                name: "Metrics",
-                headers: ["Category", "Score", "Status"],
-                rows: parsed.charts.map(c => [c.label, String(c.pct), c.pct >= 75 ? "Optimal" : "Standard"])
-            });
+            validSheets.push({ name: "Metrics", headers: ["Category", "Score", "Status"], rows: parsed.charts.map(c => [c.label, String(c.pct), c.pct >= 75 ? "Optimal" : "Standard"]) });
         } else {
             const cleanLines = lines.map(l => l.trim()).filter(Boolean).slice(0, 12);
-            validSheets.push({
-                name: "KIZA_Data",
-                headers: ["Row", "Details", "Status"],
-                rows: cleanLines.map((l, i) => [`Row ${i + 1}`, l, "Verified"])
-            });
+            validSheets.push({ name: "KIZA_Data", headers: ["Row", "Details", "Status"], rows: cleanLines.map((l, i) => [`Row ${i + 1}`, sanitizePdfText(l), "Verified"]) });
         }
     }
     return validSheets;
@@ -971,9 +1048,7 @@ function evaluateExcelFormulaForPreview(formulaStr, sheets) {
     const colEnd = m[5].toUpperCase().charCodeAt(0) - 65;
     const rowEnd = Math.max(0, parseInt(m[6], 10) - 2);
 
-    const sh = targetSheetName
-        ? sheets.find(s => s.name.toLowerCase() === targetSheetName.toLowerCase()) || sheets[0]
-        : sheets[0];
+    const sh = targetSheetName ? sheets.find(s => s.name.toLowerCase() === targetSheetName.toLowerCase()) || sheets[0] : sheets[0];
     if (!sh || !sh.rows) return null;
 
     const nums = [];
@@ -1001,13 +1076,10 @@ function recalculateExcelPreviewFormulasFromDOM() {
     if (!tables.length) return;
     const liveSheets = tables.map(tbl => ({
         name: tbl.getAttribute('data-sheet-name') || "Sheet",
-        rows: Array.from(tbl.querySelectorAll('tbody tr')).map(tr =>
-            Array.from(tr.querySelectorAll('td')).map(td => td.innerText.trim())
-        )
+        rows: Array.from(tbl.querySelectorAll('tbody tr')).map(tr => Array.from(tr.querySelectorAll('td')).map(td => td.innerText.trim()))
     }));
     document.querySelectorAll('#filePreviewViewport td[data-formula]').forEach(td => {
-        const f = td.getAttribute('data-formula');
-        const val = evaluateExcelFormulaForPreview(f, liveSheets);
+        const val = evaluateExcelFormulaForPreview(td.getAttribute('data-formula'), liveSheets);
         if (val !== null) td.innerText = val;
     });
 }
@@ -1025,7 +1097,7 @@ function switchExcelPreviewTab(tabIndex) {
 
 function buildExcelSheetPreviewHTML(topicTitle, rawContent, layoutFormat = "xlsx_budget") {
     const titleMatch = stripSlashesFromText(rawContent).match(/^TITLE\s*:\s*([^\n]+)/im);
-    const displayTitle = titleMatch ? titleMatch[1].trim() : extractClientTopicAndStyle(topicTitle).cleanTopic;
+    const displayTitle = sanitizePdfText(titleMatch ? titleMatch[1].trim() : extractClientTopicAndStyle(topicTitle).cleanTopic);
     const sheets = parseMultiSheetExcelData(topicTitle, rawContent);
 
     const headerColors = { xlsx_budget: "#059669", xlsx_marksheet: "#2563eb", xlsx_tracker: "#7c3aed", xlsx_comparison: "#0f766e" };
@@ -1040,11 +1112,8 @@ function buildExcelSheetPreviewHTML(topicTitle, rawContent, layoutFormat = "xlsx
     const tabButtonsHtml = `
         <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;" contenteditable="false">
             <button type="button" class="excel-tab-btn" data-tab-idx="-1" onclick="switchExcelPreviewTab(-1)" style="border:1px solid #cbd5e1; background:#059669; color:#fff; font-size:11px; font-weight:700; padding:5px 11px; border-radius:999px; cursor:pointer;">📑 All Tabs (${sheets.length})</button>
-            ${sheets.map((sh, i) => `
-                <button type="button" class="excel-tab-btn" data-tab-idx="${i}" onclick="switchExcelPreviewTab(${i})" style="border:1px solid #cbd5e1; background:#f1f5f9; color:#0f172a; font-size:11px; font-weight:700; padding:5px 11px; border-radius:999px; cursor:pointer;">${escapeHtml(sh.name.replace(/_/g, ' '))}</button>
-            `).join('')}
-        </div>
-    `;
+            ${sheets.map((sh, i) => `<button type="button" class="excel-tab-btn" data-tab-idx="${i}" onclick="switchExcelPreviewTab(${i})" style="border:1px solid #cbd5e1; background:#f1f5f9; color:#0f172a; font-size:11px; font-weight:700; padding:5px 11px; border-radius:999px; cursor:pointer;">${escapeHtml(sh.name.replace(/_/g, ' '))}</button>`).join('')}
+        </div>`;
 
     const tablesHtml = sheets.map((sh, sIdx) => {
         const hdrs = sh.headers.length ? sh.headers : ["Item", "Value", "Notes"];
@@ -1057,14 +1126,12 @@ function buildExcelSheetPreviewHTML(topicTitle, rawContent, layoutFormat = "xlsx
                         const rawVal = r[cIdx] !== undefined ? String(r[cIdx]).trim() : '';
                         if (rawVal.startsWith('=')) {
                             const computed = evaluateExcelFormulaForPreview(rawVal, sheets);
-                            const shown = computed !== null ? computed : rawVal;
-                            return `<td contenteditable="true" spellcheck="false" data-formula="${escapeHtml(rawVal)}" title="Live Excel Formula: ${escapeHtml(rawVal)}" oninput="this.removeAttribute('data-formula')" style="font-weight:700; color:#047857; background:#ecfdf5; outline:none;">${escapeHtml(shown)}</td>`;
+                            return `<td contenteditable="true" spellcheck="false" data-formula="${escapeHtml(rawVal)}" title="Live Excel Formula: ${escapeHtml(rawVal)}" oninput="this.removeAttribute('data-formula')" style="font-weight:700; color:#047857; background:#ecfdf5; outline:none;">${escapeHtml(computed !== null ? computed : rawVal)}</td>`;
                         }
                         return `<td contenteditable="true" spellcheck="false" oninput="recalculateExcelPreviewFormulasFromDOM()" style="outline:none;">${escapeHtml(rawVal)}</td>`;
                     }).join('')}</tr>`).join('')}</tbody>
                 </table>
-            </div>
-        `;
+            </div>`;
     }).join('');
 
     return `<div contenteditable="false" style="background:#ffffff; padding:20px; border-radius:12px; color:#0f172a; user-select:none;">
@@ -1105,8 +1172,7 @@ function compileAndDownloadXLSX(topicTitle, rawContent) {
             if (aoa.length >= 3 && !alreadyHasFormulas) {
                 const lastDataRow = aoa.length;
                 const colCount = aoa[0].length;
-                const totalRow = ["TOTAL"];
-                const avgRow = ["AVERAGE"];
+                const totalRow = ["TOTAL"], avgRow = ["AVERAGE"];
                 let addedAnyFormula = false;
                 for (let c = 1; c < colCount; c++) {
                     const colLetter = XLSX.utils.encode_col(c);
@@ -1114,18 +1180,12 @@ function compileAndDownloadXLSX(topicTitle, rawContent) {
                         totalRow.push({ t: 'n', f: `SUM(${colLetter}2:${colLetter}${lastDataRow})` });
                         avgRow.push({ t: 'n', f: `AVERAGE(${colLetter}2:${colLetter}${lastDataRow})` });
                         addedAnyFormula = true;
-                    } else {
-                        totalRow.push("");
-                        avgRow.push("");
-                    }
+                    } else { totalRow.push(""); avgRow.push(""); }
                 }
                 if (addedAnyFormula) { aoa.push(totalRow); aoa.push(avgRow); }
             }
             const ws = XLSX.utils.aoa_to_sheet(aoa);
-            ws['!cols'] = aoa[0].map((_, ci) => {
-                const maxLen = Math.max(14, ...aoa.map(r => String(r[ci]?.f || r[ci] || "").length));
-                return { wch: Math.min(34, maxLen + 4) };
-            });
+            ws['!cols'] = aoa[0].map((_, ci) => ({ wch: Math.min(34, Math.max(14, ...aoa.map(r => String(r[ci]?.f || r[ci] || "").length)) + 4) }));
             XLSX.utils.book_append_sheet(wb, ws, sheetName);
         };
 
@@ -1144,9 +1204,7 @@ function compileAndDownloadXLSX(topicTitle, rawContent) {
                 const ths = Array.from(tbl.querySelectorAll('thead th')).map(th => th.innerText.trim());
                 if (ths.length) aoa.push(ths);
                 tbl.querySelectorAll('tbody tr').forEach(tr => {
-                    const tds = Array.from(tr.querySelectorAll('td')).map(td =>
-                        parseCellForXlsx(td.innerText.trim(), td.getAttribute('data-formula') || "")
-                    );
+                    const tds = Array.from(tr.querySelectorAll('td')).map(td => parseCellForXlsx(td.innerText.trim(), td.getAttribute('data-formula') || ""));
                     if (tds.some(v => v !== "")) aoa.push(tds);
                 });
                 addSheetAoaToBook(makeUniqueSheetName(tbl.getAttribute('data-sheet-name'), idx), aoa);
@@ -1177,16 +1235,16 @@ function parseSlideBlocksFromContent(rawContent) {
     const slides = [];
     while ((match = slideRegex.exec(cleanBody)) !== null) {
         idx++;
-        const title = match[1].trim();
+        const title = sanitizePdfText(match[1].trim());
         const lines = match[2].trim().split(/\n+/).map(l => l.trim()).filter(Boolean);
         let imageQuery = "", statValue = `0${idx}`, statLabel = "KEY METRIC", notes = "";
         const bullets = [];
         lines.forEach(l => {
             if (/^(LAYOUT|TITLE|SUBTITLE):/i.test(l)) return;
-            if (/^IMAGE_QUERY:/i.test(l)) imageQuery = l.replace(/^IMAGE_QUERY:\s*/i, '').trim();
-            else if (/^NOTES:/i.test(l)) notes = l.replace(/^NOTES:\s*/i, '').trim();
-            else if (/^STAT:/i.test(l)) { const sp = l.replace(/^STAT:\s*/i, '').split('|').map(x => x.trim()); if (sp[0]) statValue = sp[0]; if (sp[1]) statLabel = sp[1]; }
-            else bullets.push(l.replace(/^[-•*\d.)\s]+/, '').trim());
+            if (/^IMAGE_QUERY:/i.test(l)) imageQuery = sanitizePdfText(l.replace(/^IMAGE_QUERY:\s*/i, '').trim());
+            else if (/^NOTES:/i.test(l)) notes = sanitizePdfText(l.replace(/^NOTES:\s*/i, '').trim());
+            else if (/^STAT:/i.test(l)) { const sp = l.replace(/^STAT:\s*/i, '').split('|').map(x => sanitizePdfText(x.trim())); if (sp[0]) statValue = sp[0]; if (sp[1]) statLabel = sp[1]; }
+            else bullets.push(sanitizePdfText(l.replace(/^[-•*\d.)\s]+/, '').trim()));
         });
         slides.push({ idx, title, imageQuery, statValue, statLabel, bullets, notes });
     }
@@ -1197,26 +1255,27 @@ function buildPPTXSlidePreviewHTML(topicTitle, rawContent, embeddedImgBase64 = n
     const titleOverride = stripSlashesFromText(rawContent).match(/^TITLE\s*:\s*([^\n]+)/im);
     const subOverride = stripSlashesFromText(rawContent).match(/^SUBTITLE\s*:\s*([^\n]+)/im);
     const parsedTopic = extractClientTopicAndStyle(topicTitle);
-    const cleanTopic = (titleOverride ? titleOverride[1].trim() : parsedTopic.cleanTopic).toUpperCase();
+    const cleanTopic = sanitizePdfText(titleOverride ? titleOverride[1].trim() : parsedTopic.cleanTopic).toUpperCase();
     const activeTheme = (styleTheme && styleTheme !== "cyber_dark") ? styleTheme : parsedTopic.styleTheme;
     const pal = THEME_PALETTES[activeTheme] || THEME_PALETTES.cyber_dark;
     const slides = parseSlideBlocksFromContent(rawContent);
 
     const slideCards = slides.map(s => {
-        const rightHTML = s.imageQuery
-            ? `<div style="flex:1; min-width:180px; background:#${pal.cardHex}; border:1.5px solid #${pal.secHex}; border-radius:8px; padding:8px; text-align:center;"><img src="${getVisualImageUrlSync(s.imageQuery)}" crossorigin="anonymous" style="width:100%; height:135px; object-fit:cover; border-radius:6px;" onerror="this.src='${generateCustomHighResArtworkDataUrl(s.imageQuery)}'"><div style="font-size:9.5px; color:#${pal.subHex}; margin-top:5px; font-family:monospace;">📸 ${escapeHtml(s.imageQuery.toUpperCase())}</div></div>`
+        const asset = s.imageQuery ? getVisualAssetSync(s.imageQuery, activeTheme, s.idx) : null;
+        const rightHTML = asset
+            ? `<div style="flex:1; min-width:180px; background:#${pal.cardHex}; border:1.5px solid #${pal.secHex}; border-radius:8px; padding:8px; text-align:center;"><img src="${asset.url}" crossorigin="anonymous" style="width:100%; height:135px; object-fit:${asset.isPhoto ? 'cover' : 'contain'}; border-radius:6px;" onerror="this.src='${generateCustomHighResArtworkDataUrl(s.imageQuery, activeTheme, s.idx)}'">${asset.isPhoto ? `<div style="font-size:9.5px; color:#${pal.subHex}; margin-top:5px; font-family:monospace;">${escapeHtml(s.imageQuery.toUpperCase())}</div>` : ''}</div>`
             : `<div style="flex:1; min-width:130px; background:#${pal.cardHex}; border:2px solid #${pal.secHex}; border-radius:8px; padding:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;"><div style="font-size:26px; font-weight:800; color:#${pal.accentHex};">${escapeHtml(s.statValue)}</div><div style="font-size:10px; font-weight:700; color:#${pal.subHex}; margin-top:4px; font-family:monospace;">${escapeHtml(s.statLabel.toUpperCase())}</div></div>`;
         const notesHTML = s.notes ? `<div style="margin-top:9px; padding-top:7px; border-top:1px dashed #${pal.accentHex}44; font-size:10.5px; color:#${pal.subHex}; font-style:italic;">🎤 Speaker Note: ${escapeHtml(s.notes)}</div>` : '';
         return `<div class="ppt-slide-preview" style="background:#${pal.bgHex}; color:#${pal.textHex}; border:2px solid #${pal.accentHex};"><div style="font-size:10px; color:#${pal.accentHex}; font-family:monospace; margin-bottom:4px;">SLIDE 0${s.idx} • ${activeTheme.toUpperCase()}</div><div style="font-size:18px; font-weight:800; margin-bottom:12px; border-bottom:1px solid #${pal.accentHex}44; padding-bottom:8px;">${escapeHtml(s.title.toUpperCase())}</div><div style="display:flex; gap:14px; align-items:stretch; flex-wrap:wrap;"><div style="flex:2; min-width:220px; background:#${pal.cardHex}; border:1px solid #${pal.accentHex}33; border-radius:8px; padding:12px;">${s.bullets.map(b => `<div style="margin-bottom:7px; font-size:12.5px; display:flex; gap:8px;"><span style="color:#${pal.accentHex};">▸</span><span>${escapeHtml(b)}</span></div>`).join('')}</div>${rightHTML}</div>${notesHTML}</div>`;
     });
-    return `<div style="padding:10px;"><div class="ppt-slide-preview" style="background:#${pal.bgHex}; color:#${pal.textHex}; border:2px solid #${pal.accentHex};"><div style="font-size:10px; color:#${pal.accentHex}; font-family:monospace;">COVER SLIDE • ${activeTheme.toUpperCase()}</div><div style="font-size:24px; font-weight:800; margin:10px 0 4px 0;">${escapeHtml(cleanTopic)}</div>${subOverride ? `<div style="font-size:13px; color:#${pal.subHex}; margin-bottom:8px;">${escapeHtml(subOverride[1].trim())}</div>` : ''}<div style="font-size:11px; color:#${pal.subHex}; font-family:monospace;">Prepared by ${escapeHtml(cleanDisplayNameOnly(currentUser).toUpperCase())} • ${slides.length} Slides</div></div>${slideCards.join('')}</div>`;
+    return `<div style="padding:10px;"><div class="ppt-slide-preview" style="background:#${pal.bgHex}; color:#${pal.textHex}; border:2px solid #${pal.accentHex};"><div style="font-size:10px; color:#${pal.accentHex}; font-family:monospace;">COVER SLIDE • ${activeTheme.toUpperCase()}</div><div style="font-size:24px; font-weight:800; margin:10px 0 4px 0;">${escapeHtml(cleanTopic)}</div>${subOverride ? `<div style="font-size:13px; color:#${pal.subHex}; margin-bottom:8px;">${escapeHtml(sanitizePdfText(subOverride[1].trim()))}</div>` : ''}<div style="font-size:11px; color:#${pal.subHex}; font-family:monospace;">Prepared by ${escapeHtml(cleanDisplayNameOnly(currentUser).toUpperCase())} • ${slides.length} Slides</div></div>${slideCards.join('')}</div>`;
 }
 
 function compileAndDownloadPPTX(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark") {
     const titleOverride = stripSlashesFromText(rawContent).match(/^TITLE\s*:\s*([^\n]+)/im);
     const subOverride = stripSlashesFromText(rawContent).match(/^SUBTITLE\s*:\s*([^\n]+)/im);
     const parsed = extractClientTopicAndStyle(topicTitle);
-    const cleanTopic = (titleOverride ? titleOverride[1].trim() : parsed.cleanTopic).toUpperCase();
+    const cleanTopic = sanitizePdfText(titleOverride ? titleOverride[1].trim() : parsed.cleanTopic).toUpperCase();
     const activeTheme = (styleTheme && styleTheme !== "cyber_dark") ? styleTheme : parsed.styleTheme;
     const pal = THEME_PALETTES[activeTheme] || THEME_PALETTES.cyber_dark;
 
@@ -1225,13 +1284,12 @@ function compileAndDownloadPPTX(topicTitle, rawContent, embeddedImgBase64 = null
         const pptx = new PptxGenJS();
         pptx.layout = "LAYOUT_16x9"; pptx.author = cleanDisplayNameOnly(currentUser); pptx.title = cleanTopic;
 
-        // Executive Cover Slide
         let titleSlide = pptx.addSlide();
         titleSlide.background = { color: pal.bgHex };
         titleSlide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 0.22, h: 5.625, fill: { color: pal.accentHex } });
         titleSlide.addText("KIZA EXECUTIVE PRESENTATION", { x: 0.75, y: 1.0, w: 8.5, h: 0.4, fontSize: 11, color: pal.accentHex, bold: true, charSpacing: 3 });
         titleSlide.addText(cleanTopic, { x: 0.75, y: 1.5, w: 8.5, h: 1.6, fontSize: 32, color: pal.textHex, bold: true });
-        if (subOverride) titleSlide.addText(subOverride[1].trim(), { x: 0.75, y: 3.15, w: 8.5, h: 0.7, fontSize: 15, color: pal.subHex });
+        if (subOverride) titleSlide.addText(sanitizePdfText(subOverride[1].trim()), { x: 0.75, y: 3.15, w: 8.5, h: 0.7, fontSize: 15, color: pal.subHex });
         titleSlide.addText(`Prepared by ${cleanDisplayNameOnly(currentUser)} • ${new Date().toLocaleDateString('en-IN')}`, { x: 0.75, y: 4.85, w: 8.5, h: 0.35, fontSize: 10.5, color: pal.subHex });
 
         const slides = parseSlideBlocksFromContent(rawContent);
@@ -1240,8 +1298,6 @@ function compileAndDownloadPPTX(topicTitle, rawContent, embeddedImgBase64 = null
             slide.background = { color: pal.bgHex };
             slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: pal.accentHex } });
             slide.addText(`0${s.idx}  |  ${s.title.toUpperCase()}`, { x: 0.5, y: 0.32, w: 9.0, h: 0.55, fontSize: 20, color: pal.accentHex, bold: true });
-
-            // Left Content Card
             slide.addShape(pptx.ShapeType.roundRect, { x: 0.5, y: 1.05, w: 6.1, h: 3.9, fill: { color: pal.cardHex }, line: { color: pal.accentHex, pt: 1 } });
             if (s.bullets.length > 0) {
                 slide.addText(
@@ -1249,13 +1305,9 @@ function compileAndDownloadPPTX(topicTitle, rawContent, embeddedImgBase64 = null
                     { x: 0.7, y: 1.25, w: 5.7, h: 3.5, valign: "top" }
                 );
             }
-
-            // Right Highlight Stat Card
             slide.addShape(pptx.ShapeType.roundRect, { x: 6.85, y: 1.05, w: 2.65, h: 3.9, fill: { color: pal.cardHex }, line: { color: pal.secHex, pt: 1.5 } });
             slide.addText(String(s.statValue), { x: 6.95, y: 2.0, w: 2.45, h: 0.9, fontSize: 34, color: pal.accentHex, bold: true, align: "center" });
             slide.addText(String(s.statLabel).toUpperCase(), { x: 6.95, y: 2.95, w: 2.45, h: 0.8, fontSize: 11, color: pal.subHex, bold: true, align: "center" });
-
-            // Footer & Speaker Notes
             slide.addText(`KIZA Pro Studio • Slide ${s.idx} of ${slides.length}`, { x: 0.5, y: 5.18, w: 9.0, h: 0.3, fontSize: 9, color: pal.subHex, align: "right" });
             if (s.notes) slide.addNotes(s.notes);
         });
@@ -1268,7 +1320,7 @@ function compileAndDownloadPPTX(topicTitle, rawContent, embeddedImgBase64 = null
 }
 
 // ==========================================================
-// STUDIO MODAL CONTROLLER
+// STUDIO MODAL CONTROLLER & CRISP A4 PDF EXPORTER
 // ==========================================================
 async function prepareAndPreviewUniversalFile(ext, topic, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark", layoutFormat = "infographic") {
     let cleanExt = (ext || "pdf").toLowerCase().trim();
@@ -1326,7 +1378,7 @@ function openFilePreviewModal() {
     lastCompiledFileCache.layoutFormat = layoutFormat;
 
     const titleMatch = stripSlashesFromText(rawContent).match(/^TITLE\s*:\s*([^\n]+)/im);
-    const cleanDisplayTopic = titleMatch ? titleMatch[1].trim() : extractClientTopicAndStyle(topic).cleanTopic;
+    const cleanDisplayTopic = sanitizePdfText(titleMatch ? titleMatch[1].trim() : extractClientTopicAndStyle(topic).cleanTopic);
 
     const modal = document.getElementById('filePreviewModal');
     document.getElementById('filePreviewModalTitle').innerText = `🎨 KIZA Pro Studio • ${cleanDisplayTopic} (.${ext.toUpperCase()})`;
@@ -1361,7 +1413,7 @@ function openFilePreviewModal() {
     } else {
         if (selectorsBox) selectorsBox.style.display = "none";
         viewport.contentEditable = "true";
-        const cleanBody = stripSlashesFromText(rawContent).replace(/\[GENERATE_FILE:[^\]]+\]/g, '').replace(/AI_INTRO:[^\n]*/gi, '').trim();
+        const cleanBody = sanitizePdfText(stripSlashesFromText(rawContent).replace(/\[GENERATE_FILE:[^\]]+\]/g, '').replace(/AI_INTRO:[^\n]*/gi, '').trim());
         viewport.innerHTML = `<pre style="background:#0f172a; color:#f8fafc; padding:18px; border-radius:10px; overflow-x:auto; font-family:'JetBrains Mono', monospace; font-size:12px;">${escapeHtml(cleanBody)}</pre>`;
     }
     renderMathInElementSafe(viewport);
@@ -1389,19 +1441,20 @@ async function confirmAndDownloadPreviewedFile() {
     if (cleanExt === "pptx" || cleanExt === "ppt") { compileAndDownloadPPTX(topic, rawContent, embeddedImgBase64, styleTheme); return; }
     if (cleanExt === "pdf") {
         const viewportEl = document.getElementById('filePreviewViewport');
+        const targetNode = viewportEl.firstElementChild || viewportEl;
         const opt = {
-            margin: [6, 6, 6, 6],
+            margin: [8, 8, 8, 8],
             filename: `KIZA_${safeTopic}.pdf`,
             image: { type: 'jpeg', quality: 0.96 },
-            html2canvas: { scale: 2, useCORS: true },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: ['css', 'legacy'] }
+            pagebreak: { mode: ['avoid-all', 'css', 'legacy'], before: '.kiza-page-break', avoid: ['.kiza-avoid-break', 'tr', 'table'] }
         };
-        showNotification("Downloading PDF", `Saving ${opt.filename}...`, false, { skipStore: true });
-        html2pdf().set(opt).from(viewportEl.firstElementChild || viewportEl).save();
+        showNotification("Downloading PDF", `Saving crisp A4 PDF ${opt.filename}...`, false, { skipStore: true });
+        html2pdf().set(opt).from(targetNode).save();
         return;
     }
-    const cleanBody = stripSlashesFromText(rawContent).replace(/\[GENERATE_FILE:[^\]]+\]/g, '').replace(/AI_INTRO:[^\n]*/gi, '').trim();
+    const cleanBody = sanitizePdfText(stripSlashesFromText(rawContent).replace(/\[GENERATE_FILE:[^\]]+\]/g, '').replace(/AI_INTRO:[^\n]*/gi, '').trim());
     triggerTextDownload(`KIZA_${safeTopic}.${cleanExt}`, cleanBody);
     showNotification("File Downloaded", `Saved KIZA_${safeTopic}.${cleanExt}`, false, { skipStore: true });
 }
@@ -1720,12 +1773,12 @@ function exportCurrentActiveChatTXT() {
 function exportCurrentActiveChatPDF() {
     const msgs = collectActiveChatMessagesFromDOM();
     if (!msgs.length) return;
-    const rowsHtml = msgs.map(m => `<div style="margin-bottom:10px; padding:10px 14px; border-left:4px solid ${m.sender === 'KIZA' ? '#0284c7' : '#4f46e5'}; background:#f8fafc; border-radius:8px; color:#0f172a;"><div style="font-size:10px; color:#64748b;">[${m.time}]</div><div style="font-size:12.5px; margin-top:3px;">${escapeHtml(m.message)}</div></div>`).join("");
-    openAuditOrChatInPreviewStudio("pdf", `Chat_Transcript_${cleanDisplayNameOnly(currentUser)}`, `<div style="font-family:'Inter',sans-serif; background:#fff; color:#0f172a; padding:26px; border-radius:10px;"><h2 style="margin:0 0 16px 0; color:#0284c7;">KIZA Chat Export</h2>${rowsHtml}</div>`, true);
+    const rowsHtml = msgs.map(m => `<div class="kiza-avoid-break" style="margin-bottom:10px; padding:10px 14px; border-left:4px solid ${m.sender === 'KIZA' ? '#0284c7' : '#4f46e5'}; background:#f8fafc; border-radius:8px; color:#0f172a;"><div style="font-size:10px; color:#64748b;">[${m.time}]</div><div style="font-size:12.5px; margin-top:3px;">${escapeHtml(m.message)}</div></div>`).join("");
+    openAuditOrChatInPreviewStudio("pdf", `Chat_Transcript_${cleanDisplayNameOnly(currentUser)}`, `<div style="font-family:'Inter',sans-serif; background:#fff; color:#0f172a; padding:24px; border-radius:10px;"><h2 style="margin:0 0 14px 0; color:#0284c7;">KIZA Chat Export</h2>${rowsHtml}</div>`, true);
 }
 
 function exportArchiveTXT() { if (currentArchiveExportData.length) openAuditOrChatInPreviewStudio("txt", "Saved_Archive", currentArchiveExportData.map(m => `[${m.time}] [${m.sender}]: ${m.message}`).join("\n"), false); }
-function exportArchivePDF() { if (currentArchiveExportData.length) openAuditOrChatInPreviewStudio("pdf", "Saved_Archive", `<div style="font-family:'Inter',sans-serif; padding:24px; background:#fff;"><h2>KIZA Saved Chat Archive</h2>${currentArchiveExportData.map(m => `<div style="margin-bottom:8px; padding:8px 12px; border-left:3px solid #0284c7; background:#f8fafc; color:#0f172a;"><b>[${m.time}] ${escapeHtml(m.sender)}:</b> ${escapeHtml(m.message)}</div>`).join("")}</div>`, true); }
+function exportArchivePDF() { if (currentArchiveExportData.length) openAuditOrChatInPreviewStudio("pdf", "Saved_Archive", `<div style="font-family:'Inter',sans-serif; padding:22px; background:#fff;"><h2>KIZA Saved Chat Archive</h2>${currentArchiveExportData.map(m => `<div class="kiza-avoid-break" style="margin-bottom:8px; padding:8px 12px; border-left:3px solid #0284c7; background:#f8fafc; color:#0f172a;"><b>[${m.time}] ${escapeHtml(m.sender)}:</b> ${escapeHtml(m.message)}</div>`).join("")}</div>`, true); }
 function exportSecurityReportCSV() { if (cachedThreatLogs.length) openAuditOrChatInPreviewStudio("csv", "Security_Audit", ["ID,Timestamp,Event,User,IP,Details", ...cachedThreatLogs.map(t => `${t.id},"${t.timestamp}","${t.event_type}","${t.username}","${t.ip_address}","${String(t.details || '').replace(/"/g, '""')}"`)].join("\n"), false); }
 function exportSecurityReportTXT() { if (cachedThreatLogs.length) openAuditOrChatInPreviewStudio("txt", "Security_Audit", cachedThreatLogs.map(t => `[${t.timestamp}] ${t.event_type} | ${t.username} | ${t.ip_address} | ${t.details}`).join("\n"), false); }
-function exportSecurityReportPDF() { if (cachedThreatLogs.length) openAuditOrChatInPreviewStudio("pdf", "Security_Audit", `<div style="padding:24px; background:#fff;"><h2>KIZA Security Audit Report</h2>${cachedThreatLogs.map(t => `<div style="margin-bottom:10px; padding:10px; border-left:4px solid #ef4444; background:#fff1f2; color:#0f172a;"><b>[${escapeHtml(t.event_type)}] ${escapeHtml(t.username)} (${escapeHtml(t.ip_address)})</b><div>${escapeHtml(t.details)}</div></div>`).join("")}</div>`, true); }
+function exportSecurityReportPDF() { if (cachedThreatLogs.length) openAuditOrChatInPreviewStudio("pdf", "Security_Audit", `<div style="padding:22px; background:#fff;"><h2>KIZA Security Audit Report</h2>${cachedThreatLogs.map(t => `<div class="kiza-avoid-break" style="margin-bottom:10px; padding:10px; border-left:4px solid #ef4444; background:#fff1f2; color:#0f172a;"><b>[${escapeHtml(t.event_type)}] ${escapeHtml(t.username)} (${escapeHtml(t.ip_address)})</b><div>${escapeHtml(t.details)}</div></div>`).join("")}</div>`, true); }
