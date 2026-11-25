@@ -305,6 +305,11 @@
         document.getElementById("liveUserLabel").textContent = userName.toUpperCase();
         fetch(`${SERVER_HTTP}/health`).catch(() => {});
 
+        if (window.speechSynthesis) {
+            window.speechSynthesis.getVoices();
+            window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        }
+
         const callStartTs = Date.now();
         const callTopics = [], callDecisions = [];
         let camStream = null, screenStream = null, camEnabled = true, facingMode = "user";
@@ -790,17 +795,17 @@
             };
 
             ws.onmessage = (event) => {
-                clearTimeout(ackTimeout);
                 const data = JSON.parse(event.data);
                 if (data.type === "pong") {
                     const pEl = document.getElementById("livePing");
                     pEl.textContent = `${Math.max(12, Math.round(performance.now() - pingStart))}ms`; pEl.style.color = "var(--success)";
                 } else if (data.type === "state") {
+                    clearTimeout(ackTimeout);
                     document.getElementById("liveOrb").classList.toggle("thinking", data.status === "thinking");
                     document.getElementById("liveStatusChip").textContent = data.status === "thinking" ? "KIZA IS THINKING..." : "LIVE & READY";
                     if (data.status === "thinking") document.getElementById("captionBox").textContent = "🧠 Analyzing your request...";
                 } else if (data.type === "response") {
-                    clearTimeout(replyTimeout); clearTimeout(wsWatchdog);
+                    clearTimeout(ackTimeout); clearTimeout(replyTimeout); clearTimeout(wsWatchdog);
                     wsReady = true; useHttpFallback = false;
                     activateLiveReadyUI(document.getElementById("livePing").textContent === "Connecting..." ? "WS Live" : null);
                     const cleanReply = data.text || "";
@@ -810,7 +815,7 @@
                     if (Array.isArray(data.draw_commands) && data.draw_commands.length > 0) executeKizaWhiteboardCommands(data.draw_commands);
                     speakLiveResponse(cleanReply, data.audio_base64);
                 } else if (data.type === "error") {
-                    clearTimeout(replyTimeout);
+                    clearTimeout(ackTimeout); clearTimeout(replyTimeout);
                     document.getElementById("liveOrb").classList.remove("thinking");
                     document.getElementById("liveStatusChip").textContent = "LIVE & READY";
                     document.getElementById("captionBox").textContent = `⚠️ ${data.message}`;
@@ -889,6 +894,11 @@
                     signal: controller.signal
                 });
                 clearTimeout(httpTimer);
+                if (res.status === 401) {
+                    document.getElementById("captionBox").textContent = "🔒 Session expired. Returning to KIZA sign-in...";
+                    setTimeout(() => { window.location.href = "index.html"; }, 1800);
+                    return;
+                }
                 const rtt = Math.max(20, Math.round(performance.now() - t0));
                 const data = await res.json();
                 activateLiveReadyUI(`${rtt}ms`);
