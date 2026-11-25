@@ -1,5 +1,5 @@
 // ==========================================================
-// KIZA v11.6 — PRO MULTI-FORMAT STUDIO, PUBLICATION PDF & SANDBOX ENGINE
+// KIZA v11.7 — PRO MULTI-FORMAT STUDIO, THEME-REACTIVE PDF & SANDBOX ENGINE
 // ==========================================================
 let attachedImageBase64 = null;
 let attachedImageName = "";
@@ -17,15 +17,15 @@ const webImageCache = {};
 let isSplitStudioActive = false;
 
 const THEME_PALETTES = {
-    movie_theater: { bgHex: "0D0205", cardHex: "1A050A", accentHex: "FBBF24", secHex: "DC2626", textHex: "FFFBEB", subHex: "FCA5A5", pdfHero: "linear-gradient(135deg, #450a0a 0%, #1a050a 50%, #78350f 100%)", pdfPageBg: "#0d0205", pdfText: "#fffbeb", pdfCardBg: "#1a050a", pdfAccent: "#fbbf24", pdfMuted: "#fca5a5" },
-    black: { bgHex: "000000", cardHex: "0A0A0A", accentHex: "00F2FE", secHex: "A855F7", textHex: "FFFFFF", subHex: "94A3B8", pdfHero: "linear-gradient(135deg, #000000 0%, #111111 70%, #1e293b 100%)", pdfPageBg: "#090d16", pdfText: "#f8fafc", pdfCardBg: "#111827", pdfAccent: "#38bdf8", pdfMuted: "#94a3b8" },
-    cyber_dark: { bgHex: "060A17", cardHex: "111827", accentHex: "38BDF8", secHex: "A855F7", textHex: "F8FAFC", subHex: "94A3B8", pdfHero: "linear-gradient(135deg, #090d16 0%, #0f172a 55%, #0284c7 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#f8fafc", pdfAccent: "#0284c7", pdfMuted: "#64748b" },
-    light: { bgHex: "F8FAFC", cardHex: "FFFFFF", accentHex: "0284C7", secHex: "2563EB", textHex: "0F172A", subHex: "475569", pdfHero: "linear-gradient(135deg, #0284c7 0%, #2563eb 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#f8fafc", pdfAccent: "#0284c7", pdfMuted: "#64748b" },
-    blue: { bgHex: "071936", cardHex: "0C264E", accentHex: "38BDF8", secHex: "60A5FA", textHex: "FFFFFF", subHex: "93C5FD", pdfHero: "linear-gradient(135deg, #071936 0%, #1d4ed8 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#eff6ff", pdfAccent: "#1d4ed8", pdfMuted: "#475569" },
-    purple: { bgHex: "130726", cardHex: "210E3D", accentHex: "C084FC", secHex: "F472B6", textHex: "FFFFFF", subHex: "D8B4FE", pdfHero: "linear-gradient(135deg, #130726 0%, #7e22ce 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#faf5ff", pdfAccent: "#7e22ce", pdfMuted: "#475569" },
-    green: { bgHex: "041E16", cardHex: "062E22", accentHex: "10B981", secHex: "34D399", textHex: "FFFFFF", subHex: "A7F3D0", pdfHero: "linear-gradient(135deg, #041e16 0%, #059669 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#ecfdf5", pdfAccent: "#059669", pdfMuted: "#475569" },
-    red: { bgHex: "28070C", cardHex: "3F0B13", accentHex: "FB7185", secHex: "F43F5E", textHex: "FFFFFF", subHex: "FDA4AF", pdfHero: "linear-gradient(135deg, #28070c 0%, #e11d48 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#fff1f2", pdfAccent: "#e11d48", pdfMuted: "#475569" },
-    gold: { bgHex: "1C1605", cardHex: "2E2408", accentHex: "FBBF24", secHex: "F59E0B", textHex: "FFFFFF", subHex: "FDE68A", pdfHero: "linear-gradient(135deg, #1c1605 0%, #d97706 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#fffbeb", pdfAccent: "#d97706", pdfMuted: "#475569" }
+    movie_theater: { bgHex: "0D0205", cardHex: "1A050A", accentHex: "FBBF24", secHex: "DC2626", textHex: "FFFBEB", subHex: "FCA5A5", pdfHero: "linear-gradient(135deg, #450a0a 0%, #1a050a 50%, #78350f 100%)", pdfBar: "linear-gradient(90deg, #7f1d1d 0%, #450a0a 100%)", pdfPageBg: "#0d0205", pdfText: "#fffbeb", pdfCardBg: "#1a050a", pdfAccent: "#fbbf24", pdfSec: "#ef4444", pdfMuted: "#fca5a5" },
+    black: { bgHex: "000000", cardHex: "0A0A0A", accentHex: "00F2FE", secHex: "A855F7", textHex: "FFFFFF", subHex: "94A3B8", pdfHero: "linear-gradient(135deg, #000000 0%, #111111 70%, #1e293b 100%)", pdfBar: "linear-gradient(90deg, #000000 0%, #1e293b 100%)", pdfPageBg: "#090d16", pdfText: "#f8fafc", pdfCardBg: "#111827", pdfAccent: "#38bdf8", pdfSec: "#a855f7", pdfMuted: "#94a3b8" },
+    cyber_dark: { bgHex: "060A17", cardHex: "111827", accentHex: "38BDF8", secHex: "A855F7", textHex: "F8FAFC", subHex: "94A3B8", pdfHero: "linear-gradient(135deg, #090d16 0%, #0f172a 55%, #0284c7 100%)", pdfBar: "linear-gradient(90deg, #0f172a 0%, #0284c7 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#f0f9ff", pdfAccent: "#0284c7", pdfSec: "#4f46e5", pdfMuted: "#64748b" },
+    light: { bgHex: "F8FAFC", cardHex: "FFFFFF", accentHex: "0284C7", secHex: "2563EB", textHex: "0F172A", subHex: "475569", pdfHero: "linear-gradient(135deg, #0284c7 0%, #2563eb 100%)", pdfBar: "linear-gradient(90deg, #0284c7 0%, #2563eb 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#f8fafc", pdfAccent: "#0284c7", pdfSec: "#2563eb", pdfMuted: "#64748b" },
+    blue: { bgHex: "071936", cardHex: "0C264E", accentHex: "38BDF8", secHex: "60A5FA", textHex: "FFFFFF", subHex: "93C5FD", pdfHero: "linear-gradient(135deg, #071936 0%, #1d4ed8 100%)", pdfBar: "linear-gradient(90deg, #071936 0%, #1d4ed8 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#eff6ff", pdfAccent: "#1d4ed8", pdfSec: "#0284c7", pdfMuted: "#475569" },
+    purple: { bgHex: "130726", cardHex: "210E3D", accentHex: "C084FC", secHex: "F472B6", textHex: "FFFFFF", subHex: "D8B4FE", pdfHero: "linear-gradient(135deg, #2e1065 0%, #7e22ce 100%)", pdfBar: "linear-gradient(90deg, #3b0764 0%, #9333ea 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#faf5ff", pdfAccent: "#7e22ce", pdfSec: "#c026d3", pdfMuted: "#6b21a8" },
+    green: { bgHex: "041E16", cardHex: "062E22", accentHex: "10B981", secHex: "34D399", textHex: "FFFFFF", subHex: "A7F3D0", pdfHero: "linear-gradient(135deg, #064e3b 0%, #059669 100%)", pdfBar: "linear-gradient(90deg, #064e3b 0%, #059669 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#ecfdf5", pdfAccent: "#059669", pdfSec: "#0d9488", pdfMuted: "#047857" },
+    red: { bgHex: "28070C", cardHex: "3F0B13", accentHex: "FB7185", secHex: "F43F5E", textHex: "FFFFFF", subHex: "FDA4AF", pdfHero: "linear-gradient(135deg, #4c0519 0%, #e11d48 100%)", pdfBar: "linear-gradient(90deg, #881337 0%, #e11d48 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#fff1f2", pdfAccent: "#e11d48", pdfSec: "#f43f5e", pdfMuted: "#9f1239" },
+    gold: { bgHex: "1C1605", cardHex: "2E2408", accentHex: "FBBF24", secHex: "F59E0B", textHex: "FFFFFF", subHex: "FDE68A", pdfHero: "linear-gradient(135deg, #451a03 0%, #d97706 100%)", pdfBar: "linear-gradient(90deg, #78350f 0%, #d97706 100%)", pdfPageBg: "#ffffff", pdfText: "#0f172a", pdfCardBg: "#fffbeb", pdfAccent: "#b45309", pdfSec: "#d97706", pdfMuted: "#92400e" }
 };
 
 const FILE_TYPE_FORMATS = {
@@ -62,18 +62,34 @@ const FILE_TYPE_FORMATS = {
 };
 
 // ==========================================================
-// CLEAN PDF / DOCUMENT TEXT & CURRENCY SANITIZER
+// CLEAN PDF / DOCUMENT TEXT, SCIENTIFIC LATEX & CURRENCY SANITIZER
 // ==========================================================
 function sanitizePdfText(rawStr) {
     let s = String(rawStr == null ? "" : rawStr);
-    // Fix LaTeX-wrapped currency like $\$5/TB$, $\$15 billion$, \$15
+    const supMap = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '-': '⁻', '+': '⁺', 'n': 'ⁿ' };
+    const toSup = (str) => str.split('').map(c => supMap[c] || c).join('');
+
+    // 1. Clean LaTeX currency like $\$5/TB$ and \$150 billion
     s = s.replace(/\$\s*\\\$\s*([^$\n]+?)\s*\$/g, '$$$1');
     s = s.replace(/\\\$/g, '$');
-    // Fix simple inline $A/B$ or $N$ tokens that shouldn't print literal dollar signs
-    s = s.replace(/\$([A-Za-z][A-Za-z0-9\/._-]{0,12})\$/g, '$1');
-    // Convert plain powers like 10^18 to crisp Unicode superscripts
-    const supMap = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '-': '⁻', '+': '⁺' };
-    s = s.replace(/(\d+)\^([0-9+-]+)/g, (_, base, exp) => base + exp.split('').map(c => supMap[c] || c).join(''));
+
+    // 2. Clean scientific LaTeX commands so html2pdf never prints raw $...$
+    s = s.replace(/\\sim\s*/g, '~');
+    s = s.replace(/\\approx\s*/g, '≈');
+    s = s.replace(/\\times\s*/g, '×');
+    s = s.replace(/\\pm\s*/g, '±');
+    s = s.replace(/\\mu\s*/g, 'µ');
+    s = s.replace(/\\le\s*/g, '≤').replace(/\\ge\s*/g, '≥');
+    s = s.replace(/\\text\{([^}]*)\}|\\mathrm\{([^}]*)\}|\\mathbf\{([^}]*)\}/g, (_, a, b, c) => a || b || c || '');
+    s = s.replace(/~/g, ' ');
+
+    // 3. Convert ^{...} and ^digits into crisp Unicode superscripts
+    s = s.replace(/\^\{([0-9+\-n]+)\}/g, (_, exp) => toSup(exp));
+    s = s.replace(/(\d+|[a-zA-Z])\^([0-9+\-]+)/g, (_, base, exp) => base + toSup(exp));
+    s = s.replace(/([⁰¹²³⁴⁵⁶⁷⁸⁹])([a-zA-Z])/g, '$1 $2');
+
+    // 4. Strip remaining inline $...$ wrappers
+    s = s.replace(/\$([^$\n]{1,70})\$/g, (_, inner) => inner.trim());
     return s.replace(/\s{2,}/g, ' ').trim();
 }
 
@@ -458,37 +474,36 @@ function convertHandwrittenPhotoToCleanPDF() {
 }
 
 // ==========================================================
-// SMART WIKIMEDIA + TOPIC-SPECIFIC VECTOR GRAPHICS ENGINE
+// SMART WIKIMEDIA + THEME-MATCHED TOPIC VECTOR GRAPHICS ENGINE
 // ==========================================================
 function generateCustomHighResArtworkDataUrl(queryStr, themeKey = "cyber_dark", idxHint = 0) {
     const cleanLabel = sanitizePdfText(queryStr || "Visual Diagram").replace(/[^a-zA-Z0-9\s,&:.-]/g, '').trim();
     const shortTitle = (cleanLabel.length > 52 ? cleanLabel.slice(0, 49) + "..." : cleanLabel).toUpperCase();
     const qLow = cleanLabel.toLowerCase();
-    const isMovie = themeKey === "movie_theater";
+    const pal = THEME_PALETTES[themeKey] || THEME_PALETTES.cyber_dark;
     const isDark = (themeKey === "black" || themeKey === "movie_theater");
 
-    const bg1 = isMovie ? "#2a0810" : (isDark ? "#0f172a" : "#eff6ff");
-    const bg2 = isMovie ? "#0d0205" : (isDark ? "#020617" : "#f8fafc");
-    const primary = isMovie ? "#fbbf24" : (isDark ? "#38bdf8" : "#0284c7");
-    const secondary = isMovie ? "#f87171" : (isDark ? "#a855f7" : "#4f46e5");
-    const gridCol = isDark ? "rgba(148,163,184,0.12)" : "rgba(15,23,42,0.07)";
-    const titleCol = isMovie ? "#fde68a" : (isDark ? "#f8fafc" : "#0f172a");
-    const subCol = isMovie ? "#fca5a5" : (isDark ? "#94a3b8" : "#475569");
+    const bg1 = isDark ? pal.pdfCardBg : pal.pdfCardBg;
+    const bg2 = isDark ? pal.pdfPageBg : "#ffffff";
+    const primary = pal.pdfAccent;
+    const secondary = pal.pdfSec;
+    const gridCol = isDark ? "rgba(148,163,184,0.12)" : "rgba(15,23,42,0.06)";
+    const titleCol = pal.pdfText;
+    const subCol = pal.pdfMuted;
 
-    // Pick a distinct vector graphic matching the topic instead of repeating one icon
     let artSvg = "";
     if (/lock|cyber|security|encrypt|binary|shield/.test(qLow) || idxHint % 5 === 0) {
         artSvg = `
             <g stroke="${primary}" stroke-width="2.5" fill="none">
                 <path d="M360 44 L415 68 V116 C415 152 390 176 360 188 C330 176 305 152 305 116 V68 Z" fill="${primary}" fill-opacity="0.12"/>
-                <rect x="340" y="106" width="40" height="34" rx="5" fill="${bg1}"/>
+                <rect x="340" y="106" width="40" height="34" rx="5" fill="${bg2}"/>
                 <path d="M348 106 V94 A12 12 0 0 1 372 94 V106"/>
                 <circle cx="360" cy="123" r="4" fill="${secondary}" stroke="none"/>
                 <line x1="160" y1="115" x2="290" y2="115" stroke-dasharray="6 6" opacity="0.6"/>
                 <line x1="430" y1="115" x2="560" y2="115" stroke-dasharray="6 6" opacity="0.6"/>
                 <circle cx="160" cy="115" r="7" fill="${secondary}"/><circle cx="560" cy="115" r="7" fill="${secondary}"/>
             </g>`;
-    } else if (/algorithm|chip|processor|flow|circuit|compute/.test(qLow) || idxHint % 5 === 1) {
+    } else if (/algorithm|chip|processor|flow|circuit|compute|satellite|panel/.test(qLow) || idxHint % 5 === 1) {
         artSvg = `
             <g stroke="${primary}" stroke-width="2.5" fill="none">
                 <rect x="308" y="64" width="104" height="104" rx="14" fill="${primary}" fill-opacity="0.12"/>
@@ -497,18 +512,18 @@ function generateCustomHighResArtworkDataUrl(queryStr, themeKey = "cyber_dark", 
                 <circle cx="260" cy="92" r="5" fill="${secondary}"/><circle cx="460" cy="140" r="5" fill="${secondary}"/>
                 <path d="M344 116 L356 128 L378 102" stroke="${primary}" stroke-width="3.5"/>
             </g>`;
-    } else if (/neural|brain|ai|network|learning|model/.test(qLow) || idxHint % 5 === 2) {
+    } else if (/neural|brain|ai|network|learning|model|aurora|wind/.test(qLow) || idxHint % 5 === 2) {
         artSvg = `
             <g stroke="${primary}" stroke-width="2" fill="none">
                 <line x1="230" y1="72" x2="360" y2="62" opacity="0.55"/><line x1="230" y1="72" x2="360" y2="116" opacity="0.55"/><line x1="230" y1="72" x2="360" y2="170" opacity="0.55"/>
                 <line x1="230" y1="158" x2="360" y2="62" opacity="0.55"/><line x1="230" y1="158" x2="360" y2="116" opacity="0.55"/><line x1="230" y1="158" x2="360" y2="170" opacity="0.55"/>
                 <line x1="360" y1="62" x2="490" y2="88" opacity="0.55"/><line x1="360" y1="116" x2="490" y2="88" opacity="0.55"/><line x1="360" y1="170" x2="490" y2="88" opacity="0.55"/>
                 <line x1="360" y1="62" x2="490" y2="146" opacity="0.55"/><line x1="360" y1="116" x2="490" y2="146" opacity="0.55"/><line x1="360" y1="170" x2="490" y2="146" opacity="0.55"/>
-                <circle cx="230" cy="72" r="11" fill="${bg1}" stroke="${primary}" stroke-width="3"/><circle cx="230" cy="158" r="11" fill="${bg1}" stroke="${primary}" stroke-width="3"/>
+                <circle cx="230" cy="72" r="11" fill="${bg2}" stroke="${primary}" stroke-width="3"/><circle cx="230" cy="158" r="11" fill="${bg2}" stroke="${primary}" stroke-width="3"/>
                 <circle cx="360" cy="62" r="12" fill="${secondary}"/><circle cx="360" cy="116" r="14" fill="${primary}"/><circle cx="360" cy="170" r="12" fill="${secondary}"/>
-                <circle cx="490" cy="88" r="11" fill="${bg1}" stroke="${primary}" stroke-width="3"/><circle cx="490" cy="146" r="11" fill="${bg1}" stroke="${primary}" stroke-width="3"/>
+                <circle cx="490" cy="88" r="11" fill="${bg2}" stroke="${primary}" stroke-width="3"/><circle cx="490" cy="146" r="11" fill="${bg2}" stroke="${primary}" stroke-width="3"/>
             </g>`;
-    } else if (/chart|data|stat|graph|analytics|finance|market/.test(qLow) || idxHint % 5 === 3) {
+    } else if (/chart|data|stat|graph|analytics|finance|market|center/.test(qLow) || idxHint % 5 === 3) {
         artSvg = `
             <g>
                 <line x1="210" y1="174" x2="510" y2="174" stroke="${subCol}" stroke-width="2"/>
@@ -531,7 +546,7 @@ function generateCustomHighResArtworkDataUrl(queryStr, themeKey = "cyber_dark", 
             </g>`;
     }
 
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="270" viewBox="0 0 720 270">
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="260" viewBox="0 0 720 260">
         <defs>
             <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stop-color="${bg1}"/><stop offset="100%" stop-color="${bg2}"/>
@@ -540,18 +555,17 @@ function generateCustomHighResArtworkDataUrl(queryStr, themeKey = "cyber_dark", 
                 <path d="M 24 0 L 0 0 0 24" fill="none" stroke="${gridCol}" stroke-width="1"/>
             </pattern>
         </defs>
-        <rect width="720" height="270" rx="12" fill="url(#bg)"/>
-        <rect width="720" height="270" rx="12" fill="url(#g)"/>
+        <rect width="720" height="260" rx="12" fill="url(#bg)"/>
+        <rect width="720" height="260" rx="12" fill="url(#g)"/>
         ${artSvg}
-        <text x="360" y="226" font-family="Inter, Arial, sans-serif" font-size="13.5" font-weight="800" fill="${titleCol}" text-anchor="middle" letter-spacing="1.2">${shortTitle}</text>
-        <text x="360" y="246" font-family="monospace" font-size="10" fill="${subCol}" text-anchor="middle" letter-spacing="1.5">CONCEPT FIGURE • KIZA STUDIO</text>
+        <text x="360" y="220" font-family="Inter, Arial, sans-serif" font-size="13.5" font-weight="800" fill="${titleCol}" text-anchor="middle" letter-spacing="1.2">${shortTitle}</text>
+        <text x="360" y="240" font-family="monospace" font-size="10" fill="${subCol}" text-anchor="middle" letter-spacing="1.5">CONCEPT FIGURE • KIZA STUDIO</text>
     </svg>`;
     return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
 }
 
 async function fetchTopicWebImageUrl(queryStr) {
     if (webImageCache[queryStr]) return webImageCache[queryStr];
-    // Use ONLY the first focused phrase before a comma so Wikimedia finds real photographs
     const firstPhrase = String(queryStr || "science")
         .split(/[,;|]/)[0]
         .replace(/\b(theatre|theater|stage|lighting|set|costume|production|poster)\b/gi, '')
@@ -594,19 +608,15 @@ function getVisualAssetSync(queryStr, themeKey, idxHint) {
 }
 
 // ==========================================================
-// 1. PUBLICATION-GRADE PDF DOSSIER RENDERER (ZERO ORPHAN PAGES)
+// 1. THEME-REACTIVE PUBLICATION PDF DOSSIER RENDERER
 // ==========================================================
 function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = null, styleTheme = "cyber_dark", layoutFormat = "infographic") {
     const titleOverride = stripSlashesFromText(rawContent).match(/^TITLE\s*:\s*([^\n]+)/im);
     const parsedTopic = extractClientTopicAndStyle(topicTitle);
     const cleanTopic = sanitizePdfText(titleOverride ? titleOverride[1].trim() : parsedTopic.cleanTopic).toUpperCase();
 
-    const isMovieMode = (
-        styleTheme === "movie_theater" ||
-        layoutFormat === "movie_theater" ||
-        parsedTopic.styleTheme === "movie_theater"
-    );
-    const activeTheme = isMovieMode ? "movie_theater" : ((styleTheme && styleTheme !== "cyber_dark") ? styleTheme : parsedTopic.styleTheme);
+    const isMovieMode = (styleTheme === "movie_theater" || layoutFormat === "movie_theater");
+    const activeTheme = isMovieMode ? "movie_theater" : (THEME_PALETTES[styleTheme] ? styleTheme : parsedTopic.styleTheme);
     const activeFormat = isMovieMode ? "movie_theater" : (layoutFormat || "infographic");
     const pal = THEME_PALETTES[activeTheme] || THEME_PALETTES.cyber_dark;
     const isDarkDoc = (activeTheme === "black" || activeTheme === "movie_theater");
@@ -673,48 +683,44 @@ function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = n
     });
 
     const kpiHtml = kpis.length > 0 ? `
-        <div class="kiza-avoid-break" style="display:grid; grid-template-columns:repeat(${Math.min(3, kpis.length)}, minmax(0, 1fr)); gap:12px; margin-bottom:18px; page-break-inside:avoid; break-inside:avoid;">
+        <div class="kiza-avoid-break" style="display:grid; grid-template-columns:repeat(${Math.min(3, kpis.length)}, minmax(0, 1fr)); gap:12px; margin-bottom:16px; page-break-inside:avoid; break-inside:avoid;">
             ${kpis.slice(0, 3).map((k, idx) => {
-                const colors = isMovieMode ? ['#fbbf24', '#ef4444', '#f59e0b'] : ['#0284c7', '#4f46e5', '#059669'];
-                const bgColors = isMovieMode ? ['#2a0810', '#2a0810', '#2a0810'] : (isDarkDoc ? ['#111827', '#1e1b4b', '#062e22'] : ['#f0f9ff', '#eef2ff', '#ecfdf5']);
-                const c = colors[idx % 3], bg = bgColors[idx % 3];
-                return `<div style="background:${bg}; border:1px solid ${c}55; border-top:3.5px solid ${c}; border-radius:9px; padding:10px 12px;">
-                    <div style="font-size:9.5px; font-weight:800; color:${isDarkDoc ? '#fde68a' : '#475569'}; text-transform:uppercase; letter-spacing:0.8px;">${escapeHtml(k.label)}</div>
-                    <div style="font-size:18px; font-weight:800; color:${c}; margin:4px 0 2px 0; line-height:1.2;">${escapeHtml(k.value)}</div>
-                    <div style="font-size:10px; color:${isDarkDoc ? '#fca5a5' : '#64748b'}; line-height:1.3;">${escapeHtml(k.sub)}</div>
+                const c = idx % 2 === 0 ? pal.pdfAccent : pal.pdfSec;
+                return `<div style="background:${pal.pdfCardBg}; border:1px solid ${c}55; border-top:3.5px solid ${c}; border-radius:9px; padding:10px 12px;">
+                    <div style="font-size:9.5px; font-weight:800; color:${pal.pdfMuted}; text-transform:uppercase; letter-spacing:0.8px;">${escapeHtml(k.label)}</div>
+                    <div style="font-size:17px; font-weight:800; color:${c}; margin:4px 0 2px 0; line-height:1.2;">${escapeHtml(k.value)}</div>
+                    <div style="font-size:10px; color:${pal.pdfMuted}; line-height:1.3;">${escapeHtml(k.sub)}</div>
                 </div>`;
             }).join('')}
         </div>` : '';
 
     const chartHtml = charts.length > 0 ? `
-        <div class="kiza-avoid-break" style="background:${pal.pdfCardBg}; border:1.5px solid ${isMovieMode ? '#fbbf24' : (isDarkDoc ? '#334155' : '#cbd5e1')}; border-radius:10px; padding:14px 16px; margin:14px 0; page-break-inside:avoid; break-inside:avoid;">
-            <div style="font-size:10.5px; font-weight:800; color:${isMovieMode ? '#fbbf24' : pal.pdfAccent}; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:10px;">DATA & BENCHMARK METRICS</div>
+        <div class="kiza-avoid-break" style="background:${pal.pdfCardBg}; border:1.5px solid ${pal.pdfAccent}66; border-radius:10px; padding:13px 15px; margin:12px 0; page-break-inside:avoid; break-inside:avoid;">
+            <div style="font-size:10.5px; font-weight:800; color:${pal.pdfAccent}; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:9px;">DATA & BENCHMARK METRICS</div>
             ${charts.map((ch, idx) => {
-                const barColors = isMovieMode
-                    ? ['linear-gradient(90deg, #dc2626, #fbbf24)', 'linear-gradient(90deg, #b91c1c, #f59e0b)', 'linear-gradient(90deg, #991b1b, #fde047)']
-                    : ['linear-gradient(90deg, #0284c7, #38bdf8)', 'linear-gradient(90deg, #4f46e5, #818cf8)', 'linear-gradient(90deg, #059669, #34d399)'];
-                return `<div style="margin-bottom:8px;">
+                const barBg = idx % 2 === 0 ? `linear-gradient(90deg, ${pal.pdfAccent}, ${pal.pdfSec})` : `linear-gradient(90deg, ${pal.pdfSec}, ${pal.pdfAccent})`;
+                return `<div style="margin-bottom:7px;">
                     <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:${pal.pdfText}; margin-bottom:3px;"><span>${escapeHtml(ch.label)}</span><span style="color:${pal.pdfAccent};">${ch.pct}%</span></div>
-                    <div style="width:100%; height:9px; background:${isDarkDoc ? '#1e293b' : '#e2e8f0'}; border-radius:999px; overflow:hidden;"><div style="width:${ch.pct}%; height:100%; background:${barColors[idx % 3]}; border-radius:999px;"></div></div>
+                    <div style="width:100%; height:9px; background:${isDarkDoc ? '#1e293b' : '#e2e8f0'}; border-radius:999px; overflow:hidden;"><div style="width:${ch.pct}%; height:100%; background:${barBg}; border-radius:999px;"></div></div>
                 </div>`;
             }).join('')}
         </div>` : '';
 
     const tableHtml = tableRows.length > 0 ? `
-        <table class="kiza-avoid-break" style="width:100%; border-collapse:collapse; margin:14px 0; font-size:11px; border:1px solid ${isMovieMode ? '#fbbf24' : '#cbd5e1'}; page-break-inside:avoid; break-inside:avoid;">
-            <thead><tr style="background:${isMovieMode ? '#7f1d1d' : '#0f172a'}; color:#ffffff; text-align:left;">
-                ${(tableHeaders.length ? tableHeaders : ['Dimension', 'Current', 'Target']).map(h => `<th style="padding:8px 10px; font-weight:700; border-bottom:2px solid ${pal.pdfAccent}; color:#f8fafc;">${escapeHtml(h)}</th>`).join('')}
+        <table class="kiza-avoid-break" style="width:100%; border-collapse:collapse; margin:12px 0; font-size:11px; border:1px solid ${pal.pdfAccent}55; page-break-inside:avoid; break-inside:avoid;">
+            <thead><tr style="background:${pal.pdfBar}; color:#ffffff; text-align:left;">
+                ${(tableHeaders.length ? tableHeaders : ['Dimension', 'Current', 'Target']).map(h => `<th style="padding:7px 10px; font-weight:700; color:#ffffff;">${escapeHtml(h)}</th>`).join('')}
             </tr></thead>
             <tbody>${tableRows.map((row, rIdx) => `
-                <tr style="background:${isMovieMode ? (rIdx % 2 === 0 ? '#1a050a' : '#2a0810') : (isDarkDoc ? (rIdx % 2 === 0 ? '#111827' : '#1e293b') : (rIdx % 2 === 0 ? '#ffffff' : '#f8fafc'))}; border-bottom:1px solid ${isMovieMode ? '#450a0a' : '#e2e8f0'}; page-break-inside:avoid;">
+                <tr style="background:${isDarkDoc ? (rIdx % 2 === 0 ? '#111827' : '#1e293b') : (rIdx % 2 === 0 ? '#ffffff' : pal.pdfCardBg)}; border-bottom:1px solid ${pal.pdfAccent}22; page-break-inside:avoid;">
                     ${row.map((cell, cIdx) => `<td style="padding:7px 10px; color:${pal.pdfText}; ${cIdx === 0 ? 'font-weight:700; color:' + pal.pdfAccent + ';' : ''}">${escapeHtml(cell)}</td>`).join('')}
                 </tr>`).join('')}
             </tbody>
         </table>` : '';
 
     const imgBlockHtml = embeddedImgBase64 ? `
-        <div class="kiza-avoid-break" style="margin:12px 0 16px 0; text-align:center; background:${pal.pdfCardBg}; padding:10px; border-radius:10px; border:1px dashed ${pal.pdfAccent}; page-break-inside:avoid;">
-            <img src="${embeddedImgBase64}" crossorigin="anonymous" style="max-width:80%; max-height:190px; border-radius:6px;">
+        <div class="kiza-avoid-break" style="margin:10px 0 14px 0; text-align:center; background:${pal.pdfCardBg}; padding:10px; border-radius:10px; border:1px dashed ${pal.pdfAccent}; page-break-inside:avoid;">
+            <img src="${embeddedImgBase64}" crossorigin="anonymous" style="max-width:80%; max-height:185px; border-radius:6px;">
             <div style="font-size:9.5px; color:${pal.pdfMuted}; margin-top:5px; font-weight:600;">ATTACHED REFERENCE FIGURE</div>
         </div>` : '';
 
@@ -722,68 +728,65 @@ function buildDecorativeReportHTML(topicTitle, rawContent, embeddedImgBase64 = n
     bodyBlocks.forEach(b => {
         if (b.type === 'page_break') {
             const breakClass = b.pageNum > 1 ? 'kiza-page-break' : '';
-            const breakCss = b.pageNum > 1 ? "page-break-before: always; break-before: page; margin-top: 8px;" : "margin-top: 4px;";
+            const breakCss = b.pageNum > 1 ? "page-break-before: always; break-before: page; margin-top: 4px;" : "margin-top: 2px;";
             renderedBody += `
-                <div class="${breakClass}" style="${breakCss} margin-bottom:12px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; background:${isMovieMode ? 'linear-gradient(90deg, #7f1d1d 0%, #450a0a 100%)' : 'linear-gradient(90deg, #0f172a 0%, #1e3a8a 100%)'}; color:#ffffff; padding:9px 14px; border-radius:8px; border-left:4px solid ${pal.pdfAccent};">
-                        <span style="font-size:12.5px; font-weight:800; letter-spacing:0.4px; line-height:1.3;">${escapeHtml(b.title ? b.title.toUpperCase() : ('SECTION ' + b.pageNum))}</span>
-                        <span style="font-size:10px; font-family:monospace; font-weight:700; color:${pal.pdfAccent}; background:rgba(0,0,0,0.4); padding:3px 9px; border-radius:99px; white-space:nowrap; flex-shrink:0;">PAGE ${b.pageNum}</span>
+                <div class="${breakClass}" style="${breakCss} margin-bottom:11px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; background:${pal.pdfBar}; color:#ffffff; padding:8px 14px; border-radius:8px; border-left:4px solid ${isMovieMode ? '#fbbf24' : '#ffffff'};">
+                        <span style="font-size:12px; font-weight:800; letter-spacing:0.4px; line-height:1.3;">${escapeHtml(b.title ? b.title.toUpperCase() : ('SECTION ' + b.pageNum))}</span>
+                        <span style="font-size:10px; font-family:monospace; font-weight:700; color:#ffffff; background:rgba(0,0,0,0.32); padding:3px 9px; border-radius:99px; white-space:nowrap; flex-shrink:0;">PAGE ${b.pageNum}</span>
                     </div>
                 </div>`;
         } else if (b.type === 'web_image') {
             const fallbackUrl = generateCustomHighResArtworkDataUrl(b.query, activeTheme, b.idx);
             const captionRow = b.isPhoto ? `<div style="font-size:9.5px; color:${pal.pdfMuted}; margin-top:5px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px;">Figure ${b.idx}: ${escapeHtml(b.query)}</div>` : '';
             renderedBody += `
-                <div class="kiza-avoid-break" style="margin:10px 0 12px 0; text-align:center; background:${pal.pdfCardBg}; padding:8px; border-radius:10px; border:1px solid ${isMovieMode ? '#fbbf24' : (isDarkDoc ? '#334155' : '#e2e8f0')}; page-break-inside:avoid; break-inside:avoid;">
-                    <img src="${b.url}" crossorigin="anonymous" style="width:100%; max-width:520px; height:172px; object-fit:${b.isPhoto ? 'cover' : 'contain'}; border-radius:6px; display:block; margin:0 auto;" onerror="this.src='${fallbackUrl}'; this.style.objectFit='contain';">
+                <div class="kiza-avoid-break" style="margin:8px 0 11px 0; text-align:center; background:${pal.pdfCardBg}; padding:8px; border-radius:10px; border:1px solid ${pal.pdfAccent}44; page-break-inside:avoid; break-inside:avoid;">
+                    <img src="${b.url}" crossorigin="anonymous" style="width:100%; max-width:500px; height:164px; object-fit:${b.isPhoto ? 'cover' : 'contain'}; border-radius:6px; display:block; margin:0 auto;" onerror="this.src='${fallbackUrl}'; this.style.objectFit='contain';">
                     ${captionRow}
                 </div>`;
         } else if (b.type === 'section') {
-            renderedBody += `<h2 style="font-size:13.5px; font-weight:800; color:${pal.pdfText}; text-transform:uppercase; letter-spacing:0.6px; border-left:3.5px solid ${pal.pdfAccent}; padding-left:9px; margin:14px 0 7px 0; page-break-after:avoid;">${escapeHtml(b.text)}</h2>`;
+            renderedBody += `<h2 style="font-size:13px; font-weight:800; color:${pal.pdfAccent}; text-transform:uppercase; letter-spacing:0.6px; border-left:3.5px solid ${pal.pdfAccent}; padding-left:9px; margin:12px 0 6px 0; page-break-after:avoid;">${escapeHtml(b.text)}</h2>`;
         } else if (b.type === 'callout') {
-            renderedBody += `<div class="kiza-avoid-break" style="background:${isMovieMode ? '#2a0810' : pal.pdfCardBg}; border-left:3.5px solid ${isMovieMode ? '#fbbf24' : '#4f46e5'}; padding:9px 13px; border-radius:0 7px 7px 0; margin:10px 0; font-size:11.5px; font-weight:600; color:${pal.pdfText}; line-height:1.45; page-break-inside:avoid; break-inside:avoid;"><b style="color:${pal.pdfAccent};">KEY INSIGHT:</b> ${escapeHtml(b.text)}</div>`;
+            renderedBody += `<div class="kiza-avoid-break" style="background:${pal.pdfCardBg}; border-left:3.5px solid ${pal.pdfAccent}; padding:8px 12px; border-radius:0 7px 7px 0; margin:9px 0; font-size:11.3px; font-weight:600; color:${pal.pdfText}; line-height:1.45; page-break-inside:avoid; break-inside:avoid;"><b style="color:${pal.pdfAccent};">KEY INSIGHT:</b> ${escapeHtml(b.text)}</div>`;
         } else if (b.type === 'bullet') {
-            renderedBody += `<div style="display:flex; align-items:flex-start; gap:7px; margin:4px 0 4px 6px; font-size:11.8px; color:${pal.pdfText}; line-height:1.48;"><span style="color:${pal.pdfAccent}; font-weight:800;">◆</span><span>${escapeHtml(b.text)}</span></div>`;
+            renderedBody += `<div style="display:flex; align-items:flex-start; gap:7px; margin:3.5px 0 3.5px 6px; font-size:11.5px; color:${pal.pdfText}; line-height:1.45;"><span style="color:${pal.pdfAccent}; font-weight:800;">◆</span><span>${escapeHtml(b.text)}</span></div>`;
         } else {
-            renderedBody += `<p style="font-size:11.8px; color:${pal.pdfText}; margin:6px 0; line-height:1.55; text-align:justify;">${escapeHtml(b.text)}</p>`;
+            renderedBody += `<p style="font-size:11.5px; color:${pal.pdfText}; margin:5.5px 0; line-height:1.52; text-align:justify;">${escapeHtml(b.text)}</p>`;
         }
     });
 
-    // Attach charts, comparison table, and footer together cleanly so the footer NEVER creates a blank orphan page
     const closingBlock = `
         <div class="kiza-avoid-break" style="page-break-inside:avoid; break-inside:avoid;">
             ${chartHtml}
             ${tableHtml}
-            <div style="margin-top:14px; border-top:1.5px solid ${isMovieMode ? '#fbbf24' : '#cbd5e1'}; padding-top:8px; font-size:9px; color:${pal.pdfMuted}; display:flex; justify-content:space-between; font-family:monospace; page-break-before:avoid; break-before:avoid;">
-                <span>KIZA PRO STUDIO • ${activeFormat.toUpperCase()} EDITION</span>
+            <div style="margin-top:12px; border-top:1.5px solid ${pal.pdfAccent}55; padding-top:7px; font-size:9px; color:${pal.pdfMuted}; display:flex; justify-content:space-between; font-family:monospace; page-break-before:avoid; break-before:avoid;">
+                <span>KIZA PRO STUDIO • ${activeFormat.toUpperCase()} (${activeTheme.toUpperCase()})</span>
                 <span>PREPARED BY ${escapeHtml(cleanDisplayNameOnly(currentUser).toUpperCase())} • ${new Date().toLocaleDateString('en-IN')}</span>
             </div>
         </div>`;
 
     let headerBannerHTML = "";
-    let mainContentWrapperHTML = `${kpiHtml}${imgBlockHtml}${renderedBody}${closingBlock}`;
-
     if (isMovieMode) {
-        headerBannerHTML = `<div class="kiza-avoid-break" style="background:radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.32) 0%, rgba(127,29,29,0.85) 55%, #0d0205 100%); border:2px solid #fbbf24; color:#fffbeb; padding:18px 22px; border-radius:12px; margin-bottom:16px; text-align:center;"><div style="font-size:9.5px; font-weight:900; color:#fbbf24; letter-spacing:2.5px;">★ KIZA CINEMA STAGE EDITION ★</div><h1 style="margin:6px 0 4px 0; font-size:22px; font-weight:900; color:#ffffff; line-height:1.2;">${escapeHtml(cleanTopic)}</h1><div style="font-size:11.5px; color:#fde68a; font-style:italic;">${escapeHtml(subtitle)}</div><div style="margin-top:8px; font-size:9.5px; font-family:monospace; color:#fca5a5;">AUTHOR: ${escapeHtml(cleanDisplayNameOnly(currentUser).toUpperCase())} • ${new Date().toLocaleDateString('en-IN')}</div></div>`;
+        headerBannerHTML = `<div class="kiza-avoid-break" style="background:${pal.pdfHero}; border:2px solid #fbbf24; color:#fffbeb; padding:18px 22px; border-radius:12px; margin-bottom:14px; text-align:center;"><div style="font-size:9.5px; font-weight:900; color:#fbbf24; letter-spacing:2.5px;">★ KIZA CINEMA STAGE EDITION ★</div><h1 style="margin:6px 0 4px 0; font-size:21px; font-weight:900; color:#ffffff; line-height:1.2;">${escapeHtml(cleanTopic)}</h1><div style="font-size:11px; color:#fde68a; font-style:italic;">${escapeHtml(subtitle)}</div><div style="margin-top:7px; font-size:9.5px; font-family:monospace; color:#fca5a5;">AUTHOR: ${escapeHtml(cleanDisplayNameOnly(currentUser).toUpperCase())} • ${new Date().toLocaleDateString('en-IN')}</div></div>`;
     } else if (activeFormat === "exam_paper") {
-        headerBannerHTML = `<div class="kiza-avoid-break" style="border:2px solid #0f172a; padding:14px 18px; margin-bottom:16px; text-align:center; background:#ffffff; color:#0f172a;"><div style="font-size:10px; font-weight:800; letter-spacing:1.4px;">CBSE PATTERN ASSESSMENT • QUESTION PAPER</div><h1 style="margin:5px 0; font-size:19px; font-weight:800;">${escapeHtml(cleanTopic)}</h1><div style="display:flex; justify-content:space-between; font-size:10.5px; font-weight:700; border-top:1px solid #cbd5e1; padding-top:7px; margin-top:7px;"><span>Time: 2 Hours</span><span>Candidate: ${escapeHtml(cleanDisplayNameOnly(currentUser))}</span><span>Max Marks: 40</span></div></div>`;
+        headerBannerHTML = `<div class="kiza-avoid-break" style="border:2px solid ${pal.pdfAccent}; padding:14px 18px; margin-bottom:14px; text-align:center; background:${pal.pdfCardBg}; color:${pal.pdfText}; border-radius:8px;"><div style="font-size:10px; font-weight:800; letter-spacing:1.4px; color:${pal.pdfAccent};">CBSE PATTERN ASSESSMENT • QUESTION PAPER</div><h1 style="margin:5px 0; font-size:19px; font-weight:800;">${escapeHtml(cleanTopic)}</h1><div style="display:flex; justify-content:space-between; font-size:10.5px; font-weight:700; border-top:1px solid ${pal.pdfAccent}44; padding-top:7px; margin-top:7px;"><span>Time: 2 Hours</span><span>Candidate: ${escapeHtml(cleanDisplayNameOnly(currentUser))}</span><span>Max Marks: 40</span></div></div>`;
     } else if (activeFormat === "lab_manual") {
-        headerBannerHTML = `<div class="kiza-avoid-break" style="border-left:5px solid #059669; background:#ecfdf5; color:#064e3b; padding:14px 18px; border-radius:0 8px 8px 0; margin-bottom:16px;"><div style="font-size:9.5px; font-weight:800; letter-spacing:1.4px; color:#059669;">PRACTICAL LAB RECORD</div><h1 style="margin:4px 0; font-size:19px; font-weight:800;">${escapeHtml(cleanTopic)}</h1><div style="font-size:10.5px;">Student: <b>${escapeHtml(cleanDisplayNameOnly(currentUser))}</b> • Date: ${new Date().toLocaleDateString('en-IN')}</div></div>`;
+        headerBannerHTML = `<div class="kiza-avoid-break" style="border-left:5px solid ${pal.pdfAccent}; background:${pal.pdfCardBg}; color:${pal.pdfText}; padding:14px 18px; border-radius:0 8px 8px 0; margin-bottom:14px; border:1px solid ${pal.pdfAccent}33; border-left-width:5px;"><div style="font-size:9.5px; font-weight:800; letter-spacing:1.4px; color:${pal.pdfAccent};">PRACTICAL LAB RECORD</div><h1 style="margin:4px 0; font-size:19px; font-weight:800; color:${pal.pdfText};">${escapeHtml(cleanTopic)}</h1><div style="font-size:10.5px; color:${pal.pdfMuted};">Student: <b>${escapeHtml(cleanDisplayNameOnly(currentUser))}</b> • Date: ${new Date().toLocaleDateString('en-IN')}</div></div>`;
     } else if (activeFormat === "academic") {
-        headerBannerHTML = `<div class="kiza-avoid-break" style="border-bottom:3px double #0284c7; padding-bottom:12px; margin-bottom:16px;"><div style="font-size:9.5px; font-weight:800; color:#0284c7; letter-spacing:1.4px;">ACADEMIC STUDY MODULE • NCERT & CBSE</div><h1 style="margin:4px 0; font-size:20px; font-weight:800; color:${pal.pdfText}; font-family:Georgia, serif;">${escapeHtml(cleanTopic)}</h1><div style="font-size:11px; font-style:italic; color:${pal.pdfMuted};">${escapeHtml(subtitle)}</div></div>`;
+        headerBannerHTML = `<div class="kiza-avoid-break" style="border-bottom:3px double ${pal.pdfAccent}; padding-bottom:12px; margin-bottom:14px;"><div style="font-size:9.5px; font-weight:800; color:${pal.pdfAccent}; letter-spacing:1.4px;">ACADEMIC STUDY MODULE • NCERT & CBSE</div><h1 style="margin:4px 0; font-size:20px; font-weight:800; color:${pal.pdfText}; font-family:Georgia, serif;">${escapeHtml(cleanTopic)}</h1><div style="font-size:11px; font-style:italic; color:${pal.pdfMuted};">${escapeHtml(subtitle)}</div></div>`;
     } else if (activeFormat === "magazine") {
-        headerBannerHTML = `<div class="kiza-avoid-break" style="border-top:5px solid #0f172a; border-bottom:2px solid #0f172a; padding:14px 0; margin-bottom:16px; text-align:center;"><div style="font-size:9.5px; font-weight:800; letter-spacing:2.5px; color:${pal.pdfAccent};">KIZA EDITORIAL FEATURE</div><h1 style="margin:5px 0; font-size:22px; font-family:Georgia, serif; color:${pal.pdfText}; line-height:1.2;">${escapeHtml(cleanTopic)}</h1><div style="font-size:11.5px; color:${pal.pdfMuted};">${escapeHtml(subtitle)} • By ${escapeHtml(cleanDisplayNameOnly(currentUser))}</div></div>`;
+        headerBannerHTML = `<div class="kiza-avoid-break" style="border-top:5px solid ${pal.pdfAccent}; border-bottom:2px solid ${pal.pdfAccent}; padding:14px 0; margin-bottom:14px; text-align:center;"><div style="font-size:9.5px; font-weight:800; letter-spacing:2.5px; color:${pal.pdfAccent};">KIZA EDITORIAL FEATURE</div><h1 style="margin:5px 0; font-size:21px; font-family:Georgia, serif; color:${pal.pdfText}; line-height:1.2;">${escapeHtml(cleanTopic)}</h1><div style="font-size:11px; color:${pal.pdfMuted};">${escapeHtml(subtitle)} • By ${escapeHtml(cleanDisplayNameOnly(currentUser))}</div></div>`;
     } else {
-        headerBannerHTML = `<div class="kiza-avoid-break" style="background:${pal.pdfHero}; color:#ffffff; padding:18px 22px; border-radius:12px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; gap:12px;"><div style="flex:1;"><div style="font-size:9.5px; font-weight:700; color:#38bdf8; letter-spacing:1.8px; text-transform:uppercase;">KIZA INTELLIGENCE DOSSIER</div><h1 style="margin:5px 0 3px 0; font-size:20px; font-weight:800; color:#ffffff; line-height:1.2;">${escapeHtml(cleanTopic)}</h1><div style="font-size:11px; color:#cbd5e1;">${escapeHtml(subtitle)}</div></div><div style="text-align:right; font-family:monospace; font-size:9.5px; color:#94a3b8; border-left:1px solid rgba(255,255,255,0.2); padding-left:12px; white-space:nowrap;"><div style="color:#ffffff; font-weight:bold;">${escapeHtml(cleanDisplayNameOnly(currentUser).toUpperCase())}</div><div>${new Date().toLocaleDateString('en-IN')}</div></div></div>`;
+        headerBannerHTML = `<div class="kiza-avoid-break" style="background:${pal.pdfHero}; color:#ffffff; padding:17px 21px; border-radius:12px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; gap:12px;"><div style="flex:1;"><div style="font-size:9.5px; font-weight:700; color:rgba(255,255,255,0.8); letter-spacing:1.8px; text-transform:uppercase;">KIZA INTELLIGENCE DOSSIER</div><h1 style="margin:5px 0 3px 0; font-size:19.5px; font-weight:800; color:#ffffff; line-height:1.2;">${escapeHtml(cleanTopic)}</h1><div style="font-size:11px; color:rgba(255,255,255,0.85);">${escapeHtml(subtitle)}</div></div><div style="text-align:right; font-family:monospace; font-size:9.5px; color:rgba(255,255,255,0.8); border-left:1px solid rgba(255,255,255,0.25); padding-left:12px; white-space:nowrap;"><div style="color:#ffffff; font-weight:bold;">${escapeHtml(cleanDisplayNameOnly(currentUser).toUpperCase())}</div><div>${new Date().toLocaleDateString('en-IN')}</div></div></div>`;
     }
 
     const outerShellStyle = isMovieMode
-        ? `font-family:'Inter', Arial, sans-serif; color:#fffbeb; background:linear-gradient(90deg, #5c0a14 0%, #881322 3%, #3b040a 6%, #0d0205 9%, #0d0205 91%, #3b040a 94%, #881322 97%, #5c0a14 100%); padding:20px 36px; border-radius:10px; border:2.5px solid #fbbf24; box-sizing:border-box;`
-        : `font-family:'Inter', Arial, sans-serif; color:${pal.pdfText}; background:${pal.pdfPageBg}; padding:20px 26px; border-radius:8px; box-sizing:border-box;`;
+        ? `font-family:'Inter', Arial, sans-serif; color:#fffbeb; background:linear-gradient(90deg, #5c0a14 0%, #881322 3%, #3b040a 6%, #0d0205 9%, #0d0205 91%, #3b040a 94%, #881322 97%, #5c0a14 100%); padding:18px 34px; border-radius:10px; border:2.5px solid #fbbf24; box-sizing:border-box;`
+        : `font-family:'Inter', Arial, sans-serif; color:${pal.pdfText}; background:${pal.pdfPageBg}; padding:18px 24px; border-radius:8px; box-sizing:border-box;`;
 
     return {
         cleanTopic, subtitle, kpis, charts, tableHeaders, tableRows, activeTheme,
-        html: `<div style="${outerShellStyle}">${headerBannerHTML}${mainContentWrapperHTML}</div>`
+        html: `<div style="${outerShellStyle}">${headerBannerHTML}${kpiHtml}${imgBlockHtml}${renderedBody}${closingBlock}</div>`
     };
 }
 
@@ -1256,7 +1259,7 @@ function buildPPTXSlidePreviewHTML(topicTitle, rawContent, embeddedImgBase64 = n
     const subOverride = stripSlashesFromText(rawContent).match(/^SUBTITLE\s*:\s*([^\n]+)/im);
     const parsedTopic = extractClientTopicAndStyle(topicTitle);
     const cleanTopic = sanitizePdfText(titleOverride ? titleOverride[1].trim() : parsedTopic.cleanTopic).toUpperCase();
-    const activeTheme = (styleTheme && styleTheme !== "cyber_dark") ? styleTheme : parsedTopic.styleTheme;
+    const activeTheme = THEME_PALETTES[styleTheme] ? styleTheme : parsedTopic.styleTheme;
     const pal = THEME_PALETTES[activeTheme] || THEME_PALETTES.cyber_dark;
     const slides = parseSlideBlocksFromContent(rawContent);
 
@@ -1276,7 +1279,7 @@ function compileAndDownloadPPTX(topicTitle, rawContent, embeddedImgBase64 = null
     const subOverride = stripSlashesFromText(rawContent).match(/^SUBTITLE\s*:\s*([^\n]+)/im);
     const parsed = extractClientTopicAndStyle(topicTitle);
     const cleanTopic = sanitizePdfText(titleOverride ? titleOverride[1].trim() : parsed.cleanTopic).toUpperCase();
-    const activeTheme = (styleTheme && styleTheme !== "cyber_dark") ? styleTheme : parsed.styleTheme;
+    const activeTheme = THEME_PALETTES[styleTheme] ? styleTheme : parsed.styleTheme;
     const pal = THEME_PALETTES[activeTheme] || THEME_PALETTES.cyber_dark;
 
     if (typeof PptxGenJS === "undefined") { triggerTextDownload(`KIZA_Presentation_${Date.now()}.txt`, rawContent); return; }
@@ -1385,6 +1388,8 @@ function openFilePreviewModal() {
     document.getElementById('confirmDownloadBtn').innerText = `⬇️ Download .${ext.toUpperCase()}`;
     const expSel = document.getElementById('previewExportTypeSelect');
     if (expSel && Array.from(expSel.options).some(o => o.value === ext)) expSel.value = ext;
+    const themeSel = document.getElementById('previewThemeSelect');
+    if (themeSel && Array.from(themeSel.options).some(o => o.value === styleTheme)) themeSel.value = styleTheme;
 
     const viewport = document.getElementById('filePreviewViewport');
     const selectorsBox = document.getElementById('previewLayoutThemeSelectors');
