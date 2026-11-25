@@ -112,10 +112,10 @@
 
         .wb-canvas-wrap {
             flex: 1 1 0%; position: relative; background: #090f1d;
-            background-image: radial-gradient(rgba(148, 163, 184, 0.16) 1px, transparent 1px);
+            background-image: radial-gradient(rgba(148, 163, 184, 0.22) 1.2px, transparent 1.2px);
             background-size: 22px 22px; overflow: hidden; touch-action: none;
         }
-        #sharedWhiteboard { width: 100%; height: 100%; display: block; cursor: crosshair; }
+        #sharedWhiteboard { width: 100%; height: 100%; display: block; cursor: crosshair; background: transparent; }
 
         /* SCREEN SHARE & PHOTO STAGES */
         .screen-stage { display: none; flex-direction: column; width: 100%; height: 100%; background: #020617; border: 1.5px solid rgba(16, 185, 129, 0.45); border-radius: 18px; overflow: hidden; position: relative; }
@@ -127,7 +127,7 @@
         .photo-stage.active { display: flex; }
         #uploadedPhotoPreview { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px; }
 
-        /* DRAGGABLE CAMERA PiP (BOTTOM-RIGHT BY DEFAULT SO WHITEBOARD TOOLBAR IS 100% VISIBLE) */
+        /* DRAGGABLE CAMERA PiP */
         .camera-pip {
             position: absolute; bottom: 12px; right: 12px; z-index: 40;
             width: 164px; height: 114px; border-radius: 14px; overflow: hidden;
@@ -226,7 +226,7 @@
                 <div class="status-chip" id="liveStatusChip">CONNECTING TO KIZA BRAIN...</div>
             </div>
 
-            <!-- 2. SHARED AI WHITEBOARD WITH 1-TAP SAVE MENU -->
+            <!-- 2. SHARED AI WHITEBOARD WITH TRANSPARENT ERASER & 1-TAP SAVE -->
             <div class="whiteboard-stage" id="whiteboardStage">
                 <div class="wb-toolbar">
                     <div class="wb-tools-group">
@@ -509,10 +509,10 @@
         }
 
         // ==========================================================
-        // 3. SHARED WHITEBOARD + EXPORT TO PNG / STUDY PDF / CHAT
+        // 3. SHARED WHITEBOARD (TRANSPARENT ERASER + FULL SHAPE ENGINE)
         // ==========================================================
         const wbCanvas = document.getElementById("sharedWhiteboard"), wbCtx = wbCanvas.getContext("2d");
-        let wbDrawing = false, wbColor = "#38bdf8", wbEraser = false, wbHistory = [];
+        let wbDrawing = false, wbColor = "#38bdf8", wbEraser = false, wbHistory = [], wbLastPos = null;
 
         function toggleWhiteboardMode() { setStageMode(currentStageMode === "whiteboard" ? (screenStream ? "screen" : "orb") : "whiteboard"); }
         function resizeWhiteboardCanvas() {
@@ -520,20 +520,57 @@
             if (!wrap || wrap.clientWidth === 0) return;
             const prev = wbCanvas.width > 0 ? wbCanvas.toDataURL() : null;
             wbCanvas.width = wrap.clientWidth; wbCanvas.height = wrap.clientHeight;
-            if (prev) { const img = new Image(); img.onload = () => wbCtx.drawImage(img, 0, 0, wbCanvas.width, wbCanvas.height); img.src = prev; }
+            if (prev) {
+                const img = new Image();
+                img.onload = () => {
+                    wbCtx.save();
+                    wbCtx.globalCompositeOperation = "source-over";
+                    wbCtx.drawImage(img, 0, 0, wbCanvas.width, wbCanvas.height);
+                    wbCtx.restore();
+                };
+                img.src = prev;
+            }
         }
         window.addEventListener("resize", () => { if (currentStageMode === "whiteboard") resizeWhiteboardCanvas(); });
 
         function setWbColor(hex, el) { wbColor = hex; wbEraser = false; document.getElementById("wbEraserBtn").classList.remove("active"); document.querySelectorAll(".color-dot").forEach(d => d.classList.remove("active")); if (el) el.classList.add("active"); }
         function toggleWbEraser() { wbEraser = !wbEraser; document.getElementById("wbEraserBtn").classList.toggle("active", wbEraser); }
         function saveWbSnapshot() { if (wbCanvas.width > 0) { wbHistory.push(wbCanvas.toDataURL()); if (wbHistory.length > 20) wbHistory.shift(); } }
-        function undoWbStroke() { if (!wbHistory.length) return; const last = wbHistory.pop(); const img = new Image(); img.onload = () => { wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height); wbCtx.drawImage(img, 0, 0, wbCanvas.width, wbCanvas.height); }; img.src = last; }
+        function undoWbStroke() {
+            if (!wbHistory.length) return;
+            const last = wbHistory.pop();
+            const img = new Image();
+            img.onload = () => {
+                wbCtx.save();
+                wbCtx.globalCompositeOperation = "source-over";
+                wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
+                wbCtx.drawImage(img, 0, 0, wbCanvas.width, wbCanvas.height);
+                wbCtx.restore();
+            };
+            img.src = last;
+        }
         function clearWhiteboard() { saveWbSnapshot(); wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height); }
 
         function getWbPos(e) { const r = wbCanvas.getBoundingClientRect(); const pt = e.touches ? e.touches[0] : e; return { x: pt.clientX - r.left, y: pt.clientY - r.top }; }
-        function wbStart(e) { e.preventDefault(); saveWbSnapshot(); wbDrawing = true; const p = getWbPos(e); wbCtx.beginPath(); wbCtx.moveTo(p.x, p.y); }
-        function wbMove(e) { if (!wbDrawing) return; e.preventDefault(); const p = getWbPos(e); wbCtx.lineCap = "round"; wbCtx.lineJoin = "round"; wbCtx.lineWidth = wbEraser ? 22 : Number(document.getElementById("wbSizeSlider").value || 4); wbCtx.strokeStyle = wbEraser ? "#090f1d" : wbColor; wbCtx.lineTo(p.x, p.y); wbCtx.stroke(); }
-        function wbEnd() { wbDrawing = false; }
+        function wbStart(e) { e.preventDefault(); saveWbSnapshot(); wbDrawing = true; wbLastPos = getWbPos(e); }
+        function wbMove(e) {
+            if (!wbDrawing || !wbLastPos) return;
+            e.preventDefault();
+            const p = getWbPos(e);
+            wbCtx.save();
+            wbCtx.globalCompositeOperation = wbEraser ? "destination-out" : "source-over";
+            wbCtx.lineCap = "round";
+            wbCtx.lineJoin = "round";
+            wbCtx.lineWidth = wbEraser ? 24 : Number(document.getElementById("wbSizeSlider").value || 4);
+            wbCtx.strokeStyle = wbEraser ? "rgba(0,0,0,1)" : wbColor;
+            wbCtx.beginPath();
+            wbCtx.moveTo(wbLastPos.x, wbLastPos.y);
+            wbCtx.lineTo(p.x, p.y);
+            wbCtx.stroke();
+            wbCtx.restore();
+            wbLastPos = p;
+        }
+        function wbEnd() { wbDrawing = false; wbLastPos = null; }
         wbCanvas.addEventListener("mousedown", wbStart); wbCanvas.addEventListener("mousemove", wbMove); window.addEventListener("mouseup", wbEnd);
         wbCanvas.addEventListener("touchstart", wbStart, { passive: false }); wbCanvas.addEventListener("touchmove", wbMove, { passive: false }); window.addEventListener("touchend", wbEnd);
 
@@ -595,6 +632,15 @@
             }
         }
 
+        function extractNormPoints(pts) {
+            if (!Array.isArray(pts)) return [];
+            return pts.map(pt => {
+                if (Array.isArray(pt) && pt.length >= 2) return [Number(pt[0]), Number(pt[1])];
+                if (pt && typeof pt === "object" && pt.x !== undefined && pt.y !== undefined) return [Number(pt.x), Number(pt.y)];
+                return null;
+            }).filter(p => p && !isNaN(p[0]) && !isNaN(p[1]));
+        }
+
         async function executeKizaWhiteboardCommands(commands) {
             if (!Array.isArray(commands) || !commands.length) return;
             if (currentStageMode !== "whiteboard") {
@@ -603,35 +649,99 @@
                 resizeWhiteboardCanvas();
             }
             const W = wbCanvas.width || 800, H = wbCanvas.height || 450;
-            const sx = (v) => (Number(v) / 1000) * W, sy = (v) => (Number(v) / 1000) * H;
+
+            let maxCoord = 0;
+            commands.forEach(c => {
+                ["x", "y", "x1", "y1", "x2", "y2", "x3", "y3", "cx", "cy", "w", "h"].forEach(k => {
+                    const v = Number(c[k]);
+                    if (!isNaN(v) && v > maxCoord) maxCoord = v;
+                });
+                extractNormPoints(c.points).forEach(([px, py]) => {
+                    if (px > maxCoord) maxCoord = px;
+                    if (py > maxCoord) maxCoord = py;
+                });
+            });
+            const coordDiv = (maxCoord > 1 && maxCoord <= 100) ? 100 : 1000;
+            const sx = (v) => (Number(v) / coordDiv) * W;
+            const sy = (v) => (Number(v) / coordDiv) * H;
+
             saveWbSnapshot();
             for (const cmd of commands) {
-                const type = (cmd.type || "").toLowerCase(), col = cmd.color || "#00f2fe";
-                wbCtx.strokeStyle = col; wbCtx.fillStyle = col; wbCtx.lineWidth = Number(cmd.width || 3.5); wbCtx.lineCap = "round"; wbCtx.lineJoin = "round";
-                if (type === "clear") wbCtx.clearRect(0, 0, W, H);
-                else if (type === "line" || type === "arrow") {
+                if (!cmd || typeof cmd !== "object") continue;
+                const type = String(cmd.type || "").toLowerCase().trim();
+                const col = cmd.color || cmd.stroke || "#38bdf8";
+                const isRectLike = (type === "rect" || type === "rectangle" || type === "square");
+                const rawLw = Number(cmd.lineWidth || cmd.strokeWidth || (isRectLike ? 3.5 : (cmd.width || 3.5)));
+                const lw = Math.min(12, Math.max(2, isNaN(rawLw) ? 3.5 : rawLw));
+
+                wbCtx.save();
+                wbCtx.globalCompositeOperation = "source-over";
+                wbCtx.strokeStyle = col;
+                wbCtx.fillStyle = cmd.fill || col;
+                wbCtx.lineWidth = lw;
+                wbCtx.lineCap = "round";
+                wbCtx.lineJoin = "round";
+
+                if (type === "clear") {
+                    wbCtx.clearRect(0, 0, W, H);
+                } else if (type === "line" || type === "arrow") {
                     const x1 = sx(cmd.x1), y1 = sy(cmd.y1), x2 = sx(cmd.x2), y2 = sy(cmd.y2);
-                    wbCtx.beginPath(); wbCtx.moveTo(x1, y1); wbCtx.lineTo(x2, y2); wbCtx.stroke();
-                    if (type === "arrow") {
-                        const a = Math.atan2(y2 - y1, x2 - x1);
-                        wbCtx.beginPath(); wbCtx.moveTo(x2, y2);
-                        wbCtx.lineTo(x2 - 12 * Math.cos(a - 0.5), y2 - 12 * Math.sin(a - 0.5));
-                        wbCtx.lineTo(x2 - 12 * Math.cos(a + 0.5), y2 - 12 * Math.sin(a + 0.5));
-                        wbCtx.closePath(); wbCtx.fill();
+                    if (![x1, y1, x2, y2].some(isNaN)) {
+                        wbCtx.beginPath(); wbCtx.moveTo(x1, y1); wbCtx.lineTo(x2, y2); wbCtx.stroke();
+                        if (type === "arrow") {
+                            const a = Math.atan2(y2 - y1, x2 - x1);
+                            wbCtx.beginPath(); wbCtx.moveTo(x2, y2);
+                            wbCtx.lineTo(x2 - 12 * Math.cos(a - 0.5), y2 - 12 * Math.sin(a - 0.5));
+                            wbCtx.lineTo(x2 - 12 * Math.cos(a + 0.5), y2 - 12 * Math.sin(a + 0.5));
+                            wbCtx.closePath(); wbCtx.fill();
+                        }
                     }
-                } else if (type === "rect") {
-                    wbCtx.strokeRect(sx(cmd.x), sy(cmd.y), sx(cmd.w), sy(cmd.h));
-                } else if (type === "circle") {
-                    wbCtx.beginPath(); wbCtx.arc(sx(cmd.cx), sy(cmd.cy), (Number(cmd.r || 60) / 1000) * Math.min(W, H), 0, Math.PI * 2); wbCtx.stroke();
-                } else if (type === "path" && Array.isArray(cmd.points) && cmd.points.length > 1) {
-                    wbCtx.beginPath(); wbCtx.moveTo(sx(cmd.points[0][0]), sy(cmd.points[0][1]));
-                    for (let i = 1; i < cmd.points.length; i++) wbCtx.lineTo(sx(cmd.points[i][0]), sy(cmd.points[i][1]));
-                    wbCtx.stroke();
-                } else if (type === "text" && cmd.text) {
-                    wbCtx.font = `700 ${Math.max(13, Math.round((Number(cmd.size || 18) / 600) * Math.min(W, H)))}px Inter, sans-serif`;
-                    wbCtx.fillText(String(cmd.text), sx(cmd.x), sy(cmd.y));
+                } else if (isRectLike) {
+                    const rx = sx(cmd.x), ry = sy(cmd.y);
+                    const rw = sx(cmd.w !== undefined ? cmd.w : cmd.width);
+                    const rh = sy(cmd.h !== undefined ? cmd.h : (cmd.height !== undefined ? cmd.height : cmd.w));
+                    if (![rx, ry, rw, rh].some(isNaN)) {
+                        if (cmd.fill) { wbCtx.globalAlpha = 0.2; wbCtx.fillRect(rx, ry, rw, rh); wbCtx.globalAlpha = 1; }
+                        wbCtx.strokeRect(rx, ry, rw, rh);
+                    }
+                } else if (type === "circle" || type === "ellipse") {
+                    const cx = sx(cmd.cx !== undefined ? cmd.cx : cmd.x);
+                    const cy = sy(cmd.cy !== undefined ? cmd.cy : cmd.y);
+                    const rVal = cmd.r !== undefined ? cmd.r : (cmd.radius !== undefined ? cmd.radius : 60);
+                    const rad = (Number(rVal) / coordDiv) * Math.min(W, H);
+                    if (![cx, cy, rad].some(isNaN)) {
+                        wbCtx.beginPath(); wbCtx.arc(cx, cy, Math.max(2, rad), 0, Math.PI * 2);
+                        if (cmd.fill) { wbCtx.globalAlpha = 0.2; wbCtx.fill(); wbCtx.globalAlpha = 1; }
+                        wbCtx.stroke();
+                    }
+                } else if (type === "triangle" || type === "polygon" || type === "path" || type === "polyline") {
+                    let pts = extractNormPoints(cmd.points);
+                    if (pts.length === 0 && cmd.x1 !== undefined && cmd.x2 !== undefined && cmd.x3 !== undefined) {
+                        pts = [[Number(cmd.x1), Number(cmd.y1)], [Number(cmd.x2), Number(cmd.y2)], [Number(cmd.x3), Number(cmd.y3)]];
+                    }
+                    if (pts.length >= 2) {
+                        wbCtx.beginPath();
+                        wbCtx.moveTo(sx(pts[0][0]), sy(pts[0][1]));
+                        for (let i = 1; i < pts.length; i++) wbCtx.lineTo(sx(pts[i][0]), sy(pts[i][1]));
+                        if (type === "triangle" || type === "polygon" || cmd.closed === true || (type === "path" && pts.length === 3)) {
+                            wbCtx.closePath();
+                        }
+                        if (cmd.fill) { wbCtx.globalAlpha = 0.2; wbCtx.fill(); wbCtx.globalAlpha = 1; }
+                        wbCtx.stroke();
+                    }
+                } else if (type === "text" || type === "label") {
+                    const labelStr = cmd.text !== undefined ? cmd.text : cmd.label;
+                    const tx = sx(cmd.x !== undefined ? cmd.x : cmd.cx);
+                    const ty = sy(cmd.y !== undefined ? cmd.y : cmd.cy);
+                    if (labelStr && !isNaN(tx) && !isNaN(ty)) {
+                        const fSize = Math.max(13, Math.round((Number(cmd.size || cmd.fontSize || 18) / 600) * Math.min(W, H)));
+                        wbCtx.font = `700 ${fSize}px Inter, sans-serif`;
+                        wbCtx.fillStyle = col;
+                        wbCtx.fillText(String(labelStr), tx, ty);
+                    }
                 }
-                await new Promise(r => setTimeout(r, 130));
+                wbCtx.restore();
+                await new Promise(r => setTimeout(r, 110));
             }
         }
 
