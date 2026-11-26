@@ -1,5 +1,5 @@
 // ==========================================================
-// KIZA v11.8 — PRO STUDIO, FREE AI PIC/VIDEO GEN & FORENSIC SECURITY PDF
+// KIZA v11.9 — PRO STUDIO, CONTINUITY EDITING, FORMAT CLONING & FORENSIC SECURITY PDF
 // ==========================================================
 let attachedImageBase64 = null;
 let attachedImageName = "";
@@ -15,6 +15,78 @@ let generatedCodeSnippetsStore = [];
 const activeChartInstances = {};
 const webImageCache = {};
 let isSplitStudioActive = false;
+
+// Unified Continuity & Format-Cloning State (Images, Videos, PDFs, DOCX, XLSX, PPTX, CSV)
+let kizaContinuityState = {
+    type: null,          // 'image' | 'video' | 'pdf' | 'docx' | 'xlsx' | 'pptx' | 'csv' | 'txt'
+    title: "",
+    imageBase64: null,   // Latest uploaded/generated image OR video keyframe
+    videoMeta: null,     // { duration, width, height }
+    lastPrompt: "",
+    docExt: "",
+    docTheme: "cyber_dark",
+    docLayout: "infographic",
+    docBlueprint: "",
+    docRawContent: ""
+};
+
+function extractDocumentFormatBlueprint(rawText, ext = "pdf", title = "Document") {
+    const clean = String(rawText || "");
+    const pages = (clean.match(/^(?:PAGE|SLIDE)\s*\d+\s*:[^\n]*/gim) || []).slice(0, 15);
+    const sections = (clean.match(/^SECTION\s*:[^\n]*/gim) || []).slice(0, 12);
+    const sheets = (clean.match(/^SHEET\s*:[^\n]*/gim) || []).slice(0, 6);
+    const headers = (clean.match(/^TABLE_HEADER\s*:[^\n]*/gim) || []).slice(0, 4);
+    const hasKpi = /^KPI\s*:/im.test(clean);
+    const hasChart = /^CHART\s*:/im.test(clean);
+    const hasCallout = /^CALLOUT\s*:/im.test(clean);
+    const hasImageQ = /^(?:IMAGE_QUERY|FIGURE)\s*:/im.test(clean);
+    return [
+        `FORMAT BLUEPRINT (.${String(ext).toUpperCase()} | Title: ${title})`,
+        pages.length ? `Pages/Slides (${pages.length}): ${pages.map(p => p.trim()).join(' | ')}` : '',
+        sections.length ? `Sections: ${sections.map(s => s.trim()).join(' | ')}` : '',
+        sheets.length ? `Excel Sheets: ${sheets.map(s => s.trim()).join(' | ')}` : '',
+        headers.length ? `Table Columns: ${headers.map(h => h.trim()).join(' || ')}` : '',
+        `Visual Elements: KPI=${hasKpi}, Charts=${hasChart}, Callouts=${hasCallout}, Figures=${hasImageQ}`
+    ].filter(Boolean).join('\n');
+}
+
+function getActiveContinuityPayload() {
+    if (!kizaContinuityState.type) {
+        return { continuity_type: null, continuity_image_base64: null, continuity_doc_context: null };
+    }
+    let docCtx = null;
+    if (["pdf", "docx", "xlsx", "pptx", "csv", "txt"].includes(kizaContinuityState.type)) {
+        docCtx = `ACTIVE CONTINUITY FILE (.${(kizaContinuityState.docExt || kizaContinuityState.type).toUpperCase()}) | TITLE: ${kizaContinuityState.title} | THEME: ${kizaContinuityState.docTheme} | LAYOUT: ${kizaContinuityState.docLayout}\n${kizaContinuityState.docBlueprint}\nCONTENT:\n${String(kizaContinuityState.docRawContent || '').slice(0, 4200)}`;
+    } else if (kizaContinuityState.type === "video" && kizaContinuityState.videoMeta) {
+        docCtx = `ACTIVE CONTINUITY VIDEO (${kizaContinuityState.title}) | Duration: ${kizaContinuityState.videoMeta.duration}s | Resolution: ${kizaContinuityState.videoMeta.width}x${kizaContinuityState.videoMeta.height} | Last Prompt: ${kizaContinuityState.lastPrompt}`;
+    } else if (kizaContinuityState.type === "image") {
+        docCtx = `ACTIVE CONTINUITY IMAGE (${kizaContinuityState.title}) | Last Prompt: ${kizaContinuityState.lastPrompt}`;
+    }
+    return {
+        continuity_type: kizaContinuityState.type,
+        continuity_image_base64: kizaContinuityState.imageBase64 || null,
+        continuity_doc_context: docCtx
+    };
+}
+
+function captureImageElementToDataUrl(imgEl) {
+    try {
+        if (!imgEl) return null;
+        if (imgEl.src && imgEl.src.startsWith("data:image/")) return imgEl.src;
+        const c = document.createElement('canvas');
+        const maxDim = 960;
+        let w = imgEl.naturalWidth || 768, h = imgEl.naturalHeight || 768;
+        if (w > maxDim || h > maxDim) {
+            if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+            else { w = Math.round(w * (maxDim / h)); h = maxDim; }
+        }
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(imgEl, 0, 0, w, h);
+        return c.toDataURL('image/jpeg', 0.85);
+    } catch (e) {
+        return (imgEl?.src && imgEl.src.startsWith("data:image/")) ? imgEl.src : null;
+    }
+}
 
 const THEME_PALETTES = {
     movie_theater: { bgHex: "0D0205", cardHex: "1A050A", accentHex: "FBBF24", secHex: "DC2626", textHex: "FFFBEB", subHex: "FCA5A5", pdfHero: "linear-gradient(135deg, #450a0a 0%, #1a050a 50%, #78350f 100%)", pdfBar: "linear-gradient(90deg, #7f1d1d 0%, #450a0a 100%)", pdfPageBg: "#0d0205", pdfText: "#fffbeb", pdfCardBg: "#1a050a", pdfAccent: "#fbbf24", pdfSec: "#ef4444", pdfMuted: "#fca5a5" },
@@ -62,7 +134,7 @@ const FILE_TYPE_FORMATS = {
 };
 
 // ==========================================================
-// FREE AI PICTURE & VIDEO GENERATOR (PUTER.JS v2 — ZERO API KEY)
+// FREE AI PICTURE & VIDEO GENERATOR (WITH CONTINUITY IMG2IMG EDITING)
 // ==========================================================
 function downloadMediaUrlHelper(mediaUrl, filename) {
     if (!mediaUrl) return;
@@ -76,25 +148,26 @@ function downloadMediaUrlHelper(mediaUrl, filename) {
     document.body.removeChild(a);
 }
 
-async function generateAndRenderFreeImageCard(promptStr, serverImageBase64 = null) {
+async function generateAndRenderFreeImageCard(promptStr, serverImageBase64 = null, editSourceBase64 = null) {
     const cleanPrompt = String(promptStr || "").trim();
     if (!cleanPrompt && !serverImageBase64) return;
     const logBox = document.getElementById('actionLog');
     if (!logBox) return;
 
+    const isImgEdit = Boolean(editSourceBase64);
     const cardId = "kiza_img_" + Date.now() + "_" + Math.floor(Math.random() * 999);
     const card = document.createElement('div');
     card.style.cssText = "background:var(--card-bg); border:1.5px solid var(--accent-primary); border-radius:14px; padding:14px; margin-top:6px; white-space:normal;";
     card.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
             <div>
-                <span style="font-size:10px; font-weight:800; color:var(--accent-primary); background:var(--chip-bg); padding:3px 9px; border-radius:6px;">🖼️ FREE AI IMAGE STUDIO</span>
-                <div style="font-size:12.5px; font-weight:700; margin-top:4px;">${escapeHtml(cleanPrompt.slice(0, 140))}</div>
+                <span style="font-size:10px; font-weight:800; color:var(--accent-primary); background:var(--chip-bg); padding:3px 9px; border-radius:6px;">🖼️ ${isImgEdit ? 'CONTINUITY IMAGE EDIT' : 'FREE AI IMAGE STUDIO'}</span>
+                <div style="font-size:12.5px; font-weight:700; margin-top:4px;">${escapeHtml(cleanPrompt.slice(0, 150))}</div>
             </div>
-            <div style="display:flex; gap:6px;" id="${cardId}_actions"></div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;" id="${cardId}_actions"></div>
         </div>
         <div id="${cardId}_body" style="min-height:180px; border-radius:10px; background:var(--bg-main); border:1px solid var(--card-border); display:flex; align-items:center; justify-content:center; padding:12px; text-align:center; font-size:12px; color:var(--text-muted);">
-            🎨 Generating HD picture (FLUX / Puter AI)...
+            🎨 ${isImgEdit ? 'Applying continuity edit to image...' : 'Generating HD picture (HF FLUX / Puter AI)...'}
         </div>
     `;
     logBox.appendChild(card);
@@ -113,13 +186,30 @@ async function generateAndRenderFreeImageCard(promptStr, serverImageBase64 = nul
         img.style.cssText = "max-width:100%; max-height:460px; border-radius:10px; display:block; margin:0 auto; box-shadow:0 10px 26px rgba(0,0,0,0.28);";
         bodyEl.appendChild(img);
 
+        const saveContinuitySnap = () => {
+            const snap = captureImageElementToDataUrl(img) || (typeof imgElOrUrl === "string" && imgElOrUrl.startsWith("data:") ? imgElOrUrl : null);
+            kizaContinuityState = {
+                ...kizaContinuityState,
+                type: "image",
+                title: cleanPrompt.slice(0, 48),
+                imageBase64: snap || kizaContinuityState.imageBase64,
+                lastPrompt: cleanPrompt
+            };
+        };
+        if (img.complete) saveContinuitySnap();
+        else img.onload = saveContinuitySnap;
+
         const safeName = `KIZA_Art_${cleanPrompt.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 24) || 'Image'}.png`;
         actEl.innerHTML = `
-            <button type="button" class="chip-btn" style="width:auto; padding:5px 11px; font-size:11px;" id="${cardId}_regen">🔄 Regenerate</button>
+            <button type="button" class="chip-btn" style="width:auto; padding:5px 10px; font-size:11px; border-color:var(--accent-primary); color:var(--accent-primary);" id="${cardId}_edit">✏️ Edit</button>
+            <button type="button" class="chip-btn" style="width:auto; padding:5px 10px; font-size:11px;" id="${cardId}_clone">📋 Copy Style</button>
+            <button type="button" class="chip-btn" style="width:auto; padding:5px 10px; font-size:11px;" id="${cardId}_regen">🔄 Regen</button>
             <button type="button" class="send-btn" style="padding:5px 12px; font-size:11px;" id="${cardId}_dl">⬇️ Save PNG</button>
         `;
+        document.getElementById(`${cardId}_edit`).onclick = () => { saveContinuitySnap(); prefillInput("Edit this image: "); };
+        document.getElementById(`${cardId}_clone`).onclick = () => { saveContinuitySnap(); prefillInput("Copy this image's exact style and format for "); };
         document.getElementById(`${cardId}_dl`).onclick = () => downloadMediaUrlHelper(img.src, safeName);
-        document.getElementById(`${cardId}_regen`).onclick = () => generateAndRenderFreeImageCard(cleanPrompt, null);
+        document.getElementById(`${cardId}_regen`).onclick = () => generateAndRenderFreeImageCard(cleanPrompt, null, editSourceBase64);
         if (typeof playTacticalSFX === "function") playTacticalSFX("complete");
         logBox.scrollTop = logBox.scrollHeight;
         return true;
@@ -137,13 +227,25 @@ async function generateAndRenderFreeImageCard(promptStr, serverImageBase64 = nul
 
     try {
         let imgEl = null;
-        try {
-            imgEl = await puter.ai.txt2img(cleanPrompt, { model: "black-forest-labs/flux-schnell" });
-        } catch (e1) {
-            imgEl = await puter.ai.txt2img(cleanPrompt);
+        if (editSourceBase64 && editSourceBase64.startsWith("data:image/")) {
+            const parts = editSourceBase64.split(",");
+            const mime = (parts[0].match(/data:([^;]+);/) || ["", "image/jpeg"])[1];
+            const rawB64 = parts[1] || "";
+            try {
+                imgEl = await puter.ai.txt2img(cleanPrompt, { input_image: rawB64, input_image_mime_type: mime });
+            } catch (eEdit) {
+                imgEl = null;
+            }
+        }
+        if (!imgEl) {
+            try {
+                imgEl = await puter.ai.txt2img(cleanPrompt, { model: "black-forest-labs/flux-schnell" });
+            } catch (e1) {
+                imgEl = await puter.ai.txt2img(cleanPrompt);
+            }
         }
         if (!mountFinalImage(imgEl)) {
-            bodyEl.innerHTML = `<span style="color:var(--warning);">⚠️ Image generation returned empty. Tap Regenerate to retry.</span>`;
+            bodyEl.innerHTML = `<span style="color:var(--warning);">⚠️ Image generation returned empty. Tap Regen to retry.</span>`;
         }
     } catch (err) {
         bodyEl.innerHTML = `<div style="color:var(--warning);">⚠️ Could not generate image: ${escapeHtml(err?.message || "Popup closed or quota reached")}.</div>`;
@@ -151,7 +253,7 @@ async function generateAndRenderFreeImageCard(promptStr, serverImageBase64 = nul
     }
 }
 
-async function generateAndRenderFreeVideoCard(promptStr) {
+async function generateAndRenderFreeVideoCard(promptStr, refImageBase64 = null) {
     const cleanPrompt = String(promptStr || "").trim();
     if (!cleanPrompt) return;
     const logBox = document.getElementById('actionLog');
@@ -163,13 +265,13 @@ async function generateAndRenderFreeVideoCard(promptStr) {
     card.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
             <div>
-                <span style="font-size:10px; font-weight:800; color:#ffffff; background:linear-gradient(135deg, #4f46e5, #0284c7); padding:3px 9px; border-radius:6px;">🎬 FREE AI VIDEO STUDIO</span>
-                <div style="font-size:12.5px; font-weight:700; margin-top:4px;">${escapeHtml(cleanPrompt.slice(0, 140))}</div>
+                <span style="font-size:10px; font-weight:800; color:#ffffff; background:linear-gradient(135deg, #4f46e5, #0284c7); padding:3px 9px; border-radius:6px;">🎬 ${refImageBase64 ? 'CONTINUITY VIDEO STUDIO' : 'FREE AI VIDEO STUDIO'}</span>
+                <div style="font-size:12.5px; font-weight:700; margin-top:4px;">${escapeHtml(cleanPrompt.slice(0, 150))}</div>
             </div>
-            <div style="display:flex; gap:6px;" id="${cardId}_actions"></div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;" id="${cardId}_actions"></div>
         </div>
         <div id="${cardId}_body" style="min-height:200px; border-radius:10px; background:var(--bg-main); border:1px solid var(--card-border); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:14px; text-align:center; font-size:12px; color:var(--text-muted);">
-            <div>🎥 Generating AI video clip via Puter.js...</div>
+            <div>🎥 Rendering AI video clip via Puter.js...</div>
             <div style="font-size:10.5px; opacity:0.8;">Video clips usually take 20–60 seconds. You can keep chatting while it renders.</div>
         </div>
     `;
@@ -185,23 +287,67 @@ async function generateAndRenderFreeVideoCard(promptStr) {
     }
 
     try {
-        const videoEl = await puter.ai.txt2vid(cleanPrompt);
+        let videoEl = null;
+        if (refImageBase64 && refImageBase64.startsWith("data:image/")) {
+            try {
+                videoEl = await puter.ai.txt2vid(cleanPrompt, { input_reference: refImageBase64 });
+            } catch (eRef) {
+                videoEl = null;
+            }
+        }
+        if (!videoEl) {
+            videoEl = await puter.ai.txt2vid(cleanPrompt);
+        }
+
         if (videoEl && (videoEl.src || videoEl.querySelector?.('source'))) {
             videoEl.controls = true;
             videoEl.playsInline = true;
             videoEl.loop = true;
+            videoEl.crossOrigin = "anonymous";
             videoEl.style.cssText = "width:100%; max-height:420px; border-radius:10px; background:#000; display:block; margin:0 auto;";
             bodyEl.innerHTML = "";
             bodyEl.appendChild(videoEl);
 
+            const saveVidContinuity = () => {
+                let frameB64 = refImageBase64 || kizaContinuityState.imageBase64;
+                try {
+                    if (videoEl.videoWidth > 0) {
+                        const c = document.createElement('canvas');
+                        const maxW = 720, sc = Math.min(1, maxW / videoEl.videoWidth);
+                        c.width = Math.round(videoEl.videoWidth * sc);
+                        c.height = Math.round(videoEl.videoHeight * sc);
+                        c.getContext('2d').drawImage(videoEl, 0, 0, c.width, c.height);
+                        frameB64 = c.toDataURL('image/jpeg', 0.80);
+                    }
+                } catch (e) {}
+                kizaContinuityState = {
+                    ...kizaContinuityState,
+                    type: "video",
+                    title: cleanPrompt.slice(0, 48),
+                    imageBase64: frameB64,
+                    videoMeta: {
+                        duration: Math.round(videoEl.duration || 5),
+                        width: videoEl.videoWidth || 1280,
+                        height: videoEl.videoHeight || 720
+                    },
+                    lastPrompt: cleanPrompt
+                };
+            };
+            videoEl.addEventListener('loadeddata', saveVidContinuity, { once: true });
+            saveVidContinuity();
+
             const vidSrc = videoEl.src || videoEl.querySelector('source')?.src || "";
             const safeName = `KIZA_Video_${cleanPrompt.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 22) || 'Clip'}.mp4`;
             actEl.innerHTML = `
-                <button type="button" class="chip-btn" style="width:auto; padding:5px 11px; font-size:11px;" id="${cardId}_regen">🔄 Regenerate</button>
+                <button type="button" class="chip-btn" style="width:auto; padding:5px 10px; font-size:11px; border-color:var(--accent-primary); color:var(--accent-primary);" id="${cardId}_edit">✏️ Edit Video</button>
+                <button type="button" class="chip-btn" style="width:auto; padding:5px 10px; font-size:11px;" id="${cardId}_clone">📋 Copy Style</button>
+                <button type="button" class="chip-btn" style="width:auto; padding:5px 10px; font-size:11px;" id="${cardId}_regen">🔄 Regen</button>
                 ${vidSrc ? `<button type="button" class="send-btn" style="padding:5px 12px; font-size:11px;" id="${cardId}_dl">⬇️ Save MP4</button>` : ''}
             `;
+            document.getElementById(`${cardId}_edit`).onclick = () => { saveVidContinuity(); prefillInput("Edit this video: "); };
+            document.getElementById(`${cardId}_clone`).onclick = () => { saveVidContinuity(); prefillInput("Copy this video's style and format to generate a video of "); };
             if (vidSrc) document.getElementById(`${cardId}_dl`).onclick = () => downloadMediaUrlHelper(vidSrc, safeName);
-            document.getElementById(`${cardId}_regen`).onclick = () => generateAndRenderFreeVideoCard(cleanPrompt);
+            document.getElementById(`${cardId}_regen`).onclick = () => generateAndRenderFreeVideoCard(cleanPrompt, refImageBase64);
             if (typeof playTacticalSFX === "function") playTacticalSFX("complete");
             logBox.scrollTop = logBox.scrollHeight;
         } else {
@@ -371,7 +517,7 @@ function detectClientSideFileIntent(rawCmd) {
 }
 
 // ==========================================================
-// MULTI-FILE ATTACHMENT READERS (.PDF, .DOCX, .XLSX, OCR)
+// MULTI-FILE ATTACHMENT READERS (VIDEO, .PDF, .DOCX, .XLSX, OCR)
 // ==========================================================
 function analyzeImageVisualTelemetry(imgEl, filename) {
     try {
@@ -409,6 +555,14 @@ async function extractTextFromUploadedPDF(file) {
     const fullText = extracted.join("\n\n").slice(0, 5000);
     lastUploadedDocumentContext = fullText;
     lastAttachedFileTopic = (file.name || "Uploaded_PDF").replace(/\.pdf$/i, '');
+    kizaContinuityState = {
+        ...kizaContinuityState,
+        type: "pdf",
+        docExt: "pdf",
+        title: lastAttachedFileTopic,
+        docRawContent: fullText,
+        docBlueprint: extractDocumentFormatBlueprint(fullText, "pdf", lastAttachedFileTopic)
+    };
     return fullText;
 }
 
@@ -419,6 +573,14 @@ async function extractTextFromUploadedDOCX(file) {
     const rawText = (result.value || "").trim().slice(0, 5000);
     lastUploadedDocumentContext = rawText;
     lastAttachedFileTopic = (file.name || "Word_Document").replace(/\.(docx|doc)$/i, '');
+    kizaContinuityState = {
+        ...kizaContinuityState,
+        type: "docx",
+        docExt: "docx",
+        title: lastAttachedFileTopic,
+        docRawContent: rawText,
+        docBlueprint: extractDocumentFormatBlueprint(rawText, "docx", lastAttachedFileTopic)
+    };
     return rawText;
 }
 
@@ -429,11 +591,19 @@ async function extractTextFromUploadedXLSX(file) {
     let outBlocks = [];
     workbook.SheetNames.slice(0, 4).forEach(sheetName => {
         const csvText = XLSX.utils.sheet_to_csv(workbook.Sheets[sheetName]);
-        outBlocks.push(`[SHEET: ${sheetName}]\n${csvText}`);
+        outBlocks.push(`SHEET: ${sheetName}\n${csvText}`);
     });
     const combined = outBlocks.join("\n\n").slice(0, 5000);
     lastUploadedDocumentContext = combined;
     lastAttachedFileTopic = (file.name || "Excel_Sheet").replace(/\.(xlsx|xls)$/i, '');
+    kizaContinuityState = {
+        ...kizaContinuityState,
+        type: "xlsx",
+        docExt: "xlsx",
+        title: lastAttachedFileTopic,
+        docRawContent: combined,
+        docBlueprint: extractDocumentFormatBlueprint(combined, "xlsx", lastAttachedFileTopic)
+    };
     return combined;
 }
 
@@ -445,6 +615,58 @@ function processAttachedImageFileObject(file, customName = null) {
     const lowName = attachedImageName.toLowerCase();
     const thumbEl = document.getElementById('attachmentThumb');
     const docIconEl = document.getElementById('attachmentDocIcon');
+
+    // Video attachment reader (extracts keyframe + metadata for continuity editing & style cloning)
+    if (/\.(mp4|webm|mov|m4v)$/i.test(lowName) || file.type.startsWith("video/")) {
+        isScanningAttachment = true; attachedImageBase64 = null;
+        if (thumbEl) thumbEl.style.display = "block";
+        if (docIconEl) docIconEl.style.display = "none";
+        document.getElementById('attachmentName').innerText = `🎬 ${attachedImageName}`;
+        document.getElementById('attachmentOcrStatus').innerText = "🎞️ Extracting video keyframe & format metadata...";
+        document.getElementById('attachmentPreviewBar').style.display = "flex";
+        attachmentScanPromise = new Promise((resolveScan) => {
+            const vidUrl = URL.createObjectURL(file);
+            const v = document.createElement('video');
+            v.muted = true; v.playsInline = true; v.preload = "auto";
+            const finish = (frameUrl, metaObj) => {
+                URL.revokeObjectURL(vidUrl);
+                attachedImageBase64 = frameUrl;
+                if (frameUrl && thumbEl) thumbEl.src = frameUrl;
+                kizaContinuityState = {
+                    ...kizaContinuityState,
+                    type: "video",
+                    title: lastAttachedFileTopic,
+                    imageBase64: frameUrl,
+                    videoMeta: metaObj,
+                    lastPrompt: `Uploaded video '${attachedImageName}' (${metaObj.duration}s, ${metaObj.width}x${metaObj.height})`
+                };
+                attachedImageExtractedContext = `[ATTACHED VIDEO METADATA (${attachedImageName}): Duration=${metaObj.duration}s | Resolution=${metaObj.width}x${metaObj.height} | Keyframe extracted for visual style & continuity editing]`;
+                document.getElementById('attachmentOcrStatus').innerText = `✓ Video ready (${metaObj.duration}s • ${metaObj.width}x${metaObj.height})!`;
+                isScanningAttachment = false;
+                resolveScan();
+            };
+            const safetyTimer = setTimeout(() => finish(null, { duration: 5, width: 1280, height: 720 }), 5000);
+            v.onloadeddata = () => {
+                v.currentTime = Math.min(0.4, (v.duration || 1) / 3);
+            };
+            v.onseeked = () => {
+                clearTimeout(safetyTimer);
+                let frame = null;
+                try {
+                    const c = document.createElement('canvas');
+                    const maxW = 720, sc = Math.min(1, maxW / (v.videoWidth || 720));
+                    c.width = Math.round((v.videoWidth || 720) * sc);
+                    c.height = Math.round((v.videoHeight || 405) * sc);
+                    c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+                    frame = c.toDataURL('image/jpeg', 0.82);
+                } catch (e) {}
+                finish(frame, { duration: Math.round(v.duration || 5), width: v.videoWidth || 1280, height: v.videoHeight || 720 });
+            };
+            v.onerror = () => { clearTimeout(safetyTimer); finish(null, { duration: 5, width: 1280, height: 720 }); };
+            v.src = vidUrl;
+        });
+        return;
+    }
 
     if (lowName.endsWith(".pdf") || file.type === "application/pdf") {
         isScanningAttachment = true; attachedImageBase64 = null;
@@ -520,7 +742,16 @@ function processAttachedImageFileObject(file, customName = null) {
             const reader = new FileReader();
             reader.onload = (e) => {
                 const rawTxt = String(e.target.result || "").slice(0, 4800);
+                const extType = lowName.endsWith(".csv") ? "csv" : "txt";
                 lastUploadedDocumentContext = rawTxt;
+                kizaContinuityState = {
+                    ...kizaContinuityState,
+                    type: extType,
+                    docExt: extType,
+                    title: lastAttachedFileTopic,
+                    docRawContent: rawTxt,
+                    docBlueprint: extractDocumentFormatBlueprint(rawTxt, extType, lastAttachedFileTopic)
+                };
                 attachedImageExtractedContext = `[ATTACHED DOCUMENT CONTENT (${attachedImageName}):\n${rawTxt}]`;
                 document.getElementById('attachmentOcrStatus').innerText = `✓ File loaded (${rawTxt.length} chars)!`;
                 isScanningAttachment = false;
@@ -550,6 +781,13 @@ function processAttachedImageFileObject(file, customName = null) {
                 canvas.width = w; canvas.height = h;
                 canvas.getContext('2d').drawImage(img, 0, 0, w, h);
                 attachedImageBase64 = canvas.toDataURL('image/jpeg', 0.86);
+                kizaContinuityState = {
+                    ...kizaContinuityState,
+                    type: "image",
+                    title: lastAttachedFileTopic,
+                    imageBase64: attachedImageBase64,
+                    lastPrompt: `Uploaded image '${attachedImageName}'`
+                };
                 document.getElementById('attachmentThumb').src = attachedImageBase64;
                 document.getElementById('attachmentName').innerText = `📎 ${attachedImageName}`;
                 document.getElementById('attachmentOcrStatus').innerText = "🔍 Scanning image & handwriting OCR...";
@@ -1490,6 +1728,17 @@ async function prepareAndPreviewUniversalFile(ext, topic, rawContent, embeddedIm
         styleTheme: finalTheme, layoutFormat: finalLayout, isPreRenderedAuditHtml: false
     };
 
+    kizaContinuityState = {
+        ...kizaContinuityState,
+        type: cleanExt,
+        docExt: cleanExt,
+        title: parsed.cleanTopic,
+        docTheme: finalTheme,
+        docLayout: finalLayout,
+        docRawContent: rawContent,
+        docBlueprint: extractDocumentFormatBlueprint(rawContent, cleanExt, parsed.cleanTopic)
+    };
+
     const themeDropdown = document.getElementById('previewThemeSelect');
     if (themeDropdown && Array.from(themeDropdown.options).some(o => o.value === finalTheme)) themeDropdown.value = finalTheme;
     syncFormatDropdownForFileType(cleanExt, finalLayout);
@@ -1507,6 +1756,11 @@ function switchPreviewExportFormat(newExt) {
     const cleanExt = newExt.toLowerCase();
     lastCompiledFileCache.ext = cleanExt;
     lastCompiledFileCache.layoutFormat = syncFormatDropdownForFileType(cleanExt, lastCompiledFileCache.layoutFormat);
+    if (!lastCompiledFileCache.isPreRenderedAuditHtml) {
+        kizaContinuityState.type = cleanExt;
+        kizaContinuityState.docExt = cleanExt;
+        kizaContinuityState.docLayout = lastCompiledFileCache.layoutFormat;
+    }
     openFilePreviewModal();
 }
 
@@ -1519,6 +1773,10 @@ function changePreviewLayoutOrTheme() {
     if (!lastCompiledFileCache) return;
     lastCompiledFileCache.layoutFormat = document.getElementById('previewLayoutFormatSelect')?.value || "infographic";
     lastCompiledFileCache.styleTheme = document.getElementById('previewThemeSelect')?.value || "cyber_dark";
+    if (!lastCompiledFileCache.isPreRenderedAuditHtml) {
+        kizaContinuityState.docLayout = lastCompiledFileCache.layoutFormat;
+        kizaContinuityState.docTheme = lastCompiledFileCache.styleTheme;
+    }
     openFilePreviewModal();
 }
 
@@ -1624,12 +1882,13 @@ function renderInChatVisualFileCard(ext, topic, rawContent, embeddedImgBase64 = 
                 <div style="font-weight:700; font-size:13.5px; margin-top:5px;">${escapeHtml(parsed.cleanTopic)}</div>
             </div>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                <button type="button" class="chip-btn" style="width:auto; padding:6px 12px; font-size:11px;" onclick="openFilePreviewModal()">👁️ View & Edit</button>
-                <button type="button" class="chip-btn" style="width:auto; padding:6px 12px; font-size:11px; border-color:var(--accent-primary); color:var(--accent-primary);" onclick="openFilePreviewModal(); toggleSplitStudioMode(true);">◧ Split View</button>
+                <button type="button" class="chip-btn" style="width:auto; padding:6px 11px; font-size:11px;" onclick="openFilePreviewModal()">👁️ View & Edit</button>
+                <button type="button" class="chip-btn" style="width:auto; padding:6px 11px; font-size:11px;" onclick="prefillInput('Copy this file format and make a new one on ')">📋 Copy Format</button>
+                <button type="button" class="chip-btn" style="width:auto; padding:6px 11px; font-size:11px; border-color:var(--accent-primary); color:var(--accent-primary);" onclick="openFilePreviewModal(); toggleSplitStudioMode(true);">◧ Split View</button>
                 <button type="button" class="send-btn" style="padding:6px 13px; font-size:11px;" onclick="confirmAndDownloadPreviewedFile()">⬇️ Download .${ext.toUpperCase()}</button>
             </div>
         </div>
-        <div style="font-size:11.5px; color:var(--text-muted);">Edit cells/text directly or open Split View to tell KIZA what to update live!</div>
+        <div style="font-size:11.5px; color:var(--text-muted);">Edit in place (e.g. "edit page 2"), copy this exact format to a new topic, or open Split View!</div>
     `;
     logBox.appendChild(card);
     logBox.scrollTop = logBox.scrollHeight;
