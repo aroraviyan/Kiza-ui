@@ -1,5 +1,5 @@
 // ==========================================================
-// KIZA v11.5 — MAIN WORKSPACE, INDIAN VOICE, ZERO-TRUST & CHAT ENGINE
+// KIZA v11.8 — MAIN WORKSPACE, FREE PIC/VIDEO GEN, VOICE & CHAT ENGINE
 // ==========================================================
 if (typeof pdfjsLib !== "undefined") {
     pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
@@ -95,9 +95,9 @@ const PERSONA_VOICE_CONFIG = {
 
 const DEFAULT_UPDATES_FALLBACK = [
     {
-        version: "v11.5",
-        title: "3-Strike Moderation Guard, Instant Live Whiteboard & Pro Studio",
-        description: "Added 3-strike profanity moderation with Rank 1-3 alerts & 15-min auto-bans, instant Live Whiteboard drawing, Split-Screen Studio, Hands-Free VAD + Barge-In, Indian Neural Voice, and 3D Anti-Spoof Face 2FA.",
+        version: "v11.8",
+        title: "Free AI Picture & Video Studio, Hybrid Whiteboard & Forensic Security PDF",
+        description: "Added free browser AI picture & video generation (Puter.js + FLUX), Hybrid AI Whiteboard for real anime/character art and crisp SVG diagrams, and official KIZA SECURITY MANAGEMENT forensic PDF records with camera evidence.",
         author: "Viyan Arora",
         date: "LIVE"
     }
@@ -202,6 +202,8 @@ function extractFriendlyAssistantMessage(fullText) {
         .replace(/```[\s\S]*?(?:```|$)/g, '')
         .replace(/\[ACTION:[A-Z_]+\]/g, '')
         .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
+        .replace(/\[GENERATE_IMAGE:[^\]]+\]/gi, '')
+        .replace(/\[GENERATE_VIDEO:[^\]]+\]/gi, '')
         .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
         .replace(/\[ZERO_TRUST_CONFIRM:[^\]]+\]/g, '')
         .replace(/\[SYSTEM[^\]]*\]/gi, '')
@@ -1451,6 +1453,8 @@ async function submitCommand(opts = {}) {
     logBox.appendChild(streamEntry); logBox.scrollTop = logBox.scrollHeight;
 
     let accumulatedText = "", isStreamError = false, renderedPlanner = false, playedAudioFromStream = false;
+    let serverGeneratedImgB64 = null, serverGeneratedImgPrompt = "";
+
     const reqPayload = {
         command: text,
         image_base64: finalVisionFrame,
@@ -1477,6 +1481,10 @@ async function submitCommand(opts = {}) {
             const jsonData = await response.json();
             accumulatedText = jsonData.reply || jsonData.message || "";
             isStreamError = Boolean(jsonData.is_error);
+            if (jsonData.generated_image_base64) {
+                serverGeneratedImgB64 = jsonData.generated_image_base64;
+                serverGeneratedImgPrompt = jsonData.generated_image_prompt || rawText;
+            }
             if (jsonData.ip_banned) {
                 kizaSpan.textContent = accumulatedText;
                 setTimeout(() => forceLogout(), 2500);
@@ -1497,6 +1505,10 @@ async function submitCommand(opts = {}) {
                         const payload = JSON.parse(trimmed.replace(/^data:\s*/, ""));
                         if (payload.type === "web_search" && payload.query) { renderWebSearchBadgeInFeed(payload.query); logBox.appendChild(streamEntry); }
                         else if (payload.type === "plan" && Array.isArray(payload.steps)) { renderedPlanner = true; renderTaskPlannerQueueInFeed(payload.steps); logBox.appendChild(streamEntry); }
+                        else if (payload.type === "media_image" && payload.image_base64) {
+                            serverGeneratedImgB64 = payload.image_base64;
+                            serverGeneratedImgPrompt = payload.prompt || rawText;
+                        }
                         else if (payload.type === "token") {
                             if (payload.is_error) isStreamError = true;
                             accumulatedText += payload.text;
@@ -1518,6 +1530,10 @@ async function submitCommand(opts = {}) {
                 accumulatedText = syncData.reply || ""; isStreamError = Boolean(syncData.is_error);
                 if (syncData.web_query) renderWebSearchBadgeInFeed(syncData.web_query);
                 if (syncData.plan_steps?.length && !renderedPlanner) renderTaskPlannerQueueInFeed(syncData.plan_steps);
+                if (syncData.generated_image_base64) {
+                    serverGeneratedImgB64 = syncData.generated_image_base64;
+                    serverGeneratedImgPrompt = syncData.generated_image_prompt || rawText;
+                }
                 if (syncData.audio_base64) { playedAudioFromStream = true; playKizaAudio(syncData.audio_base64, extractFriendlyAssistantMessage(accumulatedText)); }
             }
         }
@@ -1531,8 +1547,18 @@ async function submitCommand(opts = {}) {
         if (accumulatedText.includes("[PURGE_PIN_REQUIRED]")) openPurgeModal();
 
         const ztMatch = accumulatedText.match(/\[ZERO_TRUST_CONFIRM:([^\]]+)\]/);
-        if (ztMatch) {
-            renderZeroTrustConfirmationCard(ztMatch[1].trim());
+        if (ztMatch) renderZeroTrustConfirmationCard(ztMatch[1].trim());
+
+        const imgGenMatch = accumulatedText.match(/\[GENERATE_IMAGE:([^\]]+)\]/i);
+        const vidGenMatch = accumulatedText.match(/\[GENERATE_VIDEO:([^\]]+)\]/i);
+
+        if (serverGeneratedImgB64 && typeof generateAndRenderFreeImageCard === "function") {
+            generateAndRenderFreeImageCard(serverGeneratedImgPrompt || (imgGenMatch ? imgGenMatch[1].trim() : rawText), serverGeneratedImgB64);
+        } else if (imgGenMatch && typeof generateAndRenderFreeImageCard === "function") {
+            generateAndRenderFreeImageCard(imgGenMatch[1].trim(), null);
+        }
+        if (vidGenMatch && typeof generateAndRenderFreeVideoCard === "function") {
+            generateAndRenderFreeVideoCard(vidGenMatch[1].trim());
         }
 
         if (accumulatedText.includes("[GENERATE_FILE:")) {
@@ -1542,7 +1568,7 @@ async function submitCommand(opts = {}) {
             const fileTheme = (fm && fm[3]) ? fm[3].toLowerCase().replace(/\s+/g, '_') : (clientFileIntent ? clientFileIntent.styleTheme : "cyber_dark");
             const layoutToUse = (fileTheme === "movie_theater" || clientFileIntent?.layoutFormat === "movie_theater") ? "movie_theater" : (clientFileIntent?.layoutFormat || "infographic");
             await prepareAndPreviewUniversalFile(fileExt, fileTopic, accumulatedText, currentAttachedImg, fileTheme, layoutToUse);
-        } else if (clientFileIntent && !isStreamError) {
+        } else if (clientFileIntent && !isStreamError && !imgGenMatch && !vidGenMatch && !serverGeneratedImgB64) {
             await prepareAndPreviewUniversalFile(clientFileIntent.ext, clientFileIntent.topic, accumulatedText, currentAttachedImg, clientFileIntent.styleTheme, clientFileIntent.layoutFormat);
         } else if (studioDraftCtx && lastCompiledFileCache && document.getElementById('filePreviewModal')?.style.display === 'flex' && !isStreamError) {
             lastCompiledFileCache.rawContent = accumulatedText;
