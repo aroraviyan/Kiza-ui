@@ -1,5 +1,5 @@
 // ==========================================================
-// KIZA v11.8 — MAIN WORKSPACE, FREE PIC/VIDEO GEN, VOICE & CHAT ENGINE
+// KIZA v11.9 — MAIN WORKSPACE, CONTINUITY MEDIA/FILE STUDIO & CHAT ENGINE
 // ==========================================================
 if (typeof pdfjsLib !== "undefined") {
     pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
@@ -95,9 +95,9 @@ const PERSONA_VOICE_CONFIG = {
 
 const DEFAULT_UPDATES_FALLBACK = [
     {
-        version: "v11.8",
-        title: "Free AI Picture & Video Studio, Hybrid Whiteboard & Forensic Security PDF",
-        description: "Added free browser AI picture & video generation (Puter.js + FLUX), Hybrid AI Whiteboard for real anime/character art and crisp SVG diagrams, and official KIZA SECURITY MANAGEMENT forensic PDF records with camera evidence.",
+        version: "v11.9",
+        title: "Continuity Editing, Format/Style Cloning & Forensic Security PDF",
+        description: "Added end-to-end continuity editing & format cloning for images, videos, PDFs, Word (.docx), Excel (.xlsx), and PowerPoint (.pptx), video upload keyframe scanning, faithful cinematic prompt accuracy, and official KIZA SECURITY MANAGEMENT forensic PDF records.",
         author: "Viyan Arora",
         date: "LIVE"
     }
@@ -204,6 +204,7 @@ function extractFriendlyAssistantMessage(fullText) {
         .replace(/\[GENERATE_FILE:[^\]]+\]/g, '')
         .replace(/\[GENERATE_IMAGE:[^\]]+\]/gi, '')
         .replace(/\[GENERATE_VIDEO:[^\]]+\]/gi, '')
+        .replace(/\[CONTINUITY_EDIT\]/gi, '')
         .replace(/\[GENERATING_PDF:[^\]]+\]/g, '')
         .replace(/\[ZERO_TRUST_CONFIRM:[^\]]+\]/g, '')
         .replace(/\[SYSTEM[^\]]*\]/gi, '')
@@ -583,6 +584,9 @@ async function clearCurrentActiveChatPermanently() {
     localStorage.removeItem(`kiza_offline_msgs_${currentSessionId}`);
     try { await fetch(`${SERVER_URL}/api/history/clear`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ session_id: currentSessionId }) }); } catch (e) {}
     currentSessionId = generateSessionId();
+    if (typeof kizaContinuityState !== "undefined") {
+        kizaContinuityState = { type: null, title: "", imageBase64: null, videoMeta: null, lastPrompt: "", docExt: "", docTheme: "cyber_dark", docLayout: "infographic", docBlueprint: "", docRawContent: "" };
+    }
     document.getElementById('actionLog').innerHTML = `<div>> <b>[KIZA]:</b> Current chat permanently deleted!</div>`;
     refreshSidebarChatSessions();
 }
@@ -591,6 +595,9 @@ function startNewSession() {
     if (isPinLocked) { openPinGate(pinGateMode); return; }
     currentSessionId = generateSessionId();
     clearImageAttachment();
+    if (typeof kizaContinuityState !== "undefined") {
+        kizaContinuityState = { type: null, title: "", imageBase64: null, videoMeta: null, lastPrompt: "", docExt: "", docTheme: "cyber_dark", docLayout: "infographic", docBlueprint: "", docRawContent: "" };
+    }
     document.getElementById('actionLog').innerHTML = `<div>> <b>[KIZA]:</b> Fresh conversation started! Ask me anything—in English, Hindi, or Punjabi.</div>`;
     refreshSidebarChatSessions();
 }
@@ -1192,7 +1199,7 @@ function checkAndRenderLiveCallMinutes() {
 }
 
 // ==========================================================
-// 8. CHAT FEED, ZERO-TRUST CONFIRMATIONS & STREAMING SUBMITTER
+// 8. CHAT FEED, ZERO-TRUST CONFIRMATIONS & CONTINUITY STREAMER
 // ==========================================================
 const SLASH_COMMANDS_CATALOG = [
     { cmd: "/help", desc: "Open Official Guide PDF & manifest", maxRank: 5 },
@@ -1455,6 +1462,7 @@ async function submitCommand(opts = {}) {
     let accumulatedText = "", isStreamError = false, renderedPlanner = false, playedAudioFromStream = false;
     let serverGeneratedImgB64 = null, serverGeneratedImgPrompt = "";
 
+    const continuityPayload = (typeof getActiveContinuityPayload === "function") ? getActiveContinuityPayload() : {};
     const reqPayload = {
         command: text,
         image_base64: finalVisionFrame,
@@ -1463,6 +1471,9 @@ async function submitCommand(opts = {}) {
         session_id: currentSessionId,
         human_confirmed: Boolean(opts.humanConfirmed),
         studio_context: studioDraftCtx,
+        continuity_type: continuityPayload.continuity_type || null,
+        continuity_image_base64: continuityPayload.continuity_image_base64 || null,
+        continuity_doc_context: continuityPayload.continuity_doc_context || null,
         custom_gem_name: activeCustomGem ? activeCustomGem.name : null,
         custom_gem_prompt: activeCustomGem ? activeCustomGem.prompt : null,
         client_gps: cachedClientGPS,
@@ -1551,19 +1562,21 @@ async function submitCommand(opts = {}) {
 
         const imgGenMatch = accumulatedText.match(/\[GENERATE_IMAGE:([^\]]+)\]/i);
         const vidGenMatch = accumulatedText.match(/\[GENERATE_VIDEO:([^\]]+)\]/i);
+        const isContinuityEdit = /\[CONTINUITY_EDIT\]/i.test(accumulatedText);
+        const refEditImg = isContinuityEdit ? (currentAttachedImg || (typeof kizaContinuityState !== "undefined" ? kizaContinuityState.imageBase64 : null) || null) : null;
 
         if (serverGeneratedImgB64 && typeof generateAndRenderFreeImageCard === "function") {
-            generateAndRenderFreeImageCard(serverGeneratedImgPrompt || (imgGenMatch ? imgGenMatch[1].trim() : rawText), serverGeneratedImgB64);
+            generateAndRenderFreeImageCard(serverGeneratedImgPrompt || (imgGenMatch ? imgGenMatch[1].trim() : rawText), serverGeneratedImgB64, refEditImg);
         } else if (imgGenMatch && typeof generateAndRenderFreeImageCard === "function") {
-            generateAndRenderFreeImageCard(imgGenMatch[1].trim(), null);
+            generateAndRenderFreeImageCard(imgGenMatch[1].trim(), null, refEditImg);
         }
         if (vidGenMatch && typeof generateAndRenderFreeVideoCard === "function") {
-            generateAndRenderFreeVideoCard(vidGenMatch[1].trim());
+            generateAndRenderFreeVideoCard(vidGenMatch[1].trim(), refEditImg);
         }
 
         if (accumulatedText.includes("[GENERATE_FILE:")) {
             const fm = accumulatedText.match(/\[GENERATE_FILE:([^:]+):([^:\]]+)(?::([^\]]+))?\]/);
-            const fileExt = clientFileIntent ? clientFileIntent.ext : (fm ? fm[1] : "pdf");
+            const fileExt = fm ? fm[1] : (clientFileIntent ? clientFileIntent.ext : "pdf");
             const fileTopic = fm ? fm[2] : (clientFileIntent ? clientFileIntent.topic : "Report");
             const fileTheme = (fm && fm[3]) ? fm[3].toLowerCase().replace(/\s+/g, '_') : (clientFileIntent ? clientFileIntent.styleTheme : "cyber_dark");
             const layoutToUse = (fileTheme === "movie_theater" || clientFileIntent?.layoutFormat === "movie_theater") ? "movie_theater" : (clientFileIntent?.layoutFormat || "infographic");
