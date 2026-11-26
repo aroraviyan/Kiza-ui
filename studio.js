@@ -1,5 +1,5 @@
 // ==========================================================
-// KIZA v11.7 — PRO MULTI-FORMAT STUDIO, THEME-REACTIVE PDF & SANDBOX ENGINE
+// KIZA v11.8 — PRO STUDIO, FREE AI PIC/VIDEO GEN & FORENSIC SECURITY PDF
 // ==========================================================
 let attachedImageBase64 = null;
 let attachedImageName = "";
@@ -62,6 +62,158 @@ const FILE_TYPE_FORMATS = {
 };
 
 // ==========================================================
+// FREE AI PICTURE & VIDEO GENERATOR (PUTER.JS v2 — ZERO API KEY)
+// ==========================================================
+function downloadMediaUrlHelper(mediaUrl, filename) {
+    if (!mediaUrl) return;
+    const a = document.createElement('a');
+    a.href = mediaUrl;
+    a.download = filename;
+    a.target = "_blank";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+async function generateAndRenderFreeImageCard(promptStr, serverImageBase64 = null) {
+    const cleanPrompt = String(promptStr || "").trim();
+    if (!cleanPrompt && !serverImageBase64) return;
+    const logBox = document.getElementById('actionLog');
+    if (!logBox) return;
+
+    const cardId = "kiza_img_" + Date.now() + "_" + Math.floor(Math.random() * 999);
+    const card = document.createElement('div');
+    card.style.cssText = "background:var(--card-bg); border:1.5px solid var(--accent-primary); border-radius:14px; padding:14px; margin-top:6px; white-space:normal;";
+    card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+            <div>
+                <span style="font-size:10px; font-weight:800; color:var(--accent-primary); background:var(--chip-bg); padding:3px 9px; border-radius:6px;">🖼️ FREE AI IMAGE STUDIO</span>
+                <div style="font-size:12.5px; font-weight:700; margin-top:4px;">${escapeHtml(cleanPrompt.slice(0, 140))}</div>
+            </div>
+            <div style="display:flex; gap:6px;" id="${cardId}_actions"></div>
+        </div>
+        <div id="${cardId}_body" style="min-height:180px; border-radius:10px; background:var(--bg-main); border:1px solid var(--card-border); display:flex; align-items:center; justify-content:center; padding:12px; text-align:center; font-size:12px; color:var(--text-muted);">
+            🎨 Generating HD picture (FLUX / Puter AI)...
+        </div>
+    `;
+    logBox.appendChild(card);
+    logBox.scrollTop = logBox.scrollHeight;
+
+    const bodyEl = document.getElementById(`${cardId}_body`);
+    const actEl = document.getElementById(`${cardId}_actions`);
+
+    const mountFinalImage = (imgElOrUrl) => {
+        const srcUrl = (typeof imgElOrUrl === "string") ? imgElOrUrl : (imgElOrUrl?.src || "");
+        if (!srcUrl) return false;
+        bodyEl.innerHTML = "";
+        const img = (imgElOrUrl instanceof HTMLImageElement) ? imgElOrUrl : document.createElement('img');
+        if (typeof imgElOrUrl === "string") img.src = srcUrl;
+        img.alt = cleanPrompt;
+        img.style.cssText = "max-width:100%; max-height:460px; border-radius:10px; display:block; margin:0 auto; box-shadow:0 10px 26px rgba(0,0,0,0.28);";
+        bodyEl.appendChild(img);
+
+        const safeName = `KIZA_Art_${cleanPrompt.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 24) || 'Image'}.png`;
+        actEl.innerHTML = `
+            <button type="button" class="chip-btn" style="width:auto; padding:5px 11px; font-size:11px;" id="${cardId}_regen">🔄 Regenerate</button>
+            <button type="button" class="send-btn" style="padding:5px 12px; font-size:11px;" id="${cardId}_dl">⬇️ Save PNG</button>
+        `;
+        document.getElementById(`${cardId}_dl`).onclick = () => downloadMediaUrlHelper(img.src, safeName);
+        document.getElementById(`${cardId}_regen`).onclick = () => generateAndRenderFreeImageCard(cleanPrompt, null);
+        if (typeof playTacticalSFX === "function") playTacticalSFX("complete");
+        logBox.scrollTop = logBox.scrollHeight;
+        return true;
+    };
+
+    if (serverImageBase64) {
+        mountFinalImage(serverImageBase64);
+        return;
+    }
+
+    if (typeof puter === "undefined" || !puter.ai || typeof puter.ai.txt2img !== "function") {
+        bodyEl.innerHTML = `<span style="color:var(--danger);">⚠️ Puter.js Image Engine didn't load. Check your internet connection or refresh the page.</span>`;
+        return;
+    }
+
+    try {
+        let imgEl = null;
+        try {
+            imgEl = await puter.ai.txt2img(cleanPrompt, { model: "black-forest-labs/flux-schnell" });
+        } catch (e1) {
+            imgEl = await puter.ai.txt2img(cleanPrompt);
+        }
+        if (!mountFinalImage(imgEl)) {
+            bodyEl.innerHTML = `<span style="color:var(--warning);">⚠️ Image generation returned empty. Tap Regenerate to retry.</span>`;
+        }
+    } catch (err) {
+        bodyEl.innerHTML = `<div style="color:var(--warning);">⚠️ Could not generate image: ${escapeHtml(err?.message || "Popup closed or quota reached")}.</div>`;
+        actEl.innerHTML = `<button type="button" class="chip-btn" style="width:auto; padding:5px 11px; font-size:11px;" onclick="generateAndRenderFreeImageCard(${JSON.stringify(cleanPrompt)})">🔄 Retry</button>`;
+    }
+}
+
+async function generateAndRenderFreeVideoCard(promptStr) {
+    const cleanPrompt = String(promptStr || "").trim();
+    if (!cleanPrompt) return;
+    const logBox = document.getElementById('actionLog');
+    if (!logBox) return;
+
+    const cardId = "kiza_vid_" + Date.now() + "_" + Math.floor(Math.random() * 999);
+    const card = document.createElement('div');
+    card.style.cssText = "background:var(--card-bg); border:1.5px solid var(--accent-secondary); border-radius:14px; padding:14px; margin-top:6px; white-space:normal;";
+    card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+            <div>
+                <span style="font-size:10px; font-weight:800; color:#ffffff; background:linear-gradient(135deg, #4f46e5, #0284c7); padding:3px 9px; border-radius:6px;">🎬 FREE AI VIDEO STUDIO</span>
+                <div style="font-size:12.5px; font-weight:700; margin-top:4px;">${escapeHtml(cleanPrompt.slice(0, 140))}</div>
+            </div>
+            <div style="display:flex; gap:6px;" id="${cardId}_actions"></div>
+        </div>
+        <div id="${cardId}_body" style="min-height:200px; border-radius:10px; background:var(--bg-main); border:1px solid var(--card-border); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:14px; text-align:center; font-size:12px; color:var(--text-muted);">
+            <div>🎥 Generating AI video clip via Puter.js...</div>
+            <div style="font-size:10.5px; opacity:0.8;">Video clips usually take 20–60 seconds. You can keep chatting while it renders.</div>
+        </div>
+    `;
+    logBox.appendChild(card);
+    logBox.scrollTop = logBox.scrollHeight;
+
+    const bodyEl = document.getElementById(`${cardId}_body`);
+    const actEl = document.getElementById(`${cardId}_actions`);
+
+    if (typeof puter === "undefined" || !puter.ai || typeof puter.ai.txt2vid !== "function") {
+        bodyEl.innerHTML = `<span style="color:var(--danger);">⚠️ Puter.js Video Engine didn't load. Refresh the page and try again.</span>`;
+        return;
+    }
+
+    try {
+        const videoEl = await puter.ai.txt2vid(cleanPrompt);
+        if (videoEl && (videoEl.src || videoEl.querySelector?.('source'))) {
+            videoEl.controls = true;
+            videoEl.playsInline = true;
+            videoEl.loop = true;
+            videoEl.style.cssText = "width:100%; max-height:420px; border-radius:10px; background:#000; display:block; margin:0 auto;";
+            bodyEl.innerHTML = "";
+            bodyEl.appendChild(videoEl);
+
+            const vidSrc = videoEl.src || videoEl.querySelector('source')?.src || "";
+            const safeName = `KIZA_Video_${cleanPrompt.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 22) || 'Clip'}.mp4`;
+            actEl.innerHTML = `
+                <button type="button" class="chip-btn" style="width:auto; padding:5px 11px; font-size:11px;" id="${cardId}_regen">🔄 Regenerate</button>
+                ${vidSrc ? `<button type="button" class="send-btn" style="padding:5px 12px; font-size:11px;" id="${cardId}_dl">⬇️ Save MP4</button>` : ''}
+            `;
+            if (vidSrc) document.getElementById(`${cardId}_dl`).onclick = () => downloadMediaUrlHelper(vidSrc, safeName);
+            document.getElementById(`${cardId}_regen`).onclick = () => generateAndRenderFreeVideoCard(cleanPrompt);
+            if (typeof playTacticalSFX === "function") playTacticalSFX("complete");
+            logBox.scrollTop = logBox.scrollHeight;
+        } else {
+            bodyEl.innerHTML = `<span style="color:var(--warning);">⚠️ Video generator returned no clip. Try a shorter descriptive prompt.</span>`;
+        }
+    } catch (err) {
+        bodyEl.innerHTML = `<div style="color:var(--warning);">⚠️ Video generation error: ${escapeHtml(err?.message || "Cancelled or Puter limit reached")}.</div>`;
+        actEl.innerHTML = `<button type="button" class="chip-btn" style="width:auto; padding:5px 11px; font-size:11px;" onclick="generateAndRenderFreeVideoCard(${JSON.stringify(cleanPrompt)})">🔄 Retry</button>`;
+    }
+}
+
+// ==========================================================
 // CLEAN PDF / DOCUMENT TEXT, SCIENTIFIC LATEX & CURRENCY SANITIZER
 // ==========================================================
 function sanitizePdfText(rawStr) {
@@ -69,11 +221,9 @@ function sanitizePdfText(rawStr) {
     const supMap = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '-': '⁻', '+': '⁺', 'n': 'ⁿ' };
     const toSup = (str) => str.split('').map(c => supMap[c] || c).join('');
 
-    // 1. Clean LaTeX currency like $\$5/TB$ and \$150 billion
     s = s.replace(/\$\s*\\\$\s*([^$\n]+?)\s*\$/g, '$$$1');
     s = s.replace(/\\\$/g, '$');
 
-    // 2. Clean scientific LaTeX commands so html2pdf never prints raw $...$
     s = s.replace(/\\sim\s*/g, '~');
     s = s.replace(/\\approx\s*/g, '≈');
     s = s.replace(/\\times\s*/g, '×');
@@ -83,12 +233,10 @@ function sanitizePdfText(rawStr) {
     s = s.replace(/\\text\{([^}]*)\}|\\mathrm\{([^}]*)\}|\\mathbf\{([^}]*)\}/g, (_, a, b, c) => a || b || c || '');
     s = s.replace(/~/g, ' ');
 
-    // 3. Convert ^{...} and ^digits into crisp Unicode superscripts
     s = s.replace(/\^\{([0-9+\-n]+)\}/g, (_, exp) => toSup(exp));
     s = s.replace(/(\d+|[a-zA-Z])\^([0-9+\-]+)/g, (_, base, exp) => base + toSup(exp));
     s = s.replace(/([⁰¹²³⁴⁵⁶⁷⁸⁹])([a-zA-Z])/g, '$1 $2');
 
-    // 4. Strip remaining inline $...$ wrappers
     s = s.replace(/\$([^$\n]{1,70})\$/g, (_, inner) => inner.trim());
     return s.replace(/\s{2,}/g, ' ').trim();
 }
@@ -483,7 +631,7 @@ function generateCustomHighResArtworkDataUrl(queryStr, themeKey = "cyber_dark", 
     const pal = THEME_PALETTES[themeKey] || THEME_PALETTES.cyber_dark;
     const isDark = (themeKey === "black" || themeKey === "movie_theater");
 
-    const bg1 = isDark ? pal.pdfCardBg : pal.pdfCardBg;
+    const bg1 = pal.pdfCardBg;
     const bg2 = isDark ? pal.pdfPageBg : "#ffffff";
     const primary = pal.pdfAccent;
     const secondary = pal.pdfSec;
@@ -994,7 +1142,7 @@ async function compileAndDownloadNativeDOCX(topicTitle, rawContent, layoutFormat
 }
 
 // ==========================================================
-// 3. BOARDROOM MULTI-SHEET EXCEL (.XLSX) WITH LIVE CROSS-SHEET FORMULAS
+// 3. BOARDROOM MULTI-SHEET EXCEL (.XLSX) WITH LIVE FORMULAS
 // ==========================================================
 function parseMultiSheetExcelData(topicTitle, rawContent) {
     const lines = stripSlashesFromText(rawContent)
@@ -1783,7 +1931,175 @@ function exportCurrentActiveChatPDF() {
 }
 
 function exportArchiveTXT() { if (currentArchiveExportData.length) openAuditOrChatInPreviewStudio("txt", "Saved_Archive", currentArchiveExportData.map(m => `[${m.time}] [${m.sender}]: ${m.message}`).join("\n"), false); }
-function exportArchivePDF() { if (currentArchiveExportData.length) openAuditOrChatInPreviewStudio("pdf", "Saved_Archive", `<div style="font-family:'Inter',sans-serif; padding:22px; background:#fff;"><h2>KIZA Saved Chat Archive</h2>${currentArchiveExportData.map(m => `<div class="kiza-avoid-break" style="margin-bottom:8px; padding:8px 12px; border-left:3px solid #0284c7; background:#f8fafc; color:#0f172a;"><b>[${m.time}] ${escapeHtml(m.sender)}:</b> ${escapeHtml(m.message)}</div>`).join("")}</div>`, true); }
+function exportArchivePDF() { if (currentArchiveExportData.length) openAuditOrChatInPreviewStudio("pdf", "Saved_Archive", `<div style="font-family:'Inter',sans-serif; padding:22px; background:#fff; color:#0f172a;"><h2 style="color:#0284c7;">KIZA Saved Chat Archive</h2>${currentArchiveExportData.map(m => `<div class="kiza-avoid-break" style="margin-bottom:8px; padding:8px 12px; border-left:3px solid #0284c7; background:#f8fafc; color:#0f172a;"><b>[${m.time}] ${escapeHtml(m.sender)}:</b> ${escapeHtml(m.message)}</div>`).join("")}</div>`, true); }
 function exportSecurityReportCSV() { if (cachedThreatLogs.length) openAuditOrChatInPreviewStudio("csv", "Security_Audit", ["ID,Timestamp,Event,User,IP,Details", ...cachedThreatLogs.map(t => `${t.id},"${t.timestamp}","${t.event_type}","${t.username}","${t.ip_address}","${String(t.details || '').replace(/"/g, '""')}"`)].join("\n"), false); }
 function exportSecurityReportTXT() { if (cachedThreatLogs.length) openAuditOrChatInPreviewStudio("txt", "Security_Audit", cachedThreatLogs.map(t => `[${t.timestamp}] ${t.event_type} | ${t.username} | ${t.ip_address} | ${t.details}`).join("\n"), false); }
-function exportSecurityReportPDF() { if (cachedThreatLogs.length) openAuditOrChatInPreviewStudio("pdf", "Security_Audit", `<div style="padding:22px; background:#fff;"><h2>KIZA Security Audit Report</h2>${cachedThreatLogs.map(t => `<div class="kiza-avoid-break" style="margin-bottom:10px; padding:10px; border-left:4px solid #ef4444; background:#fff1f2; color:#0f172a;"><b>[${escapeHtml(t.event_type)}] ${escapeHtml(t.username)} (${escapeHtml(t.ip_address)})</b><div>${escapeHtml(t.details)}</div></div>`).join("")}</div>`, true); }
+
+// ==========================================================
+// OFFICIAL KIZA SECURITY MANAGEMENT FORENSIC RECORD PDF
+// ==========================================================
+function exportSecurityReportPDF() {
+    if (!cachedThreatLogs || !cachedThreatLogs.length) {
+        showNotification("No Records", "No security incidents available to export.", true, { skipStore: true });
+        return;
+    }
+
+    const nowIst = new Date().toLocaleString('en-IN', {
+        timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+    });
+    const reportId = `KSM-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-4)}`;
+    const officerName = cleanDisplayNameOnly(currentUser || "Viyan Arora").toUpperCase();
+    const officerRank = `RANK ${typeof currentRankNum !== "undefined" ? currentRankNum : 1} • ${(typeof currentRole !== "undefined" ? currentRole : "MASTER OWNER").toUpperCase()}`;
+
+    const criticalTypes = new Set([
+        "BRUTE_FORCE_LOCKOUT", "HACKING_ATTEMPT_BLOCKED", "MANUAL_IP_BAN",
+        "BIOMETRIC_SPOOF_BLOCKED", "UNAUTHORIZED_PURGE_PIN_CHANGE"
+    ]);
+    const highTypes = new Set([
+        "WRONG_PASSWORD", "WRONG_SECURITY_PIN", "WRONG_PURGE_PIN",
+        "INAPPROPRIATE_CONTENT", "UNAUTHORIZED_REMOTE_LOGOUT"
+    ]);
+
+    const uniqueIps = new Set(cachedThreatLogs.map(t => t.ip_address).filter(Boolean));
+    const criticalCount = cachedThreatLogs.filter(t => criticalTypes.has(String(t.event_type || "").toUpperCase())).length;
+    const evidenceCount = cachedThreatLogs.filter(t => Boolean(t.mugshot)).length;
+    const liveBanBanner = (document.getElementById('threatsBannedBanner')?.innerText || "").trim();
+
+    const parseSecurityDetails = (raw) => {
+        const str = String(raw || "Security event logged.");
+        let reason = str, location = "Not resolved", isp = "Not recorded", gps = "Unavailable";
+        const gpsM = str.match(/\[GPS:\s*([^\]]+)\]/i);
+        if (gpsM) gps = gpsM[1].trim();
+        const ispM = str.match(/\(ISP:\s*([^)]+)\)/i);
+        if (ispM) isp = ispM[1].trim();
+        const locParts = str.split(/•\s*📍|📍/);
+        if (locParts.length > 1) {
+            reason = locParts[0].replace(/•\s*$/, '').trim();
+            location = locParts[1]
+                .replace(/\[GPS:[^\]]+\]/gi, '')
+                .replace(/\(ISP:[^)]+\)/gi, '')
+                .replace(/\s{2,}/g, ' ')
+                .trim() || "Tracked Network";
+        }
+        return { reason: reason || str, location, isp, gps };
+    };
+
+    const incidentCardsHtml = cachedThreatLogs.map((t, idx) => {
+        const evType = String(t.event_type || "SECURITY_EVENT").toUpperCase();
+        const isCrit = criticalTypes.has(evType);
+        const isHigh = highTypes.has(evType);
+        const sevLabel = isCrit ? "CRITICAL" : (isHigh ? "HIGH" : "AUDIT");
+        const sevColor = isCrit ? "#dc2626" : (isHigh ? "#d97706" : "#0284c7");
+        const sevBg = isCrit ? "#fef2f2" : (isHigh ? "#fffbeb" : "#f0f9ff");
+        const caseCode = `INC-${String(t.id || (cachedThreatLogs.length - idx)).padStart(4, '0')}`;
+        const parsed = parseSecurityDetails(t.details);
+
+        const evidenceBox = t.mugshot
+            ? `<div style="width:128px; flex-shrink:0; background:#0f172a; border:1.5px solid ${sevColor}; border-radius:8px; padding:5px; text-align:center;">
+                    <img src="${t.mugshot}" style="width:116px; height:88px; object-fit:cover; border-radius:5px; display:block; margin:0 auto;">
+                    <div style="font-size:8px; font-weight:800; color:#fca5a5; font-family:monospace; margin-top:4px; letter-spacing:0.6px;">CAMERA CAPTURE</div>
+               </div>`
+            : `<div style="width:128px; flex-shrink:0; background:#f1f5f9; border:1px dashed #94a3b8; border-radius:8px; padding:10px 6px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                    <div style="font-size:18px; line-height:1; color:#64748b;">🛡️</div>
+                    <div style="font-size:8px; font-weight:800; color:#475569; font-family:monospace; margin-top:6px; line-height:1.3;">NO CAMERA SNAPSHOT ATTACHED</div>
+               </div>`;
+
+        return `
+            <div class="kiza-avoid-break" style="border:1px solid #cbd5e1; border-left:4px solid ${sevColor}; border-radius:9px; background:#ffffff; margin-bottom:12px; overflow:hidden; page-break-inside:avoid; break-inside:avoid;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; background:${sevBg}; padding:7px 12px; border-bottom:1px solid #e2e8f0; flex-wrap:wrap;">
+                    <div style="display:flex; align-items:center; gap:7px; flex-wrap:wrap;">
+                        <span style="font-family:monospace; font-size:10px; font-weight:800; color:#0f172a; background:#ffffff; border:1px solid #cbd5e1; padding:2px 6px; border-radius:4px;">${escapeHtml(caseCode)}</span>
+                        <span style="font-size:9.5px; font-weight:800; color:#ffffff; background:${sevColor}; padding:2px 7px; border-radius:4px; letter-spacing:0.5px;">${sevLabel}</span>
+                        <span style="font-size:11px; font-weight:800; color:#0f172a;">${escapeHtml(evType)}</span>
+                    </div>
+                    <span style="font-family:monospace; font-size:10px; font-weight:700; color:#334155;">${escapeHtml(t.timestamp || nowIst)}</span>
+                </div>
+                <div style="display:flex; gap:12px; padding:10px 12px; align-items:stretch;">
+                    ${evidenceBox}
+                    <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:5px; font-size:11px; color:#0f172a;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:5px 8px;">
+                                <div style="font-size:8.5px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.6px;">Target Account / Subject</div>
+                                <div style="font-size:11.5px; font-weight:800; color:#0f172a; margin-top:2px;">${escapeHtml(t.username || "UNKNOWN")}</div>
+                            </div>
+                            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:5px 8px;">
+                                <div style="font-size:8.5px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.6px;">Source IP Address</div>
+                                <div style="font-family:monospace; font-size:11.5px; font-weight:800; color:${sevColor}; margin-top:2px;">${escapeHtml(t.ip_address || "unknown")}</div>
+                            </div>
+                        </div>
+                        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:6px 8px;">
+                            <div style="font-size:8.5px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.6px;">Incident Description & Action</div>
+                            <div style="font-size:11px; font-weight:600; color:#1e293b; margin-top:2px; line-height:1.4;">${escapeHtml(parsed.reason)}</div>
+                        </div>
+                        <div style="display:flex; flex-wrap:wrap; gap:10px; font-size:10px; color:#334155; padding:2px 2px 0 2px;">
+                            <span><b>Location:</b> ${escapeHtml(parsed.location)}</span>
+                            <span><b>ISP:</b> ${escapeHtml(parsed.isp)}</span>
+                            <span><b>GPS:</b> ${escapeHtml(parsed.gps)}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+    }).join("");
+
+    const enforcementHtml = liveBanBanner
+        ? `<div class="kiza-avoid-break" style="background:#fef2f2; border:1px solid #fca5a5; border-left:4px solid #b91c1c; border-radius:8px; padding:9px 12px; margin-bottom:14px; font-size:10.5px; color:#7f1d1d;">
+                <b style="letter-spacing:0.5px;">ACTIVE ENFORCEMENT & ACCESS CONTROL ROSTER:</b> ${escapeHtml(liveBanBanner)}
+           </div>`
+        : "";
+
+    const securityDossierHtml = `
+        <div style="font-family:'Inter', Arial, sans-serif; background:#ffffff; color:#0f172a; padding:22px 26px; border-radius:10px; border:1px solid #cbd5e1; box-sizing:border-box;">
+            <div class="kiza-avoid-break" style="background:linear-gradient(135deg, #090d16 0%, #1e293b 70%, #450a0a 100%); color:#ffffff; padding:18px 22px; border-radius:10px; border-bottom:4px solid #dc2626; margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,0.18); padding-bottom:8px; margin-bottom:10px;">
+                    <span style="font-family:monospace; font-size:9px; font-weight:800; color:#fca5a5; letter-spacing:2px;">CONFIDENTIAL • INTERNAL SECURITY RECORD • RANKS 1–4 CLEARANCE</span>
+                    <span style="font-family:monospace; font-size:9px; font-weight:800; color:#ffffff; background:#dc2626; padding:2px 8px; border-radius:4px;">OFFICIAL AUDIT</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap;">
+                    <div>
+                        <div style="font-size:21px; font-weight:900; letter-spacing:1.2px; color:#ffffff; line-height:1.15;">KIZA SECURITY MANAGEMENT</div>
+                        <div style="font-size:11px; color:#cbd5e1; margin-top:4px; font-weight:600;">Forensic Intrusion Ledger, IP Geolocation & Evidence Record</div>
+                    </div>
+                    <div style="text-align:right; font-family:monospace; font-size:9.5px; color:#e2e8f0; line-height:1.5; border-left:1px solid rgba(255,255,255,0.22); padding-left:12px;">
+                        <div><b>RECORD ID:</b> ${escapeHtml(reportId)}</div>
+                        <div><b>OFFICER:</b> ${escapeHtml(officerName)} (${escapeHtml(officerRank)})</div>
+                        <div><b>ISSUED:</b> ${escapeHtml(nowIst)} IST</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="kiza-avoid-break" style="display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:10px; margin-bottom:14px; page-break-inside:avoid;">
+                <div style="background:#f8fafc; border:1px solid #cbd5e1; border-top:3px solid #0f172a; border-radius:8px; padding:9px 10px;">
+                    <div style="font-size:8.5px; font-weight:800; color:#64748b; text-transform:uppercase;">Total Incidents</div>
+                    <div style="font-size:19px; font-weight:900; color:#0f172a; margin-top:2px;">${cachedThreatLogs.length}</div>
+                </div>
+                <div style="background:#fef2f2; border:1px solid #fecaca; border-top:3px solid #dc2626; border-radius:8px; padding:9px 10px;">
+                    <div style="font-size:8.5px; font-weight:800; color:#991b1b; text-transform:uppercase;">Critical Threats</div>
+                    <div style="font-size:19px; font-weight:900; color:#dc2626; margin-top:2px;">${criticalCount}</div>
+                </div>
+                <div style="background:#eff6ff; border:1px solid #bfdbfe; border-top:3px solid #1d4ed8; border-radius:8px; padding:9px 10px;">
+                    <div style="font-size:8.5px; font-weight:800; color:#1e40af; text-transform:uppercase;">Unique Source IPs</div>
+                    <div style="font-size:19px; font-weight:900; color:#1d4ed8; margin-top:2px;">${uniqueIps.size}</div>
+                </div>
+                <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-top:3px solid #059669; border-radius:8px; padding:9px 10px;">
+                    <div style="font-size:8.5px; font-weight:800; color:#065f46; text-transform:uppercase;">Visual Evidence</div>
+                    <div style="font-size:19px; font-weight:900; color:#059669; margin-top:2px;">${evidenceCount}</div>
+                </div>
+            </div>
+
+            ${enforcementHtml}
+
+            <div style="font-size:11px; font-weight:800; color:#0f172a; letter-spacing:1px; text-transform:uppercase; border-bottom:2px solid #0f172a; padding-bottom:5px; margin-bottom:12px;">
+                CHRONOLOGICAL INCIDENT & EVIDENCE LOG (${cachedThreatLogs.length} ENTRIES)
+            </div>
+
+            ${incidentCardsHtml}
+
+            <div class="kiza-avoid-break" style="margin-top:14px; padding-top:10px; border-top:2px solid #0f172a; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-family:monospace; font-size:9px; color:#475569; page-break-before:avoid;">
+                <span><b>KIZA SECURITY MANAGEMENT</b> • RECORD ${escapeHtml(reportId)} • DO NOT DISTRIBUTE</span>
+                <span>AUTHORIZED: ${escapeHtml(officerName)} • ${escapeHtml(nowIst)} IST</span>
+            </div>
+        </div>`;
+
+    openAuditOrChatInPreviewStudio("pdf", "Security_Management_Record", securityDossierHtml, true);
+}
